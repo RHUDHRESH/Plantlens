@@ -1,0 +1,7 @@
+node_modules/
+dist/
+coverage/
+.cliffords-data/
+*.log
+.DS_Store
+Thumbs.db

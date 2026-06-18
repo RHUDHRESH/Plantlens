@@ -1,0 +1,130 @@
+{
+  "archetypes": [
+    {
+      "archetype_id": "centrifugal_pump",
+      "label": "Centrifugal Pump",
+      "facets": ["mechanical", "electrical", "thermal", "process"],
+      "ports": [
+        { "port_id": "suction", "domain": "process", "direction": "in" },
+        { "port_id": "discharge", "domain": "process", "direction": "out" },
+        { "port_id": "cooling_in", "domain": "thermal", "direction": "in" },
+        { "port_id": "power", "domain": "electrical", "direction": "in" }
+      ],
+      "signals": [
+        {
+          "signal": "temp",
+          "facet": "thermal",
+          "engineering_unit": "degC",
+          "normal": [40, 75],
+          "alarm_high": 82,
+          "physical_bounds": [-10, 200]
+        },
+        {
+          "signal": "current",
+          "facet": "electrical",
+          "engineering_unit": "A",
+          "normal": [6, 11],
+          "alarm_high": 12.5,
+          "physical_bounds": [0, 50]
+        },
+        {
+          "signal": "flow",
+          "facet": "process",
+          "engineering_unit": "L/min",
+          "normal": [30, 60],
+          "alarm_low": 22,
+          "physical_bounds": [0, 200]
+        },
+        {
+          "signal": "vibration",
+          "facet": "mechanical",
+          "engineering_unit": "mm/s",
+          "normal": [0, 4.5],
+          "alarm_high": 7.1,
+          "physical_bounds": [0, 50]
+        }
+      ],
+      "geometry": { "shape": "cylinder", "radius": 0.4, "height": 0.8 },
+      "calm_card": {
+        "headline_template": "{equipment_label} cooling/mechanical degradation suspected",
+        "evidence_signals": ["temp", "current", "flow", "vibration"]
+      },
+      "role_visibility": {
+        "operator": ["calm_card", "live_values", "action_envelope"],
+        "maintenance": ["work_order", "isolation_points", "ptw_export"],
+        "supervisor": ["severity_rollup", "production_impact"]
+      }
+    },
+    {
+      "archetype_id": "cooling_fan",
+      "label": "Cooling Fan",
+      "facets": ["mechanical", "electrical", "thermal"],
+      "ports": [
+        { "port_id": "cooling_out", "domain": "thermal", "direction": "out" },
+        { "port_id": "power", "domain": "electrical", "direction": "in" }
+      ],
+      "signals": [
+        {
+          "signal": "speed",
+          "facet": "mechanical",
+          "engineering_unit": "RPM",
+          "normal": [1200, 1500],
+          "alarm_low": 900,
+          "physical_bounds": [0, 3000]
+        },
+        {
+          "signal": "current",
+          "facet": "electrical",
+          "engineering_unit": "A",
+          "normal": [2, 5],
+          "alarm_high": 6,
+          "physical_bounds": [0, 20]
+        }
+      ],
+      "geometry": { "shape": "box", "size": [0.5, 0.5, 0.3] },
+      "role_visibility": {
+        "operator": ["live_values"],
+        "maintenance": ["work_order"],
+        "supervisor": []
+      }
+    },
+    {
+      "archetype_id": "heat_exchanger",
+      "label": "Heat Exchanger",
+      "facets": ["thermal", "process"],
+      "ports": [
+        { "port_id": "process_in", "domain": "process", "direction": "in" },
+        { "port_id": "process_out", "domain": "process", "direction": "out" },
+        { "port_id": "cooling_in", "domain": "thermal", "direction": "in" }
+      ],
+      "signals": [
+        {
+          "signal": "temp",
+          "facet": "thermal",
+          "engineering_unit": "degC",
+          "normal": [35, 68],
+          "alarm_high": 78,
+          "physical_bounds": [-10, 180]
+        },
+        {
+          "signal": "flow",
+          "facet": "process",
+          "engineering_unit": "L/min",
+          "normal": [25, 55],
+          "alarm_low": 18,
+          "physical_bounds": [0, 180]
+        }
+      ],
+      "geometry": { "shape": "box", "size": [0.9, 0.45, 0.5] },
+      "calm_card": {
+        "headline_template": "{equipment_label} heat transfer degradation suspected",
+        "evidence_signals": ["temp", "flow"]
+      },
+      "role_visibility": {
+        "operator": ["calm_card", "live_values"],
+        "maintenance": ["work_order", "isolation_points"],
+        "supervisor": ["severity_rollup"]
+      }
+    }
+  ]
+}

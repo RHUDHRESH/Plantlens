@@ -1,0 +1,12 @@
+{
+  "EventType": "AlarmConditionType",
+  "SourceName": "PV-101",
+  "Message": "PV string current low",
+  "Severity": 700,
+  "Time": "2026-06-15T10:00:04+05:30",
+  "ConditionName": "PV101_CURRENT_LOW",
+  "AckedState": false,
+  "ActiveState": true,
+  "Value": 1.2,
+  "Unit": "A"
+}

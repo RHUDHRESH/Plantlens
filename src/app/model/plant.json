@@ -1,0 +1,54 @@
+{
+  "plant_id": "DEMO_PLANT_01",
+  "zones": [
+    {
+      "zone_id": "PUMP_ROOM_A",
+      "label": "Pump Room A",
+      "position": [0, 0, 0],
+      "bounds": [12, 4, 8]
+    }
+  ],
+  "equipment": [
+    {
+      "equipment_id": "FAN-101",
+      "label": "FAN-101",
+      "archetype": "cooling_fan",
+      "zone_id": "PUMP_ROOM_A",
+      "tag_prefix": "FAN101",
+      "position": [-2, 0, 0]
+    },
+    {
+      "equipment_id": "PUMP-P101",
+      "label": "P-101",
+      "archetype": "centrifugal_pump",
+      "zone_id": "PUMP_ROOM_A",
+      "tag_prefix": "P101",
+      "position": [0, 0, 0],
+      "overrides": {
+        "temp": { "alarm_high": 80 }
+      }
+    },
+    {
+      "equipment_id": "HX-101",
+      "label": "HX-101",
+      "archetype": "heat_exchanger",
+      "zone_id": "PUMP_ROOM_A",
+      "tag_prefix": "HX101",
+      "position": [2, 0, 0]
+    }
+  ],
+  "connections": [
+    {
+      "from": "FAN-101",
+      "from_port": "cooling_out",
+      "to": "PUMP-P101",
+      "to_port": "cooling_in"
+    },
+    {
+      "from": "PUMP-P101",
+      "from_port": "discharge",
+      "to": "HX-101",
+      "to_port": "process_in"
+    }
+  ]
+}

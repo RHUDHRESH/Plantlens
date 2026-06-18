@@ -1,0 +1,3 @@
+Time,Alarm,Severity,Status,PV,EU,Text
+not-a-date,PVI0I_CURRNT_LOW,banana,ON,999999,meters,broken messy row
+2026-06-15 10:00:04,UNKNOWN_TAG,HIGH,ACTIVE,1.2,A,unknown tag should quarantine

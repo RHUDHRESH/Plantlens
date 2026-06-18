@@ -1,0 +1,1 @@
+10:00 operator saw shading on PV-101. Four seconds later PV current dropped. Battery started carrying load. DC bus voltage was falling. Check PV panel and MPPT first.

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PlantLens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <div class="header__brand">
+          <span class="header__logo">PlantLens</span>
+          <span class="header__tag">Evidence pipeline</span>
+        </div>
+        <div class="header__meta">
+          <button type="button" class="header__run" id="runIdDisplay" title="Copy run ID">No run yet</button>
+          <span class="badge" id="statusBadge" data-status="idle">Idle</span>
+        </div>
+      </header>
+
+      <div class="layout">
+        <nav class="steps" id="stepsNav" aria-label="Pipeline steps"></nav>
+
+        <main class="main">
+          <div class="main__head">
+            <h1 id="stepTitle" class="main__title">Upload files</h1>
+            <p id="stepDesc" class="main__desc">Add your evidence files to begin.</p>
+          </div>
+
+          <div id="stepContent" class="main__content"></div>
+
+          <footer class="main__footer">
+            <button type="button" class="btn btn--secondary" id="backBtn" disabled>Back</button>
+            <button type="button" class="btn btn--primary" id="nextBtn">Continue</button>
+          </footer>
+        </main>
+
+        <aside class="sidebar">
+          <h2 class="sidebar__title">Files <span id="fileCount" class="sidebar__count">0</span></h2>
+          <ul id="fileList" class="file-list"></ul>
+        </aside>
+      </div>
+
+      <input id="fileInput" type="file" multiple hidden />
+      <textarea id="rawEditor" hidden spellcheck="false"></textarea>
+      <input id="timezoneInput" type="hidden" value="Asia/Kolkata" />
+    </div>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

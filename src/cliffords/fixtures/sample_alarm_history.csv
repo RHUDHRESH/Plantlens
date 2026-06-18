@@ -1,0 +1,6 @@
+Timestamp,TagName,Priority,State,Value,Unit,Message
+2026-06-15 10:00:00,PV101_IRRADIANCE_LOW,HIGH,ACTIVE,180,W/m2,PV irradiance below expected level
+2026-06-15 10:00:04,PV101_CURRENT_LOW,HIGH,ACTIVE,1.2,A,PV string current low
+2026-06-15 10:00:12,MPPT101_POWER_LIMIT,MEDIUM,ACTIVE,45,%,MPPT limiting output power
+2026-06-15 10:00:25,BAT101_DISCHARGE_HIGH,HIGH,ACTIVE,18,A,Battery discharge current high
+2026-06-15 10:00:41,DCBUS101_VOLTAGE_LOW,HIGH,ACTIVE,10.8,V,DC bus voltage low
