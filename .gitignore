@@ -2,6 +2,7 @@ node_modules/
 dist/
 coverage/
 .cliffords-data/
+terminals/*.txt
 *.log
 .DS_Store
 Thumbs.db
