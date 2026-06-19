@@ -52,8 +52,11 @@ export function AgentConsole({ onClose }: AgentConsoleProps) {
   return (
     <div className="agent-console" role="dialog" aria-labelledby="agent-console-title">
       <header className="agent-console__header">
-        <h2 id="agent-console-title">Agent Console</h2>
-        <p className="agent-console__subtitle">Draft-only — human approval required before any write</p>
+        <div>
+          <h2 id="agent-console-title">Agent Console</h2>
+          <p className="agent-console__subtitle">Draft-only — human approval required before any write</p>
+          <span className="agent-console__draft-badge">Not approved for runtime</span>
+        </div>
         <button type="button" onClick={onClose}>
           Close
         </button>

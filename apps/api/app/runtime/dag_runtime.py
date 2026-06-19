@@ -2,12 +2,18 @@
 
 from __future__ import annotations
 
+import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
 from app.runtime.config_loader import GraphEdge
 from app.runtime.runtime_state import RuntimeState
+
+# Named defaults — visible in config via min_root_score on situation_types
+DEFAULT_MIN_ROOT_SCORE = 0.1
+HIGH_CONFIDENCE_THRESHOLD = 0.75
+MEDIUM_CONFIDENCE_THRESHOLD = 0.45
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,7 +24,25 @@ class Candidate:
     traversed_edges: tuple[str, ...]
 
 
-MIN_SCORE = 0.1
+@dataclass(frozen=True, slots=True)
+class RejectedCandidateRecord:
+    asset_id: str
+    reason: str
+    score: float
+    missing_evidence: tuple[str, ...] = ()
+    contradicted_by: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class RootCauseTrace:
+    trace_id: str
+    selected_root: str | None
+    confidence: float
+    confidence_bucket: str
+    confidence_reason: str
+    candidates: tuple[Candidate, ...]
+    rejected_candidates: tuple[RejectedCandidateRecord, ...]
+    data_quality_notes: tuple[str, ...]
 
 
 def _parse_ts(value: str | datetime) -> datetime:
@@ -152,28 +176,101 @@ def evaluate_node_fingerprint(
     return max(0.0, min(1.0, score)), tuple(reasons)
 
 
+def _confidence_bucket(score: float) -> str:
+    if score >= HIGH_CONFIDENCE_THRESHOLD:
+        return "high"
+    if score >= MEDIUM_CONFIDENCE_THRESHOLD:
+        return "medium"
+    return "low"
+
+
+def _collect_data_quality_notes(state: RuntimeState) -> tuple[str, ...]:
+    notes: list[str] = []
+    for tag_id, frame in state.tags.items():
+        if frame.quality in {"STALE", "MISSING", "BAD"}:
+            notes.append(f"{tag_id}: {frame.quality}")
+    return tuple(notes)
+
+
 def diagnose(
     symptom_alarm_id: str,
     graph_index: dict[str, Any],
     state: RuntimeState,
     *,
     now: datetime | None = None,
+    min_root_score: float = DEFAULT_MIN_ROOT_SCORE,
 ) -> list[Candidate]:
-    """Reverse-walk approved edges and rank root candidates deterministically."""
+    trace = diagnose_trace(
+        symptom_alarm_id,
+        graph_index,
+        state,
+        now=now,
+        min_root_score=min_root_score,
+    )
+    return list(trace.candidates)
+
+
+def diagnose_trace(
+    symptom_alarm_id: str,
+    graph_index: dict[str, Any],
+    state: RuntimeState,
+    *,
+    now: datetime | None = None,
+    min_root_score: float = DEFAULT_MIN_ROOT_SCORE,
+) -> RootCauseTrace:
+    """Reverse-walk approved edges; return full trace with rejected candidates."""
     _ = now
+    trace_id = f"TRACE_{uuid.uuid4().hex[:12].upper()}"
+    data_notes = _collect_data_quality_notes(state)
+    rejected: list[RejectedCandidateRecord] = []
+
     active_alarms = state.active_alarms
     if not active_alarms:
-        return []
+        return RootCauseTrace(
+            trace_id=trace_id,
+            selected_root=None,
+            confidence=0.0,
+            confidence_bucket="low",
+            confidence_reason="No active alarms",
+            candidates=(),
+            rejected_candidates=(),
+            data_quality_notes=data_notes,
+        )
+
+    if data_notes and not any(
+        (tag := state.get_tag(a.get("tag_id", ""))) is not None and tag.quality == "GOOD"
+        for a in active_alarms.values()
+    ):
+        return RootCauseTrace(
+            trace_id=trace_id,
+            selected_root=None,
+            confidence=0.0,
+            confidence_bucket="low",
+            confidence_reason="Only stale/BAD/MISSING evidence — no confident root cause",
+            candidates=(),
+            rejected_candidates=(),
+            data_quality_notes=data_notes,
+        )
 
     symptom = active_alarms.get(symptom_alarm_id) or next(iter(active_alarms.values()))
     symptom_asset = symptom.get("asset_id")
     if not symptom_asset:
-        return []
+        return RootCauseTrace(
+            trace_id=trace_id,
+            selected_root=None,
+            confidence=0.0,
+            confidence_bucket="low",
+            confidence_reason="Symptom alarm has no asset_id",
+            candidates=(),
+            rejected_candidates=(),
+            data_quality_notes=data_notes,
+        )
 
     seed_nodes = [symptom_asset]
     visited: set[str] = set()
     frontier: list[tuple[str, float, tuple[str, ...]]] = [(node, 0.0, ()) for node in seed_nodes]
     candidates: list[Candidate] = []
+    effect_ts = _parse_ts(symptom["raised_at"])
 
     while frontier:
         frontier.sort(key=lambda item: (item[1], item[0]))
@@ -188,23 +285,48 @@ def diagnose(
             state.tags,
             active_alarms,
         )
-        if score >= MIN_SCORE:
+        adjusted = score - priority * 0.01
+
+        if adjusted >= min_root_score:
             candidates.append(
                 Candidate(
                     node_id=current,
-                    score=score - priority * 0.01,
+                    score=adjusted,
                     reasons=reasons,
                     traversed_edges=path_edges,
                 )
             )
+        elif score > 0:
+            rejected.append(
+                RejectedCandidateRecord(
+                    asset_id=current,
+                    reason=f"Score {adjusted:.2f} below threshold {min_root_score}",
+                    score=adjusted,
+                    missing_evidence=(),
+                )
+            )
 
-        effect_ts = _parse_ts(symptom["raised_at"])
         for edge in graph_index["reverse_adjacency"].get(current, []):
             if not edge.approved:
+                rejected.append(
+                    RejectedCandidateRecord(
+                        asset_id=edge.from_node,
+                        reason=f"Edge {edge.id} not approved for runtime",
+                        score=0.0,
+                    )
+                )
                 continue
             cause_alarm = _find_alarm_for_asset(active_alarms, edge.from_node)
             cause_ts = _parse_ts(cause_alarm["raised_at"]) if cause_alarm else None
             if violates_temporal_window(edge, cause_ts, effect_ts):
+                rejected.append(
+                    RejectedCandidateRecord(
+                        asset_id=edge.from_node,
+                        reason=f"Temporal window violated on edge {edge.id}",
+                        score=0.0,
+                        contradicted_by=(edge.id,),
+                    )
+                )
                 continue
             new_priority = priority + edge_penalty(edge)
             new_path = path_edges + (edge.id,)
@@ -214,7 +336,46 @@ def diagnose(
     deduped: dict[str, Candidate] = {}
     for candidate in candidates:
         deduped.setdefault(candidate.node_id, candidate)
-    return sorted(deduped.values(), key=lambda item: (-item.score, item.node_id))[:5]
+    ranked = sorted(deduped.values(), key=lambda item: (-item.score, item.node_id))[:5]
+
+    selected: str | None = None
+    confidence = 0.0
+    confidence_reason = "No candidate met minimum score threshold"
+
+    if ranked:
+        top = ranked[0]
+        if top.score >= min_root_score:
+            selected = top.node_id
+            confidence = top.score
+            confidence_reason = "; ".join(top.reasons) if top.reasons else "Fingerprint match on approved graph"
+        else:
+            rejected.append(
+                RejectedCandidateRecord(
+                    asset_id=top.node_id,
+                    reason=f"Top candidate score {top.score:.2f} below threshold",
+                    score=top.score,
+                )
+            )
+
+    for cand in ranked[1:]:
+        rejected.append(
+            RejectedCandidateRecord(
+                asset_id=cand.node_id,
+                reason=f"Lower rank than {selected or 'none'} (score {cand.score:.2f})",
+                score=cand.score,
+            )
+        )
+
+    return RootCauseTrace(
+        trace_id=trace_id,
+        selected_root=selected,
+        confidence=confidence,
+        confidence_bucket=_confidence_bucket(confidence),
+        confidence_reason=confidence_reason,
+        candidates=tuple(ranked),
+        rejected_candidates=tuple(rejected),
+        data_quality_notes=data_notes,
+    )
 
 
 def _find_alarm_for_asset(active_alarms: dict[str, dict[str, Any]], asset_id: str):

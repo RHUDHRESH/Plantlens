@@ -5,70 +5,102 @@
 > map, and keeps a hash-chained audit of every decision. AI drafts; humans approve; the runtime
 > stays deterministic; nothing writes to hardware.
 
-**New here? Read [`PLANTLENS.md`](PLANTLENS.md) first**, then [`docs/`](docs/README.md).
+**New here?** Read [`PLANTLENS.md`](PLANTLENS.md), then [`docs/README.md`](docs/README.md).
 
-## Repository layout (monorepo)
+## What works today
+
+- **Deterministic runtime pipeline:** TagFrame → quality → alarms → DAG root-cause → situation → `RuntimeEvidencePacket` → Calm Card → asset status
+- **Eight scenario regression tests** — motor overload, PV loss, stale sensor, unapproved edge, gateway dropout, recovery, downstream-only, temporal violation
+- **Runtime HMI** — 2D map, Calm Card, raw alarms, scenario launcher
+- **Agent plane** — draft-only; `service_unavailable` fallback when offline (no fabricated graph edges)
+- **Audited draft approval** — human approve/reject; runtime unchanged until contract compile/deploy
+
+**AI does not diagnose live faults.** Agents read evidence packets and draft explanations; humans approve before anything touches contracts.
+
+## Repository layout
 
 ```
 plantlens/
-├─ PLANTLENS.md            ← master build document (start here)
-├─ docs/                   ← architecture, build order, libraries, design system, contracts
+├─ PLANTLENS.md            ← master build document
+├─ docs/                   ← architecture, algorithms, agent boundary, demo scenario
 ├─ packages/
 │  ├─ contracts/           ← JSON-schema spine (single source of truth)
-│  ├─ sample-data/         ← demo-microgrid bundle (validates against contracts)
-│  ├─ ui-tokens/           ← design tokens (CSS vars source)
-│  └─ icons/               ← domain SVG symbols (motors, buses, breakers…)
+│  ├─ sample-data/         ← demo-microgrid bundle
+│  ├─ ui-tokens/           ← design tokens
+│  └─ icons/               ← domain SVG symbols
 ├─ apps/
-│  ├─ api/                 ← FastAPI modular monolith (the spine): ingest, runtime, studio, incidents, audit
-│  ├─ gateway/             ← Modbus/RS485 poller (separate process; read-only)
-│  ├─ agents/              ← draft-only AI service (optional; never on the live path)
-│  └─ web/                 ← React 19 + Vite: runtime HMI, Studio, 2D/3D maps, Calm Cards, Incident Room
+│  ├─ api/                 ← FastAPI: ingest, runtime, studio, incidents, audit, agents
+│  ├─ gateway/             ← Modbus/RS485 poller (read-only)
+│  ├─ agents/              ← draft-only AI service (optional)
+│  └─ web/                 ← React 19 + Vite: Runtime HMI, Studio, maps, Calm Cards
 ├─ deploy/                 ← Docker, compose, k8s, CI
-└─ legacy/
-   └─ cliffords-ts/        ← original TS ingestion engine, FROZEN as regression oracle
+└─ legacy/cliffords-ts/    ← frozen regression oracle
 ```
 
-## Quick start (bootstrap — Prompt 3)
+## Quick start
 
 ```bash
-pnpm install                                   # web + workspace (root pnpm-lock.yaml)
-pnpm contracts:validate                        # schema canary (must pass)
-pnpm oracle                                    # cliffords regression oracle
-cd apps/api && uv sync --extra dev             # backend deps + lint/test tools (uses apps/api/uv.lock)
-pnpm compose:config                            # validate Docker compose skeleton
-# Full stack (after runtime is implemented):
+# Install
+pnpm install --frozen-lockfile
+cd apps/api && pip install -e ".[dev]"
+
+# Validate contracts
+pnpm contracts:validate
+
+# Run API (from apps/api)
+uvicorn app.main:app --reload --port 8000
+
+# Run web (from repo root)
+pnpm --filter @plantlens/web dev
+
+# Run hero scenario (engineer dev token)
+curl -X POST http://localhost:8000/api/scenarios/scn_motor_overload/start \
+  -H "Authorization: Bearer <token>"
+
+# Full stack via Docker
 docker compose -f deploy/docker/compose.full.yml up --build
-# compile the demo, then run the hero scenario:
-curl -X POST localhost:8000/api/v1/compiler/compile
-curl -X POST localhost:8000/api/v1/simulator/scenarios/scn_motor_overload/start
-# open the web app → watch the motor go red and the Calm Card appear
 ```
 
-## The non-negotiable rules (full list in PLANTLENS.md §2)
+## Tests
+
+```bash
+python -m pytest apps/api/tests -q          # 198 tests
+pnpm contracts:validate
+pnpm --filter @plantlens/web typecheck
+pnpm --filter @plantlens/web test
+pnpm --filter @plantlens/web build
+```
+
+See [`FINAL_READY_STATE.md`](FINAL_READY_STATE.md) for demo script and verification table.
+
+## Key documentation
+
+| Doc | Purpose |
+|-----|---------|
+| [`PLANTLENS.md`](PLANTLENS.md) | System truth, non-negotiable rules, demo domain |
+| [`docs/ALGORITHMS.md`](docs/ALGORITHMS.md) | Quality, alarms, DAG, situation, Calm Card, projection |
+| [`docs/AGENT_BOUNDARY.md`](docs/AGENT_BOUNDARY.md) | What agents may/may not do; approval flow |
+| [`docs/DEMO_SCENARIO.md`](docs/DEMO_SCENARIO.md) | Hero scenario + eight-scenario matrix |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Service boundaries, data flow |
+| [`docs/RUNTIME_CONTRACTS.md`](docs/RUNTIME_CONTRACTS.md) | REST + WebSocket surface |
+
+## Non-negotiable rules (summary)
+
 1. One canonical plant model — every view reads `packages/contracts`.
-2. The DAG runtime is deterministic and read-only (approved edges only).
-3. Simulator-first — sim and gateway emit the identical `TagFrame`.
-4. Forms are the source of truth; React Flow is a projection.
-5. Agents draft only — behind a human-approval gate.
-6. Append-only hash-chained audit for everything.
-7. The gateway never diagnoses, compiles, or runs an LLM.
-8. 2D is default; 3D is a lazy-loaded enhancement.
+2. DAG runtime is deterministic and read-only (approved edges only).
+3. Simulator-first — sim and gateway emit identical `TagFrame`.
+4. Agents draft only — behind human approval; never on the live diagnosis path.
+5. Append-only hash-chained audit for consequential changes.
+6. PlantLens is advisory — it does not trip or control equipment.
 
-## Lockfiles
-
-| Stack | File | Policy |
-|-------|------|--------|
-| Node (monorepo) | root `pnpm-lock.yaml` | Required; CI uses `pnpm install --frozen-lockfile`. |
-| Node (oracle) | `legacy/cliffords-ts/pnpm-lock.yaml` | Separate; do not merge into root lock. |
-| Python (`apps/api`) | `apps/api/uv.lock` | Keep when present; regenerate with `uv sync` after `pyproject.toml` changes. |
-| Python (`apps/gateway`, `apps/agents`) | `uv.lock` per app | Add only when that app’s deps are synced with `uv` (future prompts). |
+Full list in [`PLANTLENS.md`](PLANTLENS.md) §2.
 
 ## Status
-This repo is currently a **scaffold** through **Prompt 6** (contract mirrors + guardian): every
-folder has a `README.md` describing its files, and every source file has a SPEC header describing
-what to build (with a `TODO(you)` marker). API health, DB, runtime engines, and UI behavior are not
-implemented yet. Follow [`docs/BUILD_ORDER.md`](docs/BUILD_ORDER.md) chunk by chunk via
-[`docs/BUILD_MANUAL_40_PROMPTS.md`](docs/BUILD_MANUAL_40_PROMPTS.md).
+
+**Demo-ready (2026-06-19).** Core runtime cognition, evidence packets, Calm Cards, scenario regression, and agent safety boundary are implemented and tested on `main`.
+
+Deferred: approve-draft → contract patch → compile → hot_reload; full six agent types; per-tick situation audit.
 
 ## License
+
 TBD.

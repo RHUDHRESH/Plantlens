@@ -114,6 +114,40 @@
         { "at_ms": 14500, "action": "set", "tag": "INV_102_UNDERVOLTAGE", "asset_id": "INV-102", "value": false, "unit": "bool" },
         { "at_ms": 15000, "action": "set", "tag": "MOTOR_301_TEMP", "asset_id": "MTR-301", "value": 48.0, "unit": "C" }
       ]
+    },
+    {
+      "id": "scn_downstream_only_no_root",
+      "name": "Downstream-Only Alarms — No Root",
+      "description": "Bus sag and inverter undervoltage fire without upstream motor or PV alarms. Runtime must not infer a confident process root cause.",
+      "duration_ms": 8000,
+      "expected_situation": null,
+      "expected_root_cause": null,
+      "expected_alarms": ["DC_BUS_LOW", "INV_UNDERVOLTAGE"],
+      "events": [
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_301_CURRENT", "asset_id": "MTR-301", "value": 1.2, "unit": "A" },
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_301_RPM", "asset_id": "MTR-301", "value": 1450, "unit": "rpm" },
+        { "at_ms": 0, "action": "set", "tag": "PV_101_I", "asset_id": "PV-101", "value": 9.8, "unit": "A" },
+        { "at_ms": 0, "action": "set", "tag": "BUS_101_V", "asset_id": "BUS-101", "value": 48.0, "unit": "V" },
+        { "at_ms": 0, "action": "set", "tag": "INV_102_UNDERVOLTAGE", "asset_id": "INV-102", "value": false, "unit": "bool" },
+        { "at_ms": 2000, "action": "set", "tag": "BUS_101_V", "asset_id": "BUS-101", "value": 40.5, "unit": "V" },
+        { "at_ms": 3000, "action": "set", "tag": "INV_102_UNDERVOLTAGE", "asset_id": "INV-102", "value": true, "unit": "bool" }
+      ]
+    },
+    {
+      "id": "scn_temporal_violation_rejected",
+      "name": "Temporal Violation — Candidate Rejected",
+      "description": "DC bus sags before motor current rises, violating the approved MTR-301→BUS-101 lag window. Motor must not be selected as root.",
+      "duration_ms": 10000,
+      "expected_situation": null,
+      "expected_root_cause": null,
+      "expected_alarms": ["DC_BUS_LOW", "MOTOR_CURRENT_HIGH"],
+      "events": [
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_301_CURRENT", "asset_id": "MTR-301", "value": 1.2, "unit": "A" },
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_301_RPM", "asset_id": "MTR-301", "value": 1450, "unit": "rpm" },
+        { "at_ms": 0, "action": "set", "tag": "BUS_101_V", "asset_id": "BUS-101", "value": 48.0, "unit": "V" },
+        { "at_ms": 2000, "action": "set", "tag": "BUS_101_V", "asset_id": "BUS-101", "value": 40.5, "unit": "V" },
+        { "at_ms": 6000, "action": "set", "tag": "MOTOR_301_CURRENT", "asset_id": "MTR-301", "value": 3.4, "unit": "A" }
+      ]
     }
   ]
 }

@@ -90,7 +90,14 @@
       "required_alarms": ["MOTOR_CURRENT_HIGH", "MOTOR_SPEED_LOW", "DC_BUS_LOW", "INV_UNDERVOLTAGE"],
       "require_all_alarms": true,
       "evidence_order": ["MOTOR_CURRENT_HIGH", "MOTOR_SPEED_LOW", "DC_BUS_LOW", "INV_UNDERVOLTAGE", "MOTOR_TEMP_HIGH"],
-      "min_root_score": 0.1
+      "min_root_score": 0.1,
+      "why_it_matters": "The motor branch is pulling the DC bus down. The source is not the first suspect because current rose before bus voltage sagged.",
+      "projection": {
+        "tag_id": "MOTOR_301_TEMP",
+        "alarm_id": "MOTOR_TEMP_HIGH",
+        "threshold": 75.0,
+        "label": "Motor temperature limit"
+      }
     },
     {
       "id": "PV_GENERATION_LOSS",
@@ -102,7 +109,8 @@
       "extra_conditions": [
         { "type": "tag_threshold", "tag_id": "PV_101_I", "op": "lt", "value": 3.0 }
       ],
-      "min_root_score": 0.1
+      "min_root_score": 0.1,
+      "why_it_matters": "PV generation dropped before the bus sagged, indicating an upstream source issue."
     }
   ]
 }

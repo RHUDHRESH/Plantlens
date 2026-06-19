@@ -135,6 +135,14 @@ def evaluate_alarms(
                 "value": tag.value,
                 "acked": rule.id in local_state.acked,
                 "priority": rule.priority,
+                "quality": tag.quality,
+                "evidence": {
+                    "tag_id": rule.tag,
+                    "observed_value": tag.value,
+                    "comparator": rule.condition.op,
+                    "threshold": rule.condition.threshold or rule.condition.critical or rule.condition.warning,
+                    "quality": tag.quality,
+                },
             }
             active_records.append(record)
         else:

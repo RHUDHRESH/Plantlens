@@ -28,9 +28,9 @@ describe("RawAlarmTable", () => {
 
   it("expands raw alarms on toggle", () => {
     wrap(<RawAlarmTable alarms={alarms} situationTitle="Motor overload" />);
-    fireEvent.click(screen.getByText(/Raw alarms \(1\)/i));
+    fireEvent.click(screen.getByText(/1 raw alarm grouped — view raw alarms/i));
     expect(screen.getByText(/Motor current high/i)).toBeInTheDocument();
-    expect(screen.getByText(/grouped under Motor overload/i)).toBeInTheDocument();
+    expect(screen.getByText(/Grouping receipt.*Motor overload/i)).toBeInTheDocument();
   });
 
   it("shows ack control for unacked alarms", () => {

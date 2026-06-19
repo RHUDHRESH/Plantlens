@@ -11,6 +11,8 @@ const ASSET_TYPE_ICON: Record<string, string> = {
   "load.motor_3phase": "motor",
   "load.lamp": "lamp",
   "sensor.generic": "sensor",
+  "control.plc": "plc",
+  "interface.hmi": "hmi",
 };
 
 const ICON_PATHS: Record<string, ReactNode> = {
@@ -90,6 +92,23 @@ const ICON_PATHS: Record<string, ReactNode> = {
       <line x1="19" y1="12" x2="22" y2="12" />
     </g>
   ),
+  plc: (
+    <g stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round">
+      <rect x="4" y="6" width="16" height="12" rx="1.5" />
+      <line x1="7" y1="9" x2="17" y2="9" />
+      <line x1="7" y1="12" x2="14" y2="12" />
+      <line x1="7" y1="15" x2="16" y2="15" />
+      <circle cx="17" cy="15" r="1" fill="currentColor" stroke="none" />
+    </g>
+  ),
+  hmi: (
+    <g stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round">
+      <rect x="3" y="5" width="18" height="12" rx="1.5" />
+      <rect x="5" y="7" width="14" height="8" rx="0.5" />
+      <line x1="12" y1="19" x2="12" y2="21" />
+      <line x1="8" y1="21" x2="16" y2="21" />
+    </g>
+  ),
   generic: (
     <g stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round">
       <rect x="5" y="5" width="14" height="14" rx="2" />
@@ -104,9 +123,17 @@ export function resolveIconKey(assetType: string): string {
   return "generic";
 }
 
-export function AssetIcon({ assetType, size = 28 }: { assetType: string; size?: number }) {
+export function AssetIcon({
+  assetType,
+  size = 28,
+  nodeWidth = 120,
+}: {
+  assetType: string;
+  size?: number;
+  nodeWidth?: number;
+}) {
   const key = resolveIconKey(assetType);
-  const x = (120 - size) / 2;
+  const x = (nodeWidth - size) / 2;
   const y = 6;
   return (
     <svg

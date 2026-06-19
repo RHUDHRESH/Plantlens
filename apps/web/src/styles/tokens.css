@@ -1,37 +1,46 @@
-/* PlantLens design tokens — the single CSS source of truth for color/spacing/motion.
-   Mirrors packages/ui-tokens/tokens.json. See docs/DESIGN_SYSTEM.md.
-   RULE: this is a High-Performance HMI — mostly grey; saturated color ONLY for abnormal status. */
+/* PlantLens design tokens — mirrors packages/ui-tokens/tokens.json */
 :root {
-  /* surfaces */
+  /* Studio (warm paper) */
   --bg: #F7F5F0;
   --surface: #FFFFFF;
   --surface-muted: #F1EEE8;
+  --surface-elevated: #FFFFFF;
   --grid: #E8E2D8;
   --border: #DED8CE;
-
-  /* text */
   --text: #111111;
   --text-muted: #6B6B6B;
+  --accent: #4A7C9B;
 
-  /* interactive */
-  --accent: #2563EB;
-
-  /* status — the ONLY saturated colors. Each is paired with text+icon+shape in components. */
   --status-normal: #7A8471;
   --status-warning: #C98910;
   --status-critical: #B3261E;
   --status-sensor-bad: #6B5DD3;
   --status-offline: #8A8A8A;
+  --status-unknown: #6B6B6B;
 
-  /* geometry */
-  --radius: 16px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius: 12px;
   --radius-dialog: 14px;
 
-  /* type */
-  --font-ui: "Inter Variable", Inter, system-ui, sans-serif;
-  --font-data: "Inter Variable", Inter, system-ui, sans-serif; /* use font-variant-numeric: tabular-nums + slashed-zero */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
 
-  /* motion (durations) */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+
+  --z-strip: 10;
+  --z-toolbar: 20;
+  --z-drawer: 30;
+  --z-overlay: 40;
+  --z-modal: 50;
+
+  --font-ui: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  --font-data: "Helvetica Neue", Helvetica, Arial, system-ui, monospace;
+
   --motion-status: 180ms;
   --motion-card: 220ms;
   --motion-panel: 240ms;
@@ -39,7 +48,28 @@
   --motion-camera: 400ms;
 }
 
-/* Honor reduced motion globally (also gate with useReducedMotion in JS). */
+/* Runtime HMI — graphite control-room surface */
+.runtime-hmi,
+.operator-shell {
+  --bg: #1A1D21;
+  --surface: #23272C;
+  --surface-muted: #1E2226;
+  --surface-elevated: #2A2F36;
+  --grid: #2A3038;
+  --border: #343B44;
+  --text: #E8EAED;
+  --text-muted: #9AA0A6;
+  --accent: #5A8FAD;
+  --status-warning-fill: rgba(201, 137, 16, 0.14);
+  --status-critical-fill: rgba(179, 38, 30, 0.16);
+  --status-sensor-fill: rgba(107, 93, 211, 0.16);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }

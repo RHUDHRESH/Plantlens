@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plantlens.dev/contracts/agent_draft.schema.json",
+  "title": "DraftArtifact",
+  "description": "Draft-only agent output. Never applied to runtime without human approval and contract validation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "draft_id",
+    "draft_type",
+    "created_at",
+    "created_by",
+    "proposed_changes",
+    "explanation",
+    "required_human_review",
+    "validation_status",
+    "status"
+  ],
+  "properties": {
+    "draft_id": { "type": "string" },
+    "draft_type": {
+      "type": "string",
+      "enum": [
+        "graph_draft",
+        "alarm_rule_draft",
+        "calm_card_wording",
+        "maintenance_checklist",
+        "scenario_draft",
+        "data_quality_report",
+        "change_review",
+        "alarm_explanation",
+        "service_unavailable"
+      ]
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "created_by": { "type": "string" },
+    "source_evidence_ids": { "type": "array", "items": { "type": "string" } },
+    "source_bundle_version": { "type": ["string", "null"] },
+    "proposed_changes": { "type": "array", "items": { "type": "object" } },
+    "explanation": { "type": "string" },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "required_human_review": { "type": "boolean" },
+    "risk_level": { "type": "string", "enum": ["low", "medium", "high", "unknown"] },
+    "validation_status": { "type": "string", "enum": ["valid", "invalid", "pending"] },
+    "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+    "approved_by": { "type": ["string", "null"] },
+    "approved_at": { "type": ["string", "null"], "format": "date-time" },
+    "audit_id": { "type": ["string", "null"] }
+  }
+}

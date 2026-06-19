@@ -14,6 +14,9 @@
     "root_asset_id": { "type": "string" },
     "root_asset_name": { "type": "string" },
     "confidence": { "type": "string", "enum": ["low", "medium", "high"] },
+    "confidence_reason": { "type": "string" },
+    "evidence_id": { "type": "string" },
+    "audit_receipt_id": { "type": ["string", "null"] },
     "created_at": { "type": "string", "format": "date-time" },
     "first_signal": {
       "type": ["object", "null"], "additionalProperties": false,
@@ -62,8 +65,12 @@
       "required": ["target_tag", "target_label", "state"],
       "properties": {
         "target_tag": { "type": "string" }, "target_label": { "type": "string" },
-        "seconds_low": { "type": ["number", "null"] }, "seconds_high": { "type": ["number", "null"] },
-        "state": { "type": "string", "enum": ["counting", "stable", "unknown"] }
+        "seconds_low": { "type": ["number", "null"] },
+        "seconds_mid": { "type": ["number", "null"] },
+        "seconds_high": { "type": ["number", "null"] },
+        "confidence": { "type": "number" },
+        "reason": { "type": "string" },
+        "state": { "type": "string", "enum": ["approaching_limit", "stable", "unknown", "exceeded", "counting"] }
       }
     },
     "raw_alarm_count": { "type": "integer", "minimum": 0 },

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { ackAlarm } from "../../api/client";
 import { ApiError } from "../../api/types";
@@ -8,6 +8,7 @@ interface RawAlarmTableProps {
   alarms: ActiveAlarm[];
   situationTitle?: string | null;
   defaultExpanded?: boolean;
+  onExpandedChange?: (expanded: boolean) => void;
 }
 
 const SEVERITY_LABEL: Record<ActiveAlarm["severity"], string> = {
@@ -22,7 +23,8 @@ const SEVERITY_ICON: Record<ActiveAlarm["severity"], string> = {
   critical: "✕",
 };
 
-function AckButton({ alarmId, acked }: { alarmId: string; acked: boolean }) {
+function AckButton({ alarmId, acked, severity }: { alarmId: string; acked: boolean; severity: ActiveAlarm["severity"] }) {
+  const [confirm, setConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const mutation = useMutation({
     mutationFn: () => ackAlarm(alarmId),
@@ -33,23 +35,44 @@ function AckButton({ alarmId, acked }: { alarmId: string; acked: boolean }) {
         setError("Ack failed — try again.");
       }
     },
-    onSuccess: () => setError(null),
+    onSuccess: () => {
+      setError(null);
+      setConfirm(false);
+    },
   });
 
   if (acked) {
     return <span className="alarm-acked">Acked</span>;
   }
 
+  const needsConfirm = severity === "critical";
+
   return (
     <span className="alarm-ack-cell">
-      <button
-        type="button"
-        disabled={mutation.isPending}
-        onClick={() => mutation.mutate()}
-        aria-label={`Acknowledge alarm ${alarmId}`}
-      >
-        {mutation.isPending ? "Ack…" : "Ack"}
-      </button>
+      {needsConfirm && confirm ? (
+        <>
+          <button
+            type="button"
+            disabled={mutation.isPending}
+            onClick={() => mutation.mutate()}
+            aria-label={`Confirm acknowledge critical alarm ${alarmId}`}
+          >
+            {mutation.isPending ? "Ack…" : "Confirm ack"}
+          </button>
+          <button type="button" className="pl-btn pl-btn--ghost pl-btn--compact" onClick={() => setConfirm(false)}>
+            Cancel
+          </button>
+        </>
+      ) : (
+        <button
+          type="button"
+          disabled={mutation.isPending}
+          onClick={() => (needsConfirm ? setConfirm(true) : mutation.mutate())}
+          aria-label={`Acknowledge alarm ${alarmId}`}
+        >
+          {mutation.isPending ? "Ack…" : "Ack"}
+        </button>
+      )}
       {error && <span className="alarm-ack-error" role="alert">{error}</span>}
       {mutation.isSuccess && <span className="alarm-ack-ok">Recorded</span>}
     </span>
@@ -60,24 +83,47 @@ export function RawAlarmTable({
   alarms,
   situationTitle,
   defaultExpanded = false,
+  onExpandedChange,
 }: RawAlarmTableProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
 
+  useEffect(() => {
+    setExpanded(defaultExpanded);
+  }, [defaultExpanded]);
+
+  const toggle = () => {
+    const next = !expanded;
+    setExpanded(next);
+    onExpandedChange?.(next);
+  };
+
+  const collapsedLabel =
+    alarms.length === 0
+      ? "No raw alarms — view raw alarms"
+      : `${alarms.length} raw alarm${alarms.length === 1 ? "" : "s"} grouped — view raw alarms`;
+
   return (
-    <section className="raw-alarm-strip" aria-label="Raw alarms">
+    <section className={`raw-alarm-strip${expanded ? " raw-alarm-strip--expanded" : ""}`} aria-label="Raw alarms">
       <div className="raw-alarm-strip__header">
         <button
           type="button"
           className="raw-alarm-strip__toggle"
           aria-expanded={expanded}
-          onClick={() => setExpanded((v) => !v)}
+          onClick={toggle}
         >
-          Raw alarms ({alarms.length})
-          {situationTitle ? ` — grouped under ${situationTitle}` : ""}
+          {collapsedLabel}
         </button>
+        {situationTitle && !expanded && (
+          <span className="raw-alarm-strip__receipt">Grouped under {situationTitle}</span>
+        )}
       </div>
       {expanded && (
         <div className="raw-alarm-strip__table-wrap" role="region">
+          {situationTitle && (
+            <p className="raw-alarm-strip__grouping-receipt">
+              Grouping receipt: Situation “{situationTitle}” grouped these alarms.
+            </p>
+          )}
           <table className="raw-alarm-table">
             <thead>
               <tr>
@@ -104,11 +150,11 @@ export function RawAlarmTable({
                         {SEVERITY_ICON[alarm.severity]} {SEVERITY_LABEL[alarm.severity]}
                       </span>
                     </td>
-                    <td data-tabular>{alarm.asset_id}</td>
+                    <td className="data-number">{alarm.asset_id}</td>
                     <td>{alarm.message}</td>
-                    <td data-tabular>{alarm.raised_at}</td>
+                    <td className="data-number">{alarm.raised_at}</td>
                     <td>
-                      <AckButton alarmId={alarm.alarm_id} acked={alarm.acked} />
+                      <AckButton alarmId={alarm.alarm_id} acked={alarm.acked} severity={alarm.severity} />
                     </td>
                   </tr>
                 ))

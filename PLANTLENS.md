@@ -135,16 +135,22 @@ See `legacy/cliffords-ts/README.md` and `apps/api/app/ingest/README.md` for the 
 
 ---
 
-## 7. How to use this scaffold
+## 7. Current implementation status
+
+**Demo-ready on `main` (2026-06-19).** The deterministic runtime cognition engine is implemented:
+
+- `RuntimeEvidencePacket` — canonical read-only evidence for Calm Card, audit, and agents
+- Quality/staleness, alarm engine, graph compiler, DAG root-cause, situation grouping, Calm Card, time-to-consequence projection
+- Eight scenario regression tests in `apps/api/tests/test_scenarios_regression.py`
+- Agent plane: draft-only; safe `service_unavailable` fallback when offline
+
+See [`docs/ALGORITHMS.md`](docs/ALGORITHMS.md), [`docs/AGENT_BOUNDARY.md`](docs/AGENT_BOUNDARY.md), and [`FINAL_READY_STATE.md`](FINAL_READY_STATE.md).
+
+**Still deferred:** approve-draft → contract patch → compile → hot_reload; full six agent types; per-tick situation audit.
+
+## 8. How to extend the system
 
 1. Read this file, then `docs/ARCHITECTURE.md`, then `docs/BUILD_ORDER.md`.
-2. Pick a chunk from `docs/BUILD_ORDER.md` (they are ordered; do not skip ahead).
-3. For each file in that chunk, open the file (it has a header block describing exactly what to
-   build) and open the folder's `README.md` (it lists every file and its purpose).
-4. Install only the library parts named in `docs/LIBRARIES.md` for that chunk.
-5. Validate against the contracts in `packages/contracts` and the sample bundle.
-
-Every `.py` / `.ts` / `.tsx` stub in this scaffold contains a **SPEC header** (what to build,
-inputs/outputs, algorithm, complexity, which library parts, red-team notes) and a clearly
-marked `TODO(you)` where your implementation goes. Nothing here is finished code — it is a
-blueprint you fill in.
+2. Pick a chunk from `docs/BUILD_ORDER.md`.
+3. Validate against contracts in `packages/contracts` and the demo bundle.
+4. Run `python -m pytest apps/api/tests` and `pnpm contracts:validate` before merging to `main`.

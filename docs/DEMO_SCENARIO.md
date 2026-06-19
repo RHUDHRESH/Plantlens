@@ -46,7 +46,7 @@ What PlantLens does with the flood:
 The demo win, stated brutally: *can a judge watch 5 alarms collapse into 1 evidence-backed Calm
 Card that correctly fingers the motor, not the bus?* If yes, the product works.
 
-## Scenario matrix (automated regression in `apps/api/tests/test_scenario_matrix.py`)
+## Scenario matrix (automated regression in `apps/api/tests/test_scenarios_regression.py`)
 
 | id | name | proves |
 |----|------|--------|
@@ -56,6 +56,8 @@ Card that correctly fingers the motor, not the bus?* If yes, the product works.
 | `scn_unapproved_edge_ignored` | False edge temptation | unapproved PV→motor edge ignored |
 | `scn_gateway_dropout` | Gateway dropout | STALE/MISSING tags; no process root cause |
 | `scn_recovery_clear` | Recovery clear | situation clears; `DC_BUS_LOW` latched pending ack |
+| `scn_downstream_only_no_root` | Downstream-only alarms | bus + inverter alarms; no confident process root |
+| `scn_temporal_violation_rejected` | Temporal violation | motor cause after bus effect; candidate rejected |
 
 Launch from the Runtime HMI **Scenarios** toolbar or `POST /api/scenarios/{id}/start`.
 

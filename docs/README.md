@@ -11,9 +11,11 @@ Read in this order:
 4. [`BUILD_ORDER.md`](BUILD_ORDER.md) — the 14 chunks, in order, with per-chunk "done" tests.
 5. [`LIBRARIES.md`](LIBRARIES.md) — how to get every library and exactly which parts to use.
 6. [`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md) — tokens, status rules, motion, copy, budgets.
-7. [`DEMO_SCENARIO.md`](DEMO_SCENARIO.md) — the bench and the hero scenario to build against.
-8. [`RUNTIME_CONTRACTS.md`](RUNTIME_CONTRACTS.md) — REST + WebSocket surface.
-9. [`OPS_RUNBOOK.md`](OPS_RUNBOOK.md) — running the stack locally, degraded modes, recovery.
+7. [`DEMO_SCENARIO.md`](DEMO_SCENARIO.md) — the bench, hero scenario, and eight-scenario regression matrix.
+8. [`ALGORITHMS.md`](ALGORITHMS.md) — deterministic pipeline: quality, alarms, DAG, situation, Calm Card, projection.
+9. [`AGENT_BOUNDARY.md`](AGENT_BOUNDARY.md) — draft-only agents, approval gate, forbidden actions.
+10. [`RUNTIME_CONTRACTS.md`](RUNTIME_CONTRACTS.md) — REST + WebSocket surface.
+11. [`OPS_RUNBOOK.md`](OPS_RUNBOOK.md) — running the stack locally, degraded modes, recovery.
 
 Every source folder in the repo also has its own `README.md` describing every file that belongs
 there and why. The docs here explain the system; the folder READMEs explain the files.

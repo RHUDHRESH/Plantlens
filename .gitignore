@@ -44,3 +44,4 @@ Thumbs.db
 # Harness leftovers
 terminals/*.txt
 terminals/.next-id
+agent-tools/

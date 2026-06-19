@@ -86,7 +86,8 @@ async def approve_draft(
         after={"draft_type": draft["draft_type"], "status": "approved"},
     )
     await session.commit()
-    return {"draft": draft, "audit_id": record.audit_id}
+    bridge = _approval_bridge_result(draft)
+    return {"draft": draft, "audit_id": record.audit_id, "bridge": bridge}
 
 
 @router.post("/drafts/reject")
@@ -133,18 +134,32 @@ async def _proxy_agents_service(settings: Settings, path: str, body: dict) -> di
         return _local_stub_draft(body)
 
 
-def _local_stub_draft(body: dict) -> dict:
-    """Deterministic fallback when agents service is down — HMI unaffected."""
+def _approval_bridge_result(draft: dict) -> dict:
+    """Minimal safe bridge — approved artifact stored; runtime unchanged until compile/deploy."""
+    payload = draft.get("payload", {})
+    proposed = payload.get("proposed_changes") or []
+    compile_status = "skipped_no_changes"
+    if proposed:
+        compile_status = "pending_contract_patch"
     return {
-        "artifact_type": "graph_draft",
-        "summary": "Proposed causal edge: MOTOR_301_CURRENT → BUS_101_V (draft only)",
-        "proposed_changes": [
-            {
-                "change_type": "causal_edge",
-                "from": "MOTOR_301_CURRENT",
-                "to": "BUS_101_V",
-                "note": body.get("prompt", "")[:200],
-            }
-        ],
+        "runtime_deployed": False,
+        "compile_status": compile_status,
+        "approved_artifact_stored": True,
+        "message": (
+            "Draft approved and audited. Runtime unchanged until contract patch, "
+            "validation, and bundle compile/deploy."
+        ),
+    }
+
+
+def _local_stub_draft(_body: dict) -> dict:
+    """Safe fallback when agents service is down — no fabricated causal suggestions."""
+    return {
+        "artifact_type": "service_unavailable",
+        "summary": "Agent service unavailable. Runtime unaffected.",
+        "proposed_changes": [],
         "requires_human_approval": True,
+        "explanation": "Draft agents are offline. Deterministic runtime continues unchanged.",
+        "validation_status": "pending",
+        "risk_level": "unknown",
     }

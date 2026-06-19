@@ -97,7 +97,18 @@
             "type": "array",
             "items": { "$ref": "#/$defs/condition" }
           },
-          "min_root_score": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.1 }
+          "min_root_score": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.1 },
+          "why_it_matters": { "type": "string" },
+          "projection": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "tag_id": { "type": "string" },
+              "alarm_id": { "type": "string" },
+              "threshold": { "type": "number" },
+              "label": { "type": "string" }
+            }
+          }
         }
       }
     }

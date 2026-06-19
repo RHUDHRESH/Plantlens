@@ -14,6 +14,7 @@ DraftStatus = Literal["pending", "approved", "rejected"]
 class AgentDraftQueue:
     def __init__(self) -> None:
         self._drafts: dict[str, dict[str, Any]] = {}
+        self._approved_artifacts: dict[str, dict[str, Any]] = {}
         self._lock = Lock()
 
     def submit(self, *, draft_type: str, payload: dict[str, Any], proposed_by: str) -> dict[str, Any]:
@@ -62,11 +63,23 @@ class AgentDraftQueue:
             draft["status"] = status
             draft["resolved_by"] = resolved_by
             draft["resolved_at"] = datetime.now(UTC).isoformat().replace("+00:00", "Z")
+            if status == "approved":
+                self._approved_artifacts[draft_id] = deepcopy(draft)
             return deepcopy(draft)
+
+    def list_approved(self) -> list[dict[str, Any]]:
+        with self._lock:
+            return [deepcopy(draft) for draft in self._approved_artifacts.values()]
+
+    def get_approved(self, draft_id: str) -> dict[str, Any] | None:
+        with self._lock:
+            draft = self._approved_artifacts.get(draft_id)
+            return deepcopy(draft) if draft else None
 
     def clear(self) -> None:
         with self._lock:
             self._drafts.clear()
+            self._approved_artifacts.clear()
 
 
 agent_draft_queue = AgentDraftQueue()

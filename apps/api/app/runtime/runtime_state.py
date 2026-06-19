@@ -15,6 +15,7 @@ class RuntimeState:
         self.active_alarms: dict[str, dict] = {}
         self.active_situations: dict[str, dict] = {}
         self.latest_calm_card: dict | None = None
+        self.latest_evidence_packet: dict | None = None
         self.asset_status: dict[str, str] = {}
         self._seen_identity_keys: set[tuple[str, str, int | None, datetime]] = set()
 
@@ -34,6 +35,10 @@ class RuntimeState:
     def get_tag(self, tag_id: str) -> TagFrame | None:
         return self.tags.get(tag_id)
 
+    def refresh_tag(self, frame: TagFrame) -> None:
+        """Overwrite the latest frame for a tag (quality refresh without dedupe)."""
+        self.tags[frame.tag_id] = frame
+
     def is_stale(self, tag_id: str, now: datetime, *, stale_after_ms: int = 1500) -> bool:
         frame = self.tags.get(tag_id)
         if frame is None:
@@ -52,6 +57,7 @@ class RuntimeState:
             "active_alarms": list(self.active_alarms.values()),
             "active_situations": list(self.active_situations.values()),
             "latest_calm_card": self.latest_calm_card,
+            "latest_evidence_packet": self.latest_evidence_packet,
             "asset_status": dict(self.asset_status),
         }
 
@@ -60,6 +66,7 @@ class RuntimeState:
         self.active_alarms.clear()
         self.active_situations.clear()
         self.latest_calm_card = None
+        self.latest_evidence_packet = None
         self.asset_status.clear()
         self._seen_identity_keys.clear()
 

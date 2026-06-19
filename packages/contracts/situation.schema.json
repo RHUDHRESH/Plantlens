@@ -14,6 +14,24 @@
     "root_asset_id": { "type": "string", "description": "The asset the DAG ranks as the root cause." },
     "root_asset_name": { "type": "string" },
     "confidence": { "type": "string", "enum": ["low", "medium", "high"], "description": "Bucketed confidence (the underlying numeric breakdown is stored in evidence/audit, not hidden)." },
+    "confidence_score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "confidence_reason": { "type": "string" },
+    "deterministic_trace_id": { "type": "string" },
+    "rejected_candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["asset_id", "reason", "score"],
+        "properties": {
+          "asset_id": { "type": "string" },
+          "reason": { "type": "string" },
+          "score": { "type": "number" },
+          "missing_evidence": { "type": "array", "items": { "type": "string" } },
+          "contradicted_by": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
     "created_at": { "type": "string", "format": "date-time" },
     "grouped_alarm_ids": { "type": "array", "items": { "type": "string" }, "description": "Every raw alarm folded into this situation. NOTHING is hidden — these remain individually viewable with receipts." },
     "affected_asset_ids": { "type": "array", "items": { "type": "string" }, "description": "Downstream assets shown as effects (amber), not causes." },

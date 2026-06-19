@@ -34,6 +34,17 @@ def test_graph_draft_returns_pending(client: TestClient):
     assert draft["status"] == "pending"
 
 
+def test_agent_fallback_does_not_fabricate_edge(client: TestClient):
+    response = client.post(
+        "/api/agents/graph-draft",
+        json={"prompt": "propose edge"},
+        headers=_token(client, "engineer"),
+    )
+    payload = response.json()["draft"]["payload"]
+    assert payload["artifact_type"] == "service_unavailable"
+    assert payload["proposed_changes"] == []
+
+
 def test_agent_cannot_approve(client: TestClient):
     draft_id = client.post(
         "/api/agents/graph-draft",

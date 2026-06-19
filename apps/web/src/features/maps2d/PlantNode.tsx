@@ -8,27 +8,42 @@ interface PlantNodeProps {
   status: AssetStatus;
   isRoot?: boolean;
   isAffected?: boolean;
+  isFocused?: boolean;
   pathStep?: number;
+  density?: "comfortable" | "compact";
   reducedMotion?: boolean;
   onSelect?: (id: string) => void;
 }
 
-const NODE_W = 120;
-const NODE_H = 56;
+const NODE_DIMS = {
+  comfortable: { w: 120, h: 56, icon: 28 },
+  compact: { w: 100, h: 48, icon: 24 },
+} as const;
 
 export function PlantNode({
   node,
   status,
   isRoot = false,
   isAffected = false,
+  isFocused = false,
   pathStep,
+  density = "comfortable",
   reducedMotion = false,
   onSelect,
 }: PlantNodeProps) {
   const visual = STATUS_VISUALS[status];
+  const { w: NODE_W, h: NODE_H, icon: iconSize } = NODE_DIMS[density];
   const x = node.position?.x ?? 0;
   const y = node.position?.y ?? 0;
   const transition = reducedMotion ? undefined : "stroke 180ms, fill 180ms";
+  const showHalo =
+    visual.halo && (status === "warning" || status === "critical" || isAffected);
+  const haloSteady = status === "critical" || isRoot || reducedMotion;
+
+  const fill =
+    status === "offline"
+      ? "url(#offline-stripe)"
+      : visual.fill;
 
   return (
     <g
@@ -44,8 +59,9 @@ export function PlantNode({
         }
       }}
       style={{ cursor: "pointer" }}
+      className={isFocused ? "plant-node--focused" : undefined}
     >
-      {visual.halo && (status === "warning" || status === "critical" || isAffected) && (
+      {showHalo && (
         <rect
           x={-4}
           y={-4}
@@ -54,13 +70,13 @@ export function PlantNode({
           rx={12}
           fill="none"
           stroke={visual.border}
-          strokeWidth={2}
-          opacity={0.35}
-          className={reducedMotion ? undefined : "status-halo"}
+          strokeWidth={status === "critical" || isRoot ? 2.5 : 2}
+          opacity={haloSteady ? 0.45 : 0.35}
+          className={haloSteady ? "status-halo--steady" : reducedMotion ? undefined : "status-halo"}
           style={
-            reducedMotion
-              ? undefined
-              : ({ ["--halo-duration" as string]: visual.haloDuration } as CSSProperties)
+            !haloSteady && !reducedMotion
+              ? ({ ["--halo-duration" as string]: visual.haloDuration } as CSSProperties)
+              : undefined
           }
         />
       )}
@@ -68,18 +84,18 @@ export function PlantNode({
         width={NODE_W}
         height={NODE_H}
         rx={10}
-        fill={visual.fill}
-        stroke={visual.border}
-        strokeWidth={isRoot ? 2.5 : 1.5}
+        fill={fill}
+        stroke={isFocused ? "var(--accent)" : visual.border}
+        strokeWidth={isRoot ? 2.5 : isFocused ? 2 : 1.5}
         style={{ transition }}
       />
       <g style={{ color: visual.text }}>
-        <AssetIcon assetType={node.asset_type} />
+        <AssetIcon assetType={node.asset_type} size={iconSize} nodeWidth={NODE_W} />
       </g>
-      <text x={10} y={22} fill="var(--text)" fontSize={12} fontWeight={600}>
+      <text x={10} y={density === "compact" ? 20 : 22} fill="var(--text)" fontSize={density === "compact" ? 11 : 12} fontWeight={600}>
         {node.label}
       </text>
-      <text x={10} y={40} fill="var(--text-muted)" fontSize={10} data-tabular>
+      <text x={10} y={density === "compact" ? 36 : 40} fill="var(--text-muted)" fontSize={10} data-tabular>
         {node.id}
       </text>
       {visual.label && (

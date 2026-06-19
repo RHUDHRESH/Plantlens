@@ -1,11 +1,11 @@
 # PlantLens v1 — Final Ready State Report
 
 **Date:** 2026-06-19  
-**Branch:** `main` (credibility pass — config-driven runtime, icons, nginx, scenario matrix)
+**Branch:** `main` (logic hardening + agent boundary pass)
 
 ## Demo-ready: **YES**
 
-No unresolved P0 blockers. Runtime DAG/situation logic is config-driven from `causal_graph.json`. Scenario launcher, domain icons, schematic 3D, nginx proxy, and six-scenario regression matrix are implemented and tested.
+No unresolved P0 blockers. Deterministic runtime produces `RuntimeEvidencePacket` → Calm Card. DAG/situation logic is config-driven from `causal_graph.json`. Eight-scenario regression matrix, agent `service_unavailable` fallback, and audited draft approval bridge are implemented and tested.
 
 ---
 
@@ -43,7 +43,7 @@ docker compose -f deploy/docker/compose.full.yml up --build
 | Command | Result |
 |---------|--------|
 | `pnpm contracts:validate` | **PASS** |
-| `python -m pytest apps/api/tests` | **PASS** (158 tests) |
+| `python -m pytest apps/api/tests` | **PASS** (195+ tests) |
 | `pnpm --filter @plantlens/web typecheck` | **PASS** |
 | `pnpm --filter @plantlens/web test` | **PASS** (26 tests) |
 | `pnpm --filter @plantlens/web build` | **PASS** |
@@ -74,7 +74,11 @@ docker compose -f deploy/docker/compose.full.yml up --build
 | Schematic 3D components (lazy chunk) | **DONE** |
 | `deploy/docker/nginx.conf` + web.Dockerfile | **DONE** |
 | EMA projection + confidence band | **DONE** |
-| Six-scenario regression matrix | **DONE** |
+| Eight-scenario regression matrix | **DONE** |
+| RuntimeEvidencePacket + evidence-driven Calm Card | **DONE** |
+| Agent fallback `service_unavailable` (no fabricated edges) | **DONE** |
+| Draft approval bridge (audited; runtime unchanged until compile) | **DONE** |
+| Tag quality/staleness wired into runtime tick | **DONE** |
 | Asset status precedence (critical > warning > sensor_bad) | **DONE** |
 | CI runs pytest unconditionally | **DONE** |
 
@@ -88,6 +92,11 @@ Aligned with ISA-18.2 / IEC 62682 alarm management and IEC 61511 cause-and-effec
 
 ## Deferred (post-v1)
 
+- Approve draft → contract patch → compile → hot_reload (bridge stores artifact only today)
+- Per-tick audit append on situation create/change
+- Full six agent types (maintenance planner, scenario author, data quality, change review)
+- Dedicated data-quality alarm rules in `alarm_rules.json`
+- Gateway/Modbus tick parity with simulator quality normalization
 - Recorded playback fallback for live demo hiccups
 - Full frontend Zod ↔ JSON Schema drift CI for every runtime contract
 - `compose.edge.yml` edge profile (full stack uses `compose.full.yml` today)

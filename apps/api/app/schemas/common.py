@@ -15,6 +15,6 @@ AlarmOp = Literal["<", "<=", ">", ">=", "==", "!=", "bool_true", "bool_false"]
 ActorType = Literal["user", "agent", "system"]
 ActorRole = Literal["operator", "engineer", "maintenance", "supervisor", "admin", "agent"]
 
-TimeToConsequenceState = Literal["counting", "stable", "unknown"]
+TimeToConsequenceState = Literal["approaching_limit", "stable", "unknown", "exceeded", "counting"]
 
 TagValue = float | str | bool | None

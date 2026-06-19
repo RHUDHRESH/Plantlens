@@ -14,6 +14,9 @@ export interface PlantMap2DProps {
   rootAssetId?: string | null;
   affectedAssetIds?: string[];
   reducedMotion?: boolean;
+  showLegend?: boolean;
+  focusAssetId?: string | null;
+  density?: "comfortable" | "compact";
   onSelectAsset?: (id: string) => void;
 }
 
@@ -37,6 +40,9 @@ export function PlantMap2D({
   rootAssetId,
   affectedAssetIds = [],
   reducedMotion = false,
+  showLegend = true,
+  focusAssetId,
+  density = "comfortable",
   onSelectAsset,
 }: PlantMap2DProps) {
   const positions = useMemo(
@@ -66,9 +72,11 @@ export function PlantMap2D({
     );
   }
 
+  const focusNode = focusAssetId ? nodes.find((n) => n.id === focusAssetId) : undefined;
+
   return (
-    <div className="plant-map-2d-wrap">
-      <MapLegend reducedMotion={reducedMotion} />
+    <div className={`plant-map-2d-wrap plant-map-2d-wrap--${density}`}>
+      {showLegend && <MapLegend reducedMotion={reducedMotion} />}
       <svg
         viewBox={viewBox}
         className="plant-map-2d"
@@ -79,6 +87,9 @@ export function PlantMap2D({
       <defs>
         <pattern id="grid" width={24} height={24} patternUnits="userSpaceOnUse">
           <path d="M 24 0 L 0 0 0 24" fill="none" stroke="var(--grid)" strokeWidth={0.5} />
+        </pattern>
+        <pattern id="offline-stripe" width={6} height={6} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <line x1="0" y1="0" x2="0" y2="6" stroke="var(--status-offline)" strokeWidth={1} opacity={0.35} />
         </pattern>
       </defs>
       <rect x={-9999} y={-9999} width={20000} height={20000} fill="url(#grid)" />
@@ -98,8 +109,22 @@ export function PlantMap2D({
         );
       })}
       <CausalPathOverlay nodes={nodes} causalPath={causalPath} />
+      {focusNode?.position && (
+        <circle
+          cx={focusNode.position.x}
+          cy={focusNode.position.y}
+          r={density === "compact" ? 52 : 64}
+          fill="none"
+          stroke="var(--accent)"
+          strokeWidth={1}
+          strokeDasharray="4 4"
+          opacity={0.5}
+          pointerEvents="none"
+        />
+      )}
       {nodes.map((node) => {
         const step = pathSteps[node.id];
+        const isFocused = node.id === focusAssetId;
         return (
           <PlantNode
             key={node.id}
@@ -107,6 +132,8 @@ export function PlantMap2D({
             status={statusForAsset(node.id, assetStatus)}
             isRoot={node.id === rootAssetId}
             isAffected={affected.has(node.id)}
+            isFocused={isFocused}
+            density={density}
             {...(step !== undefined ? { pathStep: step } : {})}
             reducedMotion={reducedMotion}
             {...(onSelectAsset ? { onSelect: onSelectAsset } : {})}

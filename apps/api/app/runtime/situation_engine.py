@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from app.runtime.dag_runtime import Candidate, diagnose, evaluate_conditions
+from app.runtime.dag_runtime import DEFAULT_MIN_ROOT_SCORE, RootCauseTrace, diagnose_trace, evaluate_conditions
 from app.runtime.runtime_state import RuntimeState
 
 
@@ -17,16 +17,17 @@ def _has_non_good_evidence(state: RuntimeState) -> bool:
 
 
 def _match_situation_type(
-    root: Candidate,
+    root_asset_id: str,
+    root_score: float,
     alarm_ids: set[str],
     graph_index: dict[str, Any],
     state: RuntimeState,
 ) -> dict[str, Any] | None:
     """Infer situation_type from authored causal_graph.situation_types — fail closed."""
     for spec in graph_index.get("situation_types", []):
-        if spec.get("root_asset_id") != root.node_id:
+        if spec.get("root_asset_id") != root_asset_id:
             continue
-        if root.score < float(spec.get("min_root_score", MIN_ROOT_SCORE)):
+        if root_score < float(spec.get("min_root_score", DEFAULT_MIN_ROOT_SCORE)):
             continue
         required = set(spec.get("required_alarms", []))
         if spec.get("require_all_alarms", True):
@@ -39,9 +40,6 @@ def _match_situation_type(
             continue
         return spec
     return None
-
-
-MIN_ROOT_SCORE = 0.1
 
 
 def _confidence_bucket(score: float) -> str:
@@ -59,9 +57,10 @@ def evaluate_situations(
     *,
     now: datetime | None = None,
     asset_index: dict[str, dict[str, Any]] | None = None,
-) -> list[dict[str, Any]]:
+) -> tuple[list[dict[str, Any]], RootCauseTrace | None]:
+    """Return situations and the root-cause trace used to build them."""
     if not active_alarms:
-        return []
+        return [], None
 
     alarm_map = {alarm["alarm_id"]: alarm for alarm in active_alarms}
     state.active_alarms = alarm_map
@@ -73,58 +72,70 @@ def evaluate_situations(
             if (tag := state.get_tag(alarm.get("tag_id", ""))) is not None and tag.quality == "GOOD"
         ]
         if not good_alarm_tags:
-            return []
+            return [], None
 
     symptom = sorted(
         active_alarms,
         key=lambda alarm: (_parse_ts(alarm["raised_at"]), alarm["alarm_id"]),
     )[0]
-    candidates: list[Candidate] = diagnose(
-        symptom["alarm_id"],
-        graph_index,
-        state,
-        now=now,
-    )
-    if not candidates:
-        return []
 
-    root = candidates[0]
+    trace = diagnose_trace(symptom["alarm_id"], graph_index, state, now=now)
+    if trace.selected_root is None:
+        return [], trace
+
+    root_id = trace.selected_root
+    root_candidate = next((c for c in trace.candidates if c.node_id == root_id), None)
+    root_score = root_candidate.score if root_candidate else trace.confidence
+
     alarm_ids = {alarm["alarm_id"] for alarm in active_alarms}
-    situation_spec = _match_situation_type(root, alarm_ids, graph_index, state)
+    situation_spec = _match_situation_type(root_id, root_score, alarm_ids, graph_index, state)
     if situation_spec is None:
-        return []
+        return [], trace
 
     situation_type = situation_spec["id"]
     evidence = _build_evidence(active_alarms, situation_spec.get("evidence_order"))
     affected_assets = sorted(
         {alarm["asset_id"] for alarm in active_alarms if alarm.get("asset_id")}
     )
-    causal_path = _build_causal_path(root, graph_index, active_alarms, situation_spec)
+    causal_path = _build_causal_path(root_id, graph_index, active_alarms, situation_spec)
 
     created_at = now or datetime.now(timezone.utc)
     if created_at.tzinfo is None:
         created_at = created_at.replace(tzinfo=timezone.utc)
 
     root_name = None
-    if asset_index and root.node_id in asset_index:
-        root_name = asset_index[root.node_id].get("display_name")
+    if asset_index and root_id in asset_index:
+        root_name = asset_index[root_id].get("display_name")
 
     situation = {
         "situation_id": f"SIT_{situation_type}",
         "situation_type": situation_type,
         "title": situation_spec.get("title", situation_type.replace("_", " ").title()),
         "severity": _worst_severity(active_alarms),
-        "root_asset_id": root.node_id,
+        "root_asset_id": root_id,
         "root_asset_name": root_name,
-        "confidence": _confidence_bucket(root.score),
+        "confidence": _confidence_bucket(root_score),
+        "confidence_score": root_score,
+        "confidence_reason": trace.confidence_reason,
         "created_at": created_at.isoformat().replace("+00:00", "Z"),
         "grouped_alarm_ids": sorted(alarm_ids),
         "affected_asset_ids": affected_assets,
         "causal_path": causal_path,
-        "traversed_edges": list(root.traversed_edges),
+        "traversed_edges": list(root_candidate.traversed_edges) if root_candidate else [],
         "evidence": evidence,
+        "rejected_candidates": [
+            {
+                "asset_id": r.asset_id,
+                "reason": r.reason,
+                "score": r.score,
+                "missing_evidence": list(r.missing_evidence),
+                "contradicted_by": list(r.contradicted_by),
+            }
+            for r in trace.rejected_candidates
+        ],
+        "deterministic_trace_id": trace.trace_id,
     }
-    return [situation]
+    return [situation], trace
 
 
 def _parse_ts(value: str | datetime) -> datetime:
@@ -172,7 +183,7 @@ def _build_evidence(
 
 
 def _build_causal_path(
-    root: Candidate,
+    root_asset_id: str,
     graph_index: dict[str, Any],
     active_alarms: list[dict[str, Any]],
     situation_spec: dict[str, Any],
@@ -184,8 +195,8 @@ def _build_causal_path(
         alarm = alarm_by_id.get(alarm_id)
         if alarm and alarm.get("asset_id") and alarm["asset_id"] not in path_assets:
             path_assets.append(alarm["asset_id"])
-    if root.node_id not in path_assets:
-        path_assets.insert(0, root.node_id)
-    elif path_assets[0] != root.node_id:
-        path_assets = [root.node_id] + [a for a in path_assets if a != root.node_id]
+    if root_asset_id not in path_assets:
+        path_assets.insert(0, root_asset_id)
+    elif path_assets[0] != root_asset_id:
+        path_assets = [root_asset_id] + [a for a in path_assets if a != root_asset_id]
     return path_assets

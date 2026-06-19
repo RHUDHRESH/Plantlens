@@ -61,7 +61,10 @@ class CalmCardTimeToConsequence(BaseModel):
     target_label: str
     state: TimeToConsequenceState
     seconds_low: float | None = None
+    seconds_mid: float | None = None
     seconds_high: float | None = None
+    confidence: float | None = None
+    reason: str | None = None
 
 
 class CalmCard(BaseModel):
@@ -81,6 +84,9 @@ class CalmCard(BaseModel):
     operator_authority: str
     root_asset_name: str | None = None
     confidence: Confidence | None = None
+    confidence_reason: str | None = None
+    evidence_id: str | None = None
+    audit_receipt_id: str | None = None
     first_signal: CalmCardFirstSignal | None = None
     why_it_matters: str | None = None
     blocked_actions: list[CalmCardBlockedAction] | None = None

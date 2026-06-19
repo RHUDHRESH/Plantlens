@@ -171,7 +171,7 @@ def test_pv_generation_loss_situation_from_config(graph_index):
             source="simulator",
         )
     )
-    situations = evaluate_situations(state, list(state.active_alarms.values()), graph_index)
+    situations, _trace = evaluate_situations(state, list(state.active_alarms.values()), graph_index)
     assert len(situations) == 1
     assert situations[0]["situation_type"] == "PV_GENERATION_LOSS"
     assert situations[0]["root_asset_id"] == "PV-101"
@@ -192,7 +192,7 @@ def test_stale_only_data_yields_no_situation(graph_index):
             source="simulator",
         )
     )
-    situations = evaluate_situations(state, [], graph_index)
+    situations, _trace = evaluate_situations(state, [], graph_index)
     assert situations == []
 
 

@@ -39,7 +39,7 @@ def test_stable_trend():
 
 def test_rising_trend_counting_with_band():
     result = _feed("rising", [60.0, 63.0, 66.0, 69.0, 72.0, 74.0, 76.0])
-    assert result["state"] == "counting"
+    assert result["state"] == "approaching_limit"
     assert result["seconds_low"] is not None
     assert result["seconds_high"] is not None
     assert result["seconds_low"] < result["seconds_high"]
@@ -52,7 +52,7 @@ def test_falling_trend_stable():
 
 def test_noisy_values_still_advisory():
     result = _feed("noisy", [70.0, 69.5, 70.2, 69.0, 68.5, 68.0, 67.5])
-    assert result["state"] in {"counting", "stable", "unknown"}
+    assert result["state"] in {"approaching_limit", "stable", "unknown"}
 
 
 def test_non_monotonic_timestamps_fail_closed():

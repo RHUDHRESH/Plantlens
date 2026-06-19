@@ -27,10 +27,10 @@ describe("RuntimeHMI", () => {
   it("renders shell with no-situation and connection strip", () => {
     useRuntimeStore.getState().setConnection("disconnected");
     wrap(<RuntimeHMI />);
-    expect(screen.getByText(/No active situation/i)).toBeInTheDocument();
+    expect(screen.getByText(/All clear/i)).toBeInTheDocument();
     expect(screen.getByText(/OFFLINE/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Raw alarms/i)).toBeInTheDocument();
-    expect(screen.getByRole("banner")).toHaveClass("top-strip");
+    expect(screen.getByRole("banner")).toHaveClass("runtime-top-strip");
   });
 
   it("shows stale badge without layout-breaking duplicate conn labels", () => {

@@ -30,18 +30,25 @@ FORBIDDEN_TOOLS = frozenset(
     }
 )
 
+FORBIDDEN_CHANGE_TYPES = frozenset(
+    {
+        "hardware_write",
+        "plc_output",
+        "modbus_write",
+        "relay_control",
+        "runtime_mutation",
+    }
+)
+
 
 def run_agent(name: str, inputs: dict[str, Any]) -> dict[str, Any]:
     """Return a DraftArtifact — never applied directly."""
     _assert_allowed(inputs)
     if name == "graph_draft":
         return _graph_draft(inputs)
-    return {
-        "artifact_type": name,
-        "summary": f"Draft from {name} (stub)",
-        "proposed_changes": [],
-        "requires_human_approval": True,
-    }
+    if name == "alarm_explainer":
+        return _alarm_explainer(inputs)
+    return _service_unavailable(name)
 
 
 def _assert_allowed(inputs: dict[str, Any]) -> None:
@@ -52,18 +59,64 @@ def _assert_allowed(inputs: dict[str, Any]) -> None:
             raise PermissionError(msg)
 
 
+def _validate_output(payload: dict[str, Any]) -> None:
+    for change in payload.get("proposed_changes", []):
+        if change.get("change_type") in FORBIDDEN_CHANGE_TYPES:
+            msg = f"forbidden change type: {change.get('change_type')}"
+            raise ValueError(msg)
+
+
+def _service_unavailable(agent_name: str) -> dict[str, Any]:
+    return {
+        "artifact_type": "service_unavailable",
+        "summary": "Agent service unavailable. Runtime unaffected.",
+        "proposed_changes": [],
+        "requires_human_approval": True,
+        "explanation": f"Agent '{agent_name}' has no live provider configured.",
+        "validation_status": "pending",
+        "risk_level": "unknown",
+    }
+
+
 def _graph_draft(inputs: dict[str, Any]) -> dict[str, Any]:
-    prompt = str(inputs.get("prompt", ""))
+    """No fabricated edges — return unavailable unless evidence-backed draft is implemented."""
+    evidence = inputs.get("context", {}).get("evidence_packet")
+    if not evidence:
+        return _service_unavailable("graph_draft")
     return {
         "artifact_type": "graph_draft",
-        "summary": "Proposed causal edge based on operator context (draft only)",
-        "proposed_changes": [
-            {
-                "change_type": "causal_edge",
-                "from": "MOTOR_301_CURRENT",
-                "to": "BUS_101_V",
-                "note": prompt[:500] or "Operator requested graph review",
-            }
-        ],
+        "summary": "Graph draft request received — requires human review before any edge is approved.",
+        "proposed_changes": [],
         "requires_human_approval": True,
+        "explanation": "No automatic causal edge proposed. Review evidence packet and author changes in Studio.",
+        "source_evidence_ids": [evidence.get("evidence_id")] if evidence.get("evidence_id") else [],
+        "validation_status": "pending",
+        "risk_level": "medium",
     }
+
+
+def _alarm_explainer(inputs: dict[str, Any]) -> dict[str, Any]:
+    evidence = inputs.get("context", {}).get("evidence_packet")
+    if not evidence:
+        return _service_unavailable("alarm_explainer")
+    chain = evidence.get("evidence_chain", [])
+    if not chain:
+        return _service_unavailable("alarm_explainer")
+    first = chain[0]
+    explanation = (
+        f"First signal: {first.get('explanation', first.get('alarm_id'))} "
+        f"on asset {first.get('asset_id')} at {first.get('first_seen_ts')}. "
+        f"Root candidate: {evidence.get('root_asset_id') or 'none'}. "
+        "This explanation references deterministic evidence only."
+    )
+    payload = {
+        "artifact_type": "alarm_explanation",
+        "summary": explanation,
+        "proposed_changes": [],
+        "requires_human_approval": True,
+        "explanation": explanation,
+        "validation_status": "valid",
+        "risk_level": "low",
+    }
+    _validate_output(payload)
+    return payload
