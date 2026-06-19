@@ -1,9 +1,9 @@
-import { Suspense, useEffect, useMemo, useRef } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Html, Line, OrbitControls } from "@react-three/drei";
-import type { Mesh } from "three";
+import { Suspense, useEffect, useMemo } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
+import { Line, OrbitControls } from "@react-three/drei";
 import type { AssetStatus, MapEdge, MapNode } from "../maps2d/mapTypes";
 import { statusForAsset } from "../maps2d/statusStyles";
+import { SchematicAssetMesh } from "./AssetMeshes";
 
 export interface PlantMap3DProps {
   nodes: MapNode[];
@@ -13,73 +13,6 @@ export interface PlantMap3DProps {
   rootAssetId?: string | null;
   reducedMotion?: boolean;
   onSelectAsset?: (id: string) => void;
-}
-
-const STATUS_COLOR: Record<AssetStatus, string> = {
-  normal: "#3d5a4c",
-  warning: "#b8860b",
-  critical: "#8b2942",
-  sensor_bad: "#5c5c5c",
-  offline: "#4a4a4a",
-  unknown: "#4a4a4a",
-};
-
-function statusColor(status: AssetStatus): string {
-  return STATUS_COLOR[status];
-}
-
-function AssetMesh({
-  node,
-  status,
-  isRoot,
-  isOnPath,
-  reducedMotion,
-  onSelect,
-}: {
-  node: MapNode;
-  status: AssetStatus;
-  isRoot: boolean;
-  isOnPath: boolean;
-  reducedMotion: boolean;
-  onSelect?: ((id: string) => void) | undefined;
-}) {
-  const meshRef = useRef<Mesh>(null);
-  const color = statusColor(status);
-  const emissive = isRoot ? "#8b2942" : isOnPath ? "#b8860b" : "#000000";
-  const intensity = isRoot ? 0.35 : isOnPath ? 0.15 : 0;
-
-  useFrame((_, delta) => {
-    if (reducedMotion || !meshRef.current || !isRoot) return;
-    meshRef.current.rotation.y += delta * 0.08;
-  });
-
-  const x = (node.position?.x ?? 0) * 0.02;
-  const z = (node.position?.y ?? 0) * 0.02;
-  const geometry =
-    node.asset_type === "bus" ? "box" : node.asset_type === "motor" ? "cylinder" : "box";
-
-  return (
-    <group position={[x, 0.4, z]}>
-      <mesh
-        ref={meshRef}
-        onClick={() => onSelect?.(node.id)}
-        castShadow
-        receiveShadow
-      >
-        {geometry === "cylinder" ? (
-          <cylinderGeometry args={[0.25, 0.25, 0.6, 12]} />
-        ) : (
-          <boxGeometry args={[0.5, 0.5, 0.5]} />
-        )}
-        <meshStandardMaterial color={color} emissive={emissive} emissiveIntensity={intensity} />
-      </mesh>
-      <Html distanceFactor={12} position={[0, 0.55, 0]} center>
-        <span className="map3d-label" data-tabular>
-          {node.label ?? node.id}
-        </span>
-      </Html>
-    </group>
-  );
 }
 
 function PowerCable({ from, to, highlight }: { from: [number, number, number]; to: [number, number, number]; highlight: boolean }) {
@@ -150,6 +83,10 @@ function PlantScene({
     [nodes],
   );
   const pathSet = useMemo(() => new Set(causalPath ?? []), [causalPath]);
+  const pathSteps = useMemo(
+    () => Object.fromEntries((causalPath ?? []).map((id, i) => [id, i + 1])),
+    [causalPath],
+  );
 
   return (
     <>
@@ -173,6 +110,7 @@ function PlantScene({
         );
       })}
       {nodes.map((node) => {
+        const step = pathSteps[node.id];
         const meshProps = {
           key: node.id,
           node,
@@ -180,9 +118,10 @@ function PlantScene({
           isRoot: node.id === rootAssetId,
           isOnPath: pathSet.has(node.id),
           reducedMotion: !!reducedMotion,
+          ...(step !== undefined ? { pathStep: step } : {}),
           ...(onSelectAsset ? { onSelect: onSelectAsset } : {}),
         };
-        return <AssetMesh {...meshProps} />;
+        return <SchematicAssetMesh {...meshProps} />;
       })}
       <OrbitControls
         minDistance={1.5}

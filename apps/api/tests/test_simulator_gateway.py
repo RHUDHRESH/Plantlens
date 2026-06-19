@@ -76,7 +76,7 @@ def test_motor_overload_ordered_frames(demo_runner: ScenarioRunner):
 
 
 def test_rs485_dropout_emits_stale(demo_runner: ScenarioRunner):
-    frames = asyncio.run(demo_runner.collect_frames("scn_rs485_dropout"))
+    frames = asyncio.run(demo_runner.collect_frames("scn_sensor_stale_no_root"))
     stale_frames = [frame for frame in frames if frame.quality == "STALE"]
     assert stale_frames
     assert stale_frames[0].tag_id == "MOTOR_301_CURRENT"

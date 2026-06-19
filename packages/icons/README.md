@@ -24,6 +24,5 @@ current/RPM/temperature/vibration sensors, PLC, HMI panel.
 | `svg/lamp.svg` | load.lamp |
 | `svg/sensor.svg` | sensor.* (badge the kind) |
 
-## TODO(you)
-Draw these (or commission them). Until then the 2D map falls back to a rounded rect + label, which
-is fine for the first slice. Add the symbols when the map is functionally complete.
+SVG symbols live in `svg/`. The 2D map resolves them via `apps/web/src/features/maps2d/iconRegistry.tsx`
+using `currentColor` so status tint comes from the node, not the symbol file.

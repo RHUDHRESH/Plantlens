@@ -16,10 +16,18 @@
         "additionalProperties": false,
         "required": ["id", "kind"],
         "properties": {
-          "id": { "type": "string", "description": "Node id. For asset nodes this equals an asset_id; for alarm/situation nodes it is the alarm/situation id." },
-          "kind": { "type": "string", "enum": ["asset", "alarm", "situation", "condition", "consequence"], "description": "What this node represents in the causal model." },
-          "evidence_tags": { "type": "array", "items": { "type": "string" }, "description": "Tags whose values form this node's evidence fingerprint during traversal." },
-          "label": { "type": "string" }
+          "id": { "type": "string" },
+          "kind": { "type": "string", "enum": ["asset", "alarm", "situation", "condition", "consequence"] },
+          "evidence_tags": { "type": "array", "items": { "type": "string" } },
+          "label": { "type": "string" },
+          "fingerprint_rules": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/fingerprint_rule" }
+          },
+          "score_adjustments": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/score_adjustment" }
+          }
         }
       }
     },
@@ -31,39 +39,105 @@
         "required": ["id", "from", "to", "edge_type", "approved", "provenance"],
         "properties": {
           "id": { "type": "string" },
-          "from": { "type": "string", "description": "Cause node id; must exist." },
-          "to": { "type": "string", "description": "Effect node id; must exist." },
+          "from": { "type": "string" },
+          "to": { "type": "string" },
           "edge_type": {
             "type": "string",
-            "enum": ["structural_power", "structural_load_effect", "signal", "thermal", "mechanical", "control", "cause_to_effect"],
-            "description": "Physical nature of the causal link."
+            "enum": ["structural_power", "structural_load_effect", "signal", "thermal", "mechanical", "control", "cause_to_effect"]
           },
-          "approved": { "type": "boolean", "description": "ONLY approved edges enter the runtime traversal. Unapproved edges are visible in Studio for review but never used live." },
+          "approved": { "type": "boolean" },
           "lag_ms": {
-            "type": "array", "items": { "type": "integer", "minimum": 0 }, "minItems": 2, "maxItems": 2,
-            "description": "[lag_min_ms, lag_max_ms]. Time-respecting traversal only follows from→to if the effect occurred within this window after the cause. min <= max (validated)."
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0 },
+            "minItems": 2,
+            "maxItems": 2
           },
-          "weight": { "type": "number", "minimum": 0, "maximum": 1, "default": 1.0, "description": "Edge strength; influences traversal penalty/ranking." },
-          "confidence": { "type": "number", "minimum": 0, "maximum": 1, "default": 1.0, "description": "How confident the authoring evidence is. Engineer-entered edges = 1.0." },
+          "weight": { "type": "number", "minimum": 0, "maximum": 1, "default": 1.0 },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1, "default": 1.0 },
           "provenance": {
             "type": "string",
-            "enum": ["cause_effect_matrix", "hazop", "pid", "historian", "operator_note", "manual", "engineer_entered", "agent_proposed"],
-            "description": "Where this edge came from. agent_proposed edges MUST have approved=false until a human approves them."
+            "enum": ["cause_effect_matrix", "hazop", "pid", "historian", "operator_note", "manual", "engineer_entered", "agent_proposed"]
           }
         }
       }
     },
     "root_cause_rules": {
       "type": "array",
-      "description": "Optional declarative fingerprints that mark a node as a likely root given a tag pattern. Keep human-readable.",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["target_node", "logic"],
+        "required": ["target_node", "conditions"],
         "properties": {
-          "target_node": { "type": "string", "description": "Node this rule scores as a root candidate." },
-          "logic": { "type": "string", "description": "Human-readable boolean expression over evidence, e.g. 'motor_vibration_high && bus_voltage_normal'. The engine evaluates a parsed/whitelisted form, not eval()." }
+          "target_node": { "type": "string" },
+          "logic": { "type": "string", "description": "Human-readable summary for Studio display." },
+          "conditions": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/condition" },
+            "minItems": 1
+          },
+          "score_bonus": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.5 }
         }
+      }
+    },
+    "situation_types": {
+      "type": "array",
+      "description": "Config-driven situation fingerprints. Runtime infers situation_type from these, never hardcoded dicts.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "root_asset_id", "required_alarms"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "root_asset_id": { "type": "string" },
+          "required_alarms": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "require_all_alarms": { "type": "boolean", "default": true },
+          "evidence_order": { "type": "array", "items": { "type": "string" } },
+          "extra_conditions": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/condition" }
+          },
+          "min_root_score": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.1 }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["alarms_all", "alarms_any", "alarms_absent", "alarm_before", "tag_threshold", "tag_quality_good"]
+        },
+        "alarm_ids": { "type": "array", "items": { "type": "string" } },
+        "first": { "type": "string" },
+        "second": { "type": "string" },
+        "tag_id": { "type": "string" },
+        "op": { "type": "string", "enum": ["lt", "lte", "gt", "gte", "eq"] },
+        "value": { "type": "number" }
+      }
+    },
+    "fingerprint_rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["conditions", "score_bonus"],
+      "properties": {
+        "conditions": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "minItems": 1 },
+        "score_bonus": { "type": "number", "minimum": 0, "maximum": 1 },
+        "reason": { "type": "string" }
+      }
+    },
+    "score_adjustment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["when", "multiply"],
+      "properties": {
+        "when": { "type": "array", "items": { "$ref": "#/$defs/condition" }, "minItems": 1 },
+        "multiply": { "type": "number", "minimum": 0, "maximum": 1 },
+        "reason": { "type": "string" }
       }
     }
   }

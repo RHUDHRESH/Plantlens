@@ -72,6 +72,7 @@ def _build_graph_index(causal_graph: dict[str, Any]) -> dict[str, Any]:
         "reverse_adjacency": reverse_adjacency,
         "forward_adjacency": forward_adjacency,
         "root_cause_rules": causal_graph.get("root_cause_rules", []),
+        "situation_types": causal_graph.get("situation_types", []),
         "edges_by_id": {edge["id"]: edge for edge in causal_graph.get("edges", [])},
     }
 

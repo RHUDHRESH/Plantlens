@@ -64,10 +64,4 @@ jobs:
           python-version: "3.12"
       - run: pip install -e "./apps/api[dev]"
       - run: ruff check apps/api/app
-      - name: pytest (skip until test modules exist)
-        run: |
-          if find apps/api/tests -name 'test_*.py' -o -name '*_test.py' | grep -q .; then
-            pytest apps/api/tests
-          else
-            echo "No API test modules yet — scaffold phase (Prompt 3)."
-          fi
+      - run: pytest apps/api/tests -q

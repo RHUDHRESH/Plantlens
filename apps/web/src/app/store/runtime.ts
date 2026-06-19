@@ -9,6 +9,14 @@ import type { TagFrame } from "../schemas/tagFrame";
 import type { ActiveAlarm, RuntimeSnapshot, WsConnectionState } from "../../api/types";
 import type { AssetStatus } from "../../features/maps2d/mapTypes";
 
+export type ScenarioRunStatus = "idle" | "started" | "running" | "finished" | "stopped";
+
+export interface ScenarioState {
+  scenarioId: string | null;
+  status: ScenarioRunStatus;
+  progress: number | null;
+}
+
 export interface RuntimeStore {
   tags: Record<string, TagFrame>;
   assetStatus: Record<string, AssetStatus>;
@@ -18,12 +26,20 @@ export interface RuntimeStore {
   connection: WsConnectionState;
   lastSnapshotTs: string | null;
   hasSnapshot: boolean;
+  scenarioState: ScenarioState;
   applySnapshot: (snapshot: RuntimeSnapshot, ts?: string) => void;
   setConnection: (state: WsConnectionState) => void;
+  setScenarioState: (state: ScenarioState) => void;
   reset: () => void;
 }
 
-const INITIAL: Omit<RuntimeStore, "applySnapshot" | "setConnection" | "reset"> = {
+const INITIAL_SCENARIO: ScenarioState = {
+  scenarioId: null,
+  status: "idle",
+  progress: null,
+};
+
+const INITIAL: Omit<RuntimeStore, "applySnapshot" | "setConnection" | "setScenarioState" | "reset"> = {
   tags: {},
   assetStatus: {},
   activeAlarms: [],
@@ -32,6 +48,7 @@ const INITIAL: Omit<RuntimeStore, "applySnapshot" | "setConnection" | "reset"> =
   connection: "disconnected",
   lastSnapshotTs: null,
   hasSnapshot: false,
+  scenarioState: INITIAL_SCENARIO,
 };
 
 function normalizeAssetStatus(raw: Record<string, string>): Record<string, AssetStatus> {
@@ -65,5 +82,6 @@ export const useRuntimeStore = create<RuntimeStore>((set) => ({
       hasSnapshot: true,
     }),
   setConnection: (connection) => set({ connection }),
-  reset: () => set({ ...INITIAL }),
+  setScenarioState: (scenarioState) => set({ scenarioState }),
+  reset: () => set({ ...INITIAL, scenarioState: INITIAL_SCENARIO }),
 }));

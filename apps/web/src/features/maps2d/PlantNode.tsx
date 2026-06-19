@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { AssetIcon } from "./iconRegistry";
 import type { AssetStatus, MapNode } from "./mapTypes";
 import { STATUS_VISUALS } from "./statusStyles";
 
@@ -72,6 +73,9 @@ export function PlantNode({
         strokeWidth={isRoot ? 2.5 : 1.5}
         style={{ transition }}
       />
+      <g style={{ color: visual.text }}>
+        <AssetIcon assetType={node.asset_type} />
+      </g>
       <text x={10} y={22} fill="var(--text)" fontSize={12} fontWeight={600}>
         {node.label}
       </text>

@@ -49,6 +49,62 @@ def edge_penalty(edge: GraphEdge) -> float:
     return max(0.05, 1.0 - edge.weight)
 
 
+def evaluate_condition(
+    condition: dict[str, Any],
+    active_alarms: dict[str, dict[str, Any]],
+    latest_tags: dict[str, Any],
+) -> bool:
+    """Evaluate one whitelisted config condition — no eval()."""
+    ctype = condition.get("type")
+    if ctype == "alarms_all":
+        required = set(condition.get("alarm_ids", []))
+        return required.issubset(active_alarms.keys())
+    if ctype == "alarms_any":
+        return bool(set(condition.get("alarm_ids", [])) & set(active_alarms.keys()))
+    if ctype == "alarms_absent":
+        return not any(aid in active_alarms for aid in condition.get("alarm_ids", []))
+    if ctype == "alarm_before":
+        first = active_alarms.get(condition.get("first", ""))
+        second = active_alarms.get(condition.get("second", ""))
+        if not first or not second:
+            return False
+        return _parse_ts(first["raised_at"]) <= _parse_ts(second["raised_at"])
+    if ctype == "tag_threshold":
+        frame = latest_tags.get(condition.get("tag_id", ""))
+        if frame is None or getattr(frame, "quality", "GOOD") != "GOOD":
+            return False
+        value = frame.value
+        if not isinstance(value, (int, float)):
+            return False
+        threshold = float(condition.get("value", 0))
+        op = condition.get("op", "lt")
+        if op == "lt":
+            return float(value) < threshold
+        if op == "lte":
+            return float(value) <= threshold
+        if op == "gt":
+            return float(value) > threshold
+        if op == "gte":
+            return float(value) >= threshold
+        if op == "eq":
+            return float(value) == threshold
+        return False
+    if ctype == "tag_quality_good":
+        frame = latest_tags.get(condition.get("tag_id", ""))
+        return frame is not None and getattr(frame, "quality", "GOOD") == "GOOD"
+    return False
+
+
+def evaluate_conditions(
+    conditions: list[dict[str, Any]],
+    active_alarms: dict[str, dict[str, Any]],
+    latest_tags: dict[str, Any],
+) -> bool:
+    if not conditions:
+        return False
+    return all(evaluate_condition(cond, active_alarms, latest_tags) for cond in conditions)
+
+
 def evaluate_node_fingerprint(
     node_id: str,
     graph_index: dict[str, Any],
@@ -77,51 +133,23 @@ def evaluate_node_fingerprint(
     for rule in graph_index.get("root_cause_rules", []):
         if rule.get("target_node") != node_id:
             continue
-        logic = rule.get("logic", "")
-        if _rule_matches(logic, active_alarms, latest_tags):
-            score += 0.5
-            reasons.append(f"root_cause_rule matched: {logic}")
+        if evaluate_conditions(rule.get("conditions", []), active_alarms, latest_tags):
+            score += float(rule.get("score_bonus", 0.5))
+            reasons.append(f"root_cause_rule matched: {rule.get('logic', rule.get('target_node'))}")
 
-    if node_id == "PV-101" and any(
-        alarm.get("alarm_id") == "DC_BUS_LOW" for alarm in active_alarms.values()
-    ):
-        pv_frame = latest_tags.get("PV_101_I")
-        if pv_frame is not None and isinstance(pv_frame.value, (int, float)) and pv_frame.value < 3.0:
-            score += 0.4
-            reasons.append("PV current collapsed before bus sag")
+    for fp_rule in node.get("fingerprint_rules", []):
+        if evaluate_conditions(fp_rule.get("conditions", []), active_alarms, latest_tags):
+            score += float(fp_rule.get("score_bonus", 0.0))
+            if fp_rule.get("reason"):
+                reasons.append(str(fp_rule["reason"]))
 
-    if node_id == "BUS-101":
-        pv_frame = latest_tags.get("PV_101_I")
-        if (
-            pv_frame is not None
-            and isinstance(pv_frame.value, (int, float))
-            and pv_frame.value < 3.0
-            and any(alarm.get("alarm_id") == "DC_BUS_LOW" for alarm in active_alarms.values())
-        ):
-            score *= 0.5
-            reasons += ("Bus sag likely downstream of PV generation loss",)
+    for adjustment in node.get("score_adjustments", []):
+        if evaluate_conditions(adjustment.get("when", []), active_alarms, latest_tags):
+            score *= float(adjustment.get("multiply", 1.0))
+            if adjustment.get("reason"):
+                reasons.append(str(adjustment["reason"]))
 
     return max(0.0, min(1.0, score)), tuple(reasons)
-
-
-def _rule_matches(
-    logic: str,
-    active_alarms: dict[str, dict[str, Any]],
-    latest_tags: dict[str, Any] | None = None,
-) -> bool:
-    active_ids = set(active_alarms.keys())
-    if logic == "motor_current_high && bus_voltage_low_after_current && motor_current_rose_first":
-        required = {"MOTOR_CURRENT_HIGH", "MOTOR_SPEED_LOW", "DC_BUS_LOW"}
-        if not required.issubset(active_ids):
-            return False
-        current_ts = _parse_ts(active_alarms["MOTOR_CURRENT_HIGH"]["raised_at"])
-        bus_ts = _parse_ts(active_alarms["DC_BUS_LOW"]["raised_at"])
-        return current_ts <= bus_ts
-    if logic == "pv_current_low && downstream_bus_low && battery_normal":
-        return "DC_BUS_LOW" in active_ids
-    if logic == "battery_voltage_low && mppt_output_normal && bus_low":
-        return "DC_BUS_LOW" in active_ids and "BAT_101_V" in active_ids
-    return False
 
 
 def diagnose(

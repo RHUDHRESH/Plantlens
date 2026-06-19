@@ -22,6 +22,17 @@ function isRuntimeSnapshotMessage(data: unknown): data is WsRuntimeSnapshotMessa
   return true;
 }
 
+function isScenarioStateMessage(data: unknown): data is {
+  type: "scenario.state";
+  scenario_id: string;
+  status: string;
+  progress?: number;
+} {
+  if (typeof data !== "object" || data === null) return false;
+  const msg = data as Record<string, unknown>;
+  return msg.type === "scenario.state" && typeof msg.scenario_id === "string";
+}
+
 export function connectRuntimeSocket(): RuntimeSocketHandle {
   const store = useRuntimeStore.getState();
   let ws: WebSocket | null = null;
@@ -59,6 +70,15 @@ export function connectRuntimeSocket(): RuntimeSocketHandle {
   const onMessage = (event: MessageEvent) => {
     try {
       const data = JSON.parse(String(event.data)) as unknown;
+      if (isScenarioStateMessage(data)) {
+        const status = data.status as "started" | "running" | "finished" | "stopped";
+        store.setScenarioState({
+          scenarioId: data.scenario_id,
+          status: status === "finished" || status === "stopped" ? status : status,
+          progress: typeof data.progress === "number" ? data.progress : null,
+        });
+        return;
+      }
       if (!isRuntimeSnapshotMessage(data)) return;
       lastFrameAt = Date.now();
       store.applySnapshot(data.state, data.ts);

@@ -13,6 +13,7 @@ import { RawAlarmTable } from "../alarms/RawAlarmTable";
 import { IncidentRoom } from "../incidents/IncidentRoom";
 import { PlantMap2D } from "../maps2d/PlantMap2D";
 import { LazyPlantMap3D } from "../maps3d/LazyPlantMap3D";
+import { ScenarioLauncher } from "../scenarios/ScenarioLauncher";
 import { TopStrip } from "./TopStrip";
 
 function derivePlantHealth(assetStatus: Record<string, string>): string {
@@ -120,6 +121,7 @@ export function RuntimeHMI() {
       />
 
       <div className="runtime-hmi__toolbar">
+        <ScenarioLauncher />
         <div className="map-toggle" role="group" aria-label="Map view">
           <button
             type="button"

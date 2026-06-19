@@ -46,14 +46,18 @@ What PlantLens does with the flood:
 The demo win, stated brutally: *can a judge watch 5 alarms collapse into 1 evidence-backed Calm
 Card that correctly fingers the motor, not the bus?* If yes, the product works.
 
-## Other scenarios (build after the hero works)
+## Scenario matrix (automated regression in `apps/api/tests/test_scenario_matrix.py`)
+
 | id | name | proves |
 |----|------|--------|
-| `scn_pv_shade` | PV shade event | upstream root (PV) vs downstream bus-low effect |
-| `scn_rpm_sensor_fault` | RPM sensor fault | sensor_bad status; instrument vs process fault |
-| `scn_rs485_dropout` | gateway dropout | degraded mode, STALE quality, "data stale" badge |
-| `scn_bad_csv_import` | bad CSV into Studio | validation + mapping workflow (uses cliffords) |
-| `scn_replay_branch` | late event correction | deterministic recompute under late data |
+| `scn_motor_overload` | Motor mechanical overload | 5 alarms → 1 situation; root `MTR-301` |
+| `scn_pv_generation_loss` | PV generation loss | upstream root `PV-101`, not the bus |
+| `scn_sensor_stale_no_root` | Stale sensor only | `sensor_bad`; no confident root cause |
+| `scn_unapproved_edge_ignored` | False edge temptation | unapproved PV→motor edge ignored |
+| `scn_gateway_dropout` | Gateway dropout | STALE/MISSING tags; no process root cause |
+| `scn_recovery_clear` | Recovery clear | situation clears; `DC_BUS_LOW` latched pending ack |
+
+Launch from the Runtime HMI **Scenarios** toolbar or `POST /api/scenarios/{id}/start`.
 
 ## The "before / after" that sells it
 - **Before:** 12 alarms flashing, operator confused, no idea which is the cause.

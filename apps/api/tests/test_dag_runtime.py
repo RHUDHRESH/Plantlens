@@ -18,6 +18,7 @@ from app.runtime.dag_runtime import (
     evaluate_node_fingerprint,
     violates_temporal_window,
 )
+from app.runtime.situation_engine import evaluate_situations
 from app.runtime.config_loader import GraphEdge
 from app.runtime.runtime_state import RuntimeState
 from app.schemas.tag_frame import TagFrame
@@ -143,6 +144,56 @@ def test_dag_runtime_does_not_import_simulator_or_agents():
         check=False,
     )
     assert result.stdout.strip() == "[]"
+
+
+def test_pv_generation_loss_situation_from_config(graph_index):
+    state = RuntimeState()
+    state.active_alarms = {
+        "DC_BUS_LOW": {
+            "alarm_id": "DC_BUS_LOW",
+            "asset_id": "BUS-101",
+            "tag_id": "BUS_101_V",
+            "raised_at": "2026-06-18T12:00:05.200Z",
+            "severity": "critical",
+            "message": "DC bus voltage low",
+        }
+    }
+    from app.schemas.tag_frame import TagFrame
+
+    state.update_tag(
+        TagFrame(
+            tag_id="PV_101_I",
+            asset_id="PV-101",
+            value=1.2,
+            unit="A",
+            quality="GOOD",
+            timestamp=TS,
+            source="simulator",
+        )
+    )
+    situations = evaluate_situations(state, list(state.active_alarms.values()), graph_index)
+    assert len(situations) == 1
+    assert situations[0]["situation_type"] == "PV_GENERATION_LOSS"
+    assert situations[0]["root_asset_id"] == "PV-101"
+
+
+def test_stale_only_data_yields_no_situation(graph_index):
+    state = RuntimeState()
+    from app.schemas.tag_frame import TagFrame
+
+    state.update_tag(
+        TagFrame(
+            tag_id="MOTOR_301_CURRENT",
+            asset_id="MTR-301",
+            value=3.4,
+            unit="A",
+            quality="STALE",
+            timestamp=TS,
+            source="simulator",
+        )
+    )
+    situations = evaluate_situations(state, [], graph_index)
+    assert situations == []
 
 
 def test_evaluate_node_fingerprint_penalizes_stale_tags(graph_index):

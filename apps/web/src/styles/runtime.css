@@ -253,8 +253,124 @@
   }
 }
 
+.plant-map-2d-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.map-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.map-legend__swatch {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+}
+
+.map-legend--static .map-legend__swatch {
+  animation: none;
+}
+
+.scenario-launcher {
+  flex: 1;
+  min-width: 0;
+}
+
+.scenario-launcher__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.scenario-launcher__title {
+  margin: 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.scenario-launcher__badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--status-warning);
+}
+
+.scenario-launcher__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.scenario-launcher__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-muted);
+  font-size: 12px;
+}
+
+.scenario-launcher__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.scenario-launcher__id,
+.scenario-launcher__duration,
+.scenario-launcher__expect {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.scenario-launcher__run,
+.scenario-launcher__stop,
+.scenario-launcher__reset {
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.scenario-launcher__run:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.scenario-launcher__error {
+  color: var(--status-critical);
+  font-size: 12px;
+  margin: 4px 0;
+}
+
 .runtime-hmi__toolbar {
   display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px 20px;
   padding: 6px 16px;
   border-bottom: 1px solid var(--border);
   background: var(--surface);

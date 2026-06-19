@@ -1,6 +1,8 @@
 """Contract mirror tests — Pydantic models vs packages/contracts + demo bundle."""
 
 import json
+import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -20,7 +22,9 @@ from app.schemas import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-DEMO_ALARM_RULES = REPO_ROOT / "packages" / "sample-data" / "demo-microgrid" / "alarm_rules.json"
+DEMO_DIR = REPO_ROOT / "packages" / "sample-data" / "demo-microgrid"
+DEMO_ALARM_RULES = DEMO_DIR / "alarm_rules.json"
+CONTRACTS_DIR = REPO_ROOT / "packages" / "contracts"
 
 TS_UTC = datetime(2026, 6, 18, 12, 48, 12, tzinfo=timezone.utc)
 OPERATOR_AUTHORITY = (
@@ -191,6 +195,25 @@ def test_calm_card_first_signal_requires_core_fields():
                 "first_signal": {"alarm_id": "ALARM_ONLY"},
             }
         )
+
+
+def test_demo_bundle_contract_validation_script():
+    result = subprocess.run(
+        ["pnpm", "contracts:validate"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+        shell=sys.platform.startswith("win"),
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_demo_causal_graph_has_situation_types():
+    graph = json.loads((DEMO_DIR / "causal_graph.json").read_text(encoding="utf-8"))
+    situation_ids = {item["id"] for item in graph.get("situation_types", [])}
+    assert "MOTOR_MECHANICAL_OVERLOAD" in situation_ids
+    assert "PV_GENERATION_LOSS" in situation_ids
 
 
 def test_valid_audit_record():

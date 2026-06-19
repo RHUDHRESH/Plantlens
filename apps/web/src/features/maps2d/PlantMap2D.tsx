@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import type { MapEdge, MapNode } from "./mapTypes";
 import { CausalPathOverlay } from "./CausalPathOverlay";
+import { MapLegend } from "./MapLegend";
 import { PlantEdge } from "./PlantEdge";
 import { PlantNode } from "./PlantNode";
 import { statusForAsset } from "./statusStyles";
@@ -66,13 +67,15 @@ export function PlantMap2D({
   }
 
   return (
-    <svg
-      viewBox={viewBox}
-      className="plant-map-2d"
-      role="img"
-      aria-label="Live plant map"
-      preserveAspectRatio="xMidYMid meet"
-    >
+    <div className="plant-map-2d-wrap">
+      <MapLegend reducedMotion={reducedMotion} />
+      <svg
+        viewBox={viewBox}
+        className="plant-map-2d"
+        role="img"
+        aria-label="Live plant map"
+        preserveAspectRatio="xMidYMid meet"
+      >
       <defs>
         <pattern id="grid" width={24} height={24} patternUnits="userSpaceOnUse">
           <path d="M 24 0 L 0 0 0 24" fill="none" stroke="var(--grid)" strokeWidth={0.5} />
@@ -110,6 +113,7 @@ export function PlantMap2D({
           />
         );
       })}
-    </svg>
+      </svg>
+    </div>
   );
 }

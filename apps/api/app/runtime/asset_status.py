@@ -6,14 +6,14 @@ from datetime import datetime, timezone
 from typing import Any
 
 
-
+# Process alarms outrank sensor/comms faults; root-cause emphasis is a map overlay.
 STATUS_PRECEDENCE = {
     "normal": 0,
-    "warning": 1,
-    "critical": 2,
+    "unknown": 1,
+    "offline": 2,
     "sensor_bad": 3,
-    "offline": 4,
-    "unknown": 0,
+    "warning": 4,
+    "critical": 5,
 }
 
 

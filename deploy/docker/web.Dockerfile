@@ -10,6 +10,6 @@ COPY apps/web /app/apps/web
 RUN pnpm --filter @plantlens/web build
 
 FROM nginx:alpine
+COPY deploy/docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/apps/web/dist /usr/share/nginx/html
-# TODO(you): add an nginx.conf that proxies /api and /ws to the api service in compose.
 EXPOSE 80

@@ -29,6 +29,7 @@ ALLOWED_API_PREFIXES = (
     "/readyz",
     "/metrics",
     "/internal/auth-test/",
+    "/api/scenarios",
     "/api/scenarios/",
     "/api/compiler/",
     "/api/hmi/",

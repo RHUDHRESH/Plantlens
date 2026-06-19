@@ -23,8 +23,8 @@
       ]
     },
     {
-      "id": "scn_pv_shade",
-      "name": "PV Shade Event",
+      "id": "scn_pv_generation_loss",
+      "name": "PV Generation Loss",
       "description": "PV current collapses (cloud/shade) so the bus sags from upstream. Root must be PV-101, NOT the bus. Tests upstream-vs-downstream discrimination.",
       "duration_ms": 12000,
       "expected_situation": "PV_GENERATION_LOSS",
@@ -32,15 +32,16 @@
       "expected_alarms": ["DC_BUS_LOW"],
       "events": [
         { "at_ms": 0, "action": "set", "tag": "PV_101_I", "asset_id": "PV-101", "value": 9.8, "unit": "A" },
+        { "at_ms": 0, "action": "set", "tag": "PV_101_V", "asset_id": "PV-101", "value": 24.0, "unit": "V" },
         { "at_ms": 0, "action": "set", "tag": "BUS_101_V", "asset_id": "BUS-101", "value": 48.0, "unit": "V" },
         { "at_ms": 5000, "action": "set", "tag": "PV_101_I", "asset_id": "PV-101", "value": 1.2, "unit": "A" },
         { "at_ms": 5200, "action": "set", "tag": "BUS_101_V", "asset_id": "BUS-101", "value": 40.0, "unit": "V" }
       ]
     },
     {
-      "id": "scn_rs485_dropout",
-      "name": "RS485 Dropout",
-      "description": "Gateway stops responding; motor tags go STALE. Tests degraded mode: sensor_bad/offline status, 'data stale' badge, no confident root cause from stale data.",
+      "id": "scn_sensor_stale_no_root",
+      "name": "Stale Sensor — No Root Cause",
+      "description": "Only stale/BAD sensor data. Runtime must mark sensor_bad and must NOT infer a process root cause.",
       "duration_ms": 8000,
       "expected_situation": null,
       "expected_root_cause": null,
@@ -48,6 +49,70 @@
       "events": [
         { "at_ms": 0, "action": "set", "tag": "MOTOR_301_CURRENT", "asset_id": "MTR-301", "value": 1.2, "unit": "A" },
         { "at_ms": 3000, "action": "fault", "tag": "MOTOR_301_CURRENT", "asset_id": "MTR-301", "fault": { "type": "stale" }, "quality": "STALE" }
+      ]
+    },
+    {
+      "id": "scn_unapproved_edge_ignored",
+      "name": "Unapproved Edge Ignored",
+      "description": "Motor overload plus coincident PV collapse tempts a false PV→motor causal link via an unapproved edge. Root must remain the motor.",
+      "duration_ms": 14000,
+      "expected_situation": "MOTOR_MECHANICAL_OVERLOAD",
+      "expected_root_cause": "MTR-301",
+      "expected_alarms": ["MOTOR_CURRENT_HIGH", "MOTOR_SPEED_LOW", "DC_BUS_LOW", "INV_UNDERVOLTAGE"],
+      "events": [
+        { "at_ms": 0, "action": "set", "tag": "PV_101_I", "asset_id": "PV-101", "value": 9.8, "unit": "A" },
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_301_CURRENT", "asset_id": "MTR-301", "value": 1.2, "unit": "A" },
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_301_RPM", "asset_id": "MTR-301", "value": 1450, "unit": "rpm" },
+        { "at_ms": 0, "action": "set", "tag": "BUS_101_V", "asset_id": "BUS-101", "value": 48.0, "unit": "V" },
+        { "at_ms": 0, "action": "set", "tag": "INV_102_UNDERVOLTAGE", "asset_id": "INV-102", "value": false, "unit": "bool" },
+        { "at_ms": 2000, "action": "set", "tag": "MOTOR_301_CURRENT", "asset_id": "MTR-301", "value": 3.4, "unit": "A" },
+        { "at_ms": 4000, "action": "set", "tag": "MOTOR_301_RPM", "asset_id": "MTR-301", "value": 760, "unit": "rpm" },
+        { "at_ms": 5000, "action": "set", "tag": "PV_101_I", "asset_id": "PV-101", "value": 1.0, "unit": "A" },
+        { "at_ms": 6000, "action": "set", "tag": "BUS_101_V", "asset_id": "BUS-101", "value": 40.5, "unit": "V" },
+        { "at_ms": 7500, "action": "set", "tag": "INV_102_UNDERVOLTAGE", "asset_id": "INV-102", "value": true, "unit": "bool" }
+      ]
+    },
+    {
+      "id": "scn_gateway_dropout",
+      "name": "Gateway Dropout",
+      "description": "Multiple tags go STALE/MISSING as if the gateway stopped responding. Mark sensor_bad/offline — do not infer process root cause.",
+      "duration_ms": 10000,
+      "expected_situation": null,
+      "expected_root_cause": null,
+      "expected_alarms": [],
+      "events": [
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_301_CURRENT", "asset_id": "MTR-301", "value": 3.4, "unit": "A" },
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_301_RPM", "asset_id": "MTR-301", "value": 760, "unit": "rpm" },
+        { "at_ms": 0, "action": "set", "tag": "BUS_101_V", "asset_id": "BUS-101", "value": 40.5, "unit": "V" },
+        { "at_ms": 3000, "action": "fault", "tag": "MOTOR_301_CURRENT", "asset_id": "MTR-301", "fault": { "type": "stale" }, "quality": "STALE" },
+        { "at_ms": 3000, "action": "fault", "tag": "MOTOR_301_RPM", "asset_id": "MTR-301", "fault": { "type": "missing" }, "quality": "MISSING" },
+        { "at_ms": 3000, "action": "fault", "tag": "BUS_101_V", "asset_id": "BUS-101", "fault": { "type": "stale" }, "quality": "STALE" }
+      ]
+    },
+    {
+      "id": "scn_recovery_clear",
+      "name": "Recovery Clear",
+      "description": "Overload values return to normal. Non-latching alarms clear; DC_BUS_LOW remains latched pending operator ack per rule config.",
+      "duration_ms": 18000,
+      "expected_situation": null,
+      "expected_root_cause": null,
+      "expected_alarms": ["DC_BUS_LOW"],
+      "events": [
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_301_CURRENT", "asset_id": "MTR-301", "value": 1.2, "unit": "A" },
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_301_RPM", "asset_id": "MTR-301", "value": 1450, "unit": "rpm" },
+        { "at_ms": 0, "action": "set", "tag": "BUS_101_V", "asset_id": "BUS-101", "value": 48.0, "unit": "V" },
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_301_TEMP", "asset_id": "MTR-301", "value": 48.0, "unit": "C" },
+        { "at_ms": 0, "action": "set", "tag": "INV_102_UNDERVOLTAGE", "asset_id": "INV-102", "value": false, "unit": "bool" },
+        { "at_ms": 2000, "action": "set", "tag": "MOTOR_301_CURRENT", "asset_id": "MTR-301", "value": 3.4, "unit": "A" },
+        { "at_ms": 4000, "action": "set", "tag": "MOTOR_301_RPM", "asset_id": "MTR-301", "value": 760, "unit": "rpm" },
+        { "at_ms": 6000, "action": "set", "tag": "BUS_101_V", "asset_id": "BUS-101", "value": 40.5, "unit": "V" },
+        { "at_ms": 7500, "action": "set", "tag": "INV_102_UNDERVOLTAGE", "asset_id": "INV-102", "value": true, "unit": "bool" },
+        { "at_ms": 10000, "action": "ramp", "tag": "MOTOR_301_TEMP", "asset_id": "MTR-301", "from": 48.0, "to": 78.0, "over_ms": 2000, "unit": "C" },
+        { "at_ms": 13000, "action": "set", "tag": "MOTOR_301_CURRENT", "asset_id": "MTR-301", "value": 1.2, "unit": "A" },
+        { "at_ms": 13500, "action": "set", "tag": "MOTOR_301_RPM", "asset_id": "MTR-301", "value": 1450, "unit": "rpm" },
+        { "at_ms": 14000, "action": "set", "tag": "BUS_101_V", "asset_id": "BUS-101", "value": 48.0, "unit": "V" },
+        { "at_ms": 14500, "action": "set", "tag": "INV_102_UNDERVOLTAGE", "asset_id": "INV-102", "value": false, "unit": "bool" },
+        { "at_ms": 15000, "action": "set", "tag": "MOTOR_301_TEMP", "asset_id": "MTR-301", "value": 48.0, "unit": "C" }
       ]
     }
   ]

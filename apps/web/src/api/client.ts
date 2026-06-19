@@ -114,7 +114,23 @@ export function compileBundle(bundle: Record<string, unknown>): Promise<CompileR
   });
 }
 
-export function startScenario(scenarioId: string): Promise<{ status: string }> {
+export interface ScenarioSummary {
+  id: string;
+  name: string;
+  description?: string;
+  duration_ms?: number;
+  expected_situation?: string | null;
+  expected_root_cause?: string | null;
+}
+
+export function getScenarios(signal?: AbortSignal): Promise<{
+  scenarios: ScenarioSummary[];
+  running_scenario_id: string | null;
+}> {
+  return apiFetch("/api/scenarios", signal ? { signal } : {});
+}
+
+export function startScenario(scenarioId: string): Promise<{ status: string; scenario_id: string }> {
   return apiFetch(`/api/scenarios/${encodeURIComponent(scenarioId)}/start`, { method: "POST" });
 }
 

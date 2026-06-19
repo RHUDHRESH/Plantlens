@@ -70,9 +70,9 @@ def test_hero_motor_overload_end_to_end(gateway: SimulatorGateway):
     assert state.latest_calm_card["recommended_first_check"]["action_id"] == "INSPECT_SHAFT_LOAD"
 
 
-def test_rs485_dropout_no_confident_situation(gateway: SimulatorGateway):
-    state = asyncio.run(_run_scenario(gateway, "scn_rs485_dropout"))
-    scenario = next(s for s in SCENARIOS["scenarios"] if s["id"] == "scn_rs485_dropout")
+def test_sensor_stale_no_confident_situation(gateway: SimulatorGateway):
+    state = asyncio.run(_run_scenario(gateway, "scn_sensor_stale_no_root"))
+    scenario = next(s for s in SCENARIOS["scenarios"] if s["id"] == "scn_sensor_stale_no_root")
 
     assert state.active_alarms == {}
     assert state.active_situations == {}
