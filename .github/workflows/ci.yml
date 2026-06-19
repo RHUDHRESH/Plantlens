@@ -1,0 +1,73 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  contracts:
+    name: contract-validate (schema canary)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm contracts:validate
+
+  oracle:
+    name: golden parity (cliffords oracle)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm oracle
+
+  frontend:
+    name: web scaffold (typecheck + build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @plantlens/web typecheck
+      - run: pnpm --filter @plantlens/web build
+      # Vitest has no test files yet (scaffold). Run with passWithNoTests until Chunk 5+.
+      - run: pnpm --filter @plantlens/web test
+
+  backend:
+    name: api scaffold (install + lint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e "./apps/api[dev]"
+      - run: ruff check apps/api/app
+      - name: pytest (skip until test modules exist)
+        run: |
+          if find apps/api/tests -name 'test_*.py' -o -name '*_test.py' | grep -q .; then
+            pytest apps/api/tests
+          else
+            echo "No API test modules yet — scaffold phase (Prompt 3)."
+          fi

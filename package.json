@@ -1,40 +1,21 @@
 {
-  "name": "@plantlens/cliffords",
+  "name": "plantlens",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
-  "description": "Industrial ingestion, cleaning, verification, and quarantine pipeline for PlantLens.",
-  "engines": {
-    "node": ">=22"
-  },
-  "exports": {
-    ".": {
-      "types": "./dist/cliffords/index.d.ts",
-      "import": "./dist/cliffords/index.js"
-    }
-  },
-  "files": [
-    "dist"
-  ],
+  "description": "PlantLens monorepo root. Orchestrates the web app + shared JS packages. Python apps are managed separately by uv.",
+  "engines": { "node": ">=22" },
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "web": "pnpm build && node dist/app/server.js",
-    "start:web": "node dist/app/server.js",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest"
-  },
-  "dependencies": {
-    "csv-parse": "^6.1.0",
-    "luxon": "^3.7.2",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
-    "zod": "^4.1.12"
+    "dev:web": "pnpm --filter @plantlens/web dev",
+    "build:web": "pnpm --filter @plantlens/web build",
+    "test:web": "pnpm --filter @plantlens/web test",
+    "oracle": "pnpm --filter @plantlens/cliffords test",
+    "contracts:validate": "node scripts/validate-contracts.mjs",
+    "compose:config": "docker compose -f deploy/docker/compose.full.yml config",
+    "typecheck": "pnpm -r --if-present typecheck"
   },
   "devDependencies": {
-    "@types/luxon": "^3.7.1",
-    "@types/node": "^24.10.1",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.14"
-  },
-  "packageManager": "pnpm@10.33.0"
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  }
 }

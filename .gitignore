@@ -1,8 +1,46 @@
+# Node / web
 node_modules/
 dist/
+build/
 coverage/
+.vite/
+*.tsbuildinfo
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.uv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Databases / runtime data
+*.db
+*.sqlite
+*.sqlite3
 .cliffords-data/
-terminals/*.txt
+apps/api/compiled/
+apps/api/runtime/
+
+# Generated contract artifacts
+packages/contracts/generated-ts/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Logs / OS / editor
 *.log
 .DS_Store
 Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Harness leftovers
+terminals/*.txt
+terminals/.next-id

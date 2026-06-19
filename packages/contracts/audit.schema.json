@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plantlens.dev/contracts/audit.schema.json",
+  "title": "AuditRecord",
+  "description": "Append-only, hash-chained accountability record (rule R6). Written for every consequential event: compile, config edit, approval, alarm ack, agent proposal, runtime explanation, shelving. hash_self = SHA256(canonical_json(record_without_hash_self) + hash_prev). Tampering or reordering breaks the chain and is detected on read. Tamper-EVIDENT, not tamper-proof (single trusted writer) — state this honestly.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["audit_id", "ts", "actor_type", "action", "entity_type", "hash_prev", "hash_self"],
+  "properties": {
+    "audit_id": { "type": "string", "description": "ULID/UUID, monotonic-ish for ordering." },
+    "ts": { "type": "string", "format": "date-time" },
+    "actor_type": { "type": "string", "enum": ["user", "agent", "system"] },
+    "actor_id": { "type": ["string", "null"] },
+    "actor_role": { "type": ["string", "null"], "enum": ["operator", "engineer", "maintenance", "supervisor", "admin", "agent", null] },
+    "action": { "type": "string", "description": "Dotted action, e.g. graph.edge.update, alarm.ack, compile.run, agent.draft.propose, approval.grant, situation.created." },
+    "entity_type": { "type": "string", "description": "e.g. causal_edge, alarm, compiled_model, situation, incident, agent_draft." },
+    "entity_id": { "type": ["string", "null"] },
+    "plant_id": { "type": ["string", "null"] },
+    "before": { "type": ["object", "null"], "description": "Prior state for edits (diff source)." },
+    "after": { "type": ["object", "null"], "description": "New state for edits (diff target)." },
+    "reason": { "type": ["string", "null"], "description": "Human-supplied reason for change/override/shelve." },
+    "request_id": { "type": ["string", "null"] },
+    "session_id": { "type": ["string", "null"] },
+    "source_ip": { "type": ["string", "null"] },
+    "hash_prev": { "type": "string", "description": "hash_self of the previous record (genesis = 64 zeros)." },
+    "hash_self": { "type": "string", "description": "SHA-256 over canonical JSON of this record (excluding hash_self) concatenated with hash_prev." }
+  }
+}

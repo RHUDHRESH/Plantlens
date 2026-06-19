@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plantlens.dev/contracts/scenarios.schema.json",
+  "title": "Scenarios",
+  "description": "Deterministic simulator scripts. Each scenario is a timed sequence of tag changes the simulator plays as if it were live data, plus the EXPECTED root cause and alarms — which turn every scenario into an automated test. This is what makes the demo repeatable and the runtime testable without hardware.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "scenarios"],
+  "properties": {
+    "version": { "type": "string" },
+    "scenarios": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "duration_ms", "events"],
+        "properties": {
+          "id": { "type": "string", "description": "e.g. scn_motor_overload." },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "duration_ms": { "type": "integer", "minimum": 0 },
+          "expected_situation": { "type": ["string", "null"], "description": "Situation type the DAG should produce (test assertion). Null for negative/degraded scenarios where no situation is expected (e.g. RS485 dropout)." },
+          "expected_root_cause": { "type": ["string", "null"], "description": "Asset id the DAG should rank #1 (test assertion). Null when no root cause should be inferred." },
+          "expected_alarms": { "type": "array", "items": { "type": "string" }, "description": "Alarm ids that should fire (test assertion)." },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object", "additionalProperties": false,
+              "required": ["at_ms", "action", "tag"],
+              "properties": {
+                "at_ms": { "type": "integer", "minimum": 0, "description": "Offset from scenario start." },
+                "action": { "type": "string", "enum": ["set", "ramp", "fault"], "description": "set = step value; ramp = interpolate from→to over over_ms; fault = inject quality/comms fault." },
+                "tag": { "type": "string", "description": "Tag id; must exist in tag_map.json." },
+                "asset_id": { "type": "string" },
+                "value": { "type": ["number", "boolean", "string", "null"], "description": "For action=set." },
+                "from": { "type": "number", "description": "For action=ramp." },
+                "to": { "type": "number", "description": "For action=ramp." },
+                "over_ms": { "type": "integer", "description": "For action=ramp." },
+                "unit": { "type": "string" },
+                "quality": { "type": "string", "enum": ["GOOD", "UNCERTAIN", "BAD", "STALE", "MISSING"], "default": "GOOD" },
+                "fault": { "type": "object", "description": "For action=fault, e.g. {type: packet_loss, rate: 0.1} or {type: stale}.", "additionalProperties": true }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

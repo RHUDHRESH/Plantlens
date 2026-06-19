@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plantlens.dev/contracts/hmi_view_model.schema.json",
+  "title": "HmiViewModel",
+  "description": "COMPILED output (compiled_hmi.json) — never hand-edited. Produced by the Studio compiler from plant + tag_map + alarm_rules + causal_graph. Both the 2D and 3D maps render from this; they share node ids and only differ in coords. 'what exists and where it is' (static); live status comes separately over the WebSocket.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["view_id", "version", "map_2d", "map_3d"],
+  "properties": {
+    "view_id": { "type": "string" },
+    "version": { "type": "string" },
+    "for_role": { "type": "string", "enum": ["operator", "engineer", "maintenance", "supervisor", "admin"], "description": "Role this view is filtered for; the compiler emits one per role (role_views)." },
+    "theme": { "type": "string", "default": "dark-hmi" },
+    "layout": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "mode": { "type": "string", "enum": ["2d_first", "hybrid_2d_3d"], "default": "hybrid_2d_3d" },
+        "default_view": { "type": "string", "enum": ["2d", "3d"], "default": "2d" },
+        "canvas": { "type": "object", "properties": { "width": { "type": "number" }, "height": { "type": "number" } } }
+      }
+    },
+    "map_2d": {
+      "type": "object", "additionalProperties": false, "required": ["nodes", "edges"],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "label", "asset_type", "position", "status_binding"],
+            "properties": {
+              "id": { "type": "string", "description": "Equals an asset_id." },
+              "label": { "type": "string" },
+              "asset_type": { "type": "string" },
+              "criticality": { "type": "string" },
+              "position": { "type": "object", "required": ["x", "y"], "properties": { "x": { "type": "number" }, "y": { "type": "number" } } },
+              "tags": { "type": "array", "items": { "type": "string" }, "description": "Tag ids bound to this asset (for the asset detail panel)." },
+              "alarms": { "type": "array", "items": { "type": "string" } },
+              "status_binding": { "type": "string", "description": "Runtime key the live status maps to, e.g. asset_status.MTR-301." }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "from", "to", "type"],
+            "properties": {
+              "id": { "type": "string" }, "from": { "type": "string" }, "to": { "type": "string" },
+              "type": { "type": "string", "enum": ["power_flow", "signal", "causal"] }
+            }
+          }
+        }
+      }
+    },
+    "map_3d": {
+      "type": "object", "additionalProperties": false, "required": ["nodes", "edges"],
+      "description": "Same node ids as map_2d but with scene coords + model names.",
+      "properties": {
+        "nodes": { "type": "array", "items": { "type": "object" } },
+        "edges": { "type": "array", "items": { "type": "object" } }
+      }
+    },
+    "widgets": {
+      "type": "array",
+      "description": "Generated widgets (kpi-card, asset_card, trend-strip, alarm-table, root-cause-card).",
+      "items": { "type": "object", "required": ["id", "type"], "properties": { "id": { "type": "string" }, "type": { "type": "string" } } }
+    },
+    "panels": {
+      "type": "array",
+      "description": "Right/bottom/drawer panels (situation_stack, alarm_table, dag_explain).",
+      "items": { "type": "object", "required": ["id", "type", "position"], "properties": { "id": { "type": "string" }, "type": { "type": "string" }, "position": { "type": "string", "enum": ["right", "bottom", "drawer", "left"] } } }
+    }
+  }
+}

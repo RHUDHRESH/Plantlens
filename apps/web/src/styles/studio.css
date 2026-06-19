@@ -1,0 +1,106 @@
+.studio-shell {
+  padding: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.studio-shell__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.studio-shell__steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.studio-shell__steps button {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.studio-shell__steps button.active {
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.studio-shell__body {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 16px;
+}
+
+.studio-form {
+  display: grid;
+  gap: 10px;
+  max-width: 480px;
+}
+
+.studio-field {
+  display: grid;
+  gap: 4px;
+}
+
+.studio-field em {
+  color: var(--status-critical);
+  font-size: 12px;
+  font-style: normal;
+}
+
+.validation-panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  background: var(--surface);
+  font-size: 13px;
+}
+
+.validation-panel__ok {
+  color: var(--status-normal);
+}
+
+.validation-panel__error {
+  color: var(--status-critical);
+  margin-bottom: 8px;
+}
+
+.validation-panel__warn {
+  color: var(--status-warning);
+  margin-bottom: 6px;
+}
+
+.validation-panel__list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.compile-preview__map {
+  margin-top: 12px;
+  min-height: 200px;
+}
+
+.compile-preview__fail {
+  color: var(--status-critical);
+}
+
+.studio-canvas__hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.studio-shell__json pre {
+  max-height: 240px;
+  overflow: auto;
+  font-size: 11px;
+  background: var(--surface-muted);
+  padding: 8px;
+  border-radius: 8px;
+}

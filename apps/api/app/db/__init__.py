@@ -1,0 +1,1 @@
+"""SQLAlchemy persistence layer (ORM only — not Pydantic transport schemas)."""

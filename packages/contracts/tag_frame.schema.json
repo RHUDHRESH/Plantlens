@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plantlens.dev/contracts/tag_frame.schema.json",
+  "title": "TagFrame",
+  "description": "The universal live telemetry envelope. The simulator AND the RS485 gateway both emit EXACTLY this shape (rule R3). Nothing downstream knows or cares which source produced it. This is the most important contract in the system — get it right first.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["tag_id", "asset_id", "value", "unit", "quality", "timestamp", "source"],
+  "properties": {
+    "tag_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9_]+$",
+      "description": "Semantic tag id, conventionally <ASSET>_<SIGNAL>, e.g. MOTOR_301_CURRENT. Must exist in tag_map.json."
+    },
+    "asset_id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9-]+$",
+      "description": "Owning asset, e.g. MTR-301. Must exist in plant.json."
+    },
+    "value": {
+      "type": ["number", "string", "boolean", "null"],
+      "description": "Decoded engineering value. null is allowed and is paired with a non-GOOD quality."
+    },
+    "unit": {
+      "type": "string",
+      "description": "Engineering unit, e.g. V, A, rpm, C, mm/s, bool."
+    },
+    "quality": {
+      "type": "string",
+      "enum": ["GOOD", "UNCERTAIN", "BAD", "STALE", "MISSING"],
+      "description": "Data quality. The alarm/DAG engines treat non-GOOD specially: STALE/MISSING/BAD can force a sensor_bad asset status and must never silently feed a confident root cause."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC3339 UTC source timestamp. For Modbus this is the gateway read time; for sim it is the emit time."
+    },
+    "source": {
+      "type": "string",
+      "enum": ["simulator", "modbus_rtu", "modbus_tcp", "manual", "backfill"],
+      "description": "Origin of the frame. Used for dedupe and for the 'data source' indicator in the HMI top strip."
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Monotonic sequence number per source. Enables idempotent dedupe by (source, tag_id, seq, timestamp)."
+    },
+    "ingest_ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Optional: when the API received the frame (vs when the source produced it). Lets you measure end-to-end latency and detect clock skew."
+    },
+    "gateway_id": {
+      "type": "string",
+      "description": "Optional: which gateway instance produced this (multi-gateway sites)."
+    },
+    "scenario_id": {
+      "type": "string",
+      "description": "Optional: set when the frame originates from a simulator scenario, for replay/audit."
+    }
+  }
+}

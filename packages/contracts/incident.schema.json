@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plantlens.dev/contracts/incident.schema.json",
+  "title": "IncidentRoom",
+  "description": "The shared command screen created when a Calm Card is escalated. Evidence-first (not chat-first): one object carrying root asset, live state, the Calm Card, the evidence bundle, a response checklist, an append-only timeline, and resolution. The timeline is append-only and every mutation is hash-chained in audit.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["incident_id", "title", "status", "severity", "created_at", "root_asset", "checklist", "timeline"],
+  "properties": {
+    "incident_id": { "type": "string", "description": "e.g. INC_20260618_001." },
+    "title": { "type": "string" },
+    "status": { "type": "string", "enum": ["open", "acknowledged", "in_progress", "resolved", "closed"], "description": "Simple state machine: open→acknowledged→in_progress→resolved→closed." },
+    "severity": { "type": "string", "enum": ["info", "warning", "critical"] },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "assigned_role": { "type": "string", "enum": ["operator", "maintenance", "engineer", "supervisor", "admin"] },
+    "assigned_to": { "type": ["string", "null"] },
+    "root_asset": {
+      "type": "object", "additionalProperties": false, "required": ["asset_id", "name", "status"],
+      "properties": { "asset_id": { "type": "string" }, "name": { "type": "string" }, "status": { "type": "string" } }
+    },
+    "live_state": {
+      "type": "object", "additionalProperties": false,
+      "description": "Snapshot of whether the fault is still active, computed from current runtime — so the room shows live truth, not a frozen ticket.",
+      "properties": {
+        "still_active": { "type": "boolean" },
+        "active_alarm_count": { "type": "integer" },
+        "latest_value_summary": { "type": "array", "items": { "type": "object", "properties": { "tag_id": { "type": "string" }, "value": {}, "unit": { "type": "string" }, "quality": { "type": "string" } } } }
+      }
+    },
+    "calm_card": { "type": "object", "description": "The Calm Card this incident was escalated from." },
+    "evidence_bundle": { "type": "object", "description": "Situation + raw alarms + traversed edges captured at escalation time." },
+    "checklist": {
+      "type": "array",
+      "description": "Structured response steps generated from the situation type (better than free-form comments).",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["id", "label", "status"],
+        "properties": {
+          "id": { "type": "string" }, "label": { "type": "string" },
+          "status": { "type": "string", "enum": ["pending", "done", "blocked"] },
+          "completed_by": { "type": ["string", "null"] }, "completed_at": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "timeline": {
+      "type": "array",
+      "description": "Append-only event log. Never edit items; add correction entries instead.",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["id", "type", "timestamp", "actor", "message"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string", "enum": ["incident_created", "status_changed", "comment", "checklist_updated", "resolution_added", "system_update"] },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "actor": { "type": "string" }, "message": { "type": "string" }
+        }
+      }
+    },
+    "resolution": {
+      "type": ["object", "null"], "additionalProperties": false,
+      "description": "Filled when resolved. plantlens_diagnosis_correct becomes training/feedback signal later.",
+      "properties": {
+        "resolved_by": { "type": "string" }, "resolved_at": { "type": "string", "format": "date-time" },
+        "confirmed_root_cause": { "type": "string" }, "action_taken": { "type": "string" },
+        "downtime_minutes": { "type": "integer" }, "plantlens_diagnosis_correct": { "type": "boolean" }
+      }
+    }
+  }
+}

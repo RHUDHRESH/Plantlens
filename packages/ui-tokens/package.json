@@ -1,0 +1,7 @@
+{
+  "name": "@plantlens/ui-tokens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Design tokens — the source for apps/web/src/styles/tokens.css. Keep tokens.json and tokens.css in sync.",
+  "main": "tokens.json"
+}

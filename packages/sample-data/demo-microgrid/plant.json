@@ -1,0 +1,32 @@
+{
+  "plant_id": "demo_microgrid_001",
+  "name": "PlantLens Demo Microgrid",
+  "version": "1.0.0",
+  "timezone": "Asia/Kolkata",
+  "topology": "electrical_dc_microgrid",
+  "areas": [
+    { "id": "yard", "name": "Solar Yard", "kind": "generation" },
+    { "id": "panel", "name": "Control Panel", "kind": "distribution" },
+    { "id": "loads", "name": "Load Bank", "kind": "consumption" }
+  ],
+  "assets": [
+    { "id": "PV-101", "type": "source.solar", "display_name": "PV Array", "area_id": "yard", "criticality": "medium", "coords_2d": { "x": 120, "y": 120 }, "coords_3d": { "x": 6.0, "y": 0.0, "z": 0.0, "model": "solar_panel" }, "meta": { "rated_voltage_v": 24, "rated_power_w": 250 } },
+    { "id": "MPPT-101", "type": "control.charge_controller", "display_name": "MPPT Controller", "area_id": "panel", "parent_asset_id": "PV-101", "criticality": "medium", "coords_2d": { "x": 300, "y": 120 }, "coords_3d": { "x": 4.0, "y": 0.0, "z": 0.0, "model": "box" } },
+    { "id": "BAT-101", "type": "storage.battery", "display_name": "Battery Bank", "area_id": "panel", "parent_asset_id": "MPPT-101", "criticality": "high", "coords_2d": { "x": 480, "y": 160 }, "coords_3d": { "x": 2.0, "y": 0.0, "z": 0.0, "model": "battery_box" }, "meta": { "nominal_voltage_v": 24, "chemistry": "LiFePO4" } },
+    { "id": "BUS-101", "type": "distribution.dc_bus", "display_name": "DC Bus", "area_id": "panel", "parent_asset_id": "BAT-101", "criticality": "high", "coords_2d": { "x": 660, "y": 160 }, "coords_3d": { "x": 0.0, "y": 0.0, "z": 0.0, "model": "busbar_box" } },
+    { "id": "INV-101", "type": "drive.inverter", "display_name": "Lamp Inverter", "area_id": "loads", "parent_asset_id": "BUS-101", "criticality": "medium", "coords_2d": { "x": 840, "y": 110 }, "coords_3d": { "x": -2.0, "y": 1.0, "z": 0.0, "model": "inverter_box" } },
+    { "id": "INV-102", "type": "drive.inverter", "display_name": "Motor Inverter", "area_id": "loads", "parent_asset_id": "BUS-101", "criticality": "high", "coords_2d": { "x": 840, "y": 210 }, "coords_3d": { "x": -2.0, "y": -1.0, "z": 0.0, "model": "inverter_box" } },
+    { "id": "LD-201", "type": "load.lamp", "display_name": "Lamp Load", "area_id": "loads", "parent_asset_id": "INV-101", "criticality": "low", "coords_2d": { "x": 1020, "y": 110 }, "coords_3d": { "x": -4.0, "y": 1.0, "z": 0.0, "model": "box" } },
+    { "id": "MTR-301", "type": "load.motor_3phase", "display_name": "3-Phase Motor", "area_id": "loads", "parent_asset_id": "INV-102", "criticality": "high", "coords_2d": { "x": 1020, "y": 210 }, "coords_3d": { "x": -4.0, "y": -1.0, "z": 0.0, "model": "motor_simple" } }
+  ],
+  "connections": [
+    { "from": "PV-101", "to": "MPPT-101", "kind": "power" },
+    { "from": "MPPT-101", "to": "BAT-101", "kind": "power" },
+    { "from": "BAT-101", "to": "BUS-101", "kind": "power" },
+    { "from": "BUS-101", "to": "INV-101", "kind": "power" },
+    { "from": "BUS-101", "to": "INV-102", "kind": "power" },
+    { "from": "INV-101", "to": "LD-201", "kind": "power" },
+    { "from": "INV-102", "to": "MTR-301", "kind": "power" }
+  ],
+  "roles": ["operator", "engineer", "maintenance", "supervisor", "admin"]
+}

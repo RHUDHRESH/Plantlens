@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plantlens.dev/contracts/situation.schema.json",
+  "title": "Situation",
+  "description": "DERIVED. The output of the situation engine: a flood of raw alarms collapsed into ONE root-cause situation. Carries the grouped alarms (nothing hidden), the root + affected assets, the causal path, and the ordered evidence. The Calm Card is rendered from this.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["situation_id", "situation_type", "title", "severity", "root_asset_id", "created_at", "grouped_alarm_ids", "evidence"],
+  "properties": {
+    "situation_id": { "type": "string", "description": "e.g. SIT_MOTOR_OVERLOAD." },
+    "situation_type": { "type": "string", "description": "SCREAMING_SNAKE type, e.g. MOTOR_MECHANICAL_OVERLOAD. Drives Calm Card copy + action envelope." },
+    "title": { "type": "string", "description": "e.g. 'Motor Mechanical Overload'." },
+    "severity": { "type": "string", "enum": ["info", "warning", "critical"] },
+    "root_asset_id": { "type": "string", "description": "The asset the DAG ranks as the root cause." },
+    "root_asset_name": { "type": "string" },
+    "confidence": { "type": "string", "enum": ["low", "medium", "high"], "description": "Bucketed confidence (the underlying numeric breakdown is stored in evidence/audit, not hidden)." },
+    "created_at": { "type": "string", "format": "date-time" },
+    "grouped_alarm_ids": { "type": "array", "items": { "type": "string" }, "description": "Every raw alarm folded into this situation. NOTHING is hidden — these remain individually viewable with receipts." },
+    "affected_asset_ids": { "type": "array", "items": { "type": "string" }, "description": "Downstream assets shown as effects (amber), not causes." },
+    "causal_path": { "type": "array", "items": { "type": "string" }, "description": "Ordered asset ids from root through effects, e.g. [MTR-301, BUS-101, INV-102]. Drives the numbered path overlay on the map." },
+    "traversed_edges": { "type": "array", "items": { "type": "string" }, "description": "Causal-graph edge ids the traversal followed (the audit trail of HOW the root was reached)." },
+    "evidence": {
+      "type": "array",
+      "description": "Time-ordered evidence items. The first is the 'first signal'.",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["alarm_id", "asset_id", "timestamp", "reason"],
+        "properties": {
+          "alarm_id": { "type": "string" },
+          "asset_id": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "reason": { "type": "string", "description": "Plain-language why this is evidence, e.g. 'Motor current rose first'." },
+          "role": { "type": "string", "enum": ["first_signal", "evidence", "consequence"], "default": "evidence" }
+        }
+      }
+    }
+  }
+}

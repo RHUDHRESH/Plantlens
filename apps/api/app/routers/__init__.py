@@ -1,0 +1,1 @@
+"""HTTP routers — thin handlers delegating to services and engines."""

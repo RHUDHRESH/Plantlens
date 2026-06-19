@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plantlens.dev/contracts/alarm_rules.schema.json",
+  "title": "AlarmRules",
+  "description": "Deterministic, explicit alarm rules. The alarm engine evaluates these against live tags — no ML, no inference. Each rule maps one tag + condition to a severity, with debounce/deadband to stop chatter. Aligns with ISA-18.2 lifecycle concepts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "rules"],
+  "properties": {
+    "version": { "type": "string" },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "tag", "severity", "condition", "message"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Z0-9_]+$", "description": "Alarm id, SCREAMING_SNAKE, e.g. MOTOR_CURRENT_HIGH." },
+          "tag": { "type": "string", "description": "Tag to evaluate; must exist in tag_map.json." },
+          "asset_id": { "type": "string", "description": "Owning asset (denormalized for fast status derivation); must exist." },
+          "severity": { "type": "string", "enum": ["info", "warning", "critical"], "description": "Drives node color + Calm Card severity + priority." },
+          "priority": { "type": "integer", "minimum": 1, "maximum": 4, "description": "1 highest. Used for ordering when not using time-to-consequence." },
+          "condition": {
+            "type": "object", "additionalProperties": false,
+            "required": ["op"],
+            "description": "The trigger. Supports a single threshold or warning/critical bands.",
+            "properties": {
+              "op": { "type": "string", "enum": ["<", "<=", ">", ">=", "==", "!=", "bool_true", "bool_false"] },
+              "threshold": { "type": "number", "description": "Single-threshold form." },
+              "warning": { "type": "number", "description": "Band form: warning level." },
+              "critical": { "type": "number", "description": "Band form: critical level. Must be more severe than warning (validator checks logical ordering)." },
+              "for_ms": { "type": "integer", "minimum": 0, "default": 0, "description": "Debounce: condition must hold this long before the alarm raises." }
+            }
+          },
+          "deadband": { "type": "number", "minimum": 0, "default": 0, "description": "Hysteresis: value must recover past threshold±deadband before clearing. Prevents flapping. Cannot be negative." },
+          "delay_ms": { "type": "integer", "minimum": 0, "default": 0, "description": "Additional raise delay. Cannot be negative." },
+          "latching": { "type": "boolean", "default": false, "description": "If true, stays active until explicitly acked even after value recovers." },
+          "requires_ack": { "type": "boolean", "default": false, "description": "Critical alarms should require ack (validator warns if a critical rule has requires_ack=false)." },
+          "shelvable": { "type": "boolean", "default": false, "description": "Operator may shelve (OPC-UA shelving). Shelving is audited with reason/owner/expiry." },
+          "max_shelve_seconds": { "type": "integer", "description": "Required if shelvable; suppression without expiry is rejected." },
+          "message": { "type": "string", "description": "Plain-language message, e.g. 'Motor current high'." },
+          "suggested_actions": { "type": "array", "items": { "type": "string" }, "description": "Hints; the authoritative actions live in action_envelope." }
+        }
+      }
+    }
+  }
+}

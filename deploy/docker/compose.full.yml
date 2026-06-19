@@ -1,0 +1,56 @@
+# Full local stack. Run from repo root:
+#   docker compose -f deploy/docker/compose.full.yml up --build
+# MVP shortcut: comment out postgres + agents and set api DATABASE_URL to sqlite.
+name: plantlens
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/api.Dockerfile
+    environment:
+      PLANTLENS_ENV: dev
+      DATABASE_URL: postgresql+psycopg://plantlens:plantlens@postgres:5432/plantlens
+      ACTIVE_PLANT_ID: demo_microgrid_001
+      SAMPLE_DATA_DIR: /packages/sample-data/demo-microgrid
+      COMPILED_DIR: /app/compiled
+      GATEWAY_INGEST_TOKEN: dev-token
+      AGENTS_BASE_URL: http://agents:8100
+    ports: ["8000:8000"]
+    depends_on: [postgres]
+
+  web:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/web.Dockerfile
+    ports: ["8080:80"]
+    depends_on: [api]
+
+  gateway:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/gateway.Dockerfile
+    environment:
+      API_BASE_URL: http://api:8000
+      GATEWAY_INGEST_TOKEN: dev-token
+    # For real RS485 add:  devices: ["/dev/ttyUSB0:/dev/ttyUSB0"]
+    depends_on: [api]
+
+  agents:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/agents.Dockerfile
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    ports: ["8100:8100"]
+
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: plantlens
+      POSTGRES_PASSWORD: plantlens
+      POSTGRES_DB: plantlens
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+
+volumes:
+  pgdata:

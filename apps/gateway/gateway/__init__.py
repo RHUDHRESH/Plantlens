@@ -1,0 +1,1 @@
+"""PlantLens gateway — read-only Modbus poller (rule R7)."""

@@ -1,0 +1,24 @@
+{
+  "_comment": "Register map for the DAG-to-PLC advisory bridge. Advisory block (100-104) is written by PlantLens for the PLC/HMI to DISPLAY. Request block (200-205) is written by PlantLens as a REQUEST; feedback block (210-212) is written BY THE PLC. PlantLens never directly actuates.",
+  "advisory": [
+    { "output_id": "PLANTLENS_ACTIVE", "register_type": "holding", "address": 100, "data_type": "uint16", "meaning": "1 when PlantLens has an active diagnosis" },
+    { "output_id": "SITUATION_CODE", "register_type": "holding", "address": 101, "data_type": "uint16", "meaning": "current situation code (see code table)" },
+    { "output_id": "ROOT_ASSET_CODE", "register_type": "holding", "address": 102, "data_type": "uint16", "meaning": "root asset numeric code" },
+    { "output_id": "SEVERITY_CODE", "register_type": "holding", "address": 103, "data_type": "uint16", "meaning": "0 normal,1 info,2 warning,3 critical" },
+    { "output_id": "CONFIDENCE_PERCENT", "register_type": "holding", "address": 104, "data_type": "uint16", "meaning": "0..100 confidence" },
+    { "output_id": "RECOMMENDED_ACTION_CODE", "register_type": "holding", "address": 105, "data_type": "uint16", "meaning": "action_code from action_envelope" }
+  ],
+  "action_request": [
+    { "output_id": "ACTION_REQUEST_ID", "register_type": "holding", "address": 201, "data_type": "uint16", "meaning": "monotonic request id" },
+    { "output_id": "ACTION_CODE", "register_type": "holding", "address": 202, "data_type": "uint16", "meaning": "requested action code" },
+    { "output_id": "TARGET_ASSET_CODE", "register_type": "holding", "address": 203, "data_type": "uint16", "meaning": "target asset code" },
+    { "output_id": "REQUEST_TTL_SECONDS", "register_type": "holding", "address": 204, "data_type": "uint16", "meaning": "request expiry" },
+    { "output_id": "OPERATOR_CONFIRMATION_CODE", "register_type": "holding", "address": 205, "data_type": "uint16", "meaning": "operator confirmation token" },
+    { "output_id": "ACTION_REQUEST_ACTIVE", "register_type": "holding", "address": 200, "data_type": "uint16", "meaning": "WRITE THIS LAST: 1 = request valid (avoids the PLC reading a half-written request)" }
+  ],
+  "plc_feedback": [
+    { "output_id": "PLC_ACTION_STATUS", "register_type": "holding", "address": 210, "data_type": "uint16", "meaning": "0 none,1 received,2 accepted,3 denied,4 executing,5 completed,6 failed (WRITTEN BY PLC)" },
+    { "output_id": "PLC_DENY_REASON_CODE", "register_type": "holding", "address": 211, "data_type": "uint16", "meaning": "0 none,1 interlock,2 wrong state,3 manual mode,4 estop,5 expired (WRITTEN BY PLC)" },
+    { "output_id": "PLC_LAST_ACTION_ID", "register_type": "holding", "address": 212, "data_type": "uint16", "meaning": "echoes the last handled request id (WRITTEN BY PLC)" }
+  ]
+}

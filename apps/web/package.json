@@ -1,0 +1,45 @@
+{
+  "name": "@plantlens/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "PlantLens web — React 19 + Vite. Runtime HMI, 2D/3D maps, Calm Cards, Studio, Incident Room.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "e2e": "playwright test"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.0.0",
+    "@tanstack/react-query": "^5.0.0",
+    "zustand": "^5.0.0",
+    "motion": "^12.0.0",
+    "lucide-react": "^0.460.0",
+    "zod": "^3.24.0",
+    "react-hook-form": "^7.54.0",
+    "@hookform/resolvers": "^3.9.0",
+    "@xyflow/react": "^12.4.0",
+    "three": "^0.175.0",
+    "@react-three/fiber": "^9.1.0",
+    "@react-three/drei": "^10.0.0"
+  },
+  "_dependencies_by_chunk_note": "Add per chunk (docs/LIBRARIES.md): Chunk5 tailwindcss @tailwindcss/vite @radix-ui/react-{dialog,tabs,tooltip}; Chunk6 recharts; Chunk8 three @react-three/fiber @react-three/drei; Chunk9 react-hook-form @hookform/resolvers zod @xyflow/react.",
+  "devDependencies": {
+    "typescript": "~5.9.0",
+    "vite": "^7.0.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "vitest": "^4.0.0",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "jsdom": "^25.0.0",
+    "@playwright/test": "^1.48.0",
+    "@types/three": "^0.175.0"
+  }
+}

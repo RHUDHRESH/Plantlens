@@ -1,0 +1,9 @@
+# PlantLens agents image (draft-only AI). Optional. Build context = repo root.
+FROM python:3.12-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+WORKDIR /app
+COPY apps/agents/pyproject.toml /app/
+RUN pip install --no-cache-dir .
+COPY apps/agents/agents /app/agents
+EXPOSE 8100
+CMD ["uvicorn", "agents.main:app", "--host", "0.0.0.0", "--port", "8100"]

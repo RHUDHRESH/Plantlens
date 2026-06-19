@@ -1,0 +1,6 @@
+{
+  "name": "@plantlens/icons",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PlantLens domain SVG symbol library (motors, buses, inverters, sensors). Referenced by the 2D map and 3D model keys."
+}

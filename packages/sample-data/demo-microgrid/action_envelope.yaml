@@ -1,0 +1,57 @@
+# Action envelope for the demo microgrid.
+# PlantLens RECOMMENDS these; it never controls hardware. For the PLC bridge they become
+# REQUESTS the PLC accepts/denies via its own interlocks. Validated against
+# packages/contracts/action_envelope.schema.json.
+actions:
+  - id: INSPECT_SHAFT_LOAD
+    action_code: 601
+    label: Inspect shaft load, coupling, and bearing drag
+    situation_ids:
+      - MOTOR_MECHANICAL_OVERLOAD
+    allowed_roles: [operator, maintenance]
+    risk_level: medium
+    requires_isolation: true
+    safety_note: Follow site isolation procedure before touching rotating equipment.
+    target_asset_id: MTR-301
+
+  - id: VERIFY_DC_BUS_INPUT
+    action_code: 602
+    label: Verify DC bus input to inverter
+    situation_ids:
+      - DC_BUS_WEAKNESS
+      - INVERTER_UNDERVOLTAGE_SITUATION
+    allowed_roles: [operator, maintenance]
+    risk_level: medium
+    requires_isolation: false
+    target_asset_id: BUS-101
+
+  - id: RESTART_INVERTER
+    action_code: 603
+    label: Restart inverter
+    situation_ids:
+      - INVERTER_FAULT
+    allowed_roles: [maintenance, engineer]
+    risk_level: high
+    requires_isolation: false
+    plc_permission_required: true
+    target_asset_id: INV-102
+    blocked_if:
+      - MOTOR_TEMP_HIGH
+      - MOTOR_VIB_HIGH
+    blocked_message: Restart blocked while motor thermal or vibration alarms remain active.
+
+  - id: REQUEST_SAFE_STOP_MOTOR
+    action_code: 610
+    label: Request PLC safe stop for motor
+    situation_ids:
+      - MOTOR_MECHANICAL_OVERLOAD
+      - MOTOR_OVERTEMPERATURE
+    allowed_roles: [operator, maintenance]
+    risk_level: high
+    requires_operator_confirm: true
+    plc_permission_required: true
+    target_asset_id: MTR-301
+    blocked_if:
+      - EMERGENCY_STOP_ACTIVE
+      - PLC_COMMS_BAD
+    blocked_message: Safe-stop request blocked on E-stop or PLC comms failure.

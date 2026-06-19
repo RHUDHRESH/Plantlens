@@ -1,0 +1,45 @@
+/* PlantLens design tokens — the single CSS source of truth for color/spacing/motion.
+   Mirrors packages/ui-tokens/tokens.json. See docs/DESIGN_SYSTEM.md.
+   RULE: this is a High-Performance HMI — mostly grey; saturated color ONLY for abnormal status. */
+:root {
+  /* surfaces */
+  --bg: #F7F5F0;
+  --surface: #FFFFFF;
+  --surface-muted: #F1EEE8;
+  --grid: #E8E2D8;
+  --border: #DED8CE;
+
+  /* text */
+  --text: #111111;
+  --text-muted: #6B6B6B;
+
+  /* interactive */
+  --accent: #2563EB;
+
+  /* status — the ONLY saturated colors. Each is paired with text+icon+shape in components. */
+  --status-normal: #7A8471;
+  --status-warning: #C98910;
+  --status-critical: #B3261E;
+  --status-sensor-bad: #6B5DD3;
+  --status-offline: #8A8A8A;
+
+  /* geometry */
+  --radius: 16px;
+  --radius-dialog: 14px;
+
+  /* type */
+  --font-ui: "Inter Variable", Inter, system-ui, sans-serif;
+  --font-data: "Inter Variable", Inter, system-ui, sans-serif; /* use font-variant-numeric: tabular-nums + slashed-zero */
+
+  /* motion (durations) */
+  --motion-status: 180ms;
+  --motion-card: 220ms;
+  --motion-panel: 240ms;
+  --motion-path: 300ms;
+  --motion-camera: 400ms;
+}
+
+/* Honor reduced motion globally (also gate with useReducedMotion in JS). */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}

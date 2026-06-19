@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plantlens.dev/contracts/tag_map.schema.json",
+  "title": "TagMap",
+  "description": "Binds semantic tags to data sources (simulator or Modbus register), units, scaling, and quality policy. This is the layer the gateway reads to know what to poll and how to decode it. Authored in Studio.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "sources", "tags"],
+  "properties": {
+    "version": { "type": "string" },
+    "sources": {
+      "type": "array",
+      "description": "Declared data sources. The simulator source needs no serial config; modbus sources do.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_id", "protocol"],
+        "properties": {
+          "source_id": { "type": "string", "description": "Referenced by tags[].source_id." },
+          "protocol": { "type": "string", "enum": ["simulator", "modbus_rtu", "modbus_tcp"] },
+          "poll_ms": { "type": "integer", "minimum": 50, "default": 250, "description": "Poll cadence. 200-250ms demo bench; 500-1000ms slower field devices." },
+          "serial": {
+            "type": "object", "additionalProperties": false,
+            "description": "Required for modbus_rtu (RS485).",
+            "properties": {
+              "port": { "type": "string", "description": "e.g. /dev/ttyUSB0 or COM3." },
+              "baudrate": { "type": "integer", "default": 9600 },
+              "parity": { "type": "string", "enum": ["N", "E", "O"], "default": "N" },
+              "stopbits": { "type": "integer", "enum": [1, 2], "default": 1 },
+              "bytesize": { "type": "integer", "enum": [7, 8], "default": 8 },
+              "slave_id": { "type": "integer", "default": 1 }
+            }
+          },
+          "tcp": {
+            "type": "object", "additionalProperties": false,
+            "description": "Required for modbus_tcp.",
+            "properties": { "host": { "type": "string" }, "port": { "type": "integer", "default": 502 } }
+          }
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["tag", "asset_id", "source_id", "unit"],
+        "properties": {
+          "tag": { "type": "string", "pattern": "^[A-Z0-9_]+$", "description": "Tag id; must match a TagFrame.tag_id and (by convention) start with the asset prefix." },
+          "asset_id": { "type": "string", "description": "Owning asset; must exist in plant.json." },
+          "source_id": { "type": "string", "description": "Must match a sources[].source_id." },
+          "signal_type": {
+            "type": "string",
+            "description": "Semantic signal class; lets templates apply default units/alarms.",
+            "enum": ["electrical.voltage.dc", "electrical.voltage.ac", "electrical.current",
+              "mechanical.speed.rpm", "thermal.temperature", "mechanical.vibration", "status.bool"]
+          },
+          "unit": { "type": "string" },
+          "precision": { "type": "integer", "minimum": 0, "default": 2 },
+          "register": {
+            "type": "object", "additionalProperties": false,
+            "description": "Modbus register binding. Omit for simulator tags.",
+            "required": ["table", "address"],
+            "properties": {
+              "table": { "type": "string", "enum": ["holding", "input", "coil", "discrete"], "description": "FC03 holding / FC04 input / FC01 coil / FC02 discrete." },
+              "address": { "type": "integer", "minimum": 0 },
+              "width": { "type": "integer", "enum": [1, 2], "default": 2, "description": "Registers to read (2 for 32-bit values)." },
+              "codec": { "type": "string", "enum": ["uint16", "int16", "uint32_be", "int32_be", "float32_be", "float32_le", "bool"], "default": "float32_be" },
+              "scale": { "type": "number", "default": 1.0 },
+              "offset": { "type": "number", "default": 0.0 }
+            }
+          },
+          "sim_address": { "type": "string", "description": "Simulator handle, e.g. sim://dc_bus_voltage. Required for simulator tags." },
+          "quality_policy": {
+            "type": "object", "additionalProperties": false,
+            "description": "Freshness/quality rules the runtime applies.",
+            "properties": {
+              "stale_after_ms": { "type": "integer", "default": 1500, "description": "Mark STALE if no update within this window." },
+              "bad_if_null": { "type": "boolean", "default": true },
+              "hold_last_value": { "type": "boolean", "default": false, "description": "If true, keep last value while stale; else mark BAD/STALE." }
+            }
+          }
+        }
+      }
+    }
+  }
+}

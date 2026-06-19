@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "graph_id": "demo_microgrid_rca",
+  "nodes": [
+    { "id": "PV-101", "kind": "asset", "evidence_tags": ["PV_101_V", "PV_101_I"], "label": "PV Array" },
+    { "id": "MPPT-101", "kind": "asset", "evidence_tags": [], "label": "MPPT Controller" },
+    { "id": "BAT-101", "kind": "asset", "evidence_tags": ["BAT_101_V"], "label": "Battery Bank" },
+    { "id": "BUS-101", "kind": "asset", "evidence_tags": ["BUS_101_V"], "label": "DC Bus" },
+    { "id": "INV-102", "kind": "asset", "evidence_tags": ["INV_102_UNDERVOLTAGE"], "label": "Motor Inverter" },
+    { "id": "MTR-301", "kind": "asset", "evidence_tags": ["MOTOR_301_CURRENT", "MOTOR_301_RPM", "MOTOR_301_TEMP", "MOTOR_301_VIB"], "label": "3-Phase Motor" }
+  ],
+  "edges": [
+    { "id": "E1", "from": "PV-101", "to": "MPPT-101", "edge_type": "structural_power", "approved": true, "lag_ms": [0, 1500], "weight": 1.0, "confidence": 1.0, "provenance": "engineer_entered" },
+    { "id": "E2", "from": "MPPT-101", "to": "BAT-101", "edge_type": "structural_power", "approved": true, "lag_ms": [0, 2000], "weight": 1.0, "confidence": 1.0, "provenance": "engineer_entered" },
+    { "id": "E3", "from": "BAT-101", "to": "BUS-101", "edge_type": "structural_power", "approved": true, "lag_ms": [0, 800], "weight": 1.0, "confidence": 1.0, "provenance": "engineer_entered" },
+    { "id": "E4", "from": "BUS-101", "to": "INV-102", "edge_type": "structural_power", "approved": true, "lag_ms": [0, 500], "weight": 1.0, "confidence": 1.0, "provenance": "engineer_entered" },
+    { "id": "E5", "from": "MTR-301", "to": "BUS-101", "edge_type": "structural_load_effect", "approved": true, "lag_ms": [0, 4000], "weight": 0.8, "confidence": 0.9, "provenance": "cause_effect_matrix" },
+    { "id": "E6", "from": "BUS-101", "to": "INV-102", "edge_type": "structural_load_effect", "approved": true, "lag_ms": [0, 2000], "weight": 0.7, "confidence": 0.8, "provenance": "cause_effect_matrix" }
+  ],
+  "root_cause_rules": [
+    { "target_node": "MTR-301", "logic": "motor_current_high && bus_voltage_low_after_current && motor_current_rose_first" },
+    { "target_node": "BAT-101", "logic": "battery_voltage_low && mppt_output_normal && bus_low" },
+    { "target_node": "PV-101", "logic": "pv_current_low && downstream_bus_low && battery_normal" }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plantlens.dev/contracts/calm_card.schema.json",
+  "title": "CalmCard",
+  "description": "DERIVED, structured (never free text). Built by calm_card_engine from a Situation. The frontend renders this; AI may later polish wording but the STRUCTURE is deterministic. This is the decision interface — what's happening, why, what changed first, what to check first, what's blocked.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["card_id", "situation_id", "title", "severity", "root_asset_id", "created_at", "evidence_chain", "recommended_first_check", "raw_alarm_count", "operator_authority"],
+  "properties": {
+    "card_id": { "type": "string" },
+    "situation_id": { "type": "string" },
+    "title": { "type": "string" },
+    "severity": { "type": "string", "enum": ["info", "warning", "critical"] },
+    "root_asset_id": { "type": "string" },
+    "root_asset_name": { "type": "string" },
+    "confidence": { "type": "string", "enum": ["low", "medium", "high"] },
+    "created_at": { "type": "string", "format": "date-time" },
+    "first_signal": {
+      "type": ["object", "null"], "additionalProperties": false,
+      "description": "The earliest evidence — the thing that changed first. When present as an object (not null), alarm_id, asset_id, timestamp, and message are required so the UI can render FirstSignal deterministically.",
+      "required": ["alarm_id", "asset_id", "timestamp", "message"],
+      "properties": {
+        "alarm_id": { "type": "string" }, "tag_id": { "type": ["string", "null"] }, "asset_id": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "value": { "type": ["number", "boolean", "null"] }, "unit": { "type": ["string", "null"] },
+        "message": { "type": "string" }
+      }
+    },
+    "evidence_chain": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["order", "alarm_id", "asset_id", "message", "timestamp"],
+        "properties": {
+          "order": { "type": "integer", "minimum": 1 },
+          "alarm_id": { "type": "string" }, "asset_id": { "type": "string" },
+          "message": { "type": "string" }, "timestamp": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "why_it_matters": { "type": "string", "description": "Plain-language causal explanation, e.g. 'the motor branch is pulling the bus down; the source is not the first suspect'." },
+    "recommended_first_check": {
+      "type": "object", "additionalProperties": false,
+      "required": ["action_id", "label", "risk_level"],
+      "properties": {
+        "action_id": { "type": "string" }, "label": { "type": "string" },
+        "risk_level": { "type": "string", "enum": ["low", "medium", "high", "unknown"] },
+        "requires_isolation": { "type": "boolean", "default": false }
+      }
+    },
+    "blocked_actions": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["action_id", "label", "reason"],
+        "properties": { "action_id": { "type": "string" }, "label": { "type": "string" }, "reason": { "type": "string" } }
+      }
+    },
+    "time_to_consequence": {
+      "type": ["object", "null"], "additionalProperties": false,
+      "description": "Optional Endsley-L3 projection. Confidence band, not a single false-precise number. Advisory only. When present as an object (not null), target_tag, target_label, and state are required.",
+      "required": ["target_tag", "target_label", "state"],
+      "properties": {
+        "target_tag": { "type": "string" }, "target_label": { "type": "string" },
+        "seconds_low": { "type": ["number", "null"] }, "seconds_high": { "type": ["number", "null"] },
+        "state": { "type": "string", "enum": ["counting", "stable", "unknown"] }
+      }
+    },
+    "raw_alarm_count": { "type": "integer", "minimum": 0 },
+    "raw_alarm_ids": { "type": "array", "items": { "type": "string" }, "description": "Every grouped alarm, individually viewable (glass-box). UI says 'N raw alarms grouped — view raw alarms', never 'suppressed'." },
+    "operator_authority": { "type": "string", "description": "Fixed disclaimer: 'PlantLens does not trip or control equipment. It provides evidence-backed decision support.'" }
+  }
+}

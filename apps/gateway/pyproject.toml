@@ -1,0 +1,29 @@
+[project]
+name = "plantlens-gateway"
+version = "0.1.0"
+description = "PlantLens gateway — Modbus/RS485 poller. Reads registers, normalizes, quality-stamps, publishes TagFrames to the API. Read-only. Never diagnoses, compiles, or runs an LLM (rule R7)."
+requires-python = ">=3.12"
+dependencies = [
+  "pymodbus[serial]~=3.13",   # client/server/simulator, RTU/TCP, RS485
+  "pyserial~=3.5",
+  "pydantic~=2.13",
+  "pydantic-settings~=2.7",
+  "httpx~=0.28",              # publish frames to the API
+  "tenacity~=9.0",           # poll retry/backoff
+  "structlog~=24.0",
+  "orjson~=3.10",
+]
+
+[project.optional-dependencies]
+dev = ["pytest~=8.0", "pytest-asyncio~=0.24"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["gateway"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

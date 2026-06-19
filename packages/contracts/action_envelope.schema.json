@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plantlens.dev/contracts/action_envelope.schema.json",
+  "title": "ActionEnvelope",
+  "description": "The bounded set of actions PlantLens may RECOMMEND per situation, with role gating, blocking conditions, and isolation/safety notes. PlantLens never controls hardware; for the PLC bridge these become REQUESTS the PLC accepts/denies. Authored as YAML (action_envelope.yaml) but this schema describes the parsed shape.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["actions"],
+  "properties": {
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "situation_ids", "allowed_roles", "risk_level"],
+        "properties": {
+          "id": { "type": "string", "description": "Action id, e.g. INSPECT_SHAFT_LOAD." },
+          "action_code": { "type": "integer", "description": "Numeric code for the PLC advisory bridge (RECOMMENDED_ACTION_CODE)." },
+          "label": { "type": "string", "description": "Operator-facing label, e.g. 'Inspect shaft load, coupling, and bearing drag'." },
+          "situation_ids": { "type": "array", "items": { "type": "string" }, "description": "Situation types this action applies to; must be real situation types." },
+          "allowed_roles": { "type": "array", "items": { "type": "string", "enum": ["operator", "maintenance", "engineer", "supervisor", "admin"] } },
+          "risk_level": { "type": "string", "enum": ["low", "medium", "high", "unknown"] },
+          "requires_isolation": { "type": "boolean", "default": false, "description": "If true, the Calm Card shows a 'requires isolation / safe procedure' warning." },
+          "requires_operator_confirm": { "type": "boolean", "default": false },
+          "blocked_if": { "type": "array", "items": { "type": "string" }, "description": "Alarm ids that block this action while active (e.g. RESTART_INVERTER blocked_if MOTOR_TEMP_HIGH)." },
+          "blocked_message": { "type": "string", "description": "Explanation shown when blocked." },
+          "safety_note": { "type": "string" },
+          "target_asset_id": { "type": "string", "description": "For PLC-bridge requests: which asset the action targets." },
+          "plc_permission_required": { "type": "boolean", "default": false, "description": "If true, this becomes a PLC handshake request, never a direct write." }
+        }
+      }
+    }
+  }
+}

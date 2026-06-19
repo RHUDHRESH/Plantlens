@@ -1,0 +1,7 @@
+# pnpm workspace. The Python apps (api, gateway, agents) are NOT pnpm packages — they live
+# outside this list and are managed by uv/pip. Only JS/TS packages belong here.
+packages:
+  - "apps/web"
+  - "packages/ui-tokens"
+  - "packages/icons"
+  - "legacy/cliffords-ts"   # frozen; kept in the workspace only so its tests can run as the oracle
