@@ -1,6 +1,6 @@
 """Internal auth probe routes for tests — not product write endpoints."""
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth.dependencies import (
     get_current_principal,
@@ -10,7 +10,7 @@ from app.auth.dependencies import (
     require_viewer,
 )
 from app.auth.principal import Principal
-from app.auth.service import issue_dev_token
+from app.auth.service import AuthConfigurationError, issue_dev_token
 from app.settings import Settings, get_settings
 
 router = APIRouter(prefix="/internal/auth-test", tags=["internal-auth"])
@@ -55,8 +55,6 @@ async def dev_token(
     settings: Settings = Depends(get_settings),
 ) -> dict[str, str]:
     if settings.plantlens_env not in {"dev", "test"}:
-        from fastapi import HTTPException, status
-
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Not found",
@@ -64,10 +62,16 @@ async def dev_token(
     role = payload.get("role", "viewer")
     subject = payload.get("subject", "dev-user")
     actor_type = payload.get("actor_type", "agent" if role == "agent" else "user")
-    token = issue_dev_token(
-        settings,
-        subject=subject,
-        role=role,  # type: ignore[arg-type]
-        actor_type=actor_type,  # type: ignore[arg-type]
-    )
+    try:
+        token = issue_dev_token(
+            settings,
+            subject=subject,
+            role=role,  # type: ignore[arg-type]
+            actor_type=actor_type,  # type: ignore[arg-type]
+        )
+    except AuthConfigurationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=str(exc),
+        ) from exc
     return {"access_token": token, "token_type": "bearer"}

@@ -36,6 +36,7 @@ ALLOWED_API_PREFIXES = (
     "/api/runtime/",
     "/api/ws/",
     "/api/ingest/",
+    "/api/offline-ingest/",
     "/api/incidents",
     "/api/incidents/",
     "/api/agents/",

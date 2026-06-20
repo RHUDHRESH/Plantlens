@@ -1,0 +1,4 @@
+tag_id,asset_label,signal_label,register_address,function_code,data_type,scale,unit
+CHG_SOLAR_OUT_V,Solar Charger,Output Voltage,40001,03,uint16,0.1,V
+CHG_SOLAR_OUT_I,Solar Charger,Output Current,40002,03,uint16,0.01,A
+MTR_FHP_SPEED,FHP 3Phase AC Motor,Speed,40100,03,uint16,1,rpm

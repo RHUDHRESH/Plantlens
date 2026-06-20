@@ -34,6 +34,10 @@ class Settings(BaseSettings):
         default="./compiled",
         validation_alias=AliasChoices("COMPILED_DIR"),
     )
+    offline_ingest_data_dir: str = Field(
+        default="./offline-ingest-data",
+        validation_alias=AliasChoices("OFFLINE_INGEST_DATA_DIR"),
+    )
     oidc_issuer: str = Field(default="", validation_alias=AliasChoices("OIDC_ISSUER"))
     oidc_audience: str = Field(default="", validation_alias=AliasChoices("OIDC_AUDIENCE"))
     oidc_jwks_url: str = Field(default="", validation_alias=AliasChoices("OIDC_JWKS_URL"))

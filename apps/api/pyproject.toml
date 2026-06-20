@@ -9,6 +9,7 @@ requires-python = ">=3.12"
 dependencies = [
   # Chunk 1 — API skeleton, DB, auth, audit
   "fastapi~=0.137",
+  "python-multipart~=0.0.9",
   "uvicorn[standard]~=0.49",
   "pydantic~=2.13",
   "pydantic-settings~=2.7",
@@ -22,6 +23,8 @@ dependencies = [
   "networkx~=3.3",          # compile-time graph checks only (NOT the runtime hot path)
   # Chunk 4 — studio compiler
   "pyyaml~=6.0",
+  # Chunk 1A.4 — offline ingestion XLSX adapter
+  "openpyxl~=3.1",
   # Auth (Chunk 1) — pick ONE path:
   "authlib~=1.7",           # production OIDC/JWT verify
   # "python-jose[cryptography]", "passlib[bcrypt]",  # local dev bootstrap alternative

@@ -1,0 +1,19 @@
+asset_label,signal_label,tag_hint,unit,side
+Solar Charger,Output Voltage,V1,V,dc
+Solar Charger,Output Current,I1,A,dc
+Solar Charger,Output Power,P1,W,dc
+Mains Charger,Output Voltage,V2,V,dc
+Mains Charger,Output Current,I2,A,dc
+Mains Charger,Output Power,P2,W,dc
+24V Lithium Battery,Voltage,V3,V,dc
+24V Lithium Battery,Current,I3,A,dc
+24V Lithium Battery,Power,P3,W,dc
+Inverter,AC Output Voltage,V4,V,ac
+Inverter,AC Output Current,I4,A,ac
+Inverter,AC Output Power,P4,W,ac
+VFD,Motor Feed Voltage,V5,V,ac
+VFD,Motor Feed Current,I5,A,ac
+VFD,Motor Feed Power,P5,W,ac
+FHP 3Phase AC Motor,Speed,N,rpm,mechanical
+FHP 3Phase AC Motor,Vibration,Vib,mm/s,mechanical
+FHP 3Phase AC Motor,Temperature,Temp,degC,thermal

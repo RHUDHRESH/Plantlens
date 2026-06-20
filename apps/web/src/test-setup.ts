@@ -11,3 +11,10 @@ if (typeof window.matchMedia !== "function") {
     }),
   });
 }
+
+if (typeof HTMLCanvasElement !== "undefined") {
+  Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
+    writable: true,
+    value: () => null,
+  });
+}

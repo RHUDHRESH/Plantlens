@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import require_viewer
+from app.auth.dependencies import require_human_approver, require_viewer
 from app.auth.principal import Principal
 from app.dependencies import get_db
 from app.runtime.alarm_engine import acknowledge_alarm
@@ -27,7 +27,7 @@ async def get_runtime_snapshot(
 @router.post("/alarms/{alarm_id}/ack")
 async def ack_alarm(
     alarm_id: str,
-    principal: Principal = Depends(require_viewer),
+    principal: Principal = Depends(require_human_approver),
     session: AsyncSession = Depends(get_db),
 ) -> dict:
     if alarm_id not in runtime_state.active_alarms:

@@ -11,6 +11,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.auth.service import AuthConfigurationError, issue_dev_token
+from app.runtime.runtime_state import runtime_state
 from app.settings import get_settings
 
 API_ROOT = Path(__file__).resolve().parents[1]
@@ -130,6 +131,40 @@ def test_agent_cannot_approve_human_gated_action(client: TestClient):
     assert "agent" in response.json()["detail"].lower()
 
 
+@pytest.mark.parametrize(
+    ("role", "expected_status"),
+    [
+        ("viewer", 403),
+        ("agent", 403),
+        ("operator", 200),
+        ("maintenance", 200),
+        ("engineer", 200),
+        ("admin", 200),
+    ],
+)
+def test_human_approval_matrix_is_explicit(
+    client: TestClient,
+    role: str,
+    expected_status: int,
+):
+    token = _dev_token(client, role=role, subject=f"{role}-subject")
+    response = client.post("/internal/auth-test/approve", headers=_auth_header(token))
+    assert response.status_code == expected_status
+
+
+def test_agent_actor_type_cannot_approve_even_with_operator_role(client: TestClient):
+    settings = get_settings()
+    token = issue_dev_token(
+        settings,
+        subject="agent-disguised-as-operator",
+        role="operator",
+        actor_type="agent",
+    )
+    response = client.post("/internal/auth-test/approve", headers=_auth_header(token))
+    assert response.status_code == 403
+    assert "agent" in response.json()["detail"].lower()
+
+
 def test_whoami_returns_principal_fields(client: TestClient):
     token = _dev_token(client, role="maintenance", subject="maint-42")
     response = client.get("/internal/auth-test/whoami", headers=_auth_header(token))
@@ -153,6 +188,15 @@ def test_auth_errors_do_not_leak_secrets(client: TestClient):
 # --- Prompt 12: Auth guardian ---
 
 
+def test_non_bearer_authorization_scheme_rejected(client: TestClient):
+    response = client.get(
+        "/internal/auth-test/viewer",
+        headers={"Authorization": "Basic not-a-bearer-token"},
+    )
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Missing bearer token"
+
+
 def test_prod_without_oidc_returns_503_not_bypass(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv("PLANTLENS_ENV", "prod")
     monkeypatch.setenv("PLANTLENS_DEV_JWT_SECRET", "")
@@ -172,12 +216,54 @@ def test_prod_without_oidc_returns_503_not_bypass(monkeypatch: pytest.MonkeyPatc
     assert response.json()["detail"] == "Authentication is not configured"
 
 
+def test_dev_token_without_secret_returns_503(monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv("PLANTLENS_ENV", "dev")
+    monkeypatch.setenv("PLANTLENS_DEV_JWT_SECRET", "")
+    monkeypatch.setenv("OIDC_ISSUER", "")
+    monkeypatch.setenv("OIDC_AUDIENCE", "")
+    monkeypatch.setenv("OIDC_JWKS_URL", "")
+    get_settings.cache_clear()
+
+    from app.main import create_app
+
+    with TestClient(create_app()) as test_client:
+        response = test_client.post(
+            "/internal/auth-test/dev-token",
+            json={"role": "operator"},
+        )
+    assert response.status_code == 503
+    assert "PLANTLENS_DEV_JWT_SECRET" in response.json()["detail"]
+
+
 def test_malformed_jwt_returns_401(client: TestClient):
     response = client.get(
         "/internal/auth-test/viewer",
         headers=_auth_header("a.b"),
     )
     assert response.status_code == 401
+
+
+def test_tampered_dev_token_signature_returns_401(client: TestClient):
+    token = _dev_token(client, role="engineer")
+    header, payload, _signature = token.split(".")
+    tampered = f"{header}.{payload}.tampered-signature"
+    response = client.post(
+        "/internal/auth-test/engineer-write",
+        headers=_auth_header(tampered),
+    )
+    assert response.status_code == 401
+
+
+def test_unrecognized_role_claim_rejected(client: TestClient):
+    settings = get_settings()
+    token = issue_dev_token(
+        settings,
+        subject="bad-role-user",
+        role="superadmin",  # type: ignore[arg-type]
+    )
+    response = client.get("/internal/auth-test/viewer", headers=_auth_header(token))
+    assert response.status_code == 401
+    assert "role" in response.json()["detail"].lower()
 
 
 def test_agent_with_admin_claim_still_cannot_approve(client: TestClient):
@@ -194,6 +280,40 @@ def test_agent_with_admin_claim_still_cannot_approve(client: TestClient):
         headers=_auth_header(token),
     )
     assert response.status_code == 403
+
+
+@pytest.mark.parametrize(
+    ("role", "expected_status"),
+    [
+        ("viewer", 403),
+        ("agent", 403),
+        ("operator", 200),
+        ("maintenance", 200),
+        ("engineer", 200),
+        ("admin", 200),
+    ],
+)
+def test_alarm_ack_requires_human_approver_role(
+    client: TestClient,
+    role: str,
+    expected_status: int,
+):
+    runtime_state.active_alarms["ALARM_REDTEAM"] = {
+        "alarm_id": "ALARM_REDTEAM",
+        "acked": False,
+    }
+    token = _dev_token(client, role=role, subject=f"{role}-ack")
+    try:
+        response = client.post(
+            "/api/runtime/alarms/ALARM_REDTEAM/ack",
+            headers=_auth_header(token),
+        )
+    finally:
+        runtime_state.active_alarms.pop("ALARM_REDTEAM", None)
+
+    assert response.status_code == expected_status
+    if expected_status == 200:
+        assert response.json()["status"] == "ok"
 
 
 def test_auth_module_has_no_hardcoded_secrets():

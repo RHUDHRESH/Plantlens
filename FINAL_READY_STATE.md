@@ -17,7 +17,7 @@ pnpm install --frozen-lockfile
 pip install -e "./apps/api[dev]"
 
 # Run API (from repo root)
-cd apps/api && uvicorn app.main:app --reload --port 8000
+cd apps/api && PLANTLENS_DEV_JWT_SECRET=change-this-local-dev-secret uvicorn app.main:app --reload --port 8000
 
 # Run web
 pnpm --filter @plantlens/web dev

@@ -24,6 +24,8 @@ venv/
 .cliffords-data/
 apps/api/compiled/
 apps/api/runtime/
+apps/api/offline-ingest-data/
+offline-ingest-data/
 
 # Generated contract artifacts
 packages/contracts/generated-ts/

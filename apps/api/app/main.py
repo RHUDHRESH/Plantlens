@@ -19,6 +19,7 @@ from app.routers import (
     incidents,
     ingest,
     internal_auth,
+    offline_ingest,
     plc_status,
     runtime_api,
     simulator,
@@ -64,6 +65,7 @@ def create_app() -> FastAPI:
     app.include_router(hmi.router)
     app.include_router(runtime_api.router)
     app.include_router(ingest.router)
+    app.include_router(offline_ingest.router)
     app.include_router(incidents.router)
     app.include_router(agents.router)
     app.include_router(plc_status.router)
