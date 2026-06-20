@@ -293,7 +293,10 @@ def _extract_causality_edges(
         return [], False
 
     raw_edges: list[Any] | None = None
-    if isinstance(compiled_bundle.get("causality_edges"), list):
+    graph_index = compiled_bundle.get("graph_index")
+    if isinstance(graph_index, dict) and isinstance(graph_index.get("approved_edges"), list):
+        raw_edges = graph_index["approved_edges"]
+    elif isinstance(compiled_bundle.get("causality_edges"), list):
         raw_edges = compiled_bundle["causality_edges"]
     elif isinstance(compiled_bundle.get("causal_graph"), dict) and isinstance(
         compiled_bundle["causal_graph"].get("edges"), list
@@ -319,7 +322,7 @@ def _extract_causality_edges(
             _first_str(entry, "edge_id", "id")
             or f"EDGE_{from_asset}_TO_{to_asset}"
         )
-        relation = _first_str(entry, "relation", "type") or "causes"
+        relation = _first_str(entry, "relation", "type", "edge_type") or "causes"
         edges.append(
             {
                 "edge_id": edge_id,

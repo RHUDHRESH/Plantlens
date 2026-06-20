@@ -209,6 +209,44 @@ def test_no_calm_card_but_incident_gets_fallback_action():
     assert state.operator_actions[0].title == "Review runtime situation"
 
 
+def test_graph_index_approved_edges_are_used():
+    """Compiler emits graph_index.approved_edges — runtime bridge must consume them."""
+    compiled_bundle = {
+        "asset_index": {
+            "MTR-12V": {"name": "12V DC Motor", "kind": "motor"},
+            "FAN-01": {"name": "Fan", "kind": "fan"},
+        },
+        "graph_index": {
+            "approved_edges": [
+                {
+                    "id": "EDGE_MOTOR_TO_FAN",
+                    "from": "MTR-12V",
+                    "to": "FAN-01",
+                    "edge_type": "structural_power",
+                    "approved": True,
+                }
+            ],
+        },
+    }
+    snapshot = _empty_snapshot()
+    snapshot["tags"] = {
+        "MTR_CURRENT": _tag("MTR_CURRENT", asset_id="MTR-12V", value=2.4, unit="A"),
+        "FAN_RPM": _tag("FAN_RPM", asset_id="FAN-01", value=800, unit="rpm"),
+    }
+    snapshot["active_situations"] = [_motor_situation()]
+
+    state = _bridge(snapshot, compiled_bundle=compiled_bundle)
+
+    assert len(state.causality_edges) == 1
+    edge = state.causality_edges[0]
+    assert edge.edge_id == "EDGE_MOTOR_TO_FAN"
+    assert edge.from_asset_id == "MTR-12V"
+    assert edge.to_asset_id == "FAN-01"
+    assert edge.relation == "structural_power"
+    assert edge.active is True
+    assert not any("did not include usable causality edges" in note for note in state.data_quality.notes)
+
+
 def test_compiled_bundle_assets_and_edges_are_used():
     compiled_bundle = {
         "assets": [

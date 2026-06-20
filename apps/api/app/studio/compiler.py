@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
@@ -129,8 +130,8 @@ def compile_authored_bundle(
         previous = load_compiled(compiled_dir, plant_id)
         return {
             "status": "error",
-            "errors": [issue.__dict__ for issue in validation.errors],
-            "warnings": [issue.__dict__ for issue in validation.warnings],
+            "errors": [asdict(issue) for issue in validation.errors],
+            "warnings": [asdict(issue) for issue in validation.warnings],
             "previous_hash": previous.get("content_hash") if previous else None,
         }
 
@@ -150,8 +151,8 @@ def compile_authored_bundle(
         "graph_index": graph_index,
         "hmi_view_model": hmi,
         "validation": {
-            "errors": [issue.__dict__ for issue in validation.errors],
-            "warnings": [issue.__dict__ for issue in validation.warnings],
+            "errors": [asdict(issue) for issue in validation.errors],
+            "warnings": [asdict(issue) for issue in validation.warnings],
         },
     }
     compiled["content_hash"] = _canonical_hash(
@@ -170,7 +171,7 @@ def compile_authored_bundle(
     return {
         "status": "ok",
         "compiled": compiled,
-        "warnings": [issue.__dict__ for issue in validation.warnings],
+        "warnings": [asdict(issue) for issue in validation.warnings],
         "previous_hash": previous.get("content_hash") if previous else None,
     }
 
