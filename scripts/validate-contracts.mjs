@@ -24,21 +24,25 @@ const bundle = join(root, "packages", "sample-data", "demo-microgrid");
 
 // [schema file, sample file] pairs. Compiled outputs (hmi_view_model) and runtime-only contracts
 // (tag_frame, situation, calm_card, incident, audit) are validated by backend tests, not here.
+const componentLibrary = join(root, "packages", "sample-data", "component-library");
+
 const PAIRS = [
   ["plant.schema.json", "plant.json"],
   ["tag_map.schema.json", "tag_map.json"],
   ["alarm_rules.schema.json", "alarm_rules.json"],
   ["causal_graph.schema.json", "causal_graph.json"],
-  ["scenarios.schema.json", "scenarios.json"]
+  ["scenarios.schema.json", "scenarios.json"],
+  ["component_library.schema.json", "standard_components.json", componentLibrary]
 ];
 
 const ajv = new Ajv2020({ allErrors: true, strict: false });
 addFormats(ajv);
 
 let failures = 0;
-for (const [schemaFile, dataFile] of PAIRS) {
+for (const [schemaFile, dataFile, dataDir] of PAIRS) {
   const schema = JSON.parse(readFileSync(join(contracts, schemaFile), "utf8"));
-  const data = JSON.parse(readFileSync(join(bundle, dataFile), "utf8"));
+  const sampleDir = dataDir ?? bundle;
+  const data = JSON.parse(readFileSync(join(sampleDir, dataFile), "utf8"));
   const validate = ajv.compile(schema);
   if (validate(data)) {
     console.log(`  ok   ${dataFile}  ✓  ${schemaFile}`);

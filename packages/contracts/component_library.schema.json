@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plantlens.dev/contracts/component_library.schema.json",
+  "title": "ComponentLibrary",
+  "description": "Manufacturer-neutral industrial component template library for PlantLens assembly studio.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["library_id", "version", "components"],
+  "properties": {
+    "library_id": { "type": "string" },
+    "version": { "type": "string" },
+    "description": { "type": "string" },
+    "components": {
+      "type": "array",
+      "minItems": 24,
+      "items": { "$ref": "#/$defs/component_template" }
+    }
+  },
+  "$defs": {
+    "nominal_range": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "min": { "type": ["number", "null"] },
+        "max": { "type": ["number", "null"] }
+      }
+    },
+    "port": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["port_id", "name", "direction", "medium", "quantity_kind", "required"],
+      "properties": {
+        "port_id": { "type": "string" },
+        "name": { "type": "string" },
+        "direction": { "type": "string", "enum": ["input", "output", "bidirectional"] },
+        "medium": {
+          "type": "string",
+          "enum": [
+            "dc_power", "ac_power", "mechanical_rotation", "airflow", "fluid_flow",
+            "pneumatic_air", "thermal", "digital_signal", "analog_signal",
+            "serial_comm", "ethernet", "mounting"
+          ]
+        },
+        "quantity_kind": {
+          "type": "string",
+          "enum": [
+            "voltage", "current", "torque", "rpm", "airflow", "pressure",
+            "temperature", "vibration", "boolean_state", "data", "physical_mount"
+          ]
+        },
+        "nominal_range": { "$ref": "#/$defs/nominal_range" },
+        "compatibility_tags": { "type": "array", "items": { "type": "string" } },
+        "required": { "type": "boolean" }
+      }
+    },
+    "signal_template": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "signal_template_id", "name", "quantity_kind", "unit",
+        "expected_min", "expected_max", "sampling_hint_ms",
+        "quality_required", "source_port_id", "evidence_weight_default"
+      ],
+      "properties": {
+        "signal_template_id": { "type": "string" },
+        "name": { "type": "string" },
+        "quantity_kind": { "type": "string" },
+        "unit": { "type": "string" },
+        "expected_min": { "type": "number" },
+        "expected_max": { "type": "number" },
+        "sampling_hint_ms": { "type": "integer", "minimum": 1 },
+        "quality_required": { "type": "string" },
+        "source_port_id": { "type": "string" },
+        "evidence_weight_default": { "type": "number", "minimum": 0, "maximum": 1 },
+        "alarm_thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "high": { "type": "number" },
+            "low": { "type": "number" }
+          }
+        }
+      }
+    },
+    "fault_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["signal_template_id", "relation", "weight", "required"],
+      "properties": {
+        "signal_template_id": { "type": "string" },
+        "relation": {
+          "type": "string",
+          "enum": ["high", "low", "rising", "falling", "missing", "stale", "stuck", "noisy", "inconsistent"]
+        },
+        "weight": { "type": "number", "minimum": 0, "maximum": 1 },
+        "required": { "type": "boolean" }
+      }
+    },
+    "fault_mode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fault_mode_id", "title", "description", "severity",
+        "root_asset_applicability", "operator_actions", "safety_level"
+      ],
+      "properties": {
+        "fault_mode_id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "severity": { "type": "string", "enum": ["info", "warning", "critical"] },
+        "root_asset_applicability": { "type": "string" },
+        "required_evidence": { "type": "array", "items": { "$ref": "#/$defs/fault_evidence" } },
+        "optional_evidence": { "type": "array", "items": { "$ref": "#/$defs/fault_evidence" } },
+        "downstream_effects": { "type": "array", "items": { "type": "string" } },
+        "rejected_alternatives": { "type": "array", "items": { "type": "string" } },
+        "operator_actions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 10 }
+        },
+        "safety_level": {
+          "type": "string",
+          "enum": ["observe", "caution", "isolate_before_touch", "stop_required"]
+        }
+      }
+    },
+    "visual_asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "icon_kind", "node_shape", "low_poly_shape", "accent_role",
+        "port_layout", "size_hint", "preview_label", "render_tokens"
+      ],
+      "properties": {
+        "icon_kind": { "type": "string", "enum": ["inline_svg", "render_hint"] },
+        "icon_svg": { "type": "string" },
+        "node_shape": { "type": "string" },
+        "low_poly_shape": { "type": "string" },
+        "accent_role": { "type": "string" },
+        "port_layout": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["left", "right", "top", "bottom"],
+          "properties": {
+            "left": { "type": "array", "items": { "type": "string" } },
+            "right": { "type": "array", "items": { "type": "string" } },
+            "top": { "type": "array", "items": { "type": "string" } },
+            "bottom": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "size_hint": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["width", "height"],
+          "properties": {
+            "width": { "type": "integer", "minimum": 1 },
+            "height": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "preview_label": { "type": "string" },
+        "render_tokens": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["base", "accent", "danger"],
+          "properties": {
+            "base": { "type": "string" },
+            "accent": { "type": "string" },
+            "danger": { "type": "string" }
+          }
+        }
+      }
+    },
+    "component_template": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "component_type_id", "display_name", "category", "description", "version",
+        "manufacturer_neutral", "physical_domain", "ports", "signal_templates",
+        "fault_modes", "recommended_sensors", "hmi_render_hint", "visual_asset",
+        "safety_notes", "limits", "tags"
+      ],
+      "properties": {
+        "component_type_id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+        "display_name": { "type": "string" },
+        "category": {
+          "type": "string",
+          "enum": ["power_electrical", "actuation_mechanical", "process_physical", "sensors"]
+        },
+        "description": { "type": "string" },
+        "version": { "type": "string" },
+        "manufacturer_neutral": { "type": "boolean", "const": true },
+        "physical_domain": { "type": "string" },
+        "ports": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/port" } },
+        "signal_templates": { "type": "array", "items": { "$ref": "#/$defs/signal_template" } },
+        "fault_modes": { "type": "array", "items": { "$ref": "#/$defs/fault_mode" } },
+        "recommended_sensors": { "type": "array", "items": { "type": "string" } },
+        "hmi_render_hint": { "type": "object", "additionalProperties": true },
+        "visual_asset": { "$ref": "#/$defs/visual_asset" },
+        "safety_notes": { "type": "array", "items": { "type": "string" } },
+        "limits": { "type": "object", "additionalProperties": true },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

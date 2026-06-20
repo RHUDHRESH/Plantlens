@@ -1,0 +1,4399 @@
+{
+  "library_id": "plantlens_standard_industrial_v1",
+  "version": "1.0.0",
+  "description": "Manufacturer-neutral industrial component templates for PlantLens assembly studio.",
+  "components": [
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "power",
+        "dc",
+        "supply"
+      ],
+      "recommended_sensors": [
+        "voltage_sensor",
+        "current_sensor"
+      ],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [
+        "Verify polarity before connecting DC loads.",
+        "Do not exceed rated output current."
+      ],
+      "limits": {
+        "max_output_current_a": 10,
+        "nominal_voltage_v": 12
+      },
+      "component_type_id": "dc_power_supply",
+      "display_name": "DC Power Supply",
+      "category": "power_electrical",
+      "description": "Regulated DC bus supply for bench and small-plant loads.",
+      "physical_domain": "electrical",
+      "ports": [
+        {
+          "port_id": "ac_in",
+          "name": "AC Input",
+          "direction": "input",
+          "medium": "ac_power",
+          "quantity_kind": "voltage",
+          "nominal_range": {
+            "min": 100,
+            "max": 240
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "dc_out",
+          "name": "DC Output",
+          "direction": "output",
+          "medium": "dc_power",
+          "quantity_kind": "voltage",
+          "nominal_range": {
+            "min": 11,
+            "max": 13.5
+          },
+          "compatibility_tags": [
+            "dc_12v",
+            "dc_24v"
+          ],
+          "required": true
+        },
+        {
+          "port_id": "sense_out",
+          "name": "Sense Output",
+          "direction": "output",
+          "medium": "analog_signal",
+          "quantity_kind": "voltage",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "supply_voltage",
+          "name": "Supply Voltage",
+          "quantity_kind": "voltage",
+          "unit": "V",
+          "expected_min": 11.5,
+          "expected_max": 12.5,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "sense_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 13.0,
+            "low": 11.0
+          }
+        },
+        {
+          "signal_template_id": "supply_current",
+          "name": "Supply Current",
+          "quantity_kind": "current",
+          "unit": "A",
+          "expected_min": 0,
+          "expected_max": 10,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "dc_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 9.5
+          }
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "voltage_sag",
+          "title": "Voltage Sag",
+          "description": "Output voltage drops below nominal under load.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "supply_voltage",
+              "relation": "low",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Measure load current and verify terminal torque.",
+            "Reduce parallel loads before resetting supply."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "overvoltage",
+          "title": "Overvoltage",
+          "description": "Output exceeds safe operating range.",
+          "severity": "critical",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "supply_voltage",
+              "relation": "high",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Isolate downstream loads immediately.",
+            "Verify setpoint and regulator module before re-energizing."
+          ],
+          "safety_level": "isolate_before_touch"
+        },
+        {
+          "fault_mode_id": "unstable_supply",
+          "title": "Unstable Supply",
+          "description": "Voltage oscillates or hunts under steady load.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [
+            {
+              "signal_template_id": "supply_voltage",
+              "relation": "noisy",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Inspect input AC stability and DC filter capacitors.",
+            "Check for intermittent ground path on output return."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "loose_terminal",
+          "title": "Loose Terminal",
+          "description": "Intermittent connection at output terminals.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [
+            {
+              "signal_template_id": "supply_voltage",
+              "relation": "inconsistent",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "De-energize and re-torque output lugs to manufacturer spec.",
+            "Inspect for heat discoloration at terminal block."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"8\" y=\"14\" width=\"48\" height=\"36\" rx=\"4\" fill=\"#0E1A2A\" stroke=\"#1CC8FF\" stroke-width=\"2\"/><path d=\"M20 32h12l-6-12 6 24 6-18h12\" fill=\"none\" stroke=\"#1CC8FF\" stroke-width=\"2\"/></svg>",
+        "node_shape": "hex_card",
+        "low_poly_shape": "box_with_terminals",
+        "accent_role": "power",
+        "port_layout": {
+          "left": [
+            "ac_in"
+          ],
+          "right": [
+            "dc_out",
+            "sense_out"
+          ],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "DC Supply",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "power_cyan",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "power",
+        "converter",
+        "dc"
+      ],
+      "recommended_sensors": [
+        "voltage_sensor",
+        "current_sensor",
+        "temperature_sensor"
+      ],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_input_v": 48,
+        "max_output_a": 5
+      },
+      "component_type_id": "dc_dc_converter",
+      "display_name": "DC-DC Converter",
+      "category": "power_electrical",
+      "description": "Step-up or step-down DC conversion stage between bus segments.",
+      "physical_domain": "electrical",
+      "ports": [
+        {
+          "port_id": "dc_in",
+          "name": "DC Input",
+          "direction": "input",
+          "medium": "dc_power",
+          "quantity_kind": "voltage",
+          "nominal_range": {
+            "min": 10,
+            "max": 48
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "dc_out",
+          "name": "DC Output",
+          "direction": "output",
+          "medium": "dc_power",
+          "quantity_kind": "voltage",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [
+            "dc_12v",
+            "dc_24v"
+          ],
+          "required": true
+        },
+        {
+          "port_id": "enable_in",
+          "name": "Enable",
+          "direction": "input",
+          "medium": "digital_signal",
+          "quantity_kind": "boolean_state",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": false
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "converter_input_v",
+          "name": "Input Voltage",
+          "quantity_kind": "voltage",
+          "unit": "V",
+          "expected_min": 10,
+          "expected_max": 48,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "dc_in",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        },
+        {
+          "signal_template_id": "converter_output_v",
+          "name": "Output Voltage",
+          "quantity_kind": "voltage",
+          "unit": "V",
+          "expected_min": 11,
+          "expected_max": 13.5,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "dc_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "low": 10.5
+          }
+        },
+        {
+          "signal_template_id": "converter_efficiency",
+          "name": "Conversion Efficiency",
+          "quantity_kind": "data",
+          "unit": "%",
+          "expected_min": 80,
+          "expected_max": 98,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "dc_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "input_undervoltage",
+          "title": "Input Undervoltage",
+          "description": "Input below minimum operating threshold.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify upstream supply voltage and cable drop.",
+            "Check input fuse and connector integrity."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "output_regulation_fail",
+          "title": "Output Regulation Failure",
+          "description": "Output cannot maintain setpoint.",
+          "severity": "critical",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "converter_output_v",
+              "relation": "low",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Isolate load and measure output under no-load condition.",
+            "Replace converter module if no-load voltage is out of spec."
+          ],
+          "safety_level": "isolate_before_touch"
+        },
+        {
+          "fault_mode_id": "thermal_shutdown",
+          "title": "Thermal Shutdown",
+          "description": "Converter shuts down due to overtemperature.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify airflow around heat sink and ambient temperature.",
+            "Reduce continuous load or add cooling path."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><polygon points=\"32,8 56,32 32,56 8,32\" fill=\"#0E1A2A\" stroke=\"#1CC8FF\" stroke-width=\"2\"/><line x1=\"16\" y1=\"32\" x2=\"48\" y2=\"32\" stroke=\"#1CC8FF\" stroke-width=\"2\"/></svg>",
+        "node_shape": "diamond_card",
+        "low_poly_shape": "prism_block",
+        "accent_role": "power",
+        "port_layout": {
+          "left": [
+            "dc_in"
+          ],
+          "right": [
+            "dc_out"
+          ],
+          "top": [
+            "enable_in"
+          ],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "DC-DC",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "power_cyan",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "power",
+        "battery",
+        "storage"
+      ],
+      "recommended_sensors": [
+        "voltage_sensor",
+        "temperature_sensor"
+      ],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [
+        "Do not short terminals.",
+        "Use insulated tools when servicing."
+      ],
+      "limits": {
+        "nominal_voltage_v": 12,
+        "capacity_ah": 50
+      },
+      "component_type_id": "battery_module",
+      "display_name": "Battery Module",
+      "category": "power_electrical",
+      "description": "Energy storage module for ride-through and mobile bench setups.",
+      "physical_domain": "electrical",
+      "ports": [
+        {
+          "port_id": "dc_out",
+          "name": "DC Output",
+          "direction": "output",
+          "medium": "dc_power",
+          "quantity_kind": "voltage",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [
+            "dc_12v"
+          ],
+          "required": true
+        },
+        {
+          "port_id": "charge_in",
+          "name": "Charge Input",
+          "direction": "input",
+          "medium": "dc_power",
+          "quantity_kind": "voltage",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "bms_data",
+          "name": "BMS Data",
+          "direction": "bidirectional",
+          "medium": "serial_comm",
+          "quantity_kind": "data",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": false
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "battery_voltage",
+          "name": "Battery Voltage",
+          "quantity_kind": "voltage",
+          "unit": "V",
+          "expected_min": 11.0,
+          "expected_max": 13.2,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "dc_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "low": 11.5
+          }
+        },
+        {
+          "signal_template_id": "battery_soc",
+          "name": "State of Charge",
+          "quantity_kind": "data",
+          "unit": "%",
+          "expected_min": 20,
+          "expected_max": 100,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "bms_data",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "low": 15
+          }
+        },
+        {
+          "signal_template_id": "battery_temp",
+          "name": "Battery Temperature",
+          "quantity_kind": "temperature",
+          "unit": "C",
+          "expected_min": 10,
+          "expected_max": 45,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "bms_data",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 40
+          }
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "cell_imbalance",
+          "title": "Cell Imbalance",
+          "description": "Individual cells drift outside balanced range.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Run balance cycle per BMS procedure.",
+            "Inspect for swollen cells before continued use."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "low_soc",
+          "title": "Low State of Charge",
+          "description": "SOC below operational reserve.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "battery_soc",
+              "relation": "low",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Reduce non-critical loads.",
+            "Initiate controlled charge before next production run."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "thermal_runaway_risk",
+          "title": "Thermal Risk",
+          "description": "Battery temperature exceeds safe envelope.",
+          "severity": "critical",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "battery_temp",
+              "relation": "high",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Isolate battery from load immediately.",
+            "Move module to ventilated area and follow facility EHS protocol."
+          ],
+          "safety_level": "stop_required"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"10\" y=\"18\" width=\"44\" height=\"28\" rx=\"3\" fill=\"#0E1A2A\" stroke=\"#1CC8FF\" stroke-width=\"2\"/><rect x=\"54\" y=\"26\" width=\"6\" height=\"12\" fill=\"#1CC8FF\"/><line x1=\"18\" y1=\"32\" x2=\"46\" y2=\"32\" stroke=\"#1CC8FF\" stroke-width=\"2\"/></svg>",
+        "node_shape": "rect_card",
+        "low_poly_shape": "box_with_terminals",
+        "accent_role": "power",
+        "port_layout": {
+          "left": [
+            "charge_in"
+          ],
+          "right": [
+            "dc_out"
+          ],
+          "top": [
+            "bms_data"
+          ],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "Battery",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "power_cyan",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "protection",
+        "fuse",
+        "safety"
+      ],
+      "recommended_sensors": [
+        "current_sensor"
+      ],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [
+        "Use correct fuse class and ampacity.",
+        "Never bypass with wire or foil."
+      ],
+      "limits": {
+        "max_rating_a": 15
+      },
+      "component_type_id": "fuse_protection_block",
+      "display_name": "Fuse Protection Block",
+      "category": "power_electrical",
+      "description": "Overcurrent protection between supply segments and loads.",
+      "physical_domain": "electrical",
+      "ports": [
+        {
+          "port_id": "line_in",
+          "name": "Line In",
+          "direction": "input",
+          "medium": "dc_power",
+          "quantity_kind": "current",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "load_out",
+          "name": "Load Out",
+          "direction": "output",
+          "medium": "dc_power",
+          "quantity_kind": "current",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "fuse_current",
+          "name": "Fuse Current",
+          "quantity_kind": "current",
+          "unit": "A",
+          "expected_min": 0,
+          "expected_max": 15,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "load_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 14
+          }
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "fuse_blown",
+          "title": "Blown Fuse",
+          "description": "Fuse element has opened due to overcurrent.",
+          "severity": "critical",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "fuse_current",
+              "relation": "missing",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Isolate upstream supply before replacing fuse.",
+            "Investigate downstream short or locked rotor before re-energizing."
+          ],
+          "safety_level": "isolate_before_touch"
+        },
+        {
+          "fault_mode_id": "nuisance_trip",
+          "title": "Nuisance Opening",
+          "description": "Fuse opens under inrush without sustained fault.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify fuse rating matches load inrush profile.",
+            "Consider time-delay fuse class if inrush is legitimate."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"14\" y=\"12\" width=\"36\" height=\"40\" rx=\"2\" fill=\"#0E1A2A\" stroke=\"#EF4444\" stroke-width=\"2\"/><line x1=\"32\" y1=\"16\" x2=\"32\" y2=\"48\" stroke=\"#F59E0B\" stroke-width=\"3\"/></svg>",
+        "node_shape": "narrow_card",
+        "low_poly_shape": "fuse_block",
+        "accent_role": "safety",
+        "port_layout": {
+          "left": [
+            "line_in"
+          ],
+          "right": [
+            "load_out"
+          ],
+          "top": [],
+          "bottom": []
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "Fuse",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "safety_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "relay",
+        "switching",
+        "control"
+      ],
+      "recommended_sensors": [
+        "current_sensor",
+        "voltage_sensor"
+      ],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_contact_current_a": 10
+      },
+      "component_type_id": "relay_contactor",
+      "display_name": "Relay Contactor",
+      "category": "power_electrical",
+      "description": "Electromechanical switching for load enable and interlock paths.",
+      "physical_domain": "electrical",
+      "ports": [
+        {
+          "port_id": "coil_in",
+          "name": "Coil Drive",
+          "direction": "input",
+          "medium": "digital_signal",
+          "quantity_kind": "boolean_state",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "contact_in",
+          "name": "Contact Input",
+          "direction": "input",
+          "medium": "dc_power",
+          "quantity_kind": "current",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "contact_out",
+          "name": "Contact Output",
+          "direction": "output",
+          "medium": "dc_power",
+          "quantity_kind": "current",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "aux_contact",
+          "name": "Auxiliary Contact",
+          "direction": "output",
+          "medium": "digital_signal",
+          "quantity_kind": "boolean_state",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": false
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "coil_state",
+          "name": "Coil Energized",
+          "quantity_kind": "boolean_state",
+          "unit": "bool",
+          "expected_min": 0,
+          "expected_max": 1,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "coil_in",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        },
+        {
+          "signal_template_id": "contact_current",
+          "name": "Contact Current",
+          "quantity_kind": "current",
+          "unit": "A",
+          "expected_min": 0,
+          "expected_max": 10,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "contact_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "welded_contacts",
+          "title": "Welded Contacts",
+          "description": "Contacts remain closed when coil is de-energized.",
+          "severity": "critical",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Isolate supply and verify contact state with meter.",
+            "Replace contactor before returning to service."
+          ],
+          "safety_level": "isolate_before_touch"
+        },
+        {
+          "fault_mode_id": "coil_open",
+          "title": "Open Coil",
+          "description": "Coil circuit failed; contactor will not pull in.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Measure coil voltage at terminals during commanded ON.",
+            "Inspect PLC output and wiring continuity."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"10\" y=\"16\" width=\"44\" height=\"32\" rx=\"4\" fill=\"#0E1A2A\" stroke=\"#1CC8FF\" stroke-width=\"2\"/><circle cx=\"24\" cy=\"32\" r=\"6\" fill=\"none\" stroke=\"#1CC8FF\" stroke-width=\"2\"/><rect x=\"36\" y=\"26\" width=\"12\" height=\"12\" fill=\"#1CC8FF\" opacity=\"0.4\"/></svg>",
+        "node_shape": "rect_card",
+        "low_poly_shape": "contactor_box",
+        "accent_role": "power",
+        "port_layout": {
+          "left": [
+            "coil_in",
+            "contact_in"
+          ],
+          "right": [
+            "contact_out",
+            "aux_contact"
+          ],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "Relay",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "power_cyan",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "plc",
+        "digital",
+        "output"
+      ],
+      "recommended_sensors": [],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "channel_count": 8
+      },
+      "component_type_id": "plc_digital_output_module",
+      "display_name": "PLC Digital Output Module",
+      "category": "power_electrical",
+      "description": "Digital output bank for enabling relays, valves, and indicator states.",
+      "physical_domain": "electrical",
+      "ports": [
+        {
+          "port_id": "logic_in",
+          "name": "Logic Input",
+          "direction": "input",
+          "medium": "ethernet",
+          "quantity_kind": "data",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "do_ch1",
+          "name": "DO Channel 1",
+          "direction": "output",
+          "medium": "digital_signal",
+          "quantity_kind": "boolean_state",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "do_ch2",
+          "name": "DO Channel 2",
+          "direction": "output",
+          "medium": "digital_signal",
+          "quantity_kind": "boolean_state",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": false
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "do_ch1_state",
+          "name": "DO Ch1 State",
+          "quantity_kind": "boolean_state",
+          "unit": "bool",
+          "expected_min": 0,
+          "expected_max": 1,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "do_ch1",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        },
+        {
+          "signal_template_id": "do_ch2_state",
+          "name": "DO Ch2 State",
+          "quantity_kind": "boolean_state",
+          "unit": "bool",
+          "expected_min": 0,
+          "expected_max": 1,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "do_ch2",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "output_stuck_high",
+          "title": "Output Stuck High",
+          "description": "Digital output remains ON when commanded OFF.",
+          "severity": "critical",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "do_ch1_state",
+              "relation": "stuck",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify commanded state in PLC logic monitor.",
+            "Isolate affected load before replacing output module."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "output_stuck_low",
+          "title": "Output Stuck Low",
+          "description": "Digital output will not energize when commanded ON.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Check field wiring and load return path.",
+            "Swap channel to confirm module vs wiring fault."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"8\" y=\"12\" width=\"48\" height=\"40\" rx=\"3\" fill=\"#0E1A2A\" stroke=\"#1CC8FF\" stroke-width=\"2\"/><rect x=\"14\" y=\"20\" width=\"8\" height=\"8\" fill=\"#2DD4BF\"/><rect x=\"26\" y=\"20\" width=\"8\" height=\"8\" fill=\"#2DD4BF\"/><rect x=\"38\" y=\"20\" width=\"8\" height=\"8\" fill=\"#EF4444\"/></svg>",
+        "node_shape": "rack_card",
+        "low_poly_shape": "io_module",
+        "accent_role": "power",
+        "port_layout": {
+          "left": [
+            "logic_in"
+          ],
+          "right": [
+            "do_ch1",
+            "do_ch2"
+          ],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "PLC DO",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "power_cyan",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "plc",
+        "analog",
+        "input"
+      ],
+      "recommended_sensors": [],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "resolution_bits": 16
+      },
+      "component_type_id": "plc_analog_input_module",
+      "display_name": "PLC Analog Input Module",
+      "category": "power_electrical",
+      "description": "Analog input bank for sensor scaling and thresholding.",
+      "physical_domain": "electrical",
+      "ports": [
+        {
+          "port_id": "ai_ch1",
+          "name": "AI Channel 1",
+          "direction": "input",
+          "medium": "analog_signal",
+          "quantity_kind": "data",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "ai_ch2",
+          "name": "AI Channel 2",
+          "direction": "input",
+          "medium": "analog_signal",
+          "quantity_kind": "data",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": false
+        },
+        {
+          "port_id": "logic_out",
+          "name": "Logic Bus",
+          "direction": "bidirectional",
+          "medium": "ethernet",
+          "quantity_kind": "data",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "ai_ch1_scaled",
+          "name": "AI Ch1 Scaled",
+          "quantity_kind": "data",
+          "unit": "unit",
+          "expected_min": 0,
+          "expected_max": 100,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "ai_ch1",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        },
+        {
+          "signal_template_id": "ai_ch2_scaled",
+          "name": "AI Ch2 Scaled",
+          "quantity_kind": "data",
+          "unit": "unit",
+          "expected_min": 0,
+          "expected_max": 100,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "ai_ch2",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "channel_saturation",
+          "title": "Input Saturation",
+          "description": "Analog input pegged at rail.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify sensor wiring and excitation.",
+            "Check scaling constants in PLC tag map."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "channel_noise",
+          "title": "Excessive Noise",
+          "description": "Input signal noisy beyond filter capability.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [
+            {
+              "signal_template_id": "ai_ch1_scaled",
+              "relation": "noisy",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Inspect shield termination and ground loop.",
+            "Relocate sensor cable away from power conductors."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"8\" y=\"12\" width=\"48\" height=\"40\" rx=\"3\" fill=\"#0E1A2A\" stroke=\"#1CC8FF\" stroke-width=\"2\"/><path d=\"M14 40 L22 28 L30 36 L38 22 L46 40\" fill=\"none\" stroke=\"#8B5CF6\" stroke-width=\"2\"/></svg>",
+        "node_shape": "rack_card",
+        "low_poly_shape": "io_module",
+        "accent_role": "power",
+        "port_layout": {
+          "left": [
+            "ai_ch1",
+            "ai_ch2"
+          ],
+          "right": [
+            "logic_out"
+          ],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "PLC AI",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "power_cyan",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "motor",
+        "dc",
+        "actuation"
+      ],
+      "recommended_sensors": [
+        "current_sensor",
+        "rpm_tachometer",
+        "vibration_sensor",
+        "temperature_sensor"
+      ],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [
+        "Lock out drive before mechanical service.",
+        "Keep fingers clear of rotating shaft."
+      ],
+      "limits": {
+        "nominal_voltage_v": 12,
+        "max_current_a": 8,
+        "max_rpm": 3000
+      },
+      "component_type_id": "dc_motor_12v",
+      "display_name": "12V DC Motor",
+      "category": "actuation_mechanical",
+      "description": "Brushed DC motor for bench conveyor and fan drive applications.",
+      "physical_domain": "electromechanical",
+      "ports": [
+        {
+          "port_id": "power_in",
+          "name": "Power Input",
+          "direction": "input",
+          "medium": "dc_power",
+          "quantity_kind": "voltage",
+          "nominal_range": {
+            "min": 11,
+            "max": 13
+          },
+          "compatibility_tags": [
+            "dc_12v"
+          ],
+          "required": true
+        },
+        {
+          "port_id": "shaft_out",
+          "name": "Shaft Output",
+          "direction": "output",
+          "medium": "mechanical_rotation",
+          "quantity_kind": "rpm",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "sense_out",
+          "name": "Sense Output",
+          "direction": "output",
+          "medium": "analog_signal",
+          "quantity_kind": "current",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "motor_current",
+          "name": "Motor Current",
+          "quantity_kind": "current",
+          "unit": "A",
+          "expected_min": 0,
+          "expected_max": 8,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "sense_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 7.5
+          }
+        },
+        {
+          "signal_template_id": "motor_rpm",
+          "name": "Motor RPM",
+          "quantity_kind": "rpm",
+          "unit": "rpm",
+          "expected_min": 0,
+          "expected_max": 3000,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "shaft_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "low": 100
+          }
+        },
+        {
+          "signal_template_id": "motor_temperature",
+          "name": "Motor Temperature",
+          "quantity_kind": "temperature",
+          "unit": "C",
+          "expected_min": 20,
+          "expected_max": 85,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "sense_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 75
+          }
+        },
+        {
+          "signal_template_id": "motor_vibration",
+          "name": "Motor Vibration",
+          "quantity_kind": "vibration",
+          "unit": "mm/s",
+          "expected_min": 0,
+          "expected_max": 10,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "sense_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 7
+          }
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "mechanical_obstruction",
+          "title": "Mechanical Obstruction",
+          "description": "Rotor cannot turn freely due to jam.",
+          "severity": "critical",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "motor_rpm",
+              "relation": "low",
+              "weight": 0.9,
+              "required": true
+            },
+            {
+              "signal_template_id": "motor_current",
+              "relation": "high",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Isolate power and manually verify shaft rotation.",
+            "Remove obstruction before re-energizing."
+          ],
+          "safety_level": "isolate_before_touch"
+        },
+        {
+          "fault_mode_id": "bearing_friction",
+          "title": "Bearing Friction",
+          "description": "Increased friction from worn bearing.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Listen for grinding at low speed.",
+            "Schedule bearing replacement before seizure."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "undervoltage_stall",
+          "title": "Undervoltage Stall",
+          "description": "Motor stalls due to insufficient supply voltage.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "motor_current",
+              "relation": "high",
+              "weight": 0.9,
+              "required": true
+            },
+            {
+              "signal_template_id": "motor_rpm",
+              "relation": "low",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Measure supply at motor terminals under load.",
+            "Verify cable gauge and connection integrity."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "overcurrent",
+          "title": "Overcurrent",
+          "description": "Current exceeds continuous rating.",
+          "severity": "critical",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "motor_current",
+              "relation": "high",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Reduce mechanical load and verify free rotation.",
+            "Check for shorted windings if no mechanical cause."
+          ],
+          "safety_level": "isolate_before_touch"
+        },
+        {
+          "fault_mode_id": "sensor_dropout",
+          "title": "Sensor Dropout",
+          "description": "RPM or current feedback missing.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [
+            {
+              "signal_template_id": "motor_rpm",
+              "relation": "missing",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Inspect encoder or shunt wiring.",
+            "Compare against redundant measurement if available."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><circle cx=\"32\" cy=\"32\" r=\"20\" fill=\"#0E1A2A\" stroke=\"#2DD4BF\" stroke-width=\"2\"/><circle cx=\"32\" cy=\"32\" r=\"6\" fill=\"#2DD4BF\"/><line x1=\"32\" y1=\"12\" x2=\"32\" y2=\"20\" stroke=\"#2DD4BF\" stroke-width=\"2\"/><line x1=\"32\" y1=\"44\" x2=\"32\" y2=\"52\" stroke=\"#2DD4BF\" stroke-width=\"2\"/></svg>",
+        "node_shape": "hex_card",
+        "low_poly_shape": "cylinder_with_shaft",
+        "accent_role": "actuation",
+        "port_layout": {
+          "left": [
+            "power_in"
+          ],
+          "right": [
+            "shaft_out",
+            "sense_out"
+          ],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "12V Motor",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "actuation_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "fan",
+        "bldc",
+        "cooling"
+      ],
+      "recommended_sensors": [
+        "rpm_tachometer",
+        "current_sensor",
+        "airflow_sensor"
+      ],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_rpm": 4000,
+        "max_current_a": 3
+      },
+      "component_type_id": "bldc_fan",
+      "display_name": "BLDC Fan",
+      "category": "actuation_mechanical",
+      "description": "Brushless fan for enclosure cooling and airflow circulation.",
+      "physical_domain": "electromechanical",
+      "ports": [
+        {
+          "port_id": "power_in",
+          "name": "Power Input",
+          "direction": "input",
+          "medium": "dc_power",
+          "quantity_kind": "voltage",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [
+            "dc_12v",
+            "dc_24v"
+          ],
+          "required": true
+        },
+        {
+          "port_id": "pwm_in",
+          "name": "PWM Control",
+          "direction": "input",
+          "medium": "digital_signal",
+          "quantity_kind": "data",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": false
+        },
+        {
+          "port_id": "air_out",
+          "name": "Air Outlet",
+          "direction": "output",
+          "medium": "airflow",
+          "quantity_kind": "airflow",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "fan_rpm",
+          "name": "Fan RPM",
+          "quantity_kind": "rpm",
+          "unit": "rpm",
+          "expected_min": 0,
+          "expected_max": 4000,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "air_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "low": 500
+          }
+        },
+        {
+          "signal_template_id": "fan_current",
+          "name": "Fan Current",
+          "quantity_kind": "current",
+          "unit": "A",
+          "expected_min": 0,
+          "expected_max": 3,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "power_in",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 2.8
+          }
+        },
+        {
+          "signal_template_id": "fan_airflow",
+          "name": "Fan Airflow",
+          "quantity_kind": "airflow",
+          "unit": "CFM",
+          "expected_min": 0,
+          "expected_max": 120,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "air_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "low": 30
+          }
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "blade_obstruction",
+          "title": "Blade Obstruction",
+          "description": "Foreign material blocking blade path.",
+          "severity": "critical",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "fan_rpm",
+              "relation": "low",
+              "weight": 0.9,
+              "required": true
+            },
+            {
+              "signal_template_id": "fan_current",
+              "relation": "high",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Isolate power and inspect inlet guard.",
+            "Remove debris before restart."
+          ],
+          "safety_level": "isolate_before_touch"
+        },
+        {
+          "fault_mode_id": "low_speed",
+          "title": "Low Speed",
+          "description": "Fan runs below commanded speed.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify PWM command and supply voltage.",
+            "Check for bearing drag or blade imbalance."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "imbalance",
+          "title": "Blade Imbalance",
+          "description": "Vibration from uneven blade mass.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Inspect blades for damage or buildup.",
+            "Replace fan module if vibration persists."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "coupling_slip",
+          "title": "Coupling Slip",
+          "description": "Drive coupling slips under load.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Inspect set screw torque on hub.",
+            "Verify shaft alignment with drive source."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "airflow_degradation",
+          "title": "Airflow Degradation",
+          "description": "Delivered airflow below design.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "fan_airflow",
+              "relation": "low",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Check filter upstream restriction.",
+            "Verify duct path is not collapsed or blocked."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><circle cx=\"32\" cy=\"32\" r=\"18\" fill=\"none\" stroke=\"#2DD4BF\" stroke-width=\"2\"/><path d=\"M32 14 Q42 32 32 50 Q22 32 32 14\" fill=\"#2DD4BF\" opacity=\"0.3\"/><circle cx=\"32\" cy=\"32\" r=\"4\" fill=\"#2DD4BF\"/></svg>",
+        "node_shape": "circle_card",
+        "low_poly_shape": "disc_with_blades",
+        "accent_role": "actuation",
+        "port_layout": {
+          "left": [
+            "power_in",
+            "pwm_in"
+          ],
+          "right": [
+            "air_out"
+          ],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "BLDC Fan",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "actuation_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "blower",
+        "airflow",
+        "process"
+      ],
+      "recommended_sensors": [
+        "airflow_sensor",
+        "pressure_sensor",
+        "vibration_sensor",
+        "current_sensor"
+      ],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_airflow_cfm": 500,
+        "max_current_a": 15
+      },
+      "component_type_id": "industrial_blower",
+      "display_name": "Industrial Blower",
+      "category": "actuation_mechanical",
+      "description": "High-flow blower for process ventilation and pneumatic feed.",
+      "physical_domain": "electromechanical",
+      "ports": [
+        {
+          "port_id": "power_in",
+          "name": "Power Input",
+          "direction": "input",
+          "medium": "dc_power",
+          "quantity_kind": "voltage",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "air_in",
+          "name": "Air Inlet",
+          "direction": "input",
+          "medium": "airflow",
+          "quantity_kind": "airflow",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "air_out",
+          "name": "Air Outlet",
+          "direction": "output",
+          "medium": "airflow",
+          "quantity_kind": "airflow",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "shaft_in",
+          "name": "Shaft Input",
+          "direction": "input",
+          "medium": "mechanical_rotation",
+          "quantity_kind": "rpm",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": false
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "blower_airflow",
+          "name": "Blower Airflow",
+          "quantity_kind": "airflow",
+          "unit": "CFM",
+          "expected_min": 0,
+          "expected_max": 500,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "air_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "low": 100
+          }
+        },
+        {
+          "signal_template_id": "blower_pressure",
+          "name": "Blower Pressure",
+          "quantity_kind": "pressure",
+          "unit": "inH2O",
+          "expected_min": 0,
+          "expected_max": 20,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "air_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "low": 2
+          }
+        },
+        {
+          "signal_template_id": "blower_vibration",
+          "name": "Blower Vibration",
+          "quantity_kind": "vibration",
+          "unit": "mm/s",
+          "expected_min": 0,
+          "expected_max": 12,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "air_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 8
+          }
+        },
+        {
+          "signal_template_id": "blower_current",
+          "name": "Blower Current",
+          "quantity_kind": "current",
+          "unit": "A",
+          "expected_min": 0,
+          "expected_max": 15,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "power_in",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 13
+          }
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "inlet_blockage",
+          "title": "Inlet Blockage",
+          "description": "Restricted inlet reduces flow.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "blower_airflow",
+              "relation": "low",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Inspect blower inlet guard and remove obstruction after isolating power."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "outlet_restriction",
+          "title": "Outlet Restriction",
+          "description": "Downstream damper or duct collapse limits flow.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify damper position and duct integrity.",
+            "Check filter differential across blower path."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "weak_output",
+          "title": "Weak Output",
+          "description": "Blower cannot reach design flow at rated speed.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Measure current and RPM under load.",
+            "Inspect impeller for wear or fouling."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "vibration_imbalance",
+          "title": "Vibration Imbalance",
+          "description": "Impeller imbalance causes elevated vibration.",
+          "severity": "critical",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "blower_vibration",
+              "relation": "high",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Schedule impeller inspection and balancing.",
+            "Reduce speed until vibration within limits."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"12\" y=\"20\" width=\"40\" height=\"24\" rx=\"2\" fill=\"#0E1A2A\" stroke=\"#2DD4BF\" stroke-width=\"2\"/><polygon points=\"52,32 60,24 60,40\" fill=\"#2DD4BF\"/><circle cx=\"24\" cy=\"32\" r=\"8\" fill=\"none\" stroke=\"#2DD4BF\" stroke-width=\"2\"/></svg>",
+        "node_shape": "rect_card",
+        "low_poly_shape": "box_with_impeller",
+        "accent_role": "actuation",
+        "port_layout": {
+          "left": [
+            "air_in",
+            "power_in"
+          ],
+          "right": [
+            "air_out"
+          ],
+          "top": [
+            "shaft_in"
+          ],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "Blower",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "actuation_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "pump",
+        "fluid",
+        "process"
+      ],
+      "recommended_sensors": [
+        "pressure_sensor",
+        "current_sensor"
+      ],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_flow_lpm": 60
+      },
+      "component_type_id": "pump",
+      "display_name": "Centrifugal Pump",
+      "category": "actuation_mechanical",
+      "description": "Fluid mover for coolant, process, and tank transfer loops.",
+      "physical_domain": "fluid",
+      "ports": [
+        {
+          "port_id": "power_in",
+          "name": "Power Input",
+          "direction": "input",
+          "medium": "dc_power",
+          "quantity_kind": "voltage",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "fluid_in",
+          "name": "Fluid Inlet",
+          "direction": "input",
+          "medium": "fluid_flow",
+          "quantity_kind": "data",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "fluid_out",
+          "name": "Fluid Outlet",
+          "direction": "output",
+          "medium": "fluid_flow",
+          "quantity_kind": "data",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "shaft_in",
+          "name": "Shaft Input",
+          "direction": "input",
+          "medium": "mechanical_rotation",
+          "quantity_kind": "rpm",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "pump_flow",
+          "name": "Pump Flow",
+          "quantity_kind": "data",
+          "unit": "L/min",
+          "expected_min": 0,
+          "expected_max": 60,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "fluid_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "low": 5
+          }
+        },
+        {
+          "signal_template_id": "pump_current",
+          "name": "Pump Current",
+          "quantity_kind": "current",
+          "unit": "A",
+          "expected_min": 0,
+          "expected_max": 6,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "power_in",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 5.5
+          }
+        },
+        {
+          "signal_template_id": "pump_pressure",
+          "name": "Discharge Pressure",
+          "quantity_kind": "pressure",
+          "unit": "psi",
+          "expected_min": 0,
+          "expected_max": 80,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "fluid_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "low": 10
+          }
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "dry_run",
+          "title": "Dry Run",
+          "description": "Pump operates without adequate fluid.",
+          "severity": "critical",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "pump_flow",
+              "relation": "low",
+              "weight": 0.9,
+              "required": true
+            },
+            {
+              "signal_template_id": "pump_current",
+              "relation": "low",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Shut down immediately and verify suction level.",
+            "Prime pump before restart per procedure."
+          ],
+          "safety_level": "stop_required"
+        },
+        {
+          "fault_mode_id": "clogged_impeller",
+          "title": "Clogged Impeller",
+          "description": "Debris restricts impeller passage.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Isolate and inspect impeller housing.",
+            "Install strainer upstream if debris is recurring."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "cavitation",
+          "title": "Cavitation",
+          "description": "Vapor bubbles form due to low NPSH.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify suction head and fluid temperature.",
+            "Reduce speed until cavitation noise subsides."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "low_flow",
+          "title": "Low Flow",
+          "description": "Flow below process requirement.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "pump_flow",
+              "relation": "low",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Check valve positions and filter restriction.",
+            "Verify motor speed and impeller condition."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><circle cx=\"28\" cy=\"32\" r=\"16\" fill=\"#0E1A2A\" stroke=\"#2DD4BF\" stroke-width=\"2\"/><polygon points=\"44,24 56,32 44,40\" fill=\"#2DD4BF\"/><line x1=\"20\" y1=\"32\" x2=\"8\" y2=\"32\" stroke=\"#2DD4BF\" stroke-width=\"2\"/></svg>",
+        "node_shape": "hex_card",
+        "low_poly_shape": "volute_housing",
+        "accent_role": "actuation",
+        "port_layout": {
+          "left": [
+            "fluid_in",
+            "power_in"
+          ],
+          "right": [
+            "fluid_out"
+          ],
+          "top": [
+            "shaft_in"
+          ],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "Pump",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "actuation_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "valve",
+        "solenoid",
+        "fluid"
+      ],
+      "recommended_sensors": [
+        "pressure_sensor"
+      ],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_pressure_psi": 150
+      },
+      "component_type_id": "solenoid_valve",
+      "display_name": "Solenoid Valve",
+      "category": "actuation_mechanical",
+      "description": "Electrically actuated valve for fluid or pneumatic routing.",
+      "physical_domain": "fluid",
+      "ports": [
+        {
+          "port_id": "coil_in",
+          "name": "Coil Drive",
+          "direction": "input",
+          "medium": "digital_signal",
+          "quantity_kind": "boolean_state",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "fluid_in",
+          "name": "Fluid Inlet",
+          "direction": "bidirectional",
+          "medium": "fluid_flow",
+          "quantity_kind": "data",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "fluid_out",
+          "name": "Fluid Outlet",
+          "direction": "bidirectional",
+          "medium": "fluid_flow",
+          "quantity_kind": "data",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "valve_state",
+          "name": "Valve State",
+          "quantity_kind": "boolean_state",
+          "unit": "bool",
+          "expected_min": 0,
+          "expected_max": 1,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "coil_in",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        },
+        {
+          "signal_template_id": "valve_flow",
+          "name": "Valve Flow",
+          "quantity_kind": "data",
+          "unit": "L/min",
+          "expected_min": 0,
+          "expected_max": 30,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "fluid_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "stuck_open",
+          "title": "Stuck Open",
+          "description": "Valve remains open when commanded closed.",
+          "severity": "critical",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Isolate upstream pressure before service.",
+            "Replace valve assembly if coil de-energized but flow continues."
+          ],
+          "safety_level": "isolate_before_touch"
+        },
+        {
+          "fault_mode_id": "stuck_closed",
+          "title": "Stuck Closed",
+          "description": "Valve will not open when commanded.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify coil voltage during commanded open.",
+            "Inspect for debris on seat and plunger."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"20\" y=\"14\" width=\"24\" height=\"36\" rx=\"2\" fill=\"#0E1A2A\" stroke=\"#2DD4BF\" stroke-width=\"2\"/><polygon points=\"32,8 40,18 24,18\" fill=\"#2DD4BF\"/><line x1=\"8\" y1=\"32\" x2=\"20\" y2=\"32\" stroke=\"#2DD4BF\" stroke-width=\"2\"/><line x1=\"44\" y1=\"32\" x2=\"56\" y2=\"32\" stroke=\"#2DD4BF\" stroke-width=\"2\"/></svg>",
+        "node_shape": "narrow_card",
+        "low_poly_shape": "valve_body",
+        "accent_role": "actuation",
+        "port_layout": {
+          "left": [
+            "fluid_in",
+            "coil_in"
+          ],
+          "right": [
+            "fluid_out"
+          ],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "Solenoid",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "actuation_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "coupling",
+        "belt",
+        "drive"
+      ],
+      "recommended_sensors": [
+        "rpm_tachometer"
+      ],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_rpm": 3600
+      },
+      "component_type_id": "belt_coupling",
+      "display_name": "Belt Coupling",
+      "category": "actuation_mechanical",
+      "description": "Flexible belt drive between motor shaft and driven equipment.",
+      "physical_domain": "mechanical",
+      "ports": [
+        {
+          "port_id": "shaft_in",
+          "name": "Input Shaft",
+          "direction": "input",
+          "medium": "mechanical_rotation",
+          "quantity_kind": "rpm",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "shaft_out",
+          "name": "Output Shaft",
+          "direction": "output",
+          "medium": "mechanical_rotation",
+          "quantity_kind": "rpm",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "coupling_slip_ratio",
+          "name": "Slip Ratio",
+          "quantity_kind": "data",
+          "unit": "%",
+          "expected_min": 0,
+          "expected_max": 5,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "shaft_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 4
+          }
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "belt_slip",
+          "title": "Belt Slip",
+          "description": "Belt slips under torque load.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Check belt tension per manufacturer spec.",
+            "Inspect for glaze or oil contamination on pulley."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "belt_wear",
+          "title": "Belt Wear",
+          "description": "Visible cracking or fraying on belt.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Replace belt before complete failure.",
+            "Verify pulley alignment to prevent edge wear."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><circle cx=\"20\" cy=\"32\" r=\"10\" fill=\"#0E1A2A\" stroke=\"#2DD4BF\" stroke-width=\"2\"/><circle cx=\"44\" cy=\"32\" r=\"10\" fill=\"#0E1A2A\" stroke=\"#2DD4BF\" stroke-width=\"2\"/><rect x=\"28\" y=\"28\" width=\"8\" height=\"8\" fill=\"#2DD4BF\"/></svg>",
+        "node_shape": "link_card",
+        "low_poly_shape": "dual_pulley",
+        "accent_role": "actuation",
+        "port_layout": {
+          "left": [
+            "shaft_in"
+          ],
+          "right": [
+            "shaft_out"
+          ],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "Belt",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "actuation_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "bearing",
+        "support",
+        "mechanical"
+      ],
+      "recommended_sensors": [
+        "vibration_sensor",
+        "temperature_sensor"
+      ],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_rpm": 3600
+      },
+      "component_type_id": "bearing_block",
+      "display_name": "Bearing Block",
+      "category": "actuation_mechanical",
+      "description": "Shaft support bearing for motor and fan assemblies.",
+      "physical_domain": "mechanical",
+      "ports": [
+        {
+          "port_id": "shaft_in",
+          "name": "Shaft Through",
+          "direction": "bidirectional",
+          "medium": "mechanical_rotation",
+          "quantity_kind": "rpm",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "mount",
+          "name": "Mount",
+          "direction": "input",
+          "medium": "mounting",
+          "quantity_kind": "physical_mount",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "bearing_temp",
+          "name": "Bearing Temperature",
+          "quantity_kind": "temperature",
+          "unit": "C",
+          "expected_min": 20,
+          "expected_max": 90,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "shaft_in",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 70
+          }
+        },
+        {
+          "signal_template_id": "bearing_vibration",
+          "name": "Bearing Vibration",
+          "quantity_kind": "vibration",
+          "unit": "mm/s",
+          "expected_min": 0,
+          "expected_max": 8,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "shaft_in",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 5
+          }
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "lubrication_loss",
+          "title": "Lubrication Loss",
+          "description": "Insufficient lubricant causes heat and wear.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify grease interval and quantity.",
+            "Inspect for seal leak at bearing housing."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "race_damage",
+          "title": "Race Damage",
+          "description": "Pitting or spalling on bearing race.",
+          "severity": "critical",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "bearing_vibration",
+              "relation": "high",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Reduce speed and schedule replacement.",
+            "Analyze vibration spectrum for bearing defect frequencies."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"14\" y=\"14\" width=\"36\" height=\"36\" rx=\"4\" fill=\"#0E1A2A\" stroke=\"#2DD4BF\" stroke-width=\"2\"/><circle cx=\"32\" cy=\"32\" r=\"12\" fill=\"none\" stroke=\"#2DD4BF\" stroke-width=\"2\"/><circle cx=\"32\" cy=\"32\" r=\"4\" fill=\"#2DD4BF\"/></svg>",
+        "node_shape": "square_card",
+        "low_poly_shape": "pillow_block",
+        "accent_role": "actuation",
+        "port_layout": {
+          "left": [
+            "shaft_in"
+          ],
+          "right": [],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "Bearing",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "actuation_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "duct",
+        "airflow",
+        "process"
+      ],
+      "recommended_sensors": [
+        "airflow_sensor",
+        "pressure_sensor"
+      ],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_velocity_fpm": 2500
+      },
+      "component_type_id": "air_duct",
+      "display_name": "Air Duct",
+      "category": "process_physical",
+      "description": "Conducts airflow between blower, fan, and process zones.",
+      "physical_domain": "airflow",
+      "ports": [
+        {
+          "port_id": "air_in",
+          "name": "Air Inlet",
+          "direction": "input",
+          "medium": "airflow",
+          "quantity_kind": "airflow",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "air_out",
+          "name": "Air Outlet",
+          "direction": "output",
+          "medium": "airflow",
+          "quantity_kind": "airflow",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [],
+      "fault_modes": [
+        {
+          "fault_mode_id": "duct_blockage",
+          "title": "Duct Blockage",
+          "description": "Obstruction reduces cross-sectional flow area.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Inspect access panels for debris or collapsed liner.",
+            "Verify damper not partially closed downstream."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "duct_leak",
+          "title": "Duct Leak",
+          "description": "Leak at joint reduces delivered airflow.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Pressurize section and locate leak with smoke pencil.",
+            "Reseal joint with rated duct sealant."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "flow_restriction",
+          "title": "Flow Restriction",
+          "description": "Gradual restriction from contamination.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Measure differential pressure across duct segment.",
+            "Schedule cleaning if DP exceeds baseline."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"8\" y=\"24\" width=\"48\" height=\"16\" rx=\"2\" fill=\"#0E1A2A\" stroke=\"#8B5CF6\" stroke-width=\"2\"/><polygon points=\"56,32 64,26 64,38\" fill=\"#8B5CF6\" opacity=\"0.5\"/></svg>",
+        "node_shape": "channel_card",
+        "low_poly_shape": "rect_channel",
+        "accent_role": "process",
+        "port_layout": {
+          "left": [
+            "air_in"
+          ],
+          "right": [
+            "air_out"
+          ],
+          "top": [],
+          "bottom": []
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "Air Duct",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "process_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "pipe",
+        "fluid",
+        "process"
+      ],
+      "recommended_sensors": [
+        "pressure_sensor"
+      ],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_pressure_psi": 200
+      },
+      "component_type_id": "fluid_pipe",
+      "display_name": "Fluid Pipe",
+      "category": "process_physical",
+      "description": "Rigid pipe segment for fluid transfer between pump and tank.",
+      "physical_domain": "fluid",
+      "ports": [
+        {
+          "port_id": "fluid_in",
+          "name": "Fluid Inlet",
+          "direction": "input",
+          "medium": "fluid_flow",
+          "quantity_kind": "data",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "fluid_out",
+          "name": "Fluid Outlet",
+          "direction": "output",
+          "medium": "fluid_flow",
+          "quantity_kind": "data",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [],
+      "fault_modes": [
+        {
+          "fault_mode_id": "pipe_leak",
+          "title": "Pipe Leak",
+          "description": "Fluid escape at fitting or wall.",
+          "severity": "critical",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Isolate segment and depressurize before repair.",
+            "Replace compromised section if wall thinning detected."
+          ],
+          "safety_level": "isolate_before_touch"
+        },
+        {
+          "fault_mode_id": "partial_blockage",
+          "title": "Partial Blockage",
+          "description": "Scale or debris reduces effective diameter.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Flush segment per maintenance procedure.",
+            "Inspect upstream strainer condition."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"8\" y=\"28\" width=\"48\" height=\"8\" rx=\"4\" fill=\"#0E1A2A\" stroke=\"#8B5CF6\" stroke-width=\"2\"/><circle cx=\"8\" cy=\"32\" r=\"4\" fill=\"#8B5CF6\"/><circle cx=\"56\" cy=\"32\" r=\"4\" fill=\"#8B5CF6\"/></svg>",
+        "node_shape": "channel_card",
+        "low_poly_shape": "cylinder_segment",
+        "accent_role": "process",
+        "port_layout": {
+          "left": [
+            "fluid_in"
+          ],
+          "right": [
+            "fluid_out"
+          ],
+          "top": [],
+          "bottom": []
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "Pipe",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "process_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "tank",
+        "reservoir",
+        "storage"
+      ],
+      "recommended_sensors": [
+        "pressure_sensor"
+      ],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "capacity_l": 200
+      },
+      "component_type_id": "tank_reservoir",
+      "display_name": "Tank Reservoir",
+      "category": "process_physical",
+      "description": "Storage vessel for coolant or process fluid inventory.",
+      "physical_domain": "fluid",
+      "ports": [
+        {
+          "port_id": "fluid_in",
+          "name": "Fill Inlet",
+          "direction": "input",
+          "medium": "fluid_flow",
+          "quantity_kind": "data",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "fluid_out",
+          "name": "Outlet",
+          "direction": "output",
+          "medium": "fluid_flow",
+          "quantity_kind": "data",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "vent",
+          "name": "Vent",
+          "direction": "output",
+          "medium": "pneumatic_air",
+          "quantity_kind": "pressure",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": false
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "tank_level",
+          "name": "Tank Level",
+          "quantity_kind": "data",
+          "unit": "%",
+          "expected_min": 10,
+          "expected_max": 95,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "fluid_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 90,
+            "low": 15
+          }
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "low_level",
+          "title": "Low Level",
+          "description": "Fluid inventory below minimum operating level.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "tank_level",
+              "relation": "low",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify inlet supply and valve positions.",
+            "Add fluid per specification before resuming pump operation."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "overfill_risk",
+          "title": "Overfill Risk",
+          "description": "Level approaching maximum safe fill.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Close fill valve and verify overflow path.",
+            "Check level sensor calibration against manual gauge."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"16\" y=\"20\" width=\"32\" height=\"32\" rx=\"2\" fill=\"#0E1A2A\" stroke=\"#8B5CF6\" stroke-width=\"2\"/><line x1=\"16\" y1=\"36\" x2=\"48\" y2=\"36\" stroke=\"#8B5CF6\" stroke-width=\"1\" opacity=\"0.5\"/></svg>",
+        "node_shape": "tall_card",
+        "low_poly_shape": "cylinder_vessel",
+        "accent_role": "process",
+        "port_layout": {
+          "left": [
+            "fluid_in"
+          ],
+          "right": [
+            "fluid_out"
+          ],
+          "top": [
+            "vent"
+          ],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "Tank",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "process_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "filter",
+        "restriction",
+        "process"
+      ],
+      "recommended_sensors": [
+        "pressure_sensor"
+      ],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_dp_psi": 15
+      },
+      "component_type_id": "filter_mesh_restriction",
+      "display_name": "Filter Mesh Restriction",
+      "category": "process_physical",
+      "description": "Mesh or cartridge filter introducing controlled flow restriction.",
+      "physical_domain": "fluid",
+      "ports": [
+        {
+          "port_id": "flow_in",
+          "name": "Flow Inlet",
+          "direction": "input",
+          "medium": "fluid_flow",
+          "quantity_kind": "data",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "flow_out",
+          "name": "Flow Outlet",
+          "direction": "output",
+          "medium": "fluid_flow",
+          "quantity_kind": "data",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "filter_dp",
+          "name": "Filter Differential Pressure",
+          "quantity_kind": "pressure",
+          "unit": "psi",
+          "expected_min": 0,
+          "expected_max": 15,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "flow_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 12
+          }
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "partial_blockage",
+          "title": "Partial Blockage",
+          "description": "Accumulated debris increases pressure drop.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "filter_dp",
+              "relation": "high",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Compare DP to clean baseline.",
+            "Replace or clean filter element per schedule."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "full_blockage",
+          "title": "Full Blockage",
+          "description": "Flow effectively blocked through filter.",
+          "severity": "critical",
+          "root_asset_applicability": "self",
+          "required_evidence": [
+            {
+              "signal_template_id": "filter_dp",
+              "relation": "high",
+              "weight": 0.9,
+              "required": true
+            }
+          ],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Stop upstream pump to prevent damage.",
+            "Replace filter element before restart."
+          ],
+          "safety_level": "stop_required"
+        },
+        {
+          "fault_mode_id": "contamination_buildup",
+          "title": "Contamination Buildup",
+          "description": "Gradual fouling without sudden blockage.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Trend DP over operating hours.",
+            "Advance maintenance interval if slope exceeds baseline."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"14\" y=\"16\" width=\"36\" height=\"32\" rx=\"2\" fill=\"#0E1A2A\" stroke=\"#8B5CF6\" stroke-width=\"2\"/><line x1=\"20\" y1=\"22\" x2=\"44\" y2=\"42\" stroke=\"#F59E0B\" stroke-width=\"1\"/><line x1=\"44\" y1=\"22\" x2=\"20\" y2=\"42\" stroke=\"#F59E0B\" stroke-width=\"1\"/></svg>",
+        "node_shape": "rect_card",
+        "low_poly_shape": "mesh_panel",
+        "accent_role": "process",
+        "port_layout": {
+          "left": [
+            "flow_in"
+          ],
+          "right": [
+            "flow_out"
+          ],
+          "top": [],
+          "bottom": []
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "Filter",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "process_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "sensor",
+        "current",
+        "measurement"
+      ],
+      "recommended_sensors": [],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_range_a": 20
+      },
+      "component_type_id": "current_sensor",
+      "display_name": "Current Sensor",
+      "category": "sensors",
+      "description": "Hall or shunt-based current measurement for motor and supply monitoring.",
+      "physical_domain": "electrical",
+      "ports": [
+        {
+          "port_id": "sense_in",
+          "name": "Current Loop",
+          "direction": "input",
+          "medium": "dc_power",
+          "quantity_kind": "current",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "signal_out",
+          "name": "Analog Output",
+          "direction": "output",
+          "medium": "analog_signal",
+          "quantity_kind": "current",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "measured_current",
+          "name": "Measured Current",
+          "quantity_kind": "current",
+          "unit": "A",
+          "expected_min": 0,
+          "expected_max": 20,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "signal_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "missing_signal",
+          "title": "Missing Signal",
+          "description": "No output from sensor.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify excitation and loop power.",
+            "Check wiring continuity to analog input."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "stale_signal",
+          "title": "Stale Signal",
+          "description": "Value frozen despite load change.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Compare against second measurement path.",
+            "Replace sensor if frozen under known load step."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "noisy_signal",
+          "title": "Noisy Signal",
+          "description": "Excessive electrical noise on output.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Route cable away from motor leads.",
+            "Add ferrite and verify shield ground at one end only."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"12\" y=\"18\" width=\"40\" height=\"28\" rx=\"3\" fill=\"#0E1A2A\" stroke=\"#F59E0B\" stroke-width=\"2\"/><path d=\"M20 32 C26 24 30 40 36 32\" fill=\"none\" stroke=\"#8B5CF6\" stroke-width=\"2\"/></svg>",
+        "node_shape": "small_card",
+        "low_poly_shape": "sensor_chip",
+        "accent_role": "sensor",
+        "port_layout": {
+          "left": [
+            "sense_in"
+          ],
+          "right": [
+            "signal_out"
+          ],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "I Sensor",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "sensor_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "sensor",
+        "voltage",
+        "measurement"
+      ],
+      "recommended_sensors": [],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_range_v": 48
+      },
+      "component_type_id": "voltage_sensor",
+      "display_name": "Voltage Sensor",
+      "category": "sensors",
+      "description": "Divider or isolated voltage measurement for bus monitoring.",
+      "physical_domain": "electrical",
+      "ports": [
+        {
+          "port_id": "sense_in",
+          "name": "Voltage Tap",
+          "direction": "input",
+          "medium": "dc_power",
+          "quantity_kind": "voltage",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "signal_out",
+          "name": "Analog Output",
+          "direction": "output",
+          "medium": "analog_signal",
+          "quantity_kind": "voltage",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "measured_voltage",
+          "name": "Measured Voltage",
+          "quantity_kind": "voltage",
+          "unit": "V",
+          "expected_min": 0,
+          "expected_max": 48,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "signal_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "missing_signal",
+          "title": "Missing Signal",
+          "description": "No voltage reading present.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify tap connection and fuse upstream.",
+            "Measure raw voltage at terminals with DMM."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "impossible_reading",
+          "title": "Impossible Reading",
+          "description": "Reading outside physical possibility.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Check scaling and ADC range in PLC.",
+            "Inspect for short on sense leads."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"12\" y=\"18\" width=\"40\" height=\"28\" rx=\"3\" fill=\"#0E1A2A\" stroke=\"#F59E0B\" stroke-width=\"2\"/><path d=\"M18 38 L24 22 L30 38 L36 26\" fill=\"none\" stroke=\"#8B5CF6\" stroke-width=\"2\"/></svg>",
+        "node_shape": "small_card",
+        "low_poly_shape": "sensor_chip",
+        "accent_role": "sensor",
+        "port_layout": {
+          "left": [
+            "sense_in"
+          ],
+          "right": [
+            "signal_out"
+          ],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "V Sensor",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "sensor_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "sensor",
+        "rpm",
+        "tachometer"
+      ],
+      "recommended_sensors": [],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_rpm": 6000
+      },
+      "component_type_id": "rpm_tachometer",
+      "display_name": "RPM Tachometer",
+      "category": "sensors",
+      "description": "Rotational speed sensor for shafts and fan hubs.",
+      "physical_domain": "mechanical",
+      "ports": [
+        {
+          "port_id": "shaft_sense",
+          "name": "Shaft Sense",
+          "direction": "input",
+          "medium": "mechanical_rotation",
+          "quantity_kind": "rpm",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "signal_out",
+          "name": "Pulse Output",
+          "direction": "output",
+          "medium": "digital_signal",
+          "quantity_kind": "rpm",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "measured_rpm",
+          "name": "Measured RPM",
+          "quantity_kind": "rpm",
+          "unit": "rpm",
+          "expected_min": 0,
+          "expected_max": 6000,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "signal_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "missing_signal",
+          "title": "Missing Signal",
+          "description": "No pulses detected.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify sensor gap to target wheel.",
+            "Inspect connector for intermittent contact."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "stuck_value",
+          "title": "Stuck Value",
+          "description": "RPM reading constant despite speed change.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Swap channel to confirm sensor vs input fault.",
+            "Clean optical or magnetic target surface."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><circle cx=\"32\" cy=\"32\" r=\"18\" fill=\"#0E1A2A\" stroke=\"#F59E0B\" stroke-width=\"2\"/><text x=\"32\" y=\"36\" text-anchor=\"middle\" fill=\"#F59E0B\" font-size=\"10\" font-family=\"monospace\">RPM</text></svg>",
+        "node_shape": "small_card",
+        "low_poly_shape": "disc_sensor",
+        "accent_role": "sensor",
+        "port_layout": {
+          "left": [
+            "shaft_sense"
+          ],
+          "right": [
+            "signal_out"
+          ],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "RPM",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "sensor_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "sensor",
+        "vibration",
+        "condition"
+      ],
+      "recommended_sensors": [],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_range_mm_s": 25
+      },
+      "component_type_id": "vibration_sensor",
+      "display_name": "Vibration Sensor",
+      "category": "sensors",
+      "description": "Accelerometer or velocity probe for rotating equipment health.",
+      "physical_domain": "mechanical",
+      "ports": [
+        {
+          "port_id": "mount_sense",
+          "name": "Mount Point",
+          "direction": "input",
+          "medium": "mounting",
+          "quantity_kind": "vibration",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "signal_out",
+          "name": "Analog Output",
+          "direction": "output",
+          "medium": "analog_signal",
+          "quantity_kind": "vibration",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "measured_vibration",
+          "name": "Measured Vibration",
+          "quantity_kind": "vibration",
+          "unit": "mm/s",
+          "expected_min": 0,
+          "expected_max": 25,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "signal_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 10
+          }
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "missing_signal",
+          "title": "Missing Signal",
+          "description": "No vibration data received.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify sensor power and cable integrity.",
+            "Re-seat mount bolt to rated torque."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "noisy_signal",
+          "title": "Noisy Signal",
+          "description": "Signal dominated by electrical or structural noise.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Confirm sensor mounted on rigid surface.",
+            "Filter out known structural resonance in analysis."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"14\" y=\"20\" width=\"36\" height=\"24\" rx=\"2\" fill=\"#0E1A2A\" stroke=\"#F59E0B\" stroke-width=\"2\"/><path d=\"M16 32 L22 26 L28 38 L34 28 L40 36 L46 30\" fill=\"none\" stroke=\"#EF4444\" stroke-width=\"2\"/></svg>",
+        "node_shape": "small_card",
+        "low_poly_shape": "probe_block",
+        "accent_role": "sensor",
+        "port_layout": {
+          "left": [
+            "mount_sense"
+          ],
+          "right": [
+            "signal_out"
+          ],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "Vibe",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "sensor_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "sensor",
+        "temperature",
+        "thermal"
+      ],
+      "recommended_sensors": [],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_range_c": 150
+      },
+      "component_type_id": "temperature_sensor",
+      "display_name": "Temperature Sensor",
+      "category": "sensors",
+      "description": "RTD or thermistor for motor, bearing, and fluid temperature.",
+      "physical_domain": "thermal",
+      "ports": [
+        {
+          "port_id": "thermal_sense",
+          "name": "Thermal Contact",
+          "direction": "input",
+          "medium": "thermal",
+          "quantity_kind": "temperature",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "signal_out",
+          "name": "Analog Output",
+          "direction": "output",
+          "medium": "analog_signal",
+          "quantity_kind": "temperature",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "measured_temperature",
+          "name": "Measured Temperature",
+          "quantity_kind": "temperature",
+          "unit": "C",
+          "expected_min": -20,
+          "expected_max": 150,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "signal_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {
+            "high": 85
+          }
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "missing_signal",
+          "title": "Missing Signal",
+          "description": "Open circuit on temperature loop.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Inspect lead wire at termination.",
+            "Verify excitation current on RTD loop."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "impossible_reading",
+          "title": "Impossible Reading",
+          "description": "Reading outside installed range.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Check sensor type configuration in PLC.",
+            "Verify sensor seated on heat source."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><circle cx=\"32\" cy=\"28\" r=\"12\" fill=\"#0E1A2A\" stroke=\"#F59E0B\" stroke-width=\"2\"/><rect x=\"29\" y=\"38\" width=\"6\" height=\"14\" fill=\"#F59E0B\"/></svg>",
+        "node_shape": "small_card",
+        "low_poly_shape": "probe_stem",
+        "accent_role": "sensor",
+        "port_layout": {
+          "left": [
+            "thermal_sense"
+          ],
+          "right": [
+            "signal_out"
+          ],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "Temp",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "sensor_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "sensor",
+        "airflow",
+        "hvac"
+      ],
+      "recommended_sensors": [],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_range_cfm": 600
+      },
+      "component_type_id": "airflow_sensor",
+      "display_name": "Airflow Sensor",
+      "category": "sensors",
+      "description": "Hot-wire or differential sensor for duct and blower airflow.",
+      "physical_domain": "airflow",
+      "ports": [
+        {
+          "port_id": "air_sense",
+          "name": "Air Stream",
+          "direction": "input",
+          "medium": "airflow",
+          "quantity_kind": "airflow",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "signal_out",
+          "name": "Analog Output",
+          "direction": "output",
+          "medium": "analog_signal",
+          "quantity_kind": "airflow",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "measured_airflow",
+          "name": "Measured Airflow",
+          "quantity_kind": "airflow",
+          "unit": "CFM",
+          "expected_min": 0,
+          "expected_max": 600,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "signal_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "missing_signal",
+          "title": "Missing Signal",
+          "description": "No airflow reading.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify sensor seated in flow path.",
+            "Check for ice or debris on probe element."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "stale_signal",
+          "title": "Stale Signal",
+          "description": "Reading unchanged during known flow change.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Command blower speed step and verify response.",
+            "Recalibrate sensor span if drift confirmed."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><path d=\"M16 40 Q32 16 48 40\" fill=\"none\" stroke=\"#F59E0B\" stroke-width=\"2\"/><line x1=\"24\" y1=\"32\" x2=\"40\" y2=\"32\" stroke=\"#8B5CF6\" stroke-width=\"2\"/></svg>",
+        "node_shape": "small_card",
+        "low_poly_shape": "flow_probe",
+        "accent_role": "sensor",
+        "port_layout": {
+          "left": [
+            "air_sense"
+          ],
+          "right": [
+            "signal_out"
+          ],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "Airflow",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "sensor_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "sensor",
+        "pressure",
+        "transducer"
+      ],
+      "recommended_sensors": [],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_range_psi": 200
+      },
+      "component_type_id": "pressure_sensor",
+      "display_name": "Pressure Sensor",
+      "category": "sensors",
+      "description": "Gauge or differential pressure transducer for fluid and air systems.",
+      "physical_domain": "fluid",
+      "ports": [
+        {
+          "port_id": "pressure_tap",
+          "name": "Pressure Tap",
+          "direction": "input",
+          "medium": "fluid_flow",
+          "quantity_kind": "pressure",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "signal_out",
+          "name": "Analog Output",
+          "direction": "output",
+          "medium": "analog_signal",
+          "quantity_kind": "pressure",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "measured_pressure",
+          "name": "Measured Pressure",
+          "quantity_kind": "pressure",
+          "unit": "psi",
+          "expected_min": 0,
+          "expected_max": 200,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "signal_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "missing_signal",
+          "title": "Missing Signal",
+          "description": "No pressure output.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify tap not plugged.",
+            "Inspect transmitter power and 4-20mA loop."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "stuck_value",
+          "title": "Stuck Value",
+          "description": "Pressure frozen during system change.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Vent tap and verify response.",
+            "Replace transducer if diaphragm suspected seized."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><circle cx=\"32\" cy=\"32\" r=\"16\" fill=\"#0E1A2A\" stroke=\"#F59E0B\" stroke-width=\"2\"/><line x1=\"32\" y1=\"16\" x2=\"32\" y2=\"8\" stroke=\"#F59E0B\" stroke-width=\"2\"/><text x=\"32\" y=\"36\" text-anchor=\"middle\" fill=\"#F59E0B\" font-size=\"9\">PSI</text></svg>",
+        "node_shape": "small_card",
+        "low_poly_shape": "transducer_block",
+        "accent_role": "sensor",
+        "port_layout": {
+          "left": [
+            "pressure_tap"
+          ],
+          "right": [
+            "signal_out"
+          ],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "Pressure",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "sensor_accent",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
+        "sensor",
+        "limit",
+        "interlock"
+      ],
+      "recommended_sensors": [],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "max_actuations_per_min": 60
+      },
+      "component_type_id": "limit_switch",
+      "display_name": "Limit Switch",
+      "category": "sensors",
+      "description": "Mechanical or proximity switch for end-of-travel and guard interlock.",
+      "physical_domain": "mechanical",
+      "ports": [
+        {
+          "port_id": "actuator_in",
+          "name": "Actuator Input",
+          "direction": "input",
+          "medium": "mounting",
+          "quantity_kind": "boolean_state",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "signal_out",
+          "name": "Contact Output",
+          "direction": "output",
+          "medium": "digital_signal",
+          "quantity_kind": "boolean_state",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "switch_state",
+          "name": "Switch State",
+          "quantity_kind": "boolean_state",
+          "unit": "bool",
+          "expected_min": 0,
+          "expected_max": 1,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "signal_out",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "missing_signal",
+          "title": "Missing Signal",
+          "description": "No state transition when actuated.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify actuator alignment and travel.",
+            "Test contact continuity with meter."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "stuck_value",
+          "title": "Stuck Value",
+          "description": "State does not change when released.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Inspect for mechanical binding on lever.",
+            "Replace switch if contact welded."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"16\" y=\"20\" width=\"32\" height=\"24\" rx=\"2\" fill=\"#0E1A2A\" stroke=\"#F59E0B\" stroke-width=\"2\"/><circle cx=\"32\" cy=\"32\" r=\"6\" fill=\"#2DD4BF\"/></svg>",
+        "node_shape": "small_card",
+        "low_poly_shape": "lever_switch",
+        "accent_role": "sensor",
+        "port_layout": {
+          "left": [
+            "actuator_in"
+          ],
+          "right": [
+            "signal_out"
+          ],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "Limit SW",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "sensor_accent",
+          "danger": "fault_red"
+        }
+      }
+    }
+  ]
+}

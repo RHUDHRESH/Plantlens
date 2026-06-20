@@ -30,6 +30,10 @@ class Settings(BaseSettings):
         default="../../packages/sample-data/demo-microgrid",
         validation_alias=AliasChoices("SAMPLE_DATA_DIR"),
     )
+    component_library_dir: str = Field(
+        default="packages/sample-data/component-library",
+        validation_alias=AliasChoices("COMPONENT_LIBRARY_DIR"),
+    )
     compiled_dir: str = Field(
         default="./compiled",
         validation_alias=AliasChoices("COMPILED_DIR"),

@@ -233,3 +233,7 @@ export function rejectAgentDraft(draftId: string): Promise<{ draft: AgentDraft; 
 export function getPlcStatus(signal?: AbortSignal): Promise<Record<string, unknown>> {
   return apiFetch("/api/plc/status", signal ? { signal } : {});
 }
+
+export function getComponentLibrary(signal?: AbortSignal): Promise<Record<string, unknown>> {
+  return apiFetch("/api/library/components", signal ? { signal } : {});
+}
