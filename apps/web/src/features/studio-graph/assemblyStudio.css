@@ -3,6 +3,51 @@
   background: #08111f;
   color: #dce8f5;
   padding: var(--space-lg);
+  font-family: var(--font-ui, "Helvetica Neue", sans-serif);
+}
+
+.assembly-studio__title {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #dce8f5;
+}
+
+.assembly-studio__title-bracket {
+  color: #1cc8ff;
+  opacity: 0.7;
+  font-weight: 300;
+}
+
+.compile-badge {
+  display: inline-block;
+  margin-left: 10px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 2px 7px;
+  border-radius: 2px;
+  vertical-align: middle;
+  font-family: ui-monospace, monospace;
+}
+
+.compile-badge--pass {
+  background: rgba(0, 214, 143, 0.15);
+  color: #00d68f;
+  border: 1px solid rgba(0, 214, 143, 0.35);
+}
+
+.compile-badge--warn {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.compile-badge--fail {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.35);
 }
 
 .assembly-studio__header {
@@ -46,23 +91,24 @@
 }
 
 .analysis-sidebar {
-  border-left: 1px solid var(--border-subtle, #d8e0e8);
+  border-left: 1px solid rgba(28, 200, 255, 0.14);
   padding: 1rem;
   min-width: 280px;
   max-width: 340px;
   overflow-y: auto;
-  background: var(--surface-raised, #f7f9fb);
+  background: rgba(14, 26, 42, 0.9);
 }
 
 .analysis-sidebar__header h2 {
   margin: 0 0 0.25rem;
   font-size: 1.05rem;
+  color: #dce8f5;
 }
 
 .analysis-sidebar__header p {
   margin: 0 0 1rem;
   font-size: 0.82rem;
-  color: #5a6570;
+  color: #7e93aa;
 }
 
 .analysis-panel {
@@ -72,7 +118,10 @@
 .analysis-panel h3,
 .analysis-panel h4 {
   margin: 0 0 0.5rem;
-  font-size: 0.92rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #7e93aa;
 }
 
 .analysis-panel__stats {
@@ -87,6 +136,12 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.85rem;
+  color: #dce8f5;
+}
+
+.analysis-panel__stats strong {
+  color: #1cc8ff;
+  font-family: ui-monospace, monospace;
 }
 
 .analysis-panel__list {
@@ -102,41 +157,56 @@
   gap: 0.15rem;
   font-size: 0.82rem;
   padding: 0.45rem 0.5rem;
-  border-radius: 6px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  border-radius: 3px;
+  background: rgba(8, 17, 31, 0.7);
+  border: 1px solid rgba(28, 200, 255, 0.12);
+  color: #dce8f5;
 }
 
 .analysis-panel__empty,
 .analysis-muted {
-  color: #64748b;
+  color: #7e93aa;
   font-size: 0.82rem;
 }
 
 .analysis-panel__error {
-  color: #b42318;
+  color: #ef4444;
   font-size: 0.85rem;
 }
 
 .analysis-panel__warnings {
   margin: 0.5rem 0 0;
   padding-left: 1rem;
-  color: #b54708;
+  color: #f59e0b;
   font-size: 0.82rem;
 }
 
 .analysis-badge {
   display: inline-block;
-  font-size: 0.72rem;
-  text-transform: capitalize;
-  padding: 0.1rem 0.35rem;
-  border-radius: 4px;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 2px;
   width: fit-content;
+  font-weight: 700;
 }
 
-.analysis-badge--observable { background: #dcfae6; color: #067647; }
-.analysis-badge--weakly_observable { background: #fef0c7; color: #b54708; }
-.analysis-badge--unobservable { background: #fee4e2; color: #b42318; }
+.analysis-badge--observable {
+  background: rgba(0, 214, 143, 0.15);
+  color: #00D68F;
+  border: 1px solid rgba(0, 214, 143, 0.3);
+}
+.analysis-badge--weakly_observable {
+  background: rgba(245, 158, 11, 0.12);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.analysis-badge--unobservable {
+  background: rgba(239, 68, 68, 0.12);
+  color: #EF4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
 
 .assembly-studio__nav {
   display: flex;
@@ -145,15 +215,25 @@
 }
 
 .assembly-studio__nav button {
-  padding: 0.4rem 0.75rem;
-  border-radius: 6px;
-  border: 1px solid #94a3b8;
-  background: #fff;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-sm, 3px);
+  border: 1px solid rgba(28, 200, 255, 0.5);
+  background: rgba(28, 200, 255, 0.1);
+  color: #1cc8ff;
   cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  transition: background 160ms, box-shadow 160ms;
+}
+
+.assembly-studio__nav button:hover:not(:disabled) {
+  background: rgba(28, 200, 255, 0.18);
+  box-shadow: 0 0 10px rgba(28, 200, 255, 0.2);
 }
 
 .assembly-studio__nav button:disabled {
-  opacity: 0.6;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -188,17 +268,20 @@
 
 .assembly-node {
   min-width: 200px;
-  background: linear-gradient(180deg, rgba(14, 26, 42, 0.95), rgba(9, 18, 31, 0.95));
-  border: 1px solid rgba(28, 200, 255, 0.35);
-  border-radius: 10px;
+  background: linear-gradient(160deg, rgba(17, 34, 54, 0.97) 0%, rgba(8, 17, 31, 0.97) 100%);
+  border: 1px solid rgba(28, 200, 255, 0.4);
+  border-radius: 0;
+  /* Angular clip: top-right corner cut — low-poly MATLAB style */
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
   padding: 10px;
   color: #dce8f5;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(28, 200, 255, 0.08);
 }
 
 .assembly-node--selected {
   border-color: #8b5cf6;
-  box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.5), 0 0 16px rgba(139, 92, 246, 0.2);
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
 }
 
 .assembly-node__header {
@@ -263,10 +346,13 @@
 }
 
 .assembly-port__handle {
-  width: 8px !important;
-  height: 8px !important;
-  border: 1px solid #1cc8ff !important;
-  background: #0e1a2a !important;
+  width: 9px !important;
+  height: 9px !important;
+  border: 1.5px solid #1cc8ff !important;
+  background: #08111f !important;
+  border-radius: 0 !important;
+  /* Diamond — safe to use rotate vs clip-path on draggable handles */
+  transform: rotate(45deg) !important;
 }
 
 .assembly-port__handle--dc_power {
@@ -282,9 +368,139 @@
   border-color: #2dd4bf !important;
 }
 
+/* ── Compile result panel ── */
+
+.compile-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #1cc8ff;
+  padding: 8px 0;
+  animation: spin-icon 1s linear infinite;
+}
+
+@keyframes spin-icon {
+  from { opacity: 1; }
+  50% { opacity: 0.4; }
+  to { opacity: 1; }
+}
+
+.compile-result {
+  margin-bottom: 1rem;
+  border-radius: 3px;
+  padding: 10px 12px;
+  border-left: 3px solid;
+}
+
+.compile-result--pass {
+  border-color: #00d68f;
+  background: rgba(0, 214, 143, 0.07);
+}
+
+.compile-result--warn {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.07);
+}
+
+.compile-result--fail {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.07);
+}
+
+.compile-result__status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.compile-result__tag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  font-family: ui-monospace, monospace;
+}
+
+.compile-result--pass .compile-result__tag { color: #00d68f; }
+.compile-result--warn .compile-result__tag { color: #f59e0b; }
+.compile-result--fail .compile-result__tag { color: #ef4444; }
+
+.compile-result__mode {
+  font-size: 9px;
+  color: #7e93aa;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.compile-result__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.compile-result__metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 4px;
+  background: rgba(8, 17, 31, 0.5);
+  border: 1px solid rgba(28, 200, 255, 0.1);
+  border-radius: 2px;
+}
+
+.compile-result__metric-val {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1cc8ff;
+  font-family: ui-monospace, monospace;
+  line-height: 1;
+}
+
+.compile-result__metric-key {
+  font-size: 8px;
+  color: #7e93aa;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-top: 3px;
+}
+
+.compile-result__issues {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.compile-result__issue {
+  font-size: 11px;
+  font-family: ui-monospace, monospace;
+  padding: 4px 6px;
+  border-radius: 2px;
+}
+
+.compile-result__issue--error {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.compile-result__issue--warn {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.compile-result__issue-code {
+  opacity: 0.7;
+  margin-right: 4px;
+}
+
+/* ── Assembly inspector ── */
+
 .assembly-inspector {
   border: 1px solid rgba(28, 200, 255, 0.15);
-  border-radius: 10px;
+  border-radius: 3px;
   padding: var(--space-md);
   background: rgba(14, 26, 42, 0.75);
   font-size: 13px;

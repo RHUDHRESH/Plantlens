@@ -80,15 +80,15 @@ describe("MatrixPanel", () => {
   });
 });
 
-describe("Analyze Assembly button wiring", () => {
-  it("calls analyze handler from AssemblyStudioPage button label", () => {
+describe("Compile button wiring", () => {
+  it("calls analyze handler from AssemblyStudioPage compile button label", () => {
     const onAnalyze = vi.fn();
     render(
       <button type="button" onClick={onAnalyze}>
-        Analyze Assembly
+        ▶ Compile
       </button>,
     );
-    fireEvent.click(screen.getByRole("button", { name: /Analyze Assembly/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Compile/i }));
     expect(onAnalyze).toHaveBeenCalled();
   });
 });

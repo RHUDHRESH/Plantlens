@@ -24,8 +24,8 @@ function PowerCable({ from, to, highlight }: { from: [number, number, number]; t
   return (
     <Line
       points={[from, mid, to]}
-      color={highlight ? "#c9a227" : "#4a5568"}
-      lineWidth={1}
+      color={highlight ? "#1cc8ff" : "#1a3a5c"}
+      lineWidth={highlight ? 2.5 : 1}
     />
   );
 }
@@ -90,10 +90,12 @@ function PlantScene({
 
   return (
     <>
-      <color attach="background" args={["#1a1f24"]} />
-      <ambientLight intensity={0.45} />
-      <directionalLight position={[4, 6, 3]} intensity={0.55} castShadow />
-      <gridHelper args={[12, 24, "#2a3440", "#222a32"]} position={[0, 0, 0]} />
+      <color attach="background" args={["#08111f"]} />
+      <ambientLight intensity={0.15} color="#0a2040" />
+      <hemisphereLight args={["#0d2a4a", "#050e1a", 0.35]} />
+      <directionalLight position={[4, 8, 3]} intensity={0.7} color="#d0eeff" castShadow />
+      <pointLight position={[0, 4, 0]} intensity={0.4} color="#1cc8ff" distance={12} />
+      <gridHelper args={[14, 28, "rgba(28,200,255,0.15)", "rgba(28,200,255,0.05)"]} position={[0, 0, 0]} />
       <CameraFocus targetId={rootAssetId} nodes={nodes} reducedMotion={!!reducedMotion} />
       {edges.map((edge) => {
         const a = positions[edge.from];

@@ -28,9 +28,9 @@ describe("PlantMap2D", () => {
       />,
     );
     expect(screen.getByLabelText(/Live plant map/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Motor CRITICAL/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/DC Bus WARNING/i)).toBeInTheDocument();
-    expect(screen.getByText(/ROOT/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Motor CRIT/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/DC Bus WARN/i)).toBeInTheDocument();
+    expect(screen.getByText(/ROOT CAUSE/i)).toBeInTheDocument();
   });
 
   it("shows safe fallback for missing coordinates via empty state", () => {

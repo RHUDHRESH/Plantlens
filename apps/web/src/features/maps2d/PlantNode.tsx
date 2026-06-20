@@ -16,9 +16,19 @@ interface PlantNodeProps {
 }
 
 const NODE_DIMS = {
-  comfortable: { w: 120, h: 56, icon: 28 },
-  compact: { w: 100, h: 48, icon: 24 },
+  comfortable: { w: 128, h: 60, icon: 26 },
+  compact: { w: 108, h: 50, icon: 22 },
 } as const;
+
+const NOTCH = 12;
+
+function angularPath(w: number, h: number): string {
+  return `M ${NOTCH},0 L ${w},0 L ${w},${h - NOTCH} L ${w - NOTCH},${h} L 0,${h} L 0,0 Z`;
+}
+
+function haloPath(w: number, h: number, pad: number): string {
+  return `M ${NOTCH + pad},${-pad} L ${w + pad},${-pad} L ${w + pad},${h - NOTCH + pad} L ${w - NOTCH + pad},${h + pad} L ${-pad},${h + pad} L ${-pad},${-pad} Z`;
+}
 
 export function PlantNode({
   node,
@@ -40,10 +50,13 @@ export function PlantNode({
     visual.halo && (status === "warning" || status === "critical" || isAffected);
   const haloSteady = status === "critical" || isRoot || reducedMotion;
 
-  const fill =
-    status === "offline"
-      ? "url(#offline-stripe)"
-      : visual.fill;
+  const fill = status === "offline" ? "url(#offline-stripe)" : visual.fill;
+  const strokeColor = isFocused
+    ? "var(--accent)"
+    : isRoot
+      ? "var(--status-critical)"
+      : visual.border;
+  const strokeW = isRoot ? 2.5 : isFocused ? 2 : 1.5;
 
   return (
     <g
@@ -61,13 +74,10 @@ export function PlantNode({
       style={{ cursor: "pointer" }}
       className={isFocused ? "plant-node--focused" : undefined}
     >
+      {/* Halo glow ring */}
       {showHalo && (
-        <rect
-          x={-4}
-          y={-4}
-          width={NODE_W + 8}
-          height={NODE_H + 8}
-          rx={12}
+        <path
+          d={haloPath(NODE_W, NODE_H, 4)}
           fill="none"
           stroke={visual.border}
           strokeWidth={status === "critical" || isRoot ? 2.5 : 2}
@@ -80,56 +90,94 @@ export function PlantNode({
           }
         />
       )}
-      <rect
-        width={NODE_W}
-        height={NODE_H}
-        rx={10}
+
+      {/* Low-poly angular body */}
+      <path
+        d={angularPath(NODE_W, NODE_H)}
         fill={fill}
-        stroke={isFocused ? "var(--accent)" : visual.border}
-        strokeWidth={isRoot ? 2.5 : isFocused ? 2 : 1.5}
+        stroke={strokeColor}
+        strokeWidth={strokeW}
         style={{ transition }}
       />
+
+      {/* Accent bar top-left → top-right */}
+      <line
+        x1={NOTCH}
+        y1={2}
+        x2={NODE_W}
+        y2={2}
+        stroke={strokeColor}
+        strokeWidth={1.5}
+        opacity={0.6}
+      />
+
+      {/* Icon */}
       <g style={{ color: visual.text }}>
         <AssetIcon assetType={node.asset_type} size={iconSize} nodeWidth={NODE_W} />
       </g>
-      <text x={10} y={density === "compact" ? 20 : 22} fill="var(--text)" fontSize={density === "compact" ? 11 : 12} fontWeight={600}>
+
+      {/* Asset label */}
+      <text
+        x={10}
+        y={density === "compact" ? 20 : 22}
+        fill="var(--text)"
+        fontSize={density === "compact" ? 11 : 12}
+        fontWeight={700}
+        letterSpacing="0.01em"
+      >
         {node.label}
       </text>
-      <text x={10} y={density === "compact" ? 36 : 40} fill="var(--text-muted)" fontSize={10} data-tabular>
+
+      {/* Asset ID — monospace engineering */}
+      <text
+        x={10}
+        y={density === "compact" ? 35 : 38}
+        fill="var(--text-muted)"
+        fontSize={9}
+        fontFamily="ui-monospace, monospace"
+        letterSpacing="0.03em"
+      >
         {node.id}
       </text>
+
+      {/* Status badge top-right */}
       {visual.label && (
         <text
-          x={NODE_W - 8}
+          x={NODE_W - 10}
           y={16}
           textAnchor="end"
           fill={visual.text}
+          fontSize={8}
+          fontWeight={700}
+          letterSpacing="0.06em"
+        >
+          {visual.label.toUpperCase()}
+        </text>
+      )}
+
+      {/* ROOT indicator */}
+      {isRoot && (
+        <text
+          x={NODE_W / 2}
+          y={-8}
+          textAnchor="middle"
+          fill="var(--status-critical)"
           fontSize={9}
           fontWeight={700}
+          letterSpacing="0.08em"
         >
-          {visual.icon} {visual.label}
+          ▲ ROOT CAUSE
         </text>
       )}
-      {isRoot && (
-        <text x={NODE_W / 2} y={-8} textAnchor="middle" fill="var(--status-critical)" fontSize={10} fontWeight={700}>
-          ROOT
-        </text>
-      )}
+
+      {/* Causal path step — diamond badge */}
       {pathStep !== undefined && (
-        <circle cx={NODE_W - 12} cy={NODE_H - 12} r={10} fill="var(--accent)" />
-      )}
-      {pathStep !== undefined && (
-        <text
-          x={NODE_W - 12}
-          y={NODE_H - 8}
-          textAnchor="middle"
-          fill="#fff"
-          fontSize={11}
-          fontWeight={700}
-          data-tabular
-        >
-          {pathStep}
-        </text>
+        <g transform={`translate(${NODE_W - 16}, ${NODE_H - 14})`}>
+          <path d="M 8,0 L 16,8 L 8,16 L 0,8 Z" fill="var(--accent)" />
+          <text x={8} y={12} textAnchor="middle" fill="#fff" fontSize={10} fontWeight={700}>
+            {pathStep}
+          </text>
+        </g>
       )}
     </g>
   );

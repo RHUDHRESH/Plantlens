@@ -1,27 +1,37 @@
-/* PlantLens design tokens — mirrors packages/ui-tokens/tokens.json */
+/* PlantLens design tokens — unified dark sci-fi industrial */
 :root {
-  /* Studio (warm paper) */
-  --bg: #F7F5F0;
-  --surface: #FFFFFF;
-  --surface-muted: #F1EEE8;
-  --surface-elevated: #FFFFFF;
-  --grid: #E8E2D8;
-  --border: #DED8CE;
-  --text: #111111;
-  --text-muted: #6B6B6B;
-  --accent: #4A7C9B;
+  /* Deep space industrial base — both Studio and Runtime HMI */
+  --bg: #08111F;
+  --surface: #0E1A2A;
+  --surface-muted: #0A1420;
+  --surface-elevated: #112236;
+  --surface-raised: #152844;
+  --grid: rgba(28, 200, 255, 0.06);
+  --border: rgba(28, 200, 255, 0.16);
+  --border-subtle: rgba(28, 200, 255, 0.08);
+  --text: #DCE8F5;
+  --text-muted: #7E93AA;
+  --accent: #1CC8FF;
+  --accent-dim: rgba(28, 200, 255, 0.12);
+  --accent2: #8B5CF6;
 
-  --status-normal: #7A8471;
-  --status-warning: #C98910;
-  --status-critical: #B3261E;
-  --status-sensor-bad: #6B5DD3;
-  --status-offline: #8A8A8A;
-  --status-unknown: #6B6B6B;
+  /* Status — high-saturation for engineering readability at a glance */
+  --status-normal: #00D68F;
+  --status-warning: #F59E0B;
+  --status-critical: #EF4444;
+  --status-sensor-bad: #A78BFA;
+  --status-offline: #4B5563;
+  --status-unknown: #6B7280;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius: 12px;
-  --radius-dialog: 14px;
+  --status-warning-fill: rgba(245, 158, 11, 0.12);
+  --status-critical-fill: rgba(239, 68, 68, 0.14);
+  --status-sensor-fill: rgba(167, 139, 250, 0.14);
+
+  /* Angular radii — MATLAB-like precision, minimal rounding */
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius: 6px;
+  --radius-dialog: 6px;
 
   --space-xs: 4px;
   --space-sm: 8px;
@@ -29,8 +39,11 @@
   --space-lg: 16px;
   --space-xl: 24px;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.7);
+  --shadow-glow: 0 0 16px rgba(28, 200, 255, 0.22);
+  --shadow-glow-warn: 0 0 16px rgba(245, 158, 11, 0.28);
+  --shadow-glow-crit: 0 0 16px rgba(239, 68, 68, 0.3);
 
   --z-strip: 10;
   --z-toolbar: 20;
@@ -39,7 +52,7 @@
   --z-modal: 50;
 
   --font-ui: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
-  --font-data: "Helvetica Neue", Helvetica, Arial, system-ui, monospace;
+  --font-data: ui-monospace, "Cascadia Code", "Fira Code", "Consolas", monospace;
 
   --motion-status: 180ms;
   --motion-card: 220ms;
@@ -48,23 +61,13 @@
   --motion-camera: 400ms;
 }
 
-/* Runtime HMI — graphite control-room surface */
+/* Runtime HMI — slightly deeper surface variant */
 .runtime-hmi,
 .operator-shell {
-  --bg: #1A1D21;
-  --surface: #23272C;
-  --surface-muted: #1E2226;
-  --surface-elevated: #2A2F36;
-  --grid: #2A3038;
-  --border: #343B44;
-  --text: #E8EAED;
-  --text-muted: #9AA0A6;
-  --accent: #5A8FAD;
-  --status-warning-fill: rgba(201, 137, 16, 0.14);
-  --status-critical-fill: rgba(179, 38, 30, 0.16);
-  --status-sensor-fill: rgba(107, 93, 211, 0.16);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.45);
+  --surface: #0B1826;
+  --surface-elevated: #0F1F32;
+  --border: rgba(28, 200, 255, 0.18);
+  --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.75);
 }
 
 @media (prefers-reduced-motion: reduce) {

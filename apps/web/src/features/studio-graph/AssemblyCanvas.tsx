@@ -66,11 +66,27 @@ export function AssemblyCanvas() {
         target: conn.to_asset_id,
         sourceHandle: conn.from_port_id,
         targetHandle: conn.to_port_id,
-        label: conn.approved ? "approved" : "draft",
-        selected: conn.connection_id === selectedConnectionId,
-        style: {
-          stroke: conn.approved ? "#1cc8ff" : "#7e93aa",
+        label: conn.approved ? "✓ approved" : "draft",
+        labelStyle: {
+          fill: conn.approved ? "#1cc8ff" : "#7e93aa",
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: "0.05em",
         },
+        labelBgStyle: {
+          fill: conn.approved ? "rgba(28,200,255,0.1)" : "rgba(8,17,31,0.7)",
+          stroke: conn.approved ? "rgba(28,200,255,0.35)" : "rgba(126,147,170,0.25)",
+          strokeWidth: 1,
+        },
+        selected: conn.connection_id === selectedConnectionId,
+        className: conn.approved ? "edge-approved" : "edge-draft",
+        style: {
+          stroke: conn.approved ? "#1cc8ff" : "#4b5563",
+          strokeWidth: conn.approved ? 2 : 1.5,
+          strokeDasharray: conn.approved ? undefined : "5 4",
+          filter: conn.approved ? "drop-shadow(0 0 4px rgba(28,200,255,0.45))" : undefined,
+        },
+        animated: conn.approved,
       })),
     [assembly.connections, selectedConnectionId],
   );

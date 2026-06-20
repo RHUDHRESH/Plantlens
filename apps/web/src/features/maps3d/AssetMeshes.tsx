@@ -9,17 +9,45 @@ import type { Mesh } from "three";
 import type { AssetStatus, MapNode } from "../maps2d/mapTypes";
 import { resolveIconKey } from "../maps2d/iconRegistry";
 
+/* Deep base colors — the mesh body tint */
 const STATUS_COLOR: Record<AssetStatus, string> = {
-  normal: "#3d5a4c",
-  warning: "#b8860b",
-  critical: "#8b2942",
-  sensor_bad: "#5c5c5c",
-  offline: "#4a4a4a",
-  unknown: "#4a4a4a",
+  normal: "#0a3030",
+  warning: "#4a2800",
+  critical: "#3d0000",
+  sensor_bad: "#1e1060",
+  offline: "#18181b",
+  unknown: "#18181b",
+};
+
+/* Emissive glow — what you SEE in sci-fi dark lighting */
+const STATUS_EMISSIVE: Record<AssetStatus, string> = {
+  normal: "#00d68f",
+  warning: "#f59e0b",
+  critical: "#ef4444",
+  sensor_bad: "#8b5cf6",
+  offline: "#000000",
+  unknown: "#000000",
+};
+
+const STATUS_EMISSIVE_INTENSITY: Record<AssetStatus, number> = {
+  normal: 0.28,
+  warning: 0.55,
+  critical: 0.72,
+  sensor_bad: 0.45,
+  offline: 0,
+  unknown: 0,
 };
 
 function statusColor(status: AssetStatus): string {
   return STATUS_COLOR[status];
+}
+
+function statusEmissive(status: AssetStatus): string {
+  return STATUS_EMISSIVE[status];
+}
+
+function statusEmissiveIntensity(status: AssetStatus): number {
+  return STATUS_EMISSIVE_INTENSITY[status];
 }
 
 function MeshBody({
@@ -198,8 +226,15 @@ export function SchematicAssetMesh({
   onSelect?: (id: string) => void;
 }) {
   const color = statusColor(status);
-  const emissive = isRoot ? "#8b2942" : isOnPath ? "#b8860b" : "#000000";
-  const intensity = isRoot ? 0.35 : isOnPath ? 0.15 : 0;
+  const baseEmissive = statusEmissive(status);
+  const baseIntensity = statusEmissiveIntensity(status);
+  /* Root/path boost on top of status glow */
+  const emissive = isRoot ? "#ef4444" : isOnPath ? "#f59e0b" : baseEmissive;
+  const intensity = isRoot
+    ? Math.max(baseIntensity, 0.75)
+    : isOnPath
+      ? Math.max(baseIntensity, 0.45)
+      : baseIntensity;
   const iconKey = resolveIconKey(node.asset_type);
   const click = onSelect ? () => onSelect(node.id) : undefined;
   const meshProps = {

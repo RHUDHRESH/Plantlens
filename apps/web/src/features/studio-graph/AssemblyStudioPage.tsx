@@ -101,16 +101,36 @@ export function AssemblyStudioPage() {
     addAsset(template, { x, y });
   };
 
+  const compileStatus = (() => {
+    if (!analysis) return null;
+    if (analysis.errors?.length) return "fail";
+    const obs = analysis.observability_matrix?.summary;
+    if (!obs) return "pass";
+    const coverage = obs.total_faults > 0 ? obs.observable_faults / obs.total_faults : 1;
+    if (coverage >= 0.75) return "pass";
+    if (coverage >= 0.4) return "warn";
+    return "fail";
+  })();
+
   return (
     <div className="assembly-studio">
       <header className="assembly-studio__header">
         <div>
-          <h1>Assembly Studio</h1>
-          <p>Connection-aware plant assembly — in-memory MVP, no compile or hardware control.</p>
+          <h1 className="assembly-studio__title">
+            <span className="assembly-studio__title-bracket">[</span>
+            Assembly Studio
+            <span className="assembly-studio__title-bracket">]</span>
+          </h1>
+          <p>
+            {assembly.assets.length} assets · {assembly.connections.length} connections
+            {compileStatus === "pass" && <span className="compile-badge compile-badge--pass">COMPILE OK</span>}
+            {compileStatus === "warn" && <span className="compile-badge compile-badge--warn">COMPILE WARN</span>}
+            {compileStatus === "fail" && <span className="compile-badge compile-badge--fail">COMPILE FAIL</span>}
+          </p>
         </div>
         <nav className="assembly-studio__nav">
           <button type="button" onClick={handleAnalyzeAssembly} disabled={analysisLoading || assembly.assets.length === 0}>
-            {analysisLoading ? "Analyzing…" : "Analyze Assembly"}
+            {analysisLoading ? "⟳ Running…" : "▶ Compile"}
           </button>
           <Link to="/studio/library">Component catalog</Link>
           <Link to="/studio">Studio forms</Link>
@@ -119,7 +139,7 @@ export function AssemblyStudioPage() {
 
       {rejectionMessage ? (
         <div className="assembly-studio__rejection" role="alert">
-          {rejectionMessage}
+          ⚠ {rejectionMessage}
         </div>
       ) : null}
 
