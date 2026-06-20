@@ -32,7 +32,8 @@ const PAIRS = [
   ["alarm_rules.schema.json", "alarm_rules.json"],
   ["causal_graph.schema.json", "causal_graph.json"],
   ["scenarios.schema.json", "scenarios.json"],
-  ["component_library.schema.json", "standard_components.json", componentLibrary]
+  ["component_library.schema.json", "standard_components.json", componentLibrary],
+  ["plant_assembly.schema.json", "demo_motor_fan_blower_assembly.json", componentLibrary]
 ];
 
 const ajv = new Ajv2020({ allErrors: true, strict: false });

@@ -13,6 +13,8 @@ export interface Port {
   medium: string;
   quantity_kind: string;
   required: boolean;
+  nominal_range?: { min?: number | null; max?: number | null };
+  compatibility_tags?: string[];
 }
 
 export interface SignalTemplate {
@@ -37,6 +39,12 @@ export interface VisualAsset {
   accent_role: string;
   preview_label: string;
   size_hint: { width: number; height: number };
+  port_layout?: {
+    left: string[];
+    right: string[];
+    top: string[];
+    bottom: string[];
+  };
 }
 
 export interface ComponentTemplate {

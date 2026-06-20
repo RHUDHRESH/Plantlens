@@ -1,0 +1,45 @@
+{
+  "assembly_id": "invalid_assembly_001",
+  "plant_id": "plantlens_demo",
+  "version": "0.1.0",
+  "assets": [
+    {
+      "asset_id": "voltage_sensor_1",
+      "component_type_id": "voltage_sensor",
+      "display_name": "Voltage Sensor",
+      "position_2d": { "x": 80, "y": 120 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    },
+    {
+      "asset_id": "air_duct_1",
+      "component_type_id": "air_duct",
+      "display_name": "Air Duct",
+      "position_2d": { "x": 360, "y": 120 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    }
+  ],
+  "connections": [
+    {
+      "connection_id": "BAD001",
+      "from_asset_id": "voltage_sensor_1",
+      "from_port_id": "signal_out",
+      "to_asset_id": "air_duct_1",
+      "to_port_id": "air_in",
+      "connection_kind": "signal",
+      "approved": true,
+      "lag_min_ms": 0,
+      "lag_max_ms": 100,
+      "notes": "Invalid: analog sensor output wired to airflow inlet"
+    }
+  ],
+  "global_tags": ["invalid_example"],
+  "metadata": {
+    "description": "Negative test assembly with incompatible port media"
+  }
+}

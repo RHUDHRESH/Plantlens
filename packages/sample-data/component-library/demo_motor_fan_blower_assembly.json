@@ -1,0 +1,365 @@
+{
+  "assembly_id": "demo_assembly_001",
+  "plant_id": "plantlens_demo",
+  "version": "0.1.0",
+  "assets": [
+    {
+      "asset_id": "dc_power_supply_1",
+      "component_type_id": "dc_power_supply",
+      "display_name": "DC Power Supply",
+      "position_2d": { "x": 40, "y": 120 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    },
+    {
+      "asset_id": "fuse_protection_block_1",
+      "component_type_id": "fuse_protection_block",
+      "display_name": "Fuse Protection Block",
+      "position_2d": { "x": 220, "y": 120 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    },
+    {
+      "asset_id": "relay_contactor_1",
+      "component_type_id": "relay_contactor",
+      "display_name": "Relay Contactor",
+      "position_2d": { "x": 400, "y": 120 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    },
+    {
+      "asset_id": "dc_motor_12v_1",
+      "component_type_id": "dc_motor_12v",
+      "display_name": "12V DC Motor",
+      "position_2d": { "x": 580, "y": 120 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    },
+    {
+      "asset_id": "belt_coupling_1",
+      "component_type_id": "belt_coupling",
+      "display_name": "Belt Coupling",
+      "position_2d": { "x": 760, "y": 120 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    },
+    {
+      "asset_id": "bldc_fan_1",
+      "component_type_id": "bldc_fan",
+      "display_name": "BLDC Fan",
+      "position_2d": { "x": 220, "y": 300 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    },
+    {
+      "asset_id": "industrial_blower_1",
+      "component_type_id": "industrial_blower",
+      "display_name": "Industrial Blower",
+      "position_2d": { "x": 940, "y": 120 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    },
+    {
+      "asset_id": "air_duct_1",
+      "component_type_id": "air_duct",
+      "display_name": "Air Duct",
+      "position_2d": { "x": 1120, "y": 120 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    },
+    {
+      "asset_id": "current_sensor_1",
+      "component_type_id": "current_sensor",
+      "display_name": "Current Sensor",
+      "position_2d": { "x": 40, "y": 480 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    },
+    {
+      "asset_id": "voltage_sensor_1",
+      "component_type_id": "voltage_sensor",
+      "display_name": "Voltage Sensor",
+      "position_2d": { "x": 220, "y": 480 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    },
+    {
+      "asset_id": "rpm_tachometer_1",
+      "component_type_id": "rpm_tachometer",
+      "display_name": "RPM Tachometer",
+      "position_2d": { "x": 400, "y": 480 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    },
+    {
+      "asset_id": "vibration_sensor_1",
+      "component_type_id": "vibration_sensor",
+      "display_name": "Vibration Sensor",
+      "position_2d": { "x": 580, "y": 480 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    },
+    {
+      "asset_id": "temperature_sensor_1",
+      "component_type_id": "temperature_sensor",
+      "display_name": "Temperature Sensor",
+      "position_2d": { "x": 760, "y": 480 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    },
+    {
+      "asset_id": "airflow_sensor_1",
+      "component_type_id": "airflow_sensor",
+      "display_name": "Airflow Sensor",
+      "position_2d": { "x": 940, "y": 480 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    },
+    {
+      "asset_id": "plc_analog_input_module_1",
+      "component_type_id": "plc_analog_input_module",
+      "display_name": "PLC Analog Input Module",
+      "position_2d": { "x": 1120, "y": 480 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    },
+    {
+      "asset_id": "plc_digital_input_module_1",
+      "component_type_id": "plc_digital_input_module",
+      "display_name": "PLC Digital Input Module",
+      "position_2d": { "x": 1300, "y": 480 },
+      "configured_ports": [],
+      "configured_signals": [],
+      "overrides": {},
+      "enabled_fault_modes": []
+    }
+  ],
+  "connections": [
+    {
+      "connection_id": "C001",
+      "from_asset_id": "dc_power_supply_1",
+      "from_port_id": "dc_out",
+      "to_asset_id": "fuse_protection_block_1",
+      "to_port_id": "line_in",
+      "connection_kind": "power",
+      "approved": true,
+      "lag_min_ms": 0,
+      "lag_max_ms": 50,
+      "notes": "Main DC bus feed"
+    },
+    {
+      "connection_id": "C002",
+      "from_asset_id": "fuse_protection_block_1",
+      "from_port_id": "load_out",
+      "to_asset_id": "relay_contactor_1",
+      "to_port_id": "contact_in",
+      "connection_kind": "power",
+      "approved": true,
+      "lag_min_ms": 0,
+      "lag_max_ms": 50,
+      "notes": "Protected feed to motor contactor"
+    },
+    {
+      "connection_id": "C003",
+      "from_asset_id": "relay_contactor_1",
+      "from_port_id": "contact_out",
+      "to_asset_id": "dc_motor_12v_1",
+      "to_port_id": "power_in",
+      "connection_kind": "power",
+      "approved": true,
+      "lag_min_ms": 0,
+      "lag_max_ms": 100,
+      "notes": "Motor drive power"
+    },
+    {
+      "connection_id": "C004",
+      "from_asset_id": "dc_motor_12v_1",
+      "from_port_id": "shaft_out",
+      "to_asset_id": "belt_coupling_1",
+      "to_port_id": "shaft_in",
+      "connection_kind": "mechanical",
+      "approved": true,
+      "lag_min_ms": 0,
+      "lag_max_ms": 20,
+      "notes": "Motor to coupling"
+    },
+    {
+      "connection_id": "C005",
+      "from_asset_id": "belt_coupling_1",
+      "from_port_id": "shaft_out",
+      "to_asset_id": "industrial_blower_1",
+      "to_port_id": "shaft_in",
+      "connection_kind": "mechanical",
+      "approved": true,
+      "lag_min_ms": 0,
+      "lag_max_ms": 20,
+      "notes": "Coupling to blower impeller shaft"
+    },
+    {
+      "connection_id": "C006",
+      "from_asset_id": "fuse_protection_block_1",
+      "from_port_id": "load_out",
+      "to_asset_id": "bldc_fan_1",
+      "to_port_id": "power_in",
+      "connection_kind": "power",
+      "approved": true,
+      "lag_min_ms": 0,
+      "lag_max_ms": 100,
+      "notes": "Fan branch from protected bus"
+    },
+    {
+      "connection_id": "C007",
+      "from_asset_id": "bldc_fan_1",
+      "from_port_id": "air_out",
+      "to_asset_id": "industrial_blower_1",
+      "to_port_id": "air_in",
+      "connection_kind": "airflow",
+      "approved": true,
+      "lag_min_ms": 0,
+      "lag_max_ms": 200,
+      "notes": "Fan boost into blower inlet"
+    },
+    {
+      "connection_id": "C008",
+      "from_asset_id": "industrial_blower_1",
+      "from_port_id": "air_out",
+      "to_asset_id": "air_duct_1",
+      "to_port_id": "air_in",
+      "connection_kind": "airflow",
+      "approved": true,
+      "lag_min_ms": 0,
+      "lag_max_ms": 300,
+      "notes": "Blower discharge to duct"
+    },
+    {
+      "connection_id": "C009",
+      "from_asset_id": "dc_power_supply_1",
+      "from_port_id": "dc_out",
+      "to_asset_id": "current_sensor_1",
+      "to_port_id": "sense_in",
+      "connection_kind": "power",
+      "approved": true,
+      "lag_min_ms": 0,
+      "lag_max_ms": 10,
+      "notes": "Supply current measurement tap"
+    },
+    {
+      "connection_id": "C010",
+      "from_asset_id": "current_sensor_1",
+      "from_port_id": "signal_out",
+      "to_asset_id": "plc_analog_input_module_1",
+      "to_port_id": "ai_ch1",
+      "connection_kind": "signal",
+      "approved": true,
+      "lag_min_ms": 0,
+      "lag_max_ms": 500,
+      "notes": "Current to AI ch1"
+    },
+    {
+      "connection_id": "C011",
+      "from_asset_id": "dc_power_supply_1",
+      "from_port_id": "dc_out",
+      "to_asset_id": "voltage_sensor_1",
+      "to_port_id": "sense_in",
+      "connection_kind": "power",
+      "approved": true,
+      "lag_min_ms": 0,
+      "lag_max_ms": 10,
+      "notes": "Bus voltage tap"
+    },
+    {
+      "connection_id": "C012",
+      "from_asset_id": "voltage_sensor_1",
+      "from_port_id": "signal_out",
+      "to_asset_id": "plc_analog_input_module_1",
+      "to_port_id": "ai_ch2",
+      "connection_kind": "signal",
+      "approved": true,
+      "lag_min_ms": 0,
+      "lag_max_ms": 500,
+      "notes": "Voltage to AI ch2"
+    },
+    {
+      "connection_id": "C013",
+      "from_asset_id": "dc_motor_12v_1",
+      "from_port_id": "shaft_out",
+      "to_asset_id": "rpm_tachometer_1",
+      "to_port_id": "shaft_sense",
+      "connection_kind": "mechanical",
+      "approved": true,
+      "lag_min_ms": 0,
+      "lag_max_ms": 20,
+      "notes": "Shaft speed pickup"
+    },
+    {
+      "connection_id": "C014",
+      "from_asset_id": "rpm_tachometer_1",
+      "from_port_id": "signal_out",
+      "to_asset_id": "plc_digital_input_module_1",
+      "to_port_id": "di_ch1",
+      "connection_kind": "signal",
+      "approved": true,
+      "lag_min_ms": 0,
+      "lag_max_ms": 100,
+      "notes": "RPM pulse to DI ch1"
+    },
+    {
+      "connection_id": "C015",
+      "from_asset_id": "temperature_sensor_1",
+      "from_port_id": "signal_out",
+      "to_asset_id": "plc_analog_input_module_1",
+      "to_port_id": "ai_ch1",
+      "connection_kind": "signal",
+      "approved": false,
+      "lag_min_ms": 0,
+      "lag_max_ms": 500,
+      "notes": "Draft temp channel — shares AI ch1, not approved"
+    },
+    {
+      "connection_id": "C016",
+      "from_asset_id": "air_duct_1",
+      "from_port_id": "air_out",
+      "to_asset_id": "airflow_sensor_1",
+      "to_port_id": "air_sense",
+      "connection_kind": "airflow",
+      "approved": true,
+      "lag_min_ms": 0,
+      "lag_max_ms": 300,
+      "notes": "Duct airflow measurement"
+    }
+  ],
+  "global_tags": ["demo", "motor_fan_blower"],
+  "metadata": {
+    "description": "Motor-fan-blower bench assembly with sensor taps and PLC IO"
+  }
+}

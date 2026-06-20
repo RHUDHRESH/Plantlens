@@ -20,7 +20,7 @@ def test_standard_library_loads():
 def test_library_has_target_component_count():
     components = list_components()
     assert len(components) >= 24
-    assert len(components) == 26
+    assert len(components) == 27
 
 
 def test_component_type_ids_are_unique():
@@ -60,4 +60,4 @@ def test_group_components_by_category():
     assert "power_electrical" in grouped
     assert "sensors" in grouped
     total = sum(len(items) for items in grouped.values())
-    assert total == 26
+    assert total == 27

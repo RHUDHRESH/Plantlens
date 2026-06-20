@@ -11,6 +11,7 @@ from app.library.validators import validate_component_library
 from app.settings import get_settings
 
 _LIBRARY_FILENAME = "standard_components.json"
+_SAMPLE_DIR = "component-library"
 
 
 def _repo_root() -> Path:
@@ -53,3 +54,19 @@ def group_components_by_category() -> dict[str, list[dict[str, Any]]]:
         category = component["category"]
         grouped.setdefault(category, []).append(component)
     return grouped
+
+
+def sample_data_dir() -> Path:
+    settings = get_settings()
+    configured = Path(settings.component_library_dir)
+    if configured.is_absolute():
+        return configured
+    return _repo_root() / settings.component_library_dir
+
+
+def load_sample_assembly(filename: str) -> dict[str, Any]:
+    path = sample_data_dir() / filename
+    if not path.is_file():
+        raise FileNotFoundError(f"sample assembly not found: {path}")
+    with path.open(encoding="utf-8") as handle:
+        return json.load(handle)

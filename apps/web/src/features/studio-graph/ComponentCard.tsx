@@ -3,9 +3,10 @@ import type { ComponentTemplate } from "./componentLibraryTypes";
 
 interface ComponentCardProps {
   component: ComponentTemplate;
+  onAdd?: (() => void) | undefined;
 }
 
-export function ComponentCard({ component }: ComponentCardProps) {
+export function ComponentCard({ component, onAdd }: ComponentCardProps) {
   const { visual_asset: visual } = component;
   const hasSafety = component.safety_notes.length > 0;
 
@@ -49,6 +50,11 @@ export function ComponentCard({ component }: ComponentCardProps) {
             <li key={tag}>{tag}</li>
           ))}
         </ul>
+      ) : null}
+      {onAdd ? (
+        <button type="button" className="component-card__add" onClick={onAdd}>
+          Add to canvas
+        </button>
       ) : null}
     </article>
   );

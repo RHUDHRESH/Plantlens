@@ -16,6 +16,7 @@ const CATEGORY_ORDER: ComponentCategory[] = [
 
 interface ComponentPaletteProps {
   components: ComponentTemplate[];
+  onAddComponent?: ((componentTypeId: string) => void) | undefined;
 }
 
 function matchesQuery(component: ComponentTemplate, query: string): boolean {
@@ -33,7 +34,7 @@ function matchesQuery(component: ComponentTemplate, query: string): boolean {
   return haystack.includes(q);
 }
 
-export function ComponentPalette({ components }: ComponentPaletteProps) {
+export function ComponentPalette({ components, onAddComponent }: ComponentPaletteProps) {
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<ComponentCategory | "all">("all");
 
@@ -90,7 +91,8 @@ export function ComponentPalette({ components }: ComponentPaletteProps) {
       </header>
 
       <p className="component-palette__summary">
-        Showing {filtered.length} of {components.length} components — palette preview only, no drag/drop yet.
+        Showing {filtered.length} of {components.length} components
+        {onAddComponent ? " — click Add to place on assembly canvas." : " — catalog preview."}
       </p>
 
       {CATEGORY_ORDER.map((category) => {
@@ -101,7 +103,11 @@ export function ComponentPalette({ components }: ComponentPaletteProps) {
             <h2>{CATEGORY_LABELS[category]}</h2>
             <div className="component-palette__grid">
               {items.map((component) => (
-                <ComponentCard key={component.component_type_id} component={component} />
+                <ComponentCard
+                  key={component.component_type_id}
+                  component={component}
+                  onAdd={onAddComponent ? () => onAddComponent(component.component_type_id) : undefined}
+                />
               ))}
             </div>
           </section>

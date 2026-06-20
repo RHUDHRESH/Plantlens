@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plantlens.dev/contracts/plant_assembly.schema.json",
+  "title": "PlantAssembly",
+  "description": "In-memory plant assembly graph for Studio drag/drop editor.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["assembly_id", "plant_id", "version", "assets", "connections", "global_tags", "metadata"],
+  "properties": {
+    "assembly_id": { "type": "string" },
+    "plant_id": { "type": "string" },
+    "version": { "type": "string" },
+    "assets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/asset_instance" }
+    },
+    "connections": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/plant_connection" }
+    },
+    "global_tags": { "type": "array", "items": { "type": "string" } },
+    "metadata": { "type": "object", "additionalProperties": true }
+  },
+  "$defs": {
+    "coords_2d": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    },
+    "coords_3d": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "z"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { "type": "number" }
+      }
+    },
+    "asset_instance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["asset_id", "component_type_id", "display_name", "position_2d"],
+      "properties": {
+        "asset_id": { "type": "string" },
+        "component_type_id": { "type": "string" },
+        "display_name": { "type": "string" },
+        "position_2d": { "$ref": "#/$defs/coords_2d" },
+        "position_3d": { "$ref": "#/$defs/coords_3d" },
+        "configured_ports": { "type": "array", "items": { "type": "string" } },
+        "configured_signals": { "type": "array", "items": { "type": "string" } },
+        "overrides": { "type": "object", "additionalProperties": true },
+        "enabled_fault_modes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "plant_connection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "connection_id", "from_asset_id", "from_port_id",
+        "to_asset_id", "to_port_id", "connection_kind", "approved",
+        "lag_min_ms", "lag_max_ms"
+      ],
+      "properties": {
+        "connection_id": { "type": "string" },
+        "from_asset_id": { "type": "string" },
+        "from_port_id": { "type": "string" },
+        "to_asset_id": { "type": "string" },
+        "to_port_id": { "type": "string" },
+        "connection_kind": {
+          "type": "string",
+          "enum": ["power", "signal", "mechanical", "airflow", "fluid", "mounting", "data"]
+        },
+        "approved": { "type": "boolean" },
+        "lag_min_ms": { "type": "integer", "minimum": 0 },
+        "lag_max_ms": { "type": "integer", "minimum": 0 },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

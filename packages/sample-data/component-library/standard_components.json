@@ -1296,6 +1296,162 @@
       "version": "1.0.0",
       "manufacturer_neutral": true,
       "tags": [
+        "plc",
+        "digital",
+        "input"
+      ],
+      "recommended_sensors": [],
+      "hmi_render_hint": {
+        "card_style": "industrial_compact",
+        "show_ports": true
+      },
+      "safety_notes": [],
+      "limits": {
+        "channel_count": 8
+      },
+      "component_type_id": "plc_digital_input_module",
+      "display_name": "PLC Digital Input Module",
+      "category": "power_electrical",
+      "description": "Digital input bank for tach pulses, limit switches, and discrete sensors.",
+      "physical_domain": "electrical",
+      "ports": [
+        {
+          "port_id": "di_ch1",
+          "name": "DI Channel 1",
+          "direction": "input",
+          "medium": "digital_signal",
+          "quantity_kind": "boolean_state",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        },
+        {
+          "port_id": "di_ch2",
+          "name": "DI Channel 2",
+          "direction": "input",
+          "medium": "digital_signal",
+          "quantity_kind": "boolean_state",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": false
+        },
+        {
+          "port_id": "logic_out",
+          "name": "Logic Bus",
+          "direction": "bidirectional",
+          "medium": "ethernet",
+          "quantity_kind": "data",
+          "nominal_range": {
+            "min": null,
+            "max": null
+          },
+          "compatibility_tags": [],
+          "required": true
+        }
+      ],
+      "signal_templates": [
+        {
+          "signal_template_id": "di_ch1_state",
+          "name": "DI Ch1 State",
+          "quantity_kind": "boolean_state",
+          "unit": "bool",
+          "expected_min": 0,
+          "expected_max": 1,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "di_ch1",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        },
+        {
+          "signal_template_id": "di_ch2_state",
+          "name": "DI Ch2 State",
+          "quantity_kind": "boolean_state",
+          "unit": "bool",
+          "expected_min": 0,
+          "expected_max": 1,
+          "sampling_hint_ms": 500,
+          "quality_required": "GOOD",
+          "source_port_id": "di_ch2",
+          "evidence_weight_default": 0.8,
+          "alarm_thresholds": {}
+        }
+      ],
+      "fault_modes": [
+        {
+          "fault_mode_id": "input_stuck_high",
+          "title": "Input Stuck High",
+          "description": "DI channel reads ON when field device is open.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Verify field device contact type and wiring.",
+            "Swap channel to isolate module fault."
+          ],
+          "safety_level": "caution"
+        },
+        {
+          "fault_mode_id": "input_stuck_low",
+          "title": "Input Stuck Low",
+          "description": "DI channel never energizes when field pulse is present.",
+          "severity": "warning",
+          "root_asset_applicability": "self",
+          "required_evidence": [],
+          "optional_evidence": [],
+          "downstream_effects": [],
+          "rejected_alternatives": [],
+          "operator_actions": [
+            "Measure pulse amplitude at module terminals.",
+            "Check common return and surge protection."
+          ],
+          "safety_level": "caution"
+        }
+      ],
+      "visual_asset": {
+        "icon_kind": "inline_svg",
+        "icon_svg": "<svg viewBox=\"0 0 64 64\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"64\" height=\"64\" fill=\"#08111F\" rx=\"6\"/><rect x=\"8\" y=\"12\" width=\"48\" height=\"40\" rx=\"3\" fill=\"#0E1A2A\" stroke=\"#1CC8FF\" stroke-width=\"2\"/><rect x=\"14\" y=\"28\" width=\"8\" height=\"8\" fill=\"none\" stroke=\"#2DD4BF\" stroke-width=\"2\"/><rect x=\"26\" y=\"28\" width=\"8\" height=\"8\" fill=\"none\" stroke=\"#2DD4BF\" stroke-width=\"2\"/><rect x=\"38\" y=\"28\" width=\"8\" height=\"8\" fill=\"none\" stroke=\"#2DD4BF\" stroke-width=\"2\"/></svg>",
+        "node_shape": "rack_card",
+        "low_poly_shape": "io_module",
+        "accent_role": "power",
+        "port_layout": {
+          "left": [
+            "di_ch1",
+            "di_ch2"
+          ],
+          "right": [
+            "logic_out"
+          ],
+          "top": [],
+          "bottom": [
+            "mount"
+          ]
+        },
+        "size_hint": {
+          "width": 180,
+          "height": 96
+        },
+        "preview_label": "PLC DI",
+        "render_tokens": {
+          "base": "industrial_dark",
+          "accent": "power_cyan",
+          "danger": "fault_red"
+        }
+      }
+    },
+    {
+      "version": "1.0.0",
+      "manufacturer_neutral": true,
+      "tags": [
         "motor",
         "dc",
         "actuation"

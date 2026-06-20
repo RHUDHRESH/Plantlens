@@ -43,7 +43,8 @@ export function ComponentLibraryPage() {
           </p>
         </div>
         <nav>
-          <Link to="/studio">← Studio forms</Link>
+          <Link to="/studio/assembly">Assembly studio →</Link>
+          <Link to="/studio">Studio forms</Link>
         </nav>
       </header>
 

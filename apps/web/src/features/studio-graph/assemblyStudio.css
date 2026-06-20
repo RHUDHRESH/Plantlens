@@ -1,0 +1,256 @@
+.assembly-studio {
+  min-height: 100vh;
+  background: #08111f;
+  color: #dce8f5;
+  padding: var(--space-lg);
+}
+
+.assembly-studio__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-md);
+}
+
+.assembly-studio__header h1 {
+  margin: 0 0 4px;
+  font-size: 22px;
+}
+
+.assembly-studio__header p {
+  margin: 0;
+  color: #7e93aa;
+  font-size: 13px;
+}
+
+.assembly-studio__header nav {
+  display: flex;
+  gap: 12px;
+}
+
+.assembly-studio__header nav a {
+  color: #1cc8ff;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.assembly-studio__rejection {
+  margin-bottom: var(--space-md);
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
+  font-size: 13px;
+}
+
+.assembly-studio__layout {
+  display: grid;
+  grid-template-columns: 300px 1fr 280px;
+  gap: var(--space-md);
+  min-height: 640px;
+}
+
+.assembly-studio__palette {
+  overflow: auto;
+  max-height: calc(100vh - 120px);
+  border: 1px solid rgba(28, 200, 255, 0.15);
+  border-radius: 10px;
+  padding: var(--space-sm);
+  background: rgba(14, 26, 42, 0.6);
+}
+
+.assembly-studio__canvas-wrap {
+  border: 1px solid rgba(28, 200, 255, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  min-height: 600px;
+}
+
+.assembly-canvas {
+  width: 100%;
+  height: 600px;
+  background: linear-gradient(180deg, #08111f 0%, #0a1523 100%);
+}
+
+.assembly-node {
+  min-width: 200px;
+  background: linear-gradient(180deg, rgba(14, 26, 42, 0.95), rgba(9, 18, 31, 0.95));
+  border: 1px solid rgba(28, 200, 255, 0.35);
+  border-radius: 10px;
+  padding: 10px;
+  color: #dce8f5;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.assembly-node--selected {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.4);
+}
+
+.assembly-node__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.assembly-node__header strong {
+  display: block;
+  font-size: 13px;
+}
+
+.assembly-node__category {
+  display: block;
+  font-size: 10px;
+  color: #7e93aa;
+  text-transform: uppercase;
+}
+
+.assembly-node__safety {
+  margin-left: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 18px;
+}
+
+.assembly-node__ports {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.assembly-node__ports--left,
+.assembly-node__ports--right {
+  margin-top: 4px;
+}
+
+.assembly-port {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  padding: 2px 0;
+}
+
+.assembly-port__label {
+  color: #9eb0c4;
+}
+
+.assembly-port__meta {
+  color: #7e93aa;
+  font-family: ui-monospace, monospace;
+}
+
+.assembly-port__handle {
+  width: 8px !important;
+  height: 8px !important;
+  border: 1px solid #1cc8ff !important;
+  background: #0e1a2a !important;
+}
+
+.assembly-port__handle--dc_power {
+  border-color: #1cc8ff !important;
+}
+
+.assembly-port__handle--analog_signal,
+.assembly-port__handle--digital_signal {
+  border-color: #8b5cf6 !important;
+}
+
+.assembly-port__handle--airflow {
+  border-color: #2dd4bf !important;
+}
+
+.assembly-inspector {
+  border: 1px solid rgba(28, 200, 255, 0.15);
+  border-radius: 10px;
+  padding: var(--space-md);
+  background: rgba(14, 26, 42, 0.75);
+  font-size: 13px;
+}
+
+.assembly-inspector h2 {
+  margin: 0 0 var(--space-sm);
+  font-size: 14px;
+  color: #7e93aa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.assembly-inspector__hint {
+  color: #7e93aa;
+  margin: 0;
+}
+
+.assembly-inspector__dl {
+  margin: 0 0 var(--space-md);
+}
+
+.assembly-inspector__dl div {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.assembly-inspector__dl dt {
+  color: #7e93aa;
+}
+
+.assembly-inspector__dl dd {
+  margin: 0;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+}
+
+.assembly-inspector__reason {
+  color: #1cc8ff;
+  margin: 0 0 var(--space-sm);
+}
+
+.assembly-inspector__warnings {
+  margin: 0 0 var(--space-sm);
+  padding-left: 18px;
+  color: #fbbf24;
+}
+
+.assembly-inspector__field {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.assembly-inspector__field input,
+.assembly-inspector__field textarea {
+  background: #0e1a2a;
+  border: 1px solid rgba(28, 200, 255, 0.2);
+  border-radius: 6px;
+  color: #dce8f5;
+  padding: 6px 8px;
+}
+
+.component-card__add {
+  margin-top: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid rgba(28, 200, 255, 0.35);
+  border-radius: 6px;
+  background: rgba(28, 200, 255, 0.1);
+  color: #1cc8ff;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.component-card__add:hover {
+  background: rgba(28, 200, 255, 0.18);
+}

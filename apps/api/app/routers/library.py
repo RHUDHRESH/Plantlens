@@ -1,15 +1,21 @@
-"""Read-only component library routes."""
+"""Component library and assembly validation routes."""
+
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth.dependencies import require_viewer
 from app.auth.principal import Principal
+from app.library.assembly import validate_plant_assembly
 from app.library.catalog import (
     get_component,
     group_components_by_category,
     list_components,
     load_standard_component_library,
 )
+from app.library.matrices import build_compatibility_matrix, summarize_compatibility_matrix
+from app.library.ports import check_connection_by_type_ids
+from app.schemas.plant_assembly import CheckConnectionRequest, ValidateAssemblyRequest
 
 router = APIRouter(prefix="/api/library", tags=["library"])
 
@@ -46,3 +52,38 @@ async def get_library_component(
             },
         )
     return {"status": "ok", "component": component}
+
+
+@router.get("/compatibility-matrix")
+async def get_compatibility_matrix(
+    _principal: Principal = Depends(require_viewer),
+) -> dict[str, Any]:
+    library = load_standard_component_library()
+    matrix = build_compatibility_matrix(library)
+    return {"status": "ok", **summarize_compatibility_matrix(matrix)}
+
+
+@router.post("/check-connection")
+async def check_connection(
+    body: CheckConnectionRequest,
+    _principal: Principal = Depends(require_viewer),
+) -> dict[str, Any]:
+    library = load_standard_component_library()
+    result = check_connection_by_type_ids(
+        library,
+        body.from_component_type_id,
+        body.from_port_id,
+        body.to_component_type_id,
+        body.to_port_id,
+    )
+    return {"status": "ok", **result.to_dict()}
+
+
+@router.post("/validate-assembly")
+async def validate_assembly(
+    body: ValidateAssemblyRequest,
+    _principal: Principal = Depends(require_viewer),
+) -> dict[str, Any]:
+    library = body.component_library or load_standard_component_library()
+    assembly = body.plant_assembly.model_dump()
+    return validate_plant_assembly(assembly, library)
