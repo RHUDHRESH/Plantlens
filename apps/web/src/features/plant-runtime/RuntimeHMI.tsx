@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { escalateIncident, getCompiledBundle, issueDevToken } from "../../api/client";
 import { setAuthToken } from "../../api/config";
+import { getRuntimeHmiState, isRuntimeEndpointUnavailable } from "../../api/hmi";
 import { connectRuntimeSocket } from "../../api/ws";
 import { useReducedMotion } from "../../app/hooks/useReducedMotion";
 import { useWebGLAvailable } from "../../app/hooks/useWebGL";
@@ -9,6 +10,13 @@ import { useRuntimeStore } from "../../app/store/runtime";
 import { RuntimeTopStrip } from "../../components/shell/RuntimeTopStrip";
 import { AgentConsole } from "../agents/AgentConsole";
 import { CalmCard, NoActiveSituation } from "../calm-card/CalmCard";
+import { HmiStatePanel } from "../hmi-state/HmiStatePanel";
+import {
+  buildHmiAssetStatusMap,
+  formatOverallStatus,
+  getActiveCausalityAssetPath,
+  getPrimaryRootAssetId,
+} from "../hmi-state/hmiFormatting";
 import { RawAlarmTable } from "../alarms/RawAlarmTable";
 import { IncidentRoom } from "../incidents/IncidentRoom";
 import { AssetDetailDrawer } from "../maps2d/AssetDetailDrawer";
@@ -52,6 +60,16 @@ export function RuntimeHMI() {
   const tags = useRuntimeStore((s) => s.tags);
   const lastSnapshotTs = useRuntimeStore((s) => s.lastSnapshotTs);
   const scenarioState = useRuntimeStore((s) => s.scenarioState);
+  const hmiState = useRuntimeStore((s) => s.hmiState);
+  const lastHmiStateTs = useRuntimeStore((s) => s.lastHmiStateTs);
+
+  const hmiStateQuery = useQuery({
+    queryKey: ["hmi-runtime-state"],
+    queryFn: ({ signal }) => getRuntimeHmiState(signal),
+    enabled: authReady,
+    refetchInterval: 1500,
+    retry: 1,
+  });
 
   const compiledQuery = useQuery({
     queryKey: ["compiled-bundle"],
@@ -102,6 +120,12 @@ export function RuntimeHMI() {
   }, [authReady]);
 
   useEffect(() => {
+    if (hmiStateQuery.data) {
+      useRuntimeStore.getState().applyHmiState(hmiStateQuery.data, hmiStateQuery.data.generated_at);
+    }
+  }, [hmiStateQuery.data]);
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       if (selectedAssetId) {
@@ -114,19 +138,53 @@ export function RuntimeHMI() {
     return () => window.removeEventListener("keydown", onKey);
   }, [selectedAssetId, scenarioOpen]);
 
+  const hmiRootAssetId = useMemo(() => getPrimaryRootAssetId(hmiState), [hmiState]);
+
   useEffect(() => {
-    if (activeSituation?.root_asset_id) {
-      setFocusAssetId(activeSituation.root_asset_id);
-    }
-  }, [activeSituation?.root_asset_id]);
+    const nextRoot = hmiRootAssetId ?? activeSituation?.root_asset_id ?? null;
+    if (nextRoot) setFocusAssetId(nextRoot);
+  }, [hmiRootAssetId, activeSituation?.root_asset_id]);
 
   const hmi = compiledQuery.data?.hmi_view_model;
   const nodes = hmi?.map_2d?.nodes ?? [];
   const edges = hmi?.map_2d?.edges ?? [];
   const plantName = compiledQuery.data?.plant_id?.replace(/_/g, " ") ?? "PlantLens Demo";
 
-  const plantHealth = useMemo(() => derivePlantHealth(assetStatus), [assetStatus]);
-  const timeLabel = lastSnapshotTs ?? "—";
+  const hmiAssetStatus = useMemo(() => buildHmiAssetStatusMap(hmiState), [hmiState]);
+  const effectiveAssetStatus = useMemo(
+    () => (Object.keys(hmiAssetStatus).length ? hmiAssetStatus : assetStatus),
+    [hmiAssetStatus, assetStatus],
+  );
+
+  const hmiCausalPath = useMemo(() => getActiveCausalityAssetPath(hmiState), [hmiState]);
+  const causalPath = showCausalPath
+    ? hmiCausalPath.length
+      ? hmiCausalPath
+      : (activeSituation?.causal_path ?? [])
+    : [];
+
+  const plantHealth = useMemo(
+    () => (hmiState ? formatOverallStatus(hmiState.overall_status) : derivePlantHealth(assetStatus)),
+    [hmiState, assetStatus],
+  );
+  const timeLabel = lastHmiStateTs ?? lastSnapshotTs ?? "—";
+  const dataSource = hmiState ? "HMI Projection" : "WebSocket";
+
+  const hmiRuntimeError = useMemo(() => {
+    if (!hmiStateQuery.isError) return null;
+    const error = hmiStateQuery.error;
+    if (isRuntimeEndpointUnavailable(error)) {
+      return "HMI runtime projection unavailable. Showing WebSocket snapshot fallback.";
+    }
+    if (error instanceof Error) return error.message;
+    return "HMI runtime projection unavailable. Showing WebSocket snapshot fallback.";
+  }, [hmiStateQuery.isError, hmiStateQuery.error]);
+
+  const rootAssetId = hmiRootAssetId ?? activeSituation?.root_asset_id ?? null;
+  const affectedAssetIds =
+    hmiState?.active_incident?.affected_assets?.length
+      ? hmiState.active_incident.affected_assets
+      : (activeSituation?.affected_asset_ids ?? []);
 
   const selectedNode: MapNode | null = useMemo(
     () => nodes.find((n) => n.id === selectedAssetId) ?? null,
@@ -142,15 +200,13 @@ export function RuntimeHMI() {
     setFocusAssetId(id);
   }, []);
 
-  const causalPath = showCausalPath ? (activeSituation?.causal_path ?? []) : [];
-
   const mapProps = {
     nodes,
     edges,
-    assetStatus,
+    assetStatus: effectiveAssetStatus,
     causalPath,
-    rootAssetId: activeSituation?.root_asset_id ?? null,
-    affectedAssetIds: activeSituation?.affected_asset_ids ?? [],
+    rootAssetId,
+    affectedAssetIds,
     reducedMotion,
     showLegend,
     focusAssetId,
@@ -164,7 +220,7 @@ export function RuntimeHMI() {
         plantName={plantName}
         plantHealth={plantHealth}
         mode="Runtime"
-        dataSource="WebSocket"
+        dataSource={dataSource}
         timeLabel={timeLabel}
         role="operator"
         connection={connection}
@@ -184,8 +240,8 @@ export function RuntimeHMI() {
             onToggleLegend={() => setShowLegend((v) => !v)}
             showCausalPath={showCausalPath}
             onToggleCausalPath={() => setShowCausalPath((v) => !v)}
-            onFocusRoot={() => activeSituation?.root_asset_id && setFocusAssetId(activeSituation.root_asset_id)}
-            hasRoot={Boolean(activeSituation?.root_asset_id)}
+            onFocusRoot={() => rootAssetId && setFocusAssetId(rootAssetId)}
+            hasRoot={Boolean(rootAssetId)}
             density={density}
             onDensityChange={setDensity}
             reducedMotion={reducedMotion}
@@ -221,17 +277,33 @@ export function RuntimeHMI() {
         </div>
 
         <aside className="runtime-hmi__situation" aria-label="Active situation">
-          {calmCard ? (
-            <CalmCard
-              card={calmCard}
+          {hmiState ? (
+            <HmiStatePanel
+              state={hmiState}
+              runtimeError={hmiRuntimeError}
               onViewRawAlarms={() => setRawExpanded(true)}
-              onEscalate={() => escalateMutation.mutate()}
               onHighlightAsset={handleHighlightAsset}
-              onFocusRoot={() => activeSituation?.root_asset_id && setFocusAssetId(activeSituation.root_asset_id)}
-              escalating={escalateMutation.isPending}
             />
           ) : (
-            <NoActiveSituation />
+            <>
+              {hmiRuntimeError && (
+                <div className="hmi-runtime-fallback-warn" role="alert">
+                  {hmiRuntimeError}
+                </div>
+              )}
+              {calmCard ? (
+                <CalmCard
+                  card={calmCard}
+                  onViewRawAlarms={() => setRawExpanded(true)}
+                  onEscalate={() => escalateMutation.mutate()}
+                  onHighlightAsset={handleHighlightAsset}
+                  onFocusRoot={() => rootAssetId && setFocusAssetId(rootAssetId)}
+                  escalating={escalateMutation.isPending}
+                />
+              ) : (
+                <NoActiveSituation />
+              )}
+            </>
           )}
         </aside>
       </div>
@@ -245,7 +317,7 @@ export function RuntimeHMI() {
 
       <AssetDetailDrawer
         node={selectedNode}
-        status={selectedNode ? (assetStatus[selectedNode.id] ?? "unknown") : "unknown"}
+        status={selectedNode ? (effectiveAssetStatus[selectedNode.id] ?? "unknown") : "unknown"}
         tags={tags}
         alarms={activeAlarms}
         open={Boolean(selectedNode)}

@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BMS 3D Circuit - EASY302</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0d0d0d;
+      --panel: rgba(13, 13, 13, 0.72);
+      --line: rgba(255, 255, 255, 0.14);
+      --text: #f3f4ef;
+      --muted: #a8aca4;
+      --solar: #ffd700;
+      --mains: #6aa9ff;
+      --battery: #66ff66;
+      --drive: #aa99ff;
+      --data: #aaaaaa;
+      --sensor: #ff4d2d;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-variant-numeric: tabular-nums;
+    }
+    #scene {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      background: #0d0d0d;
+    }
+    .ui {
+      position: fixed;
+      z-index: 5;
+      pointer-events: none;
+    }
+    .controls {
+      top: 18px;
+      left: 18px;
+      display: grid;
+      gap: 8px;
+      pointer-events: auto;
+    }
+    .view-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    button {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--text);
+      padding: 10px 12px;
+      min-width: 128px;
+      font: 700 12px/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+    }
+    button.active {
+      border-color: rgba(255, 255, 255, .5);
+      background: rgba(255, 255, 255, .14);
+    }
+    button:focus-visible {
+      outline: 2px solid var(--sensor);
+      outline-offset: 2px;
+    }
+    .legend {
+      top: 18px;
+      right: 18px;
+      width: 270px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+    }
+    .legend h1 {
+      margin: 0 0 12px;
+      font-size: 13px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .legend p {
+      margin: 8px 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      margin-right: 8px;
+      vertical-align: 0;
+    }
+    .readout {
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      width: min(1080px, calc(100vw - 36px));
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(13, 13, 13, .76);
+      color: var(--text);
+      backdrop-filter: blur(12px);
+      font: 700 13px/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif;
+      text-align: center;
+      pointer-events: none;
+    }
+    .node-panel {
+      left: 18px;
+      bottom: 18px;
+      width: 310px;
+      padding: 0;
+      border: 1px solid rgba(255, 255, 255, .22);
+      border-radius: 12px;
+      background: rgba(13, 13, 13, .84);
+      backdrop-filter: blur(14px);
+      overflow: hidden;
+      pointer-events: auto;
+      transform: translateY(16px);
+      opacity: 0;
+      transition: opacity .18s ease, transform .18s ease;
+    }
+    .node-panel.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .node-panel h2 {
+      margin: 0;
+      padding: 13px 16px;
+      background: rgba(255, 77, 45, .18);
+      border-bottom: 1px solid rgba(255, 255, 255, .14);
+      font-size: 14px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .node-panel dl {
+      display: grid;
+      grid-template-columns: 95px 1fr;
+      gap: 8px 12px;
+      margin: 0;
+      padding: 14px 16px 16px;
+      font-size: 13px;
+    }
+    .node-panel dt { color: var(--muted); }
+    .node-panel dd { margin: 0; color: var(--text); font-weight: 700; }
+    .mode-badge {
+      left: 50%;
+      top: 18px;
+      transform: translateX(-50%);
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(13, 13, 13, .62);
+      backdrop-filter: blur(10px);
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .component-label {
+      padding: 3px 6px;
+      border: 1px solid rgba(255, 255, 255, .16);
+      border-radius: 6px;
+      background: rgba(13, 13, 13, .72);
+      color: #f3f4ef;
+      font: 700 10px/1.2 "Helvetica Neue", Helvetica, Arial, sans-serif;
+      letter-spacing: .04em;
+      text-align: center;
+      white-space: nowrap;
+      pointer-events: none;
+      text-shadow: 0 1px 2px #000;
+    }
+    .sensor-label {
+      border-color: rgba(255, 77, 45, .6);
+      color: #ffd8d0;
+    }
+    @media (max-width: 760px) {
+      .legend {
+        width: calc(100vw - 36px);
+        top: auto;
+        right: 18px;
+        bottom: 86px;
+      }
+      .legend p:nth-of-type(n+5) { display: none; }
+      .node-panel {
+        width: calc(100vw - 36px);
+      }
+      button { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="scene" aria-label="Interactive 3D BMS circuit visualization"></canvas>
+
+  <div class="ui controls" aria-label="Scene controls">
+    <div class="view-row">
+      <button id="btn3d" class="active" type="button">3D View</button>
+      <button id="btn2d" type="button">2D Schematic</button>
+    </div>
+    <button id="btnPause" type="button">Pause Flow</button>
+    <button id="btnData" type="button">RS485 Layer On</button>
+    <button id="btnRotate" type="button">Auto Rotate Off</button>
+  </div>
+
+  <aside class="ui legend" aria-label="Circuit legend">
+    <h1>BMS topology</h1>
+    <p><span class="dot" style="background: var(--solar)"></span>Solar DC path</p>
+    <p><span class="dot" style="background: var(--mains)"></span>Mains AC path</p>
+    <p><span class="dot" style="background: var(--battery)"></span>Battery path, directional</p>
+    <p><span class="dot" style="background: var(--drive)"></span>Inverter, VFD, motor</p>
+    <p><span class="dot" style="background: var(--data)"></span>RS485 / data network</p>
+    <p><span class="dot" style="background: var(--sensor)"></span>M1-M4 sensor nodes, clickable</p>
+  </aside>
+
+  <div class="ui mode-badge" id="modeBadge">Perspective power view</div>
+  <div class="ui readout" id="readout">Loading circuit telemetry...</div>
+
+  <section class="ui node-panel" id="nodePanel" aria-live="polite">
+    <h2 id="panelTitle">M node</h2>
+    <dl>
+      <dt>Voltage</dt><dd id="panelVoltage">--</dd>
+      <dt>Current</dt><dd id="panelCurrent">--</dd>
+      <dt>Power</dt><dd id="panelPower">--</dd>
+      <dt>Modbus reg</dt><dd id="panelRegs">--</dd>
+      <dt>Status</dt><dd id="panelStatus">--</dd>
+    </dl>
+  </section>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS2DRenderer.js"></script>
+  <script>
+    "use strict";
+
+    const liveData = {
+      solar_volt: 72.4, solar_current: 2.38, solar_power: 172.2,
+      mains_volt: 228.6, mains_current: 0.0, mains_power: 0.0,
+      battery_volt: 24.8, battery_current: -1.4, battery_power: -34.7,
+      inverter_volt: 218.0, inverter_current: 0.8, inverter_power: 174.4,
+      vfd_current: 1.2, vfd_volt: 200, vfd_power: 173.2,
+      vib_temp: 38, vib_x: 12, vib_y: 8, vib_z: 145,
+      motor_rpm: 1438, motor_temp: 52
+    };
+
+    const fmt = (value, digits = 1) => Number(value || 0).toFixed(digits);
+    const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+    const v3 = (x, y, z) => new THREE.Vector3(x, y, z);
+
+    const canvas = document.getElementById("scene");
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setClearColor(0x0d0d0d, 1);
+    renderer.setPixelRatio(window.devicePixelRatio || 1);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const labelRenderer = new THREE.CSS2DRenderer();
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.domElement.style.position = "fixed";
+    labelRenderer.domElement.style.inset = "0";
+    labelRenderer.domElement.style.pointerEvents = "none";
+    document.body.appendChild(labelRenderer.domElement);
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0d0d0d);
+    scene.fog = new THREE.Fog(0x0d0d0d, 18, 42);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+    const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+    dir.position.set(5, 12, 8);
+    scene.add(dir);
+
+    const grid = new THREE.GridHelper(30, 30, 0x333333, 0x222222);
+    scene.add(grid);
+    const table = new THREE.Mesh(
+      new THREE.PlaneGeometry(32, 24),
+      new THREE.MeshBasicMaterial({ color: 0x111111, transparent: true, opacity: 0.28, side: THREE.DoubleSide })
+    );
+    table.rotation.x = -Math.PI / 2;
+    table.position.y = -0.01;
+    scene.add(table);
+
+    const perspectiveCamera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.1, 120);
+    perspectiveCamera.position.set(0, 12, 18);
+    perspectiveCamera.lookAt(0, 0, 0);
+    const orthoSize = 12;
+    const orthographicCamera = new THREE.OrthographicCamera(
+      -orthoSize * window.innerWidth / window.innerHeight,
+      orthoSize * window.innerWidth / window.innerHeight,
+      orthoSize,
+      -orthoSize,
+      0.1,
+      100
+    );
+    orthographicCamera.position.set(0, 22, 0.01);
+    orthographicCamera.lookAt(0, 0, 0);
+    let activeCamera = perspectiveCamera;
+
+    const controls = new THREE.OrbitControls(activeCamera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.minPolarAngle = 0.1;
+    controls.maxPolarAngle = Math.PI / 2.1;
+    controls.minDistance = 5;
+    controls.maxDistance = 35;
+    controls.target.set(0, 0, 0);
+
+    const clock = new THREE.Clock();
+    const components = {};
+    const componentGroups = [];
+    const wires = [];
+    const particles = [];
+    const mNodes = [];
+    const clickableSensors = [];
+    let selectedSensor = null;
+    let schematicMode = false;
+    let pauseFlow = false;
+    let showDataLayer = true;
+    let autoRotate = false;
+
+    const componentSpecs = {
+      Solar_PV: { kind: "box", color: 0xB8860B, pos: [-6, 0.15, -7], size: [2.5, 0.3, 1.8] },
+      MCB_1: { kind: "box", color: 0x555555, pos: [-6, 0.3, -5.2], size: [0.6, 0.6, 0.4] },
+      M1_Node: { kind: "sensor", color: 0xCC2200, pos: [-6, 0.25, -4.0], radius: 0.25 },
+      DC_DC_Converter: { kind: "box", color: 0xA0720A, pos: [-6, 0.4, -2.8], size: [1.8, 0.8, 1.2] },
+      MCB_2: { kind: "box", color: 0x555555, pos: [6, 0.3, -5.2], size: [0.6, 0.6, 0.4] },
+      Mains_Supply: { kind: "box", color: 0x1A5FAD, pos: [6, 0.4, -7], size: [1.8, 0.8, 1.0] },
+      M2_Node: { kind: "sensor", color: 0xCC2200, pos: [6, 0.25, -4.0], radius: 0.25 },
+      AC_DC_Converter: { kind: "box", color: 0x1A5FAD, pos: [6, 0.4, -2.8], size: [1.8, 0.8, 1.2] },
+      DC_Bus_Node: { kind: "sphere", color: 0x7A5DB7, pos: [0, 0.15, -1.2], radius: 0.15 },
+      Battery: { kind: "box", color: 0x2A6E2A, pos: [-5, 0.6, -0.5], size: [2.2, 1.2, 1.5] },
+      MCB_3: { kind: "box", color: 0x555555, pos: [-3.4, 0.3, -0.5], size: [0.6, 0.6, 0.4] },
+      M3_Node: { kind: "sensor", color: 0xCC2200, pos: [-2.0, 0.25, -0.5], radius: 0.25 },
+      DC_AC_Inverter: { kind: "box", color: 0x534AB7, pos: [0, 0.5, 0.8], size: [2.0, 1.0, 1.4] },
+      M4_Node: { kind: "sensor", color: 0xCC2200, pos: [0, 0.25, 2.2], radius: 0.25 },
+      VFD: { kind: "box", color: 0x3E3692, pos: [0, 0.6, 3.6], size: [1.6, 1.2, 1.0] },
+      Motor: { kind: "motor", color: 0x8B3020, pos: [0, 0.5, 5.4], radius: 0.7, height: 1.4 },
+      Vib_Sensor: { kind: "box", color: 0x333333, pos: [0.9, 1.3, 5.4], size: [0.4, 0.3, 0.4] },
+      PLC_Easy302: { kind: "box", color: 0x444444, pos: [5.5, 0.5, 1.0], size: [1.8, 1.0, 1.2] },
+      HMI_IT7070E: { kind: "panel", color: 0x1A6E6E, pos: [5.5, 1.0, -1.5], size: [2.2, 1.4, 0.15] },
+      Laptop: { kind: "panel", color: 0x333333, pos: [5.5, 0.6, -4.5], size: [2.0, 0.08, 1.4] },
+      GL20_4TC: { kind: "box", color: 0x666666, pos: [4.0, 0.3, 1.0], size: [0.8, 0.6, 0.5] }
+    };
+
+    const sensorMeta = {
+      M1_Node: { title: "M1 - Solar PV", keys: ["solar_volt", "solar_current", "solar_power"], regs: "0, 2, 4", status: () => "Solar input" },
+      M2_Node: { title: "M2 - Mains Monitor", keys: ["mains_volt", "mains_current", "mains_power"], regs: "6, 8, 10", status: () => liveData.mains_current > 0.05 ? "Grid active" : "Grid idle" },
+      M3_Node: { title: "M3 - Battery Monitor", keys: ["battery_volt", "battery_current", "battery_power"], regs: "12, 14, 16", status: () => liveData.battery_current >= 0 ? "Charging" : "Discharging" },
+      M4_Node: { title: "M4 - Inverter Output", keys: ["inverter_volt", "inverter_current", "inverter_power"], regs: "18, 20, 22", status: () => "AC output to VFD" }
+    };
+
+    function makeMaterial(color, options = {}) {
+      if (options.basic) {
+        return new THREE.MeshBasicMaterial({ color, transparent: options.opacity < 1, opacity: options.opacity ?? 1 });
+      }
+      return new THREE.MeshStandardMaterial({
+        color,
+        metalness: options.metalness ?? 0.18,
+        roughness: options.roughness ?? 0.64,
+        flatShading: true,
+        emissive: options.emissive ?? 0x000000,
+        emissiveIntensity: options.emissiveIntensity ?? 0
+      });
+    }
+
+    function addLabel(group, name, yOffset = 0.55, cssClass = "") {
+      const el = document.createElement("div");
+      el.className = `component-label ${cssClass}`;
+      el.textContent = name.replace(/_/g, " ");
+      const label = new THREE.CSS2DObject(el);
+      label.position.set(0, yOffset, 0);
+      group.add(label);
+      return { label, el };
+    }
+
+    function createComponent(name, spec) {
+      const group = new THREE.Group();
+      const pos = v3(...spec.pos);
+      group.position.copy(pos);
+      group.userData.basePos = pos.clone();
+      group.userData.name = name;
+      group.userData.kind = spec.kind;
+      let mesh;
+      if (spec.kind === "sensor") {
+        mesh = new THREE.Mesh(
+          new THREE.SphereGeometry(spec.radius, 24, 16),
+          makeMaterial(spec.color, { emissive: spec.color, emissiveIntensity: 0.45 })
+        );
+        const ring = new THREE.Mesh(
+          new THREE.TorusGeometry(spec.radius * 1.6, 0.018, 8, 48),
+          makeMaterial(0xff4d2d, { emissive: 0xff2a00, emissiveIntensity: 0.65 })
+        );
+        ring.rotation.x = Math.PI / 2;
+        group.add(mesh, ring);
+        const labelObj = addLabel(group, name, 0.72, "sensor-label");
+        const node = { name, group, mesh, ring, labelEl: labelObj.el, phase: Math.random() * Math.PI * 2 };
+        mNodes.push(node);
+        clickableSensors.push(mesh);
+        mesh.userData.sensor = node;
+      } else if (spec.kind === "sphere") {
+        mesh = new THREE.Mesh(new THREE.SphereGeometry(spec.radius, 18, 12), makeMaterial(spec.color, { emissive: spec.color, emissiveIntensity: 0.18 }));
+        group.add(mesh);
+        addLabel(group, name, 0.48);
+      } else if (spec.kind === "motor") {
+        const casing = new THREE.Mesh(new THREE.CylinderGeometry(spec.radius, spec.radius, spec.height, 28, 1), makeMaterial(0x242424, { metalness: 0.28 }));
+        casing.rotation.z = Math.PI / 2;
+        const shell = new THREE.Mesh(new THREE.CylinderGeometry(spec.radius * 0.88, spec.radius * 0.88, spec.height * 1.04, 12, 1), makeMaterial(spec.color, { emissive: 0x220800, emissiveIntensity: 0.15 }));
+        shell.rotation.z = Math.PI / 2;
+        const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.78, 16, 1), makeMaterial(0xff4d2d, { emissive: 0xff2a00, emissiveIntensity: 0.6 }));
+        shaft.rotation.z = Math.PI / 2;
+        const halo = new THREE.Mesh(new THREE.TorusGeometry(0.92, 0.014, 8, 64), makeMaterial(0xaa99ff, { emissive: 0x9988ff, emissiveIntensity: 0.35 }));
+        halo.rotation.y = Math.PI / 2;
+        group.add(casing, shell, shaft, halo);
+        group.userData.shaft = shaft;
+        group.userData.halo = halo;
+        addLabel(group, name, 1.14);
+      } else {
+        const [w, h, d] = spec.size;
+        mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), makeMaterial(spec.color));
+        group.add(mesh);
+        addLabel(group, name, h / 2 + 0.35);
+      }
+      if (mesh) group.userData.primaryMesh = mesh;
+      components[name] = group;
+      componentGroups.push(group);
+      scene.add(group);
+    }
+
+    Object.entries(componentSpecs).forEach(([name, spec]) => createComponent(name, spec));
+
+    function getPoint(ref) {
+      if (Array.isArray(ref)) return v3(ref[0], ref[1], ref[2]);
+      return components[ref].userData.basePos.clone();
+    }
+
+    function route3D(fromRef, toRef, def = {}) {
+      const a = getPoint(fromRef);
+      const b = getPoint(toRef);
+      const lift = def.data ? 0.85 : 0.34;
+      const dx = def.dx || 0;
+      const dz = def.dz || 0;
+      if (def.phase) {
+        const pts = [];
+        for (let i = 0; i <= 9; i++) {
+          const t = i / 9;
+          const p = a.clone().lerp(b, t);
+          p.y = Math.max(a.y, b.y) + 0.18 + Math.sin(t * Math.PI) * 0.22;
+          p.x += dx + Math.sin(t * Math.PI * 4 + def.phaseShift) * 0.11;
+          p.z += dz + Math.cos(t * Math.PI * 4 + def.phaseShift) * 0.06;
+          pts.push(p);
+        }
+        return pts;
+      }
+      const midZ = (a.z + b.z) / 2 + dz;
+      const midX = (a.x + b.x) / 2 + dx;
+      return [
+        v3(a.x + dx, Math.max(a.y, 0.18), a.z + dz),
+        v3(a.x + dx, Math.max(a.y, b.y) + lift, midZ),
+        v3(midX, Math.max(a.y, b.y) + lift, midZ),
+        v3(b.x + dx, Math.max(b.y, 0.18), b.z + dz)
+      ];
+    }
+
+    function route2D(fromRef, toRef, def = {}) {
+      const a = getPoint(fromRef);
+      const b = getPoint(toRef);
+      const y = def.data ? 0.28 : 0.18;
+      const dx = def.dx || 0;
+      const dz = def.dz || 0;
+      if (def.phase) {
+        const offset = dx || 0;
+        return [
+          v3(a.x + offset, y, a.z + dz),
+          v3(a.x + offset, y, (a.z + b.z) / 2),
+          v3(b.x + offset, y, (a.z + b.z) / 2),
+          v3(b.x + offset, y, b.z + dz)
+        ];
+      }
+      return [
+        v3(a.x + dx, y, a.z + dz),
+        v3(a.x + dx, y, b.z + dz),
+        v3(b.x + dx, y, b.z + dz)
+      ];
+    }
+
+    class WireParticles {
+      constructor(curve, count, color, speed, phaseOffset = 0) {
+        this.curve = curve;
+        this.speed = speed;
+        this.offsets = Array.from({ length: count }, (_, i) => (i / count + phaseOffset) % 1);
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(count * 3), 3));
+        this.points = new THREE.Points(geo, new THREE.PointsMaterial({
+          color, size: 0.08, transparent: true, opacity: 0.92, depthWrite: false
+        }));
+      }
+      setCurve(curve) {
+        this.curve = curve;
+      }
+      update(delta, direction = 1) {
+        const pos = this.points.geometry.attributes.position;
+        this.offsets = this.offsets.map((t) => {
+          t += this.speed * direction * delta * 60;
+          if (t > 1) t -= 1;
+          if (t < 0) t += 1;
+          return t;
+        });
+        this.offsets.forEach((t, i) => {
+          const p = this.curve.getPoint(t);
+          pos.setXYZ(i, p.x, p.y, p.z);
+        });
+        pos.needsUpdate = true;
+      }
+    }
+
+    const wireSpecs = [
+      ["W_SOL_MCB1", "Solar_PV", "MCB_1", 0xC8960C, 0xFFD700, 0.015],
+      ["W_MCB1_M1", "MCB_1", "M1_Node", 0xC8960C, 0xFFD700, 0.015],
+      ["W_M1_DCDC", "M1_Node", "DC_DC_Converter", 0xC8960C, 0xFFD700, 0.015],
+      ["W_DCDC_BUS", "DC_DC_Converter", "DC_Bus_Node", 0x8B6914, 0xFFD700, 0.012],
+      ["W_MNS_MCB2", "Mains_Supply", "MCB_2", 0x2070C0, 0x6AAFFF, 0.013],
+      ["W_MCB2_M2", "MCB_2", "M2_Node", 0x2070C0, 0x6AAFFF, 0.013],
+      ["W_M2_ACDC", "M2_Node", "AC_DC_Converter", 0x2070C0, 0x6AAFFF, 0.013],
+      ["W_ACDC_BUS", "AC_DC_Converter", "DC_Bus_Node", 0x8B6914, 0x6AAFFF, 0.012],
+      ["W_BAT_MCB3", "Battery", "MCB_3", 0x2E8B2E, 0x66FF66, 0.010, { battery: true }],
+      ["W_MCB3_M3", "MCB_3", "M3_Node", 0x2E8B2E, 0x66FF66, 0.010, { battery: true }],
+      ["W_M3_BUS", "M3_Node", "DC_Bus_Node", 0x2E8B2E, 0x66FF66, 0.010, { battery: true }],
+      ["W_BUS_INV", "DC_Bus_Node", "DC_AC_Inverter", 0x6050CC, 0x9988FF, 0.018],
+      ["W_INV_M4", "DC_AC_Inverter", "M4_Node", 0x5A4AC0, 0xAA99FF, 0.018],
+      ["W_M4_VFD", "M4_Node", "VFD", 0x5A4AC0, 0xAA99FF, 0.018],
+      ["W_VFD_U", "VFD", "Motor", 0x7B3FC0, 0xCC88FF, 0.022, { phase: true, dx: 0.15, phaseOffset: 0 }],
+      ["W_VFD_V", "VFD", "Motor", 0x9B3FC0, 0xEE88FF, 0.022, { phase: true, dx: 0, phaseOffset: 1 / 3 }],
+      ["W_VFD_W", "VFD", "Motor", 0xAB3FC0, 0xFF88DD, 0.022, { phase: true, dx: -0.15, phaseOffset: 2 / 3 }],
+      ["D_M1_PLC", "M1_Node", "PLC_Easy302", 0x888888, 0xAAAAAA, 0.006, { data: true }],
+      ["D_M2_PLC", "M2_Node", "PLC_Easy302", 0x888888, 0xAAAAAA, 0.006, { data: true }],
+      ["D_M3_PLC", "M3_Node", "PLC_Easy302", 0x888888, 0xAAAAAA, 0.006, { data: true }],
+      ["D_M4_PLC", "M4_Node", "PLC_Easy302", 0x888888, 0xAAAAAA, 0.006, { data: true }],
+      ["D_VFD_PLC", "VFD", "PLC_Easy302", 0x888888, 0xAAAAAA, 0.006, { data: true }],
+      ["D_VIB_PLC", "Vib_Sensor", "PLC_Easy302", 0x888888, 0xAAAAAA, 0.004, { data: true }],
+      ["D_MOT_PLC", "Motor", "PLC_Easy302", 0x888888, 0xAAAAAA, 0.004, { data: true }],
+      ["D_GL20_PLC", "GL20_4TC", "PLC_Easy302", 0x888888, 0xAAAAAA, 0.003, { data: true }],
+      ["D_PLC_HMI", "PLC_Easy302", "HMI_IT7070E", 0x1A8E8E, 0x00DDDD, 0.008, { data: true }],
+      ["D_HMI_PC", "HMI_IT7070E", "Laptop", 0x1A8E8E, 0x00DDDD, 0.010, { data: true }],
+      ["D_PC_CLOUD", "Laptop", [0, 0.5, 10], 0x1A8E8E, 0x00FFFF, 0.005, { data: true }]
+    ];
+
+    function buildWireGeometry(def) {
+      const points = schematicMode ? route2D(def.from, def.to, def.options) : route3D(def.from, def.to, def.options);
+      const curve = new THREE.CatmullRomCurve3(points);
+      return { points, curve, tube: new THREE.TubeGeometry(curve, 64, def.options.data ? 0.02 : 0.04, 8, false) };
+    }
+
+    function makeDashedLine(points, color) {
+      const geo = new THREE.BufferGeometry().setFromPoints(points);
+      const line = new THREE.Line(geo, new THREE.LineDashedMaterial({ color, dashSize: 0.16, gapSize: 0.12, transparent: true, opacity: 0.75 }));
+      line.computeLineDistances();
+      return line;
+    }
+
+    wireSpecs.forEach(([id, from, to, color, particleColor, speed, options = {}]) => {
+      options.phaseShift = options.phaseOffset ? options.phaseOffset * Math.PI * 2 : 0;
+      const def = { id, from, to, color, particleColor, speed, options };
+      const built = buildWireGeometry(def);
+      const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: options.data ? 0.45 : 0.86 });
+      const mesh = new THREE.Mesh(built.tube, mat);
+      scene.add(mesh);
+      const dashed = options.data ? makeDashedLine(built.points, color) : null;
+      if (dashed) scene.add(dashed);
+      const wp = new WireParticles(built.curve, options.data ? 12 : 20, particleColor, speed, options.phaseOffset || 0);
+      scene.add(wp.points);
+      const wire = { ...def, curve: built.curve, mesh, dashed, particles: wp };
+      wires.push(wire);
+      particles.push(wire);
+    });
+
+    function rebuildWires() {
+      wires.forEach((wire) => {
+        const built = buildWireGeometry(wire);
+        wire.mesh.geometry.dispose();
+        wire.mesh.geometry = built.tube;
+        wire.curve = built.curve;
+        wire.particles.setCurve(built.curve);
+        if (wire.dashed) {
+          wire.dashed.geometry.dispose();
+          wire.dashed.geometry = new THREE.BufferGeometry().setFromPoints(built.points);
+          wire.dashed.computeLineDistances();
+        }
+      });
+    }
+
+    const phaseLegend = new THREE.Group();
+    phaseLegend.position.set(-2.1, 0.1, 4.35);
+    [
+      ["U", 0x7B3FC0, -0.34],
+      ["V", 0x9B3FC0, 0],
+      ["W", 0xAB3FC0, 0.34]
+    ].forEach(([label, color, x]) => {
+      const line = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.04, 0.04), makeMaterial(color, { basic: true }));
+      line.position.set(x, 0.18, 0);
+      const labelGroup = new THREE.Group();
+      const el = document.createElement("div");
+      el.className = "component-label";
+      el.textContent = `${label} phase`;
+      const obj = new THREE.CSS2DObject(el);
+      obj.position.set(x, 0.45, 0);
+      labelGroup.add(obj);
+      phaseLegend.add(line, labelGroup);
+    });
+    scene.add(phaseLegend);
+
+    function updateReadout() {
+      liveData.solar_power = liveData.solar_volt * liveData.solar_current;
+      liveData.battery_power = liveData.battery_volt * liveData.battery_current;
+      liveData.inverter_power = liveData.inverter_volt * liveData.inverter_current;
+      document.getElementById("readout").textContent =
+        `Mock drift feed | Solar: ${fmt(liveData.solar_volt)}V ${fmt(liveData.solar_current, 2)}A ${fmt(liveData.solar_power, 0)}W` +
+        ` | Battery: ${fmt(liveData.battery_volt)}V ${fmt(liveData.battery_current, 2)}A` +
+        ` | Motor: ${fmt(liveData.motor_rpm, 0)}RPM ${fmt(liveData.motor_temp, 0)}degC` +
+        ` | Vib Z: ${fmt(liveData.vib_z, 0)}mg`;
+
+      mNodes.forEach((node) => {
+        const meta = sensorMeta[node.name];
+        if (!meta) return;
+        node.labelEl.textContent = `${node.name.slice(0, 2)} | ${fmt(liveData[meta.keys[0]])}V`;
+      });
+      if (selectedSensor) renderNodePanel(selectedSensor);
+    }
+
+    function renderNodePanel(node) {
+      const meta = sensorMeta[node.name];
+      if (!meta) return;
+      const [voltKey, currentKey, powerKey] = meta.keys;
+      document.getElementById("panelTitle").textContent = meta.title;
+      document.getElementById("panelVoltage").textContent = `${fmt(liveData[voltKey])} V`;
+      document.getElementById("panelCurrent").textContent = `${fmt(liveData[currentKey], 2)} A ${node.name === "M3_Node" ? (liveData.battery_current >= 0 ? "CHG" : "DIS") : ""}`;
+      document.getElementById("panelPower").textContent = `${fmt(liveData[powerKey], 1)} W`;
+      document.getElementById("panelRegs").textContent = meta.regs;
+      document.getElementById("panelStatus").textContent = meta.status();
+      document.getElementById("nodePanel").classList.add("show");
+    }
+
+    setInterval(() => {
+      liveData.solar_volt += (Math.random() - 0.5) * 0.8;
+      liveData.solar_current += (Math.random() - 0.5) * 0.05;
+      liveData.solar_current = clamp(liveData.solar_current, 0.2, 3.5);
+      liveData.battery_current = -1.2 + (Math.random() - 0.5) * 0.3;
+      liveData.motor_rpm += (Math.random() - 0.5) * 5;
+      liveData.vib_z += (Math.random() - 0.5) * 4;
+      updateReadout();
+    }, 2000);
+    updateReadout();
+
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    function setMouse(event) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    }
+    renderer.domElement.addEventListener("pointermove", (event) => {
+      setMouse(event);
+      raycaster.setFromCamera(mouse, activeCamera);
+      const hit = raycaster.intersectObjects(clickableSensors, false)[0];
+      document.body.style.cursor = hit ? "pointer" : "default";
+      mNodes.forEach((node) => node.ring.material.emissiveIntensity = hit && hit.object.userData.sensor === node ? 1.1 : 0.65);
+    });
+    renderer.domElement.addEventListener("click", (event) => {
+      setMouse(event);
+      raycaster.setFromCamera(mouse, activeCamera);
+      const hit = raycaster.intersectObjects(clickableSensors, false)[0];
+      if (hit && hit.object.userData.sensor) {
+        selectedSensor = hit.object.userData.sensor;
+        renderNodePanel(selectedSensor);
+      }
+    });
+
+    function setSchematicMode(enabled) {
+      schematicMode = enabled;
+      document.getElementById("btn2d").classList.toggle("active", enabled);
+      document.getElementById("btn3d").classList.toggle("active", !enabled);
+      document.getElementById("modeBadge").textContent = enabled ? "Orthographic schematic view" : "Perspective power view";
+      componentGroups.forEach((group) => {
+        const isSensor = group.userData.kind === "sensor";
+        if (enabled) {
+          group.position.y = Math.max(0.08, group.userData.basePos.y * 0.35);
+          if (!isSensor) group.scale.y = 0.22;
+        } else {
+          group.position.copy(group.userData.basePos);
+          group.scale.set(1, 1, 1);
+        }
+      });
+      activeCamera = enabled ? orthographicCamera : perspectiveCamera;
+      controls.object = activeCamera;
+      controls.enableRotate = !enabled;
+      controls.enablePan = true;
+      controls.autoRotate = autoRotate && !enabled;
+      if (enabled) {
+        orthographicCamera.position.set(0, 22, 0.01);
+        orthographicCamera.lookAt(0, 0, 0);
+      } else {
+        perspectiveCamera.position.set(0, 12, 18);
+        perspectiveCamera.lookAt(0, 0, 0);
+      }
+      rebuildWires();
+    }
+
+    document.getElementById("btn3d").addEventListener("click", () => setSchematicMode(false));
+    document.getElementById("btn2d").addEventListener("click", () => setSchematicMode(true));
+    document.getElementById("btnPause").addEventListener("click", (event) => {
+      pauseFlow = !pauseFlow;
+      event.currentTarget.textContent = pauseFlow ? "Resume Flow" : "Pause Flow";
+      event.currentTarget.classList.toggle("active", pauseFlow);
+    });
+    document.getElementById("btnData").addEventListener("click", (event) => {
+      showDataLayer = !showDataLayer;
+      event.currentTarget.textContent = showDataLayer ? "RS485 Layer On" : "RS485 Layer Off";
+      event.currentTarget.classList.toggle("active", showDataLayer);
+      wires.forEach((wire) => {
+        if (wire.options.data) {
+          wire.mesh.visible = showDataLayer;
+          wire.particles.points.visible = showDataLayer;
+          if (wire.dashed) wire.dashed.visible = showDataLayer;
+        }
+      });
+    });
+    document.getElementById("btnRotate").addEventListener("click", (event) => {
+      autoRotate = !autoRotate;
+      controls.autoRotate = autoRotate && !schematicMode;
+      event.currentTarget.textContent = autoRotate ? "Auto Rotate On" : "Auto Rotate Off";
+      event.currentTarget.classList.toggle("active", autoRotate);
+    });
+
+    function shouldPauseWire(wire) {
+      if (pauseFlow) return true;
+      if (wire.id.startsWith("W_MNS") || wire.id.startsWith("W_MCB2") || wire.id.startsWith("W_M2") || wire.id.startsWith("W_ACDC")) {
+        return liveData.mains_current <= 0.05;
+      }
+      if (wire.id.startsWith("W_SOL") || wire.id.startsWith("W_MCB1") || wire.id.startsWith("W_M1") || wire.id.startsWith("W_DCDC")) {
+        return liveData.solar_current <= 0.05;
+      }
+      return false;
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = Math.min(clock.getDelta(), 0.04);
+      const elapsed = clock.elapsedTime;
+      controls.update();
+
+      mNodes.forEach((node) => {
+        const s = 1.0 + 0.15 * Math.sin(elapsed * 2.5 + node.phase);
+        node.mesh.scale.setScalar(s);
+        node.ring.rotation.x += 0.02;
+        node.ring.rotation.y += 0.01;
+      });
+
+      const motor = components.Motor;
+      if (motor) {
+        const rpm = liveData.motor_rpm || 1450;
+        const rps = rpm / 60;
+        motor.userData.shaft.rotation.x += (2 * Math.PI * rps) * delta;
+        motor.userData.halo.rotation.z += (2 * Math.PI * rps) * delta;
+      }
+
+      wires.forEach((wire) => {
+        if (shouldPauseWire(wire)) return;
+        let direction = 1;
+        if (wire.options.battery) {
+          direction = liveData.battery_current >= 0 ? -1 : 1;
+        }
+        wire.particles.update(delta, direction);
+      });
+
+      renderer.render(scene, activeCamera);
+      labelRenderer.render(scene, activeCamera);
+    }
+    animate();
+
+    window.addEventListener("resize", () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      renderer.setSize(width, height);
+      labelRenderer.setSize(width, height);
+      perspectiveCamera.aspect = width / height;
+      perspectiveCamera.updateProjectionMatrix();
+      orthographicCamera.left = -orthoSize * width / height;
+      orthographicCamera.right = orthoSize * width / height;
+      orthographicCamera.top = orthoSize;
+      orthographicCamera.bottom = -orthoSize;
+      orthographicCamera.updateProjectionMatrix();
+    });
+  </script>
+</body>
+</html>

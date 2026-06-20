@@ -1,0 +1,1117 @@
+{
+  "healthy": {
+    "plant_id": "PLANTLENS_DEMO_BENCH",
+    "run_id": "run_healthy_001",
+    "generated_at": "2026-06-20T12:00:05Z",
+    "overall_status": "healthy",
+    "active_incident": null,
+    "assets": [
+      {
+        "asset_id": "PSU-12V",
+        "name": "12V Power Supply",
+        "kind": "power_supply",
+        "status": "healthy",
+        "health_score": 100.0,
+        "primary_signals": [
+          "PSU_VOLTAGE"
+        ],
+        "active_faults": [],
+        "downstream_impacts": []
+      },
+      {
+        "asset_id": "PLC-IO",
+        "name": "PLC / IO Module",
+        "kind": "controller",
+        "status": "healthy",
+        "health_score": 100.0,
+        "primary_signals": [],
+        "active_faults": [],
+        "downstream_impacts": []
+      },
+      {
+        "asset_id": "MTR-12V",
+        "name": "12V DC Motor",
+        "kind": "motor",
+        "status": "healthy",
+        "health_score": 100.0,
+        "primary_signals": [
+          "MTR_CURRENT",
+          "MTR_RPM",
+          "MTR_VIBRATION",
+          "MTR_TEMP"
+        ],
+        "active_faults": [],
+        "downstream_impacts": []
+      },
+      {
+        "asset_id": "FAN-01",
+        "name": "Fan",
+        "kind": "fan",
+        "status": "healthy",
+        "health_score": 100.0,
+        "primary_signals": [
+          "FAN_RPM"
+        ],
+        "active_faults": [],
+        "downstream_impacts": []
+      },
+      {
+        "asset_id": "BLW-01",
+        "name": "Blower",
+        "kind": "blower",
+        "status": "healthy",
+        "health_score": 100.0,
+        "primary_signals": [
+          "BLW_AIRFLOW"
+        ],
+        "active_faults": [],
+        "downstream_impacts": []
+      },
+      {
+        "asset_id": "AIR-OUT",
+        "name": "Airflow Output",
+        "kind": "process_output",
+        "status": "healthy",
+        "health_score": 100.0,
+        "primary_signals": [],
+        "active_faults": [],
+        "downstream_impacts": []
+      }
+    ],
+    "signals": [
+      {
+        "signal_id": "PSU_VOLTAGE",
+        "asset_id": "PSU-12V",
+        "name": "Supply Voltage",
+        "value": 12.1,
+        "unit": "V",
+        "status": "normal",
+        "expected_range": {
+          "min": 11.5,
+          "max": 12.6
+        },
+        "evidence_weight": 0.2,
+        "timestamp": "2026-06-20T12:00:00Z"
+      },
+      {
+        "signal_id": "MTR_CURRENT",
+        "asset_id": "MTR-12V",
+        "name": "Motor Current",
+        "value": 0.65,
+        "unit": "A",
+        "status": "normal",
+        "expected_range": {
+          "min": 0.1,
+          "max": 1.2
+        },
+        "evidence_weight": 0.2,
+        "timestamp": "2026-06-20T12:00:00Z"
+      },
+      {
+        "signal_id": "MTR_RPM",
+        "asset_id": "MTR-12V",
+        "name": "Motor RPM",
+        "value": 2800,
+        "unit": "rpm",
+        "status": "normal",
+        "expected_range": {
+          "min": 1800.0,
+          "max": 3600.0
+        },
+        "evidence_weight": 0.2,
+        "timestamp": "2026-06-20T12:00:00Z"
+      },
+      {
+        "signal_id": "MTR_VIBRATION",
+        "asset_id": "MTR-12V",
+        "name": "Motor Vibration",
+        "value": 1.2,
+        "unit": "mm/s",
+        "status": "normal",
+        "expected_range": {
+          "min": 0.0,
+          "max": 4.5
+        },
+        "evidence_weight": 0.2,
+        "timestamp": "2026-06-20T12:00:00Z"
+      },
+      {
+        "signal_id": "MTR_TEMP",
+        "asset_id": "MTR-12V",
+        "name": "Motor Temperature",
+        "value": 38,
+        "unit": "degC",
+        "status": "normal",
+        "expected_range": {
+          "min": 0.0,
+          "max": 65.0
+        },
+        "evidence_weight": 0.2,
+        "timestamp": "2026-06-20T12:00:00Z"
+      },
+      {
+        "signal_id": "FAN_RPM",
+        "asset_id": "FAN-01",
+        "name": "Fan RPM",
+        "value": 2700,
+        "unit": "rpm",
+        "status": "normal",
+        "expected_range": {
+          "min": 1600.0,
+          "max": 3600.0
+        },
+        "evidence_weight": 0.2,
+        "timestamp": "2026-06-20T12:00:00Z"
+      },
+      {
+        "signal_id": "BLW_AIRFLOW",
+        "asset_id": "BLW-01",
+        "name": "Blower Airflow",
+        "value": 3.2,
+        "unit": "m/s",
+        "status": "normal",
+        "expected_range": {
+          "min": 1.5,
+          "max": 5.0
+        },
+        "evidence_weight": 0.2,
+        "timestamp": "2026-06-20T12:00:00Z"
+      }
+    ],
+    "causality_edges": [
+      {
+        "edge_id": "EDGE_PSU_TO_MOTOR",
+        "from_asset_id": "PSU-12V",
+        "to_asset_id": "MTR-12V",
+        "relation": "causes",
+        "active": false
+      },
+      {
+        "edge_id": "EDGE_MOTOR_TO_FAN",
+        "from_asset_id": "MTR-12V",
+        "to_asset_id": "FAN-01",
+        "relation": "causes",
+        "active": false
+      },
+      {
+        "edge_id": "EDGE_FAN_TO_BLOWER",
+        "from_asset_id": "FAN-01",
+        "to_asset_id": "BLW-01",
+        "relation": "causes",
+        "active": false
+      },
+      {
+        "edge_id": "EDGE_BLOWER_TO_AIR",
+        "from_asset_id": "BLW-01",
+        "to_asset_id": "AIR-OUT",
+        "relation": "causes",
+        "active": false
+      }
+    ],
+    "root_cause_candidates": [],
+    "operator_actions": [],
+    "alarm_groups": [],
+    "suppressed_symptoms": [],
+    "data_quality": {
+      "missing_signals": [],
+      "stale_signals": [],
+      "confidence_penalty": 0.0,
+      "notes": []
+    }
+  },
+  "motor": {
+    "plant_id": "PLANTLENS_DEMO_BENCH",
+    "run_id": "run_motor_obstruction_001",
+    "generated_at": "2026-06-20T12:00:05Z",
+    "overall_status": "fault",
+    "active_incident": {
+      "incident_id": "INC_MOTOR_MECHANICAL_OBSTRUCTION",
+      "severity": "critical",
+      "title": "Motor-side mechanical obstruction",
+      "summary": "Motor-side evidence points to mechanical obstruction; downstream fan and blower symptoms are grouped under the motor incident.",
+      "suspected_root_cause": "MOTOR_MECHANICAL_OBSTRUCTION",
+      "confidence": 1.0,
+      "started_at": "2026-06-20T12:00:00Z",
+      "affected_assets": [
+        "MTR-12V",
+        "FAN-01",
+        "BLW-01"
+      ],
+      "primary_alarms": [
+        "MTR_CURRENT",
+        "MTR_RPM",
+        "MTR_VIBRATION",
+        "MTR_TEMP"
+      ],
+      "secondary_symptoms": [
+        "FAN_RPM",
+        "BLW_AIRFLOW"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_MTR_CURRENT",
+          "signal_id": "MTR_CURRENT",
+          "asset_id": "MTR-12V",
+          "description": "Motor current is above expected range.",
+          "observed_value": 1.8,
+          "unit": "A",
+          "status": "fault",
+          "weight": 1.0,
+          "timestamp": "2026-06-20T12:00:00Z"
+        },
+        {
+          "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_MTR_RPM",
+          "signal_id": "MTR_RPM",
+          "asset_id": "MTR-12V",
+          "description": "Motor RPM is below expected range.",
+          "observed_value": 900,
+          "unit": "rpm",
+          "status": "fault",
+          "weight": 1.0,
+          "timestamp": "2026-06-20T12:00:00Z"
+        },
+        {
+          "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_MTR_VIBRATION",
+          "signal_id": "MTR_VIBRATION",
+          "asset_id": "MTR-12V",
+          "description": "Motor vibration is above expected range.",
+          "observed_value": 8.2,
+          "unit": "mm/s",
+          "status": "fault",
+          "weight": 1.0,
+          "timestamp": "2026-06-20T12:00:00Z"
+        },
+        {
+          "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_MTR_TEMP",
+          "signal_id": "MTR_TEMP",
+          "asset_id": "MTR-12V",
+          "description": "Motor temperature is elevated.",
+          "observed_value": 71,
+          "unit": "degC",
+          "status": "fault",
+          "weight": 1.0,
+          "timestamp": "2026-06-20T12:00:00Z"
+        },
+        {
+          "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_FAN_RPM",
+          "signal_id": "FAN_RPM",
+          "asset_id": "FAN-01",
+          "description": "Fan RPM is low as a downstream symptom.",
+          "observed_value": 900,
+          "unit": "rpm",
+          "status": "fault",
+          "weight": 1.0,
+          "timestamp": "2026-06-20T12:00:00Z"
+        },
+        {
+          "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_BLW_AIRFLOW",
+          "signal_id": "BLW_AIRFLOW",
+          "asset_id": "BLW-01",
+          "description": "Blower airflow is low as a downstream symptom.",
+          "observed_value": 0.7,
+          "unit": "m/s",
+          "status": "fault",
+          "weight": 1.0,
+          "timestamp": "2026-06-20T12:00:00Z"
+        }
+      ]
+    },
+    "assets": [
+      {
+        "asset_id": "PSU-12V",
+        "name": "12V Power Supply",
+        "kind": "power_supply",
+        "status": "healthy",
+        "health_score": 100.0,
+        "primary_signals": [
+          "PSU_VOLTAGE"
+        ],
+        "active_faults": [],
+        "downstream_impacts": []
+      },
+      {
+        "asset_id": "PLC-IO",
+        "name": "PLC / IO Module",
+        "kind": "controller",
+        "status": "healthy",
+        "health_score": 100.0,
+        "primary_signals": [],
+        "active_faults": [],
+        "downstream_impacts": []
+      },
+      {
+        "asset_id": "MTR-12V",
+        "name": "12V DC Motor",
+        "kind": "motor",
+        "status": "fault",
+        "health_score": 35.0,
+        "primary_signals": [
+          "MTR_CURRENT",
+          "MTR_RPM",
+          "MTR_VIBRATION",
+          "MTR_TEMP"
+        ],
+        "active_faults": [
+          "MTR_CURRENT",
+          "MTR_RPM",
+          "MTR_VIBRATION",
+          "MTR_TEMP"
+        ],
+        "downstream_impacts": []
+      },
+      {
+        "asset_id": "FAN-01",
+        "name": "Fan",
+        "kind": "fan",
+        "status": "warning",
+        "health_score": 70.0,
+        "primary_signals": [
+          "FAN_RPM"
+        ],
+        "active_faults": [],
+        "downstream_impacts": [
+          "FAN_RPM"
+        ]
+      },
+      {
+        "asset_id": "BLW-01",
+        "name": "Blower",
+        "kind": "blower",
+        "status": "warning",
+        "health_score": 70.0,
+        "primary_signals": [
+          "BLW_AIRFLOW"
+        ],
+        "active_faults": [],
+        "downstream_impacts": [
+          "BLW_AIRFLOW"
+        ]
+      },
+      {
+        "asset_id": "AIR-OUT",
+        "name": "Airflow Output",
+        "kind": "process_output",
+        "status": "healthy",
+        "health_score": 100.0,
+        "primary_signals": [],
+        "active_faults": [],
+        "downstream_impacts": []
+      }
+    ],
+    "signals": [
+      {
+        "signal_id": "PSU_VOLTAGE",
+        "asset_id": "PSU-12V",
+        "name": "Supply Voltage",
+        "value": 12.0,
+        "unit": "V",
+        "status": "normal",
+        "expected_range": {
+          "min": 11.5,
+          "max": 12.6
+        },
+        "evidence_weight": 0.2,
+        "timestamp": "2026-06-20T12:00:00Z"
+      },
+      {
+        "signal_id": "MTR_CURRENT",
+        "asset_id": "MTR-12V",
+        "name": "Motor Current",
+        "value": 1.8,
+        "unit": "A",
+        "status": "fault",
+        "expected_range": {
+          "min": 0.1,
+          "max": 1.2
+        },
+        "evidence_weight": 1.0,
+        "timestamp": "2026-06-20T12:00:00Z"
+      },
+      {
+        "signal_id": "MTR_RPM",
+        "asset_id": "MTR-12V",
+        "name": "Motor RPM",
+        "value": 900,
+        "unit": "rpm",
+        "status": "fault",
+        "expected_range": {
+          "min": 1800.0,
+          "max": 3600.0
+        },
+        "evidence_weight": 1.0,
+        "timestamp": "2026-06-20T12:00:00Z"
+      },
+      {
+        "signal_id": "MTR_VIBRATION",
+        "asset_id": "MTR-12V",
+        "name": "Motor Vibration",
+        "value": 8.2,
+        "unit": "mm/s",
+        "status": "fault",
+        "expected_range": {
+          "min": 0.0,
+          "max": 4.5
+        },
+        "evidence_weight": 1.0,
+        "timestamp": "2026-06-20T12:00:00Z"
+      },
+      {
+        "signal_id": "MTR_TEMP",
+        "asset_id": "MTR-12V",
+        "name": "Motor Temperature",
+        "value": 71,
+        "unit": "degC",
+        "status": "fault",
+        "expected_range": {
+          "min": 0.0,
+          "max": 65.0
+        },
+        "evidence_weight": 1.0,
+        "timestamp": "2026-06-20T12:00:00Z"
+      },
+      {
+        "signal_id": "FAN_RPM",
+        "asset_id": "FAN-01",
+        "name": "Fan RPM",
+        "value": 900,
+        "unit": "rpm",
+        "status": "fault",
+        "expected_range": {
+          "min": 1600.0,
+          "max": 3600.0
+        },
+        "evidence_weight": 1.0,
+        "timestamp": "2026-06-20T12:00:00Z"
+      },
+      {
+        "signal_id": "BLW_AIRFLOW",
+        "asset_id": "BLW-01",
+        "name": "Blower Airflow",
+        "value": 0.7,
+        "unit": "m/s",
+        "status": "fault",
+        "expected_range": {
+          "min": 1.5,
+          "max": 5.0
+        },
+        "evidence_weight": 1.0,
+        "timestamp": "2026-06-20T12:00:00Z"
+      }
+    ],
+    "causality_edges": [
+      {
+        "edge_id": "EDGE_PSU_TO_MOTOR",
+        "from_asset_id": "PSU-12V",
+        "to_asset_id": "MTR-12V",
+        "relation": "causes",
+        "active": false
+      },
+      {
+        "edge_id": "EDGE_MOTOR_TO_FAN",
+        "from_asset_id": "MTR-12V",
+        "to_asset_id": "FAN-01",
+        "relation": "causes",
+        "active": true
+      },
+      {
+        "edge_id": "EDGE_FAN_TO_BLOWER",
+        "from_asset_id": "FAN-01",
+        "to_asset_id": "BLW-01",
+        "relation": "causes",
+        "active": true
+      },
+      {
+        "edge_id": "EDGE_BLOWER_TO_AIR",
+        "from_asset_id": "BLW-01",
+        "to_asset_id": "AIR-OUT",
+        "relation": "causes",
+        "active": false
+      }
+    ],
+    "root_cause_candidates": [
+      {
+        "cause_id": "MOTOR_MECHANICAL_OBSTRUCTION",
+        "title": "Motor-side mechanical obstruction",
+        "asset_id": "MTR-12V",
+        "confidence": 1.0,
+        "evidence": [
+          {
+            "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_MTR_CURRENT",
+            "signal_id": "MTR_CURRENT",
+            "asset_id": "MTR-12V",
+            "description": "Motor current is above expected range.",
+            "observed_value": 1.8,
+            "unit": "A",
+            "status": "fault",
+            "weight": 1.0,
+            "timestamp": "2026-06-20T12:00:00Z"
+          },
+          {
+            "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_MTR_RPM",
+            "signal_id": "MTR_RPM",
+            "asset_id": "MTR-12V",
+            "description": "Motor RPM is below expected range.",
+            "observed_value": 900,
+            "unit": "rpm",
+            "status": "fault",
+            "weight": 1.0,
+            "timestamp": "2026-06-20T12:00:00Z"
+          },
+          {
+            "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_MTR_VIBRATION",
+            "signal_id": "MTR_VIBRATION",
+            "asset_id": "MTR-12V",
+            "description": "Motor vibration is above expected range.",
+            "observed_value": 8.2,
+            "unit": "mm/s",
+            "status": "fault",
+            "weight": 1.0,
+            "timestamp": "2026-06-20T12:00:00Z"
+          },
+          {
+            "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_MTR_TEMP",
+            "signal_id": "MTR_TEMP",
+            "asset_id": "MTR-12V",
+            "description": "Motor temperature is elevated.",
+            "observed_value": 71,
+            "unit": "degC",
+            "status": "fault",
+            "weight": 1.0,
+            "timestamp": "2026-06-20T12:00:00Z"
+          },
+          {
+            "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_FAN_RPM",
+            "signal_id": "FAN_RPM",
+            "asset_id": "FAN-01",
+            "description": "Fan RPM is low as a downstream symptom.",
+            "observed_value": 900,
+            "unit": "rpm",
+            "status": "fault",
+            "weight": 1.0,
+            "timestamp": "2026-06-20T12:00:00Z"
+          },
+          {
+            "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_BLW_AIRFLOW",
+            "signal_id": "BLW_AIRFLOW",
+            "asset_id": "BLW-01",
+            "description": "Blower airflow is low as a downstream symptom.",
+            "observed_value": 0.7,
+            "unit": "m/s",
+            "status": "fault",
+            "weight": 1.0,
+            "timestamp": "2026-06-20T12:00:00Z"
+          }
+        ],
+        "rejected_alternatives": [
+          "SUPPLY_VOLTAGE_SAG rejected: supply voltage is normal.",
+          "DOWNSTREAM_AIRFLOW_BLOCKAGE rejected: motor electrical/mechanical evidence is abnormal upstream."
+        ]
+      }
+    ],
+    "operator_actions": [
+      {
+        "priority": 1,
+        "title": "Stop motor safely",
+        "instruction": "Stop the motor using the approved local control path. Do not touch rotating parts until motion has fully stopped.",
+        "safety_level": "stop_required",
+        "target_asset_id": "MTR-12V",
+        "rationale": "High current with low RPM and vibration indicates a likely mechanical obstruction or friction load."
+      },
+      {
+        "priority": 2,
+        "title": "Inspect shaft, fan blade, and coupling",
+        "instruction": "Inspect the shaft, fan blade, coupling, and nearby guards for rubbing, jamming, misalignment, or foreign objects.",
+        "safety_level": "isolate_before_touch",
+        "target_asset_id": "MTR-12V",
+        "rationale": "Mechanical blockage upstream can create downstream fan and blower symptoms."
+      },
+      {
+        "priority": 3,
+        "title": "Check bearing friction and restart verification",
+        "instruction": "After inspection, verify free rotation, then restart and confirm motor current, RPM, and vibration return to normal.",
+        "safety_level": "caution",
+        "target_asset_id": "MTR-12V",
+        "rationale": "The diagnosis should clear only when current, RPM, and vibration normalize together."
+      }
+    ],
+    "alarm_groups": [
+      {
+        "group_id": "AG_MOTOR_MECHANICAL_OBSTRUCTION",
+        "title": "Motor obstruction alarm group",
+        "severity": "critical",
+        "root_alarm": "MTR_CURRENT",
+        "grouped_alarms": [
+          "MTR_CURRENT",
+          "MTR_RPM",
+          "MTR_VIBRATION",
+          "MTR_TEMP",
+          "FAN_RPM",
+          "BLW_AIRFLOW"
+        ],
+        "suppressed_duplicates": [
+          "FAN_RPM",
+          "BLW_AIRFLOW"
+        ]
+      }
+    ],
+    "suppressed_symptoms": [
+      "FAN_RPM",
+      "BLW_AIRFLOW"
+    ],
+    "data_quality": {
+      "missing_signals": [],
+      "stale_signals": [],
+      "confidence_penalty": 0.0,
+      "notes": []
+    }
+  },
+  "blocked": {
+    "plant_id": "PLANTLENS_DEMO_BENCH",
+    "run_id": "run_healthy_001",
+    "generated_at": "2026-06-20T12:00:05Z",
+    "overall_status": "blocked",
+    "active_incident": null,
+    "assets": [],
+    "signals": [],
+    "causality_edges": [],
+    "root_cause_candidates": [],
+    "operator_actions": [],
+    "alarm_groups": [],
+    "suppressed_symptoms": [],
+    "data_quality": {
+      "missing_signals": [],
+      "stale_signals": [],
+      "confidence_penalty": 1.0,
+      "notes": [
+        "Gate artifact_integrity failed; HMI projection blocked.",
+        "Gate artifact_integrity emitted BLOCKER issue HASH_MISMATCH; HMI projection blocked."
+      ]
+    }
+  },
+  "stale": {
+    "plant_id": "PLANTLENS_DEMO_BENCH",
+    "run_id": "run_stale_sensor_001",
+    "generated_at": "2026-06-20T12:00:05Z",
+    "overall_status": "fault",
+    "active_incident": {
+      "incident_id": "INC_MOTOR_MECHANICAL_OBSTRUCTION",
+      "severity": "warning",
+      "title": "Motor-side mechanical obstruction",
+      "summary": "Motor-side evidence points to mechanical obstruction; downstream fan and blower symptoms are grouped under the motor incident.",
+      "suspected_root_cause": "MOTOR_MECHANICAL_OBSTRUCTION",
+      "confidence": 0.66,
+      "started_at": "2026-06-20T12:00:00Z",
+      "affected_assets": [
+        "MTR-12V",
+        "FAN-01",
+        "BLW-01"
+      ],
+      "primary_alarms": [
+        "MTR_CURRENT",
+        "MTR_VIBRATION",
+        "MTR_TEMP"
+      ],
+      "secondary_symptoms": [
+        "FAN_RPM",
+        "BLW_AIRFLOW"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_MTR_CURRENT",
+          "signal_id": "MTR_CURRENT",
+          "asset_id": "MTR-12V",
+          "description": "Motor current is above expected range.",
+          "observed_value": 1.8,
+          "unit": "A",
+          "status": "fault",
+          "weight": 1.0,
+          "timestamp": "2026-06-20T12:00:00Z"
+        },
+        {
+          "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_MTR_VIBRATION",
+          "signal_id": "MTR_VIBRATION",
+          "asset_id": "MTR-12V",
+          "description": "Motor vibration is above expected range.",
+          "observed_value": 8.2,
+          "unit": "mm/s",
+          "status": "fault",
+          "weight": 1.0,
+          "timestamp": "2026-06-20T12:00:00Z"
+        },
+        {
+          "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_MTR_TEMP",
+          "signal_id": "MTR_TEMP",
+          "asset_id": "MTR-12V",
+          "description": "Motor temperature is elevated.",
+          "observed_value": 71,
+          "unit": "degC",
+          "status": "fault",
+          "weight": 1.0,
+          "timestamp": "2026-06-20T12:00:00Z"
+        },
+        {
+          "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_FAN_RPM",
+          "signal_id": "FAN_RPM",
+          "asset_id": "FAN-01",
+          "description": "Fan RPM is low as a downstream symptom.",
+          "observed_value": 900,
+          "unit": "rpm",
+          "status": "fault",
+          "weight": 1.0,
+          "timestamp": "2026-06-20T12:00:00Z"
+        },
+        {
+          "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_BLW_AIRFLOW",
+          "signal_id": "BLW_AIRFLOW",
+          "asset_id": "BLW-01",
+          "description": "Blower airflow is low as a downstream symptom.",
+          "observed_value": 0.7,
+          "unit": "m/s",
+          "status": "fault",
+          "weight": 1.0,
+          "timestamp": "2026-06-20T12:00:00Z"
+        }
+      ]
+    },
+    "assets": [
+      {
+        "asset_id": "PSU-12V",
+        "name": "12V Power Supply",
+        "kind": "power_supply",
+        "status": "healthy",
+        "health_score": 100.0,
+        "primary_signals": [
+          "PSU_VOLTAGE"
+        ],
+        "active_faults": [],
+        "downstream_impacts": []
+      },
+      {
+        "asset_id": "PLC-IO",
+        "name": "PLC / IO Module",
+        "kind": "controller",
+        "status": "healthy",
+        "health_score": 100.0,
+        "primary_signals": [],
+        "active_faults": [],
+        "downstream_impacts": []
+      },
+      {
+        "asset_id": "MTR-12V",
+        "name": "12V DC Motor",
+        "kind": "motor",
+        "status": "fault",
+        "health_score": 20.0,
+        "primary_signals": [
+          "MTR_CURRENT",
+          "MTR_RPM",
+          "MTR_VIBRATION",
+          "MTR_TEMP"
+        ],
+        "active_faults": [
+          "MTR_CURRENT",
+          "MTR_VIBRATION",
+          "MTR_TEMP"
+        ],
+        "downstream_impacts": []
+      },
+      {
+        "asset_id": "FAN-01",
+        "name": "Fan",
+        "kind": "fan",
+        "status": "warning",
+        "health_score": 70.0,
+        "primary_signals": [
+          "FAN_RPM"
+        ],
+        "active_faults": [],
+        "downstream_impacts": [
+          "FAN_RPM"
+        ]
+      },
+      {
+        "asset_id": "BLW-01",
+        "name": "Blower",
+        "kind": "blower",
+        "status": "warning",
+        "health_score": 70.0,
+        "primary_signals": [
+          "BLW_AIRFLOW"
+        ],
+        "active_faults": [],
+        "downstream_impacts": [
+          "BLW_AIRFLOW"
+        ]
+      },
+      {
+        "asset_id": "AIR-OUT",
+        "name": "Airflow Output",
+        "kind": "process_output",
+        "status": "healthy",
+        "health_score": 100.0,
+        "primary_signals": [],
+        "active_faults": [],
+        "downstream_impacts": []
+      }
+    ],
+    "signals": [
+      {
+        "signal_id": "PSU_VOLTAGE",
+        "asset_id": "PSU-12V",
+        "name": "Supply Voltage",
+        "value": 12.0,
+        "unit": "V",
+        "status": "normal",
+        "expected_range": {
+          "min": 11.5,
+          "max": 12.6
+        },
+        "evidence_weight": 0.2,
+        "timestamp": "2026-06-20T12:00:00Z"
+      },
+      {
+        "signal_id": "MTR_CURRENT",
+        "asset_id": "MTR-12V",
+        "name": "Motor Current",
+        "value": 1.8,
+        "unit": "A",
+        "status": "fault",
+        "expected_range": {
+          "min": 0.1,
+          "max": 1.2
+        },
+        "evidence_weight": 1.0,
+        "timestamp": "2026-06-20T12:00:00Z"
+      },
+      {
+        "signal_id": "MTR_RPM",
+        "asset_id": "MTR-12V",
+        "name": "Motor RPM",
+        "value": 900,
+        "unit": "rpm",
+        "status": "stale",
+        "expected_range": {
+          "min": 1800.0,
+          "max": 3600.0
+        },
+        "evidence_weight": 0.0,
+        "timestamp": "2026-06-20T11:59:00Z"
+      },
+      {
+        "signal_id": "MTR_VIBRATION",
+        "asset_id": "MTR-12V",
+        "name": "Motor Vibration",
+        "value": 8.2,
+        "unit": "mm/s",
+        "status": "fault",
+        "expected_range": {
+          "min": 0.0,
+          "max": 4.5
+        },
+        "evidence_weight": 1.0,
+        "timestamp": "2026-06-20T12:00:00Z"
+      },
+      {
+        "signal_id": "MTR_TEMP",
+        "asset_id": "MTR-12V",
+        "name": "Motor Temperature",
+        "value": 71,
+        "unit": "degC",
+        "status": "fault",
+        "expected_range": {
+          "min": 0.0,
+          "max": 65.0
+        },
+        "evidence_weight": 1.0,
+        "timestamp": "2026-06-20T12:00:00Z"
+      },
+      {
+        "signal_id": "FAN_RPM",
+        "asset_id": "FAN-01",
+        "name": "Fan RPM",
+        "value": 900,
+        "unit": "rpm",
+        "status": "fault",
+        "expected_range": {
+          "min": 1600.0,
+          "max": 3600.0
+        },
+        "evidence_weight": 1.0,
+        "timestamp": "2026-06-20T12:00:00Z"
+      },
+      {
+        "signal_id": "BLW_AIRFLOW",
+        "asset_id": "BLW-01",
+        "name": "Blower Airflow",
+        "value": 0.7,
+        "unit": "m/s",
+        "status": "fault",
+        "expected_range": {
+          "min": 1.5,
+          "max": 5.0
+        },
+        "evidence_weight": 1.0,
+        "timestamp": "2026-06-20T12:00:00Z"
+      }
+    ],
+    "causality_edges": [
+      {
+        "edge_id": "EDGE_PSU_TO_MOTOR",
+        "from_asset_id": "PSU-12V",
+        "to_asset_id": "MTR-12V",
+        "relation": "causes",
+        "active": false
+      },
+      {
+        "edge_id": "EDGE_MOTOR_TO_FAN",
+        "from_asset_id": "MTR-12V",
+        "to_asset_id": "FAN-01",
+        "relation": "causes",
+        "active": true
+      },
+      {
+        "edge_id": "EDGE_FAN_TO_BLOWER",
+        "from_asset_id": "FAN-01",
+        "to_asset_id": "BLW-01",
+        "relation": "causes",
+        "active": true
+      },
+      {
+        "edge_id": "EDGE_BLOWER_TO_AIR",
+        "from_asset_id": "BLW-01",
+        "to_asset_id": "AIR-OUT",
+        "relation": "causes",
+        "active": false
+      }
+    ],
+    "root_cause_candidates": [
+      {
+        "cause_id": "MOTOR_MECHANICAL_OBSTRUCTION",
+        "title": "Motor-side mechanical obstruction",
+        "asset_id": "MTR-12V",
+        "confidence": 0.66,
+        "evidence": [
+          {
+            "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_MTR_CURRENT",
+            "signal_id": "MTR_CURRENT",
+            "asset_id": "MTR-12V",
+            "description": "Motor current is above expected range.",
+            "observed_value": 1.8,
+            "unit": "A",
+            "status": "fault",
+            "weight": 1.0,
+            "timestamp": "2026-06-20T12:00:00Z"
+          },
+          {
+            "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_MTR_VIBRATION",
+            "signal_id": "MTR_VIBRATION",
+            "asset_id": "MTR-12V",
+            "description": "Motor vibration is above expected range.",
+            "observed_value": 8.2,
+            "unit": "mm/s",
+            "status": "fault",
+            "weight": 1.0,
+            "timestamp": "2026-06-20T12:00:00Z"
+          },
+          {
+            "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_MTR_TEMP",
+            "signal_id": "MTR_TEMP",
+            "asset_id": "MTR-12V",
+            "description": "Motor temperature is elevated.",
+            "observed_value": 71,
+            "unit": "degC",
+            "status": "fault",
+            "weight": 1.0,
+            "timestamp": "2026-06-20T12:00:00Z"
+          },
+          {
+            "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_FAN_RPM",
+            "signal_id": "FAN_RPM",
+            "asset_id": "FAN-01",
+            "description": "Fan RPM is low as a downstream symptom.",
+            "observed_value": 900,
+            "unit": "rpm",
+            "status": "fault",
+            "weight": 1.0,
+            "timestamp": "2026-06-20T12:00:00Z"
+          },
+          {
+            "evidence_id": "EVD_MOTOR_MECHANICAL_OBSTRUCTION_BLW_AIRFLOW",
+            "signal_id": "BLW_AIRFLOW",
+            "asset_id": "BLW-01",
+            "description": "Blower airflow is low as a downstream symptom.",
+            "observed_value": 0.7,
+            "unit": "m/s",
+            "status": "fault",
+            "weight": 1.0,
+            "timestamp": "2026-06-20T12:00:00Z"
+          }
+        ],
+        "rejected_alternatives": [
+          "SUPPLY_VOLTAGE_SAG rejected: supply voltage is normal.",
+          "DOWNSTREAM_AIRFLOW_BLOCKAGE rejected: motor electrical/mechanical evidence is abnormal upstream.",
+          "Motor RPM unavailable/stale; confidence reduced."
+        ]
+      }
+    ],
+    "operator_actions": [
+      {
+        "priority": 1,
+        "title": "Stop motor safely",
+        "instruction": "Stop the motor using the approved local control path. Do not touch rotating parts until motion has fully stopped.",
+        "safety_level": "stop_required",
+        "target_asset_id": "MTR-12V",
+        "rationale": "High current with low RPM and vibration indicates a likely mechanical obstruction or friction load."
+      },
+      {
+        "priority": 2,
+        "title": "Inspect shaft, fan blade, and coupling",
+        "instruction": "Inspect the shaft, fan blade, coupling, and nearby guards for rubbing, jamming, misalignment, or foreign objects.",
+        "safety_level": "isolate_before_touch",
+        "target_asset_id": "MTR-12V",
+        "rationale": "Mechanical blockage upstream can create downstream fan and blower symptoms."
+      },
+      {
+        "priority": 3,
+        "title": "Check bearing friction and restart verification",
+        "instruction": "After inspection, verify free rotation, then restart and confirm motor current, RPM, and vibration return to normal.",
+        "safety_level": "caution",
+        "target_asset_id": "MTR-12V",
+        "rationale": "The diagnosis should clear only when current, RPM, and vibration normalize together."
+      }
+    ],
+    "alarm_groups": [
+      {
+        "group_id": "AG_MOTOR_MECHANICAL_OBSTRUCTION",
+        "title": "Motor obstruction alarm group",
+        "severity": "warning",
+        "root_alarm": "MTR_CURRENT",
+        "grouped_alarms": [
+          "MTR_CURRENT",
+          "MTR_VIBRATION",
+          "MTR_TEMP",
+          "FAN_RPM",
+          "BLW_AIRFLOW"
+        ],
+        "suppressed_duplicates": [
+          "FAN_RPM",
+          "BLW_AIRFLOW"
+        ]
+      }
+    ],
+    "suppressed_symptoms": [
+      "FAN_RPM",
+      "BLW_AIRFLOW"
+    ],
+    "data_quality": {
+      "missing_signals": [],
+      "stale_signals": [
+        "MTR_RPM"
+      ],
+      "confidence_penalty": 0.15,
+      "notes": [
+        "Signal MTR_RPM is stale or degraded; confidence reduced."
+      ]
+    }
+  }
+}

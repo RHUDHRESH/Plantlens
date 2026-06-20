@@ -70,3 +70,12 @@ export interface WsTagFrameMessage {
 }
 
 export type WsMessage = WsRuntimeSnapshotMessage | WsTagFrameMessage | { type: string };
+
+export type {
+  PlantHMIState,
+  HMIOverallStatus,
+  HMIAssetStatus,
+  HMISignalStatus,
+  HMISeverity,
+  SafetyLevel,
+} from "../app/schemas/plantHmi";

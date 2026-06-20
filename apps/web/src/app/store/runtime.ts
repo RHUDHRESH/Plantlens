@@ -4,6 +4,7 @@
  */
 import { create } from "zustand";
 import type { CalmCard } from "../schemas/calmCard";
+import type { PlantHMIState } from "../schemas/plantHmi";
 import type { Situation } from "../schemas/situation";
 import type { TagFrame } from "../schemas/tagFrame";
 import type { ActiveAlarm, RuntimeSnapshot, WsConnectionState } from "../../api/types";
@@ -27,7 +28,10 @@ export interface RuntimeStore {
   lastSnapshotTs: string | null;
   hasSnapshot: boolean;
   scenarioState: ScenarioState;
+  hmiState: PlantHMIState | null;
+  lastHmiStateTs: string | null;
   applySnapshot: (snapshot: RuntimeSnapshot, ts?: string) => void;
+  applyHmiState: (state: PlantHMIState, ts?: string) => void;
   setConnection: (state: WsConnectionState) => void;
   setScenarioState: (state: ScenarioState) => void;
   reset: () => void;
@@ -39,7 +43,10 @@ const INITIAL_SCENARIO: ScenarioState = {
   progress: null,
 };
 
-const INITIAL: Omit<RuntimeStore, "applySnapshot" | "setConnection" | "setScenarioState" | "reset"> = {
+const INITIAL: Omit<
+  RuntimeStore,
+  "applySnapshot" | "applyHmiState" | "setConnection" | "setScenarioState" | "reset"
+> = {
   tags: {},
   assetStatus: {},
   activeAlarms: [],
@@ -49,6 +56,8 @@ const INITIAL: Omit<RuntimeStore, "applySnapshot" | "setConnection" | "setScenar
   lastSnapshotTs: null,
   hasSnapshot: false,
   scenarioState: INITIAL_SCENARIO,
+  hmiState: null,
+  lastHmiStateTs: null,
 };
 
 function normalizeAssetStatus(raw: Record<string, string>): Record<string, AssetStatus> {
@@ -80,6 +89,11 @@ export const useRuntimeStore = create<RuntimeStore>((set) => ({
       calmCard: snapshot.latest_calm_card ?? null,
       lastSnapshotTs: ts ?? null,
       hasSnapshot: true,
+    }),
+  applyHmiState: (state, ts) =>
+    set({
+      hmiState: state,
+      lastHmiStateTs: ts ?? state.generated_at ?? null,
     }),
   setConnection: (connection) => set({ connection }),
   setScenarioState: (scenarioState) => set({ scenarioState }),
