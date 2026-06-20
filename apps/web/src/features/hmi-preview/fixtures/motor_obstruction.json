@@ -1,0 +1,117 @@
+{
+  "plant_id": "PLANTLENS_DEMO_BENCH",
+  "run_id": "run_motor_obstruction_001",
+  "assets": [
+    {"asset_id": "PSU-12V", "name": "12V Power Supply", "kind": "power_supply"},
+    {"asset_id": "PLC-IO", "name": "PLC / IO Module", "kind": "controller"},
+    {"asset_id": "MTR-12V", "name": "12V DC Motor", "kind": "motor"},
+    {"asset_id": "FAN-01", "name": "Fan", "kind": "fan"},
+    {"asset_id": "BLW-01", "name": "Blower", "kind": "blower"},
+    {"asset_id": "AIR-OUT", "name": "Airflow Output", "kind": "process_output"}
+  ],
+  "signals": [
+    {
+      "signal_id": "PSU_VOLTAGE",
+      "asset_id": "PSU-12V",
+      "name": "Supply Voltage",
+      "value": 12.0,
+      "unit": "V",
+      "expected_min": 11.5,
+      "expected_max": 12.6,
+      "quality": "GOOD",
+      "timestamp": "2026-06-20T12:00:00Z"
+    },
+    {
+      "signal_id": "MTR_CURRENT",
+      "asset_id": "MTR-12V",
+      "name": "Motor Current",
+      "value": 1.8,
+      "unit": "A",
+      "expected_min": 0.1,
+      "expected_max": 1.2,
+      "quality": "GOOD",
+      "timestamp": "2026-06-20T12:00:00Z"
+    },
+    {
+      "signal_id": "MTR_RPM",
+      "asset_id": "MTR-12V",
+      "name": "Motor RPM",
+      "value": 900,
+      "unit": "rpm",
+      "expected_min": 1800,
+      "expected_max": 3600,
+      "quality": "GOOD",
+      "timestamp": "2026-06-20T12:00:00Z"
+    },
+    {
+      "signal_id": "MTR_VIBRATION",
+      "asset_id": "MTR-12V",
+      "name": "Motor Vibration",
+      "value": 8.2,
+      "unit": "mm/s",
+      "expected_min": 0,
+      "expected_max": 4.5,
+      "quality": "GOOD",
+      "timestamp": "2026-06-20T12:00:00Z"
+    },
+    {
+      "signal_id": "MTR_TEMP",
+      "asset_id": "MTR-12V",
+      "name": "Motor Temperature",
+      "value": 71,
+      "unit": "degC",
+      "expected_min": 0,
+      "expected_max": 65,
+      "quality": "GOOD",
+      "timestamp": "2026-06-20T12:00:00Z"
+    },
+    {
+      "signal_id": "FAN_RPM",
+      "asset_id": "FAN-01",
+      "name": "Fan RPM",
+      "value": 900,
+      "unit": "rpm",
+      "expected_min": 1600,
+      "expected_max": 3600,
+      "quality": "GOOD",
+      "timestamp": "2026-06-20T12:00:00Z"
+    },
+    {
+      "signal_id": "BLW_AIRFLOW",
+      "asset_id": "BLW-01",
+      "name": "Blower Airflow",
+      "value": 0.7,
+      "unit": "m/s",
+      "expected_min": 1.5,
+      "expected_max": 5.0,
+      "quality": "GOOD",
+      "timestamp": "2026-06-20T12:00:00Z"
+    }
+  ],
+  "causality_edges": [
+    {
+      "edge_id": "EDGE_PSU_TO_MOTOR",
+      "from_asset_id": "PSU-12V",
+      "to_asset_id": "MTR-12V",
+      "relation": "causes"
+    },
+    {
+      "edge_id": "EDGE_MOTOR_TO_FAN",
+      "from_asset_id": "MTR-12V",
+      "to_asset_id": "FAN-01",
+      "relation": "causes"
+    },
+    {
+      "edge_id": "EDGE_FAN_TO_BLOWER",
+      "from_asset_id": "FAN-01",
+      "to_asset_id": "BLW-01",
+      "relation": "causes"
+    },
+    {
+      "edge_id": "EDGE_BLOWER_TO_AIR",
+      "from_asset_id": "BLW-01",
+      "to_asset_id": "AIR-OUT",
+      "relation": "causes"
+    }
+  ]
+}
