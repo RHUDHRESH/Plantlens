@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from pydantic import BaseModel, ConfigDict
 
 from app.ingest.adapters import CsvAdapter, XlsxAdapter
+from app.ingest.adapters.base import AdapterError
 from app.ingest.detectors import detect_document_kind
 from app.ingest.drafts import build_draft_contracts
 from app.ingest.gates import (
@@ -20,7 +21,7 @@ from app.ingest.stores.base import RawArtifactStore, RunStore
 from app.schemas.ingest.artifact import DocumentKind, RawArtifact, SourceChannel
 from app.schemas.ingest.detection import DetectionReport
 from app.schemas.ingest.draft import DraftContract
-from app.schemas.ingest.gates import GateReport
+from app.schemas.ingest.gates import GateIssue, GateReport
 from app.schemas.ingest.mapping import MappingCandidate
 from app.schemas.ingest.normalized import NormalizedRecord
 from app.schemas.ingest.quarantine import QuarantineRecord
@@ -124,7 +125,7 @@ def run_offline_ingest_cycle(
                 gate_name="artifact_integrity",
             )
         ]
-        report = _build_and_save_report(
+        return _finalize_run(
             run_store=run_store,
             run_id=run_id,
             started_at_utc=started_at_utc,
@@ -132,10 +133,10 @@ def run_offline_ingest_cycle(
             detection=detection,
             raw_records=raw_records,
             normalized_records=normalized_records,
-            clean_records=clean_records,
             mapping_candidates=mapping_candidates,
             gate_reports=gate_reports,
             quarantine=quarantine,
+            clean_records=clean_records,
             drafts=drafts,
             triggered_by=triggered_by,
             plant_id=plant_id,
@@ -143,7 +144,57 @@ def run_offline_ingest_cycle(
             errors=errors,
             status="failed",
         )
-        return OfflineIngestRunResult(
+
+    try:
+        adapter_result = adapter.extract_records(artifact=artifact, content=content)
+    except AdapterError as exc:
+        errors.append(str(exc))
+        detection = DetectionReport(
+            artifact_id=artifact.artifact_id,
+            run_id=run_id,
+            document_kind="unknown",
+            confidence=0.0,
+            signals=["adapter_parse_failed"],
+            supported=False,
+            reason=f"Adapter failed to parse artifact: {exc}",
+            needs_human_label=True,
+        )
+        gate1_report, gate1_quarantine = run_gate1_artifact_integrity(
+            artifact=artifact,
+            raw_bytes=content,
+            allowed_extensions=_ALLOWED_EXTENSIONS,
+        )
+        parse_issue = GateIssue(
+            code="ADAPTER_PARSE_FAILED",
+            message=str(exc),
+            severity="BLOCKER",
+            fix="Fix CSV/XLSX headers and formatting, then re-upload the file.",
+        )
+        gate_reports = [
+            gate1_report,
+            GateReport(
+                gate_name="artifact_integrity",
+                verdict="fail",
+                accepted=0,
+                rejected=1,
+                issues=[parse_issue],
+            ),
+        ]
+        quarantine = gate1_quarantine + [
+            create_quarantine_record(
+                run_id=run_id,
+                artifact_id=artifact.artifact_id,
+                reason="parse_failed",
+                severity="BLOCKER",
+                message=str(exc),
+                suggested_fix=parse_issue.fix or "Fix the source file formatting and re-upload.",
+                gate_name="artifact_integrity",
+            )
+        ]
+        return _finalize_run(
+            run_store=run_store,
+            run_id=run_id,
+            started_at_utc=started_at_utc,
             artifact=artifact,
             detection=detection,
             raw_records=raw_records,
@@ -153,10 +204,12 @@ def run_offline_ingest_cycle(
             quarantine=quarantine,
             clean_records=clean_records,
             drafts=drafts,
-            report=report,
+            triggered_by=triggered_by,
+            plant_id=plant_id,
+            warnings=warnings,
+            errors=errors,
+            status="failed",
         )
-
-    adapter_result = adapter.extract_records(artifact=artifact, content=content)
     raw_records = adapter_result.records
     warnings.extend(adapter_result.warnings)
     run_store.save_raw_records(run_id, raw_records)
@@ -224,16 +277,13 @@ def run_offline_ingest_cycle(
             artifact_id=artifact.artifact_id,
             records=clean_records,
             quarantine=quarantine,
+            mapping_candidates=mapping_candidates,
             created_by=triggered_by,
         )
-        run_store.save_drafts(run_id, drafts)
     else:
         warnings.append("Gate 1 blocked downstream parsing and validation.")
 
-    run_store.save_gate_reports(run_id, gate_reports)
-    run_store.save_quarantine(run_id, quarantine)
-
-    report = _build_and_save_report(
+    return _finalize_run(
         run_store=run_store,
         run_id=run_id,
         started_at_utc=started_at_utc,
@@ -241,28 +291,15 @@ def run_offline_ingest_cycle(
         detection=detection,
         raw_records=raw_records,
         normalized_records=normalized_records,
-        clean_records=clean_records,
         mapping_candidates=mapping_candidates,
         gate_reports=gate_reports,
         quarantine=quarantine,
+        clean_records=clean_records,
         drafts=drafts,
         triggered_by=triggered_by,
         plant_id=plant_id,
         warnings=warnings,
         errors=errors,
-    )
-
-    return OfflineIngestRunResult(
-        artifact=artifact,
-        detection=detection,
-        raw_records=raw_records,
-        normalized_records=normalized_records,
-        mapping_candidates=mapping_candidates,
-        gate_reports=gate_reports,
-        quarantine=quarantine,
-        clean_records=clean_records,
-        drafts=drafts,
-        report=report,
     )
 
 
@@ -347,6 +384,62 @@ def _manual_review_for_unparsed_kind(
             )
         )
     return quarantine, warnings
+
+
+def _finalize_run(
+    *,
+    run_store: RunStore,
+    run_id: str,
+    started_at_utc: datetime,
+    artifact: RawArtifact,
+    detection: DetectionReport,
+    raw_records: list[RawRecord],
+    normalized_records: list[NormalizedRecord],
+    mapping_candidates: list[MappingCandidate],
+    gate_reports: list[GateReport],
+    quarantine: list[QuarantineRecord],
+    clean_records: list[NormalizedRecord],
+    drafts: list[DraftContract],
+    triggered_by: str,
+    plant_id: str | None,
+    warnings: list[str],
+    errors: list[str],
+    status: RunStatus | None = None,
+) -> OfflineIngestRunResult:
+    run_store.save_gate_reports(run_id, gate_reports)
+    run_store.save_quarantine(run_id, quarantine)
+    run_store.save_drafts(run_id, drafts)
+    report = _build_and_save_report(
+        run_store=run_store,
+        run_id=run_id,
+        started_at_utc=started_at_utc,
+        artifact=artifact,
+        detection=detection,
+        raw_records=raw_records,
+        normalized_records=normalized_records,
+        clean_records=clean_records,
+        mapping_candidates=mapping_candidates,
+        gate_reports=gate_reports,
+        quarantine=quarantine,
+        drafts=drafts,
+        triggered_by=triggered_by,
+        plant_id=plant_id,
+        warnings=warnings,
+        errors=errors,
+        status=status,
+    )
+    return OfflineIngestRunResult(
+        artifact=artifact,
+        detection=detection,
+        raw_records=raw_records,
+        normalized_records=normalized_records,
+        mapping_candidates=mapping_candidates,
+        gate_reports=gate_reports,
+        quarantine=quarantine,
+        clean_records=clean_records,
+        drafts=drafts,
+        report=report,
+    )
 
 
 def _build_and_save_report(

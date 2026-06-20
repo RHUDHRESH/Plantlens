@@ -350,6 +350,71 @@ def test_gate3_quarantines_side_mismatch_for_battery():
     assert clean == []
 
 
+def test_gate3_mapping_candidate_by_raw_id_removes_clean_record():
+    raw_id = "raw_00000000-0000-4000-8000-000000000002"
+    record = NormalizedRecord.model_construct(
+        record_id="nrm_00000000-0000-4000-8000-000000000001",
+        run_id=RUN_ID,
+        artifact_id=ART_ID,
+        raw_id=raw_id,
+        record_kind="tag_candidate",
+        tag_id="RANDOM_PUMP_7_OUTPUT_VOLTAGE",
+        asset_id="RANDOM_PUMP_7",
+        unit="V",
+        source_ref=_source_ref(),
+        confidence=0.8,
+        fields={},
+    )
+    candidate = build_unknown_asset_candidate(
+        run_id=RUN_ID,
+        artifact_id=ART_ID,
+        source_record_id=raw_id,
+        raw_value="Random Pump 7",
+        source_ref=_source_ref(),
+    )
+    report, quarantine, clean = run_gate3_industrial_truth(
+        records=[record],
+        mapping_candidates=[candidate],
+    )
+    assert clean == []
+    assert report.rejected == 1
+    assert quarantine
+    assert any(issue.code == "MANUAL_REVIEW_REQUIRED" for issue in report.issues)
+
+
+def test_gate3_mapping_candidate_by_record_id_removes_clean_record():
+    record_id = "nrm_00000000-0000-4000-8000-000000000001"
+    raw_id = "raw_00000000-0000-4000-8000-000000000002"
+    record = NormalizedRecord.model_construct(
+        record_id=record_id,
+        run_id=RUN_ID,
+        artifact_id=ART_ID,
+        raw_id=raw_id,
+        record_kind="tag_candidate",
+        tag_id="RANDOM_PUMP_7_OUTPUT_VOLTAGE",
+        asset_id="RANDOM_PUMP_7",
+        unit="V",
+        source_ref=_source_ref(),
+        confidence=0.8,
+        fields={},
+    )
+    candidate = build_unknown_asset_candidate(
+        run_id=RUN_ID,
+        artifact_id=ART_ID,
+        source_record_id=record_id,
+        raw_value="Random Pump 7",
+        source_ref=_source_ref(),
+    )
+    report, quarantine, clean = run_gate3_industrial_truth(
+        records=[record],
+        mapping_candidates=[candidate],
+    )
+    assert clean == []
+    assert report.rejected == 1
+    assert quarantine
+    assert any(issue.code == "MANUAL_REVIEW_REQUIRED" for issue in report.issues)
+
+
 def test_gate3_mapping_candidate_creates_manual_review_quarantine():
     candidate = build_unknown_asset_candidate(
         run_id=RUN_ID,

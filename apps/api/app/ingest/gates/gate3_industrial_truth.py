@@ -72,6 +72,8 @@ def run_gate3_industrial_truth(
     issues: list[GateIssue] = []
     quarantine: list[QuarantineRecord] = []
     rejected_ids: set[str] = set()
+    rejected_record_ids: set[str] = set()
+    rejected_raw_ids: set[str] = set()
 
     for candidate in candidates:
         if not candidate.needs_human_review:
@@ -86,9 +88,20 @@ def run_gate3_industrial_truth(
             )
         )
         quarantine.append(quarantine_from_mapping_candidate(candidate))
+        if candidate.source_record_id.startswith("nrm_"):
+            rejected_record_ids.add(candidate.source_record_id)
+        elif candidate.source_record_id.startswith("raw_"):
+            rejected_raw_ids.add(candidate.source_record_id)
 
     seen_tags: dict[str, str] = {}
     for record in records:
+        if (
+            record.record_id in rejected_record_ids
+            or record.raw_id in rejected_raw_ids
+        ):
+            rejected_ids.add(record.record_id)
+            continue
+
         record_issues = _check_record(record, seen_tags)
         issues.extend(record_issues)
         blocking = [issue for issue in record_issues if _should_quarantine(issue)]
@@ -108,7 +121,12 @@ def run_gate3_industrial_truth(
                     )
                 )
 
-    clean_records = [record for record in records if record.record_id not in rejected_ids]
+    clean_records = [
+        record
+        for record in records
+        if record.record_id not in rejected_ids
+        and record.raw_id not in rejected_raw_ids
+    ]
     verdict = _verdict(len(records), len(clean_records), issues)
     report = GateReport(
         gate_name="industrial_truth",

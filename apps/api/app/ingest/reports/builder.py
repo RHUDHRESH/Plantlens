@@ -49,12 +49,10 @@ def build_ingestion_run_report(
 
     report_warnings.extend(_gate_warn_summaries(gate_reports))
 
-    unresolved_mappings = [
-        candidate
-        for candidate in mapping_candidates
-        if candidate.needs_human_review and candidate.status == "OPEN"
-    ]
-    manual_review_count = len(quarantine) + len(unresolved_mappings)
+    manual_review_count = _manual_review_count(
+        quarantine=quarantine,
+        mapping_candidates=mapping_candidates,
+    )
 
     totals = IngestionTotals(
         files_received=len(artifact_ids),
@@ -103,6 +101,37 @@ def build_ingestion_run_report(
         downstream_ready_for_studio=downstream_ready,
         triggered_by=triggered_by,
     )
+
+
+def _manual_review_count(
+    *,
+    quarantine: list[QuarantineRecord],
+    mapping_candidates: list[MappingCandidate],
+) -> int:
+    """Count unique human-review targets without double-counting mapped quarantine rows."""
+    review_keys: set[str] = set()
+    quarantine_record_ids: set[str] = set()
+    quarantine_raw_ids: set[str] = set()
+
+    for entry in quarantine:
+        if entry.record_id:
+            review_keys.add(f"record:{entry.record_id}")
+            quarantine_record_ids.add(entry.record_id)
+        elif entry.raw_id:
+            review_keys.add(f"raw:{entry.raw_id}")
+            quarantine_raw_ids.add(entry.raw_id)
+        else:
+            review_keys.add(f"quarantine:{entry.quarantine_id}")
+
+    for candidate in mapping_candidates:
+        if not candidate.needs_human_review or candidate.status != "OPEN":
+            continue
+        source_id = candidate.source_record_id
+        if source_id in quarantine_record_ids or source_id in quarantine_raw_ids:
+            continue
+        review_keys.add(f"mapping:{candidate.mapping_id}")
+
+    return len(review_keys)
 
 
 def _confidence_distribution(records: list[NormalizedRecord]) -> ConfidenceDistribution:

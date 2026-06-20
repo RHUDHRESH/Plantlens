@@ -78,6 +78,12 @@ upload/paste
 
 Offline ingestion **never** mutates live runtime automatically. Drafts require human approval. It does not write to PLCs, the simulator, or the gateway.
 
+### Red-team hardening (Chunk 1A.HF1)
+
+- Mapping-review rows cannot become drafts: Gate 3 removes linked records from `clean_records`, quarantine blocks by `record_id` and `raw_id`, and the draft builder defensively skips blocked rows.
+- Unsupported extensions and adapter parse failures produce auditable quarantine/report output — not HTTP 500.
+- `manual_review_count` deduplicates mapping candidates already represented in quarantine.
+
 ## Physical Demo CSV
 
 Upload `apps/api/tests/fixtures/ingest/physical_demo_signal_list.csv`:

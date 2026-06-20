@@ -7,6 +7,7 @@ from typing import Any
 from uuid import uuid4
 
 from app.schemas.ingest.draft import DraftContract, DraftType
+from app.schemas.ingest.mapping import MappingCandidate
 from app.schemas.ingest.normalized import NormalizedRecord
 from app.schemas.ingest.quarantine import QuarantineRecord
 
@@ -17,17 +18,19 @@ def build_draft_contracts(
     artifact_id: str,
     records: list[NormalizedRecord],
     quarantine: list[QuarantineRecord] | None = None,
+    mapping_candidates: list[MappingCandidate] | None = None,
     created_by: str,
 ) -> list[DraftContract]:
     """Build human-approval-only draft contracts from clean normalized records."""
-    quarantined_ids = {
-        entry.record_id
-        for entry in (quarantine or [])
-        if entry.record_id is not None
-    }
+    quarantined_record_ids, quarantined_raw_ids = _blocked_record_keys(
+        quarantine=quarantine,
+        mapping_candidates=mapping_candidates,
+    )
     drafts: list[DraftContract] = []
     for record in records:
-        if record.record_id in quarantined_ids:
+        if record.record_id in quarantined_record_ids:
+            continue
+        if record.raw_id in quarantined_raw_ids:
             continue
         draft = _build_draft_for_record(
             run_id=run_id,
@@ -38,6 +41,31 @@ def build_draft_contracts(
         if draft is not None:
             drafts.append(draft)
     return drafts
+
+
+def _blocked_record_keys(
+    *,
+    quarantine: list[QuarantineRecord] | None,
+    mapping_candidates: list[MappingCandidate] | None,
+) -> tuple[set[str], set[str]]:
+    blocked_record_ids = {
+        entry.record_id
+        for entry in (quarantine or [])
+        if entry.record_id is not None
+    }
+    blocked_raw_ids = {
+        entry.raw_id
+        for entry in (quarantine or [])
+        if entry.raw_id is not None
+    }
+    for candidate in mapping_candidates or []:
+        if not candidate.needs_human_review or candidate.status != "OPEN":
+            continue
+        if candidate.source_record_id.startswith("nrm_"):
+            blocked_record_ids.add(candidate.source_record_id)
+        elif candidate.source_record_id.startswith("raw_"):
+            blocked_raw_ids.add(candidate.source_record_id)
+    return blocked_record_ids, blocked_raw_ids
 
 
 def build_tag_draft_payload(record: NormalizedRecord) -> dict[str, Any]:

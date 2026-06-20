@@ -180,6 +180,30 @@ def test_build_tag_draft_contracts_from_clean_signal_records():
     assert {draft.payload["tag"]["tag_id"] for draft in drafts} == EXPECTED_PHYSICAL_DEMO_TAGS
 
 
+def test_draft_builder_skips_quarantined_raw_id():
+    clean = _clean_physical_demo_records()[:2]
+    quarantine = [
+        create_quarantine_record(
+            run_id=RUN_ID,
+            artifact_id=ART_ID,
+            reason="manual_review_required",
+            severity="MEDIUM",
+            message="Mapping review required",
+            suggested_fix="Resolve the mapping candidate.",
+            raw_id=clean[1].raw_id,
+        )
+    ]
+    drafts = build_draft_contracts(
+        run_id=RUN_ID,
+        artifact_id=ART_ID,
+        records=clean,
+        quarantine=quarantine,
+        created_by=TRIGGERED_BY,
+    )
+    assert len(drafts) == 1
+    assert drafts[0].source_record_ids == [clean[0].record_id]
+
+
 def test_draft_builder_skips_quarantined_record():
     clean = _clean_physical_demo_records()[:2]
     quarantine = [
@@ -516,6 +540,142 @@ def test_quarantine_record_always_has_suggested_fix_from_pipeline_helpers():
         ),
     ]
     assert all(record.suggested_fix for record in records)
+
+
+def test_pipeline_unknown_asset_does_not_create_draft_for_that_row():
+    csv_bytes = (
+        "asset_label,signal_label,tag_hint,unit,side\n"
+        "Random Pump 7,Output Voltage,V99,V,dc\n"
+    ).encode()
+    result = run_offline_ingest_cycle(
+        run_id=RUN_ID,
+        content=csv_bytes,
+        source_channel="upload",
+        original_filename="unknown_asset.csv",
+        mime_type="text/csv",
+        extension=".csv",
+        triggered_by=TRIGGERED_BY,
+        raw_store=MemoryRawArtifactStore(),
+        run_store=MemoryRunStore(),
+    )
+    assert result.mapping_candidates
+    assert result.quarantine
+    assert result.drafts == []
+    assert result.report.downstream_ready_for_studio is False
+
+
+def test_pipeline_fallback_tag_does_not_create_clean_draft():
+    csv_bytes = (
+        "asset_label,signal_label,tag_hint,unit,side\n"
+        "Solar Charger,Flow Rate,FR1,L/min,mechanical\n"
+    ).encode()
+    result = run_offline_ingest_cycle(
+        run_id=RUN_ID,
+        content=csv_bytes,
+        source_channel="upload",
+        original_filename="fallback_tag.csv",
+        mime_type="text/csv",
+        extension=".csv",
+        triggered_by=TRIGGERED_BY,
+        raw_store=MemoryRawArtifactStore(),
+        run_store=MemoryRunStore(),
+    )
+    assert result.mapping_candidates
+    assert result.quarantine
+    assert result.drafts == []
+    assert result.report.downstream_ready_for_studio is False
+
+
+def test_pipeline_unsupported_extension_persists_quarantine():
+    run_store = MemoryRunStore()
+    result = run_offline_ingest_cycle(
+        run_id=RUN_ID,
+        content=b"%PDF-1.4 fake",
+        source_channel="upload",
+        original_filename="notes.pdf",
+        mime_type="application/pdf",
+        extension=".pdf",
+        triggered_by=TRIGGERED_BY,
+        raw_store=MemoryRawArtifactStore(),
+        run_store=run_store,
+    )
+    assert result.drafts == []
+    assert any(entry.reason == "unsupported_file" for entry in result.quarantine)
+    assert run_store.get_quarantine(RUN_ID)
+    assert any(entry.reason == "unsupported_file" for entry in run_store.get_quarantine(RUN_ID))
+    report = run_store.get_report(RUN_ID)
+    assert report.status in {"failed", "partial"}
+    assert report.totals.drafts_created == 0
+
+
+def test_pipeline_duplicate_headers_parse_error_becomes_quarantine():
+    csv_bytes = b"Asset Label,asset-label\nSolar Charger,Whatever\n"
+    result = run_offline_ingest_cycle(
+        run_id=RUN_ID,
+        content=csv_bytes,
+        source_channel="upload",
+        original_filename="duplicate_headers.csv",
+        mime_type="text/csv",
+        extension=".csv",
+        triggered_by=TRIGGERED_BY,
+        raw_store=MemoryRawArtifactStore(),
+        run_store=MemoryRunStore(),
+    )
+    assert any(entry.reason == "parse_failed" for entry in result.quarantine)
+    assert result.report.status in {"failed", "partial"}
+    assert result.drafts == []
+
+
+def test_report_manual_review_count_does_not_double_count_mapping_quarantine():
+    candidate = build_unknown_asset_candidate(
+        run_id=RUN_ID,
+        artifact_id=ART_ID,
+        source_record_id="raw_00000000-0000-4000-8000-000000000002",
+        raw_value="Mystery Asset",
+        source_ref=_source_ref(),
+    )
+    quarantine = [quarantine_from_mapping_candidate(candidate)]
+    report = build_ingestion_run_report(
+        run_id=RUN_ID,
+        started_at_utc=TS,
+        artifact_ids=[ART_ID],
+        detected_document_types=["signal_list"],
+        raw_records=[],
+        normalized_records=[],
+        clean_records=[],
+        mapping_candidates=[candidate],
+        gate_reports=[],
+        quarantine=quarantine,
+        drafts=[],
+        triggered_by=TRIGGERED_BY,
+    )
+    assert report.totals.manual_review_count == 1
+
+
+def test_no_auto_approval_still_enforced():
+    import pytest
+
+    from app.schemas.ingest.draft import DraftContract
+
+    with pytest.raises(ValueError, match="requires_human_approval"):
+        DraftContract(
+            draft_id="drf_00000000-0000-4000-8000-000000000001",
+            run_id=RUN_ID,
+            draft_type="tag_draft",
+            status="pending",
+            source_artifact_ids=[ART_ID],
+            source_record_ids=["nrm_00000000-0000-4000-8000-000000000001"],
+            payload={"operation": "upsert_tag", "tag": {"tag_id": "TEST_TAG"}},
+            confidence=0.9,
+            created_at_utc=TS,
+            created_by=TRIGGERED_BY,
+            requires_human_approval=False,
+        )
+
+    ingest_root = Path("app/ingest")
+    for path in ingest_root.rglob("*.py"):
+        source = path.read_text(encoding="utf-8")
+        assert "requires_human_approval=False" not in source
 
 
 def test_tag_draft_payload_shape():

@@ -221,6 +221,52 @@ def test_offline_ingest_does_not_accept_gateway_token_only(client: TestClient):
     assert response.status_code == 401
 
 
+def test_api_unsupported_extension_quarantine_readback(client: TestClient):
+    token = _engineer_token(client)
+    response = client.post(
+        "/api/offline-ingest/uploads",
+        files={"file": ("notes.pdf", b"%PDF-1.4 fake", "application/pdf")},
+        headers=_auth_header(token),
+    )
+    assert response.status_code == 200, response.text
+    start = response.json()
+
+    viewer = _viewer_token(client)
+    report = client.get(
+        f"/api/offline-ingest/runs/{start['run_id']}/report",
+        headers=_auth_header(viewer),
+    )
+    assert report.status_code == 200
+    assert report.json()["status"] in {"failed", "partial"}
+
+    quarantine = client.get(
+        f"/api/offline-ingest/runs/{start['run_id']}/quarantine",
+        headers=_auth_header(viewer),
+    )
+    assert quarantine.status_code == 200
+    assert any(entry["reason"] == "unsupported_file" for entry in quarantine.json()["quarantine"])
+
+
+def test_api_duplicate_headers_does_not_500(client: TestClient):
+    token = _engineer_token(client)
+    csv_bytes = b"Asset Label,asset-label\nSolar Charger,Whatever\n"
+    response = client.post(
+        "/api/offline-ingest/uploads",
+        files={"file": ("duplicate_headers.csv", csv_bytes, "text/csv")},
+        headers=_auth_header(token),
+    )
+    assert response.status_code == 200, response.text
+    start = response.json()
+
+    viewer = _viewer_token(client)
+    quarantine = client.get(
+        f"/api/offline-ingest/runs/{start['run_id']}/quarantine",
+        headers=_auth_header(viewer),
+    )
+    assert quarantine.status_code == 200
+    assert any(entry["reason"] == "parse_failed" for entry in quarantine.json()["quarantine"])
+
+
 def test_live_gateway_ingest_still_registered(client: TestClient):
     response = client.post("/api/ingest/frame", json={})
     assert response.status_code in {401, 422}

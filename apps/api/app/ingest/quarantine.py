@@ -105,6 +105,7 @@ def quarantine_from_mapping_candidate(candidate: MappingCandidate) -> Quarantine
         gate_name="industrial_truth",
         raw_snapshot={
             "mapping_id": candidate.mapping_id,
+            "source_record_id": candidate.source_record_id,
             "issue": candidate.issue,
             "raw_value": candidate.raw_value,
             "evidence": candidate.evidence,
