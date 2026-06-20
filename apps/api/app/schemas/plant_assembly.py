@@ -78,3 +78,19 @@ class ValidateAssemblyRequest(BaseModel):
 
     plant_assembly: PlantAssembly
     component_library: dict[str, Any] | None = None
+
+
+class AnalyzeAssemblyRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    plant_assembly: PlantAssembly
+    component_library: dict[str, Any] | None = None
+
+
+class ScoreFaultsRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    plant_assembly: PlantAssembly
+    observed_signals: dict[str, Any] = Field(default_factory=dict)
+    data_quality: dict[str, Any] = Field(default_factory=dict)
+    component_library: dict[str, Any] | None = None

@@ -7,7 +7,17 @@ from app.library.catalog import (
     load_standard_component_library,
 )
 from app.library.assembly import create_compatibility_report, validate_plant_assembly
-from app.library.matrices import build_compatibility_matrix, summarize_compatibility_matrix
+from app.library.analysis import analyze_plant_assembly, score_plant_faults
+from app.library.matrices import (
+    build_causal_propagation_matrix,
+    build_compatibility_matrix,
+    build_fault_signature_matrix,
+    build_observability_matrix,
+    get_fault_signature_for_asset,
+    summarize_compatibility_matrix,
+)
+from app.library.scoring import rank_fault_candidates, score_fault_candidate
+from app.library.sensor_recommendation import recommend_sensors
 from app.library.ports import check_port_compatibility, check_connection_by_type_ids
 from app.library.validators import (
     validate_component_library,
@@ -17,14 +27,23 @@ from app.library.validators import (
 )
 
 __all__ = [
+    "analyze_plant_assembly",
+    "build_causal_propagation_matrix",
     "build_compatibility_matrix",
+    "build_fault_signature_matrix",
+    "build_observability_matrix",
     "check_connection_by_type_ids",
     "check_port_compatibility",
     "create_compatibility_report",
     "get_component",
+    "get_fault_signature_for_asset",
     "group_components_by_category",
     "list_components",
     "load_standard_component_library",
+    "rank_fault_candidates",
+    "recommend_sensors",
+    "score_fault_candidate",
+    "score_plant_faults",
     "summarize_compatibility_matrix",
     "validate_component_library",
     "validate_component_template",

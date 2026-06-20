@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { issueDevToken } from "../../api/client";
@@ -8,12 +8,17 @@ import { AssemblyInspector } from "./AssemblyInspector";
 import { ComponentPalette } from "./ComponentPalette";
 import { fetchComponentLibrary } from "./componentLibraryApi";
 import { checkPortCompatibilityLocal } from "./connectionValidation";
+import { MatrixPanel } from "./MatrixPanel";
+import { analyzeAssembly, type AnalysisResult } from "./studioAnalysisApi";
 import { useAssemblyStudioStore } from "./studioAssemblyState";
 import "./assemblyStudio.css";
 import "./componentPalette.css";
 
 export function AssemblyStudioPage() {
   const [authReady, setAuthReady] = useState(false);
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const assembly = useAssemblyStudioStore((s) => s.assembly);
   const library = useAssemblyStudioStore((s) => s.library);
   const setLibrary = useAssemblyStudioStore((s) => s.setLibrary);
@@ -75,6 +80,19 @@ export function AssemblyStudioPage() {
     return { reason: result.reason, warnings: result.warnings };
   }, [assembly.assets, getTemplate, selectedConnection]);
 
+  const handleAnalyzeAssembly = useCallback(async () => {
+    setAnalysisLoading(true);
+    setAnalysisError(null);
+    try {
+      const result = await analyzeAssembly(assembly);
+      setAnalysis(result);
+    } catch (err) {
+      setAnalysisError(err instanceof Error ? err.message : "Analysis request failed");
+    } finally {
+      setAnalysisLoading(false);
+    }
+  }, [assembly]);
+
   const handleAddComponent = (componentTypeId: string) => {
     const template = library.find((c) => c.component_type_id === componentTypeId);
     if (!template) return;
@@ -90,7 +108,10 @@ export function AssemblyStudioPage() {
           <h1>Assembly Studio</h1>
           <p>Connection-aware plant assembly — in-memory MVP, no compile or hardware control.</p>
         </div>
-        <nav>
+        <nav className="assembly-studio__nav">
+          <button type="button" onClick={handleAnalyzeAssembly} disabled={analysisLoading || assembly.assets.length === 0}>
+            {analysisLoading ? "Analyzing…" : "Analyze Assembly"}
+          </button>
           <Link to="/studio/library">Component catalog</Link>
           <Link to="/studio">Studio forms</Link>
         </nav>
@@ -115,6 +136,7 @@ export function AssemblyStudioPage() {
         <section className="assembly-studio__canvas-wrap">
           <AssemblyCanvas />
         </section>
+        <MatrixPanel analysis={analysis} loading={analysisLoading} error={analysisError} />
         <AssemblyInspector
           asset={selectedAsset}
           connection={selectedConnection}

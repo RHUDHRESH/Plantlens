@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.auth.dependencies import require_viewer
 from app.auth.principal import Principal
+from app.library.analysis import analyze_plant_assembly, score_plant_faults
 from app.library.assembly import validate_plant_assembly
 from app.library.catalog import (
     get_component,
@@ -15,7 +16,12 @@ from app.library.catalog import (
 )
 from app.library.matrices import build_compatibility_matrix, summarize_compatibility_matrix
 from app.library.ports import check_connection_by_type_ids
-from app.schemas.plant_assembly import CheckConnectionRequest, ValidateAssemblyRequest
+from app.schemas.plant_assembly import (
+    AnalyzeAssemblyRequest,
+    CheckConnectionRequest,
+    ScoreFaultsRequest,
+    ValidateAssemblyRequest,
+)
 
 router = APIRouter(prefix="/api/library", tags=["library"])
 
@@ -87,3 +93,28 @@ async def validate_assembly(
     library = body.component_library or load_standard_component_library()
     assembly = body.plant_assembly.model_dump()
     return validate_plant_assembly(assembly, library)
+
+
+@router.post("/analyze-assembly")
+async def analyze_assembly(
+    body: AnalyzeAssemblyRequest,
+    _principal: Principal = Depends(require_viewer),
+) -> dict[str, Any]:
+    library = body.component_library or load_standard_component_library()
+    assembly = body.plant_assembly.model_dump()
+    return analyze_plant_assembly(assembly, library)
+
+
+@router.post("/score-faults")
+async def score_faults(
+    body: ScoreFaultsRequest,
+    _principal: Principal = Depends(require_viewer),
+) -> dict[str, Any]:
+    library = body.component_library or load_standard_component_library()
+    assembly = body.plant_assembly.model_dump()
+    return score_plant_faults(
+        assembly,
+        library,
+        body.observed_signals,
+        body.data_quality,
+    )
