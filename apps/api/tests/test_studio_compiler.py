@@ -139,6 +139,47 @@ def test_unapproved_edges_are_not_runtime_traversable(compiled_dir: Path):
     assert "E_UNAPPROVED" not in reverse_edge_ids
 
 
+def test_compiled_hmi_view_model_has_operational_map_3d_nodes(compiled_dir: Path):
+    result = compile_authored_bundle(
+        plant_id="demo_microgrid_001",
+        bundle=_load_demo_bundle(),
+        compiled_dir=compiled_dir,
+    )
+
+    assert result["status"] == "ok"
+    hmi = result["compiled"]["hmi_view_model"]
+    assert hmi["map_3d"]["nodes"]
+    assert hmi["map_3d"]["edges"]
+    first_node = hmi["map_3d"]["nodes"][0]
+    assert {"id", "label", "asset_type", "position", "status_binding", "tags", "alarms"}.issubset(
+        first_node
+    )
+    assert {"x", "y", "z"}.issubset(first_node["position"])
+
+
+def test_map_3d_uses_coords_3d_not_coords_2d(compiled_dir: Path):
+    bundle = _load_demo_bundle()
+    for asset in bundle["plant"]["assets"]:
+        if asset["id"] == "PV-101":
+            asset["coords_2d"] = {"x": 999, "y": 888}
+            asset["coords_3d"] = {"x": 6.0, "y": 0.0, "z": 0.0, "model": "solar_panel"}
+            break
+
+    result = compile_authored_bundle(
+        plant_id="demo_microgrid_001",
+        bundle=bundle,
+        compiled_dir=compiled_dir,
+    )
+
+    assert result["status"] == "ok"
+    hmi = result["compiled"]["hmi_view_model"]
+    pv_3d = next(node for node in hmi["map_3d"]["nodes"] if node["id"] == "PV-101")
+    pv_2d = next(node for node in hmi["map_2d"]["nodes"] if node["id"] == "PV-101")
+    assert pv_3d["position"] == {"x": 6.0, "y": 0.0, "z": 0.0}
+    assert pv_2d["position"] == {"x": 999, "y": 888}
+    assert pv_3d["model_key"] == "solar_panel"
+
+
 def test_compiled_hmi_view_model_has_usable_2d_nodes_and_edges(compiled_dir: Path):
     result = compile_authored_bundle(
         plant_id="demo_microgrid_001",

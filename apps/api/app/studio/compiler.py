@@ -51,6 +51,17 @@ def _build_graph_index(bundle: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _connection_to_edge_type(kind: str | None) -> str:
+    mapping = {
+        "power": "power_flow",
+        "signal": "signal",
+        "cooling": "cooling",
+        "process": "process",
+        "mechanical": "mechanical",
+    }
+    return mapping.get(kind or "", "signal")
+
+
 def _build_hmi_view_model(
     bundle: dict[str, Any],
     asset_index: dict[str, Any],
@@ -89,14 +100,52 @@ def _build_hmi_view_model(
         for conn in bundle["plant"].get("connections", [])
     ]
 
-    nodes_3d = [
-        {
-            "id": node["id"],
-            "label": node["label"],
-            "position": asset_index.get(node["id"], {}).get("coords_3d", {"x": 0, "y": 0, "z": 0}),
-            "model": asset_index.get(node["id"], {}).get("coords_3d", {}).get("model", "box"),
+    nodes_3d = []
+    for asset_id, asset in sorted(asset_index.items()):
+        tags = sorted(tag for tag, meta in tag_index.items() if meta.get("asset_id") == asset_id)
+        alarms = sorted(
+            alarm_id
+            for alarm_id, rule in alarm_index.items()
+            if rule.get("asset_id") == asset_id
+        )
+        coords_3d = asset.get("coords_3d")
+        if coords_3d:
+            position = {
+                "x": coords_3d.get("x", 0),
+                "y": coords_3d.get("y", 0),
+                "z": coords_3d.get("z", 0),
+            }
+            model_key = coords_3d.get("model")
+        else:
+            position = {"x": 0, "y": 0, "z": 0}
+            model_key = None
+
+        node_3d: dict[str, Any] = {
+            "id": asset_id,
+            "label": asset.get("display_name", asset_id),
+            "asset_type": asset.get("type", "unknown"),
+            "criticality": asset.get("criticality"),
+            "position": position,
+            "tags": tags,
+            "alarms": alarms,
+            "status_binding": f"asset_status.{asset_id}",
         }
-        for node in nodes_2d
+        if asset.get("area_id"):
+            node_3d["area_id"] = asset["area_id"]
+        if asset.get("parent_asset_id"):
+            node_3d["parent_asset_id"] = asset["parent_asset_id"]
+        if model_key:
+            node_3d["model_key"] = model_key
+        nodes_3d.append(node_3d)
+
+    edges_3d = [
+        {
+            "id": f"{conn['from']}->{conn['to']}",
+            "from": conn["from"],
+            "to": conn["to"],
+            "type": _connection_to_edge_type(conn.get("kind")),
+        }
+        for conn in bundle["plant"].get("connections", [])
     ]
 
     return {
@@ -106,7 +155,7 @@ def _build_hmi_view_model(
         "theme": "dark-hmi",
         "layout": {"mode": "hybrid_2d_3d", "default_view": "2d"},
         "map_2d": {"nodes": nodes_2d, "edges": edges_2d},
-        "map_3d": {"nodes": nodes_3d, "edges": edges_2d},
+        "map_3d": {"nodes": nodes_3d, "edges": edges_3d},
         "widgets": [
             {"id": "alarm-table", "type": "alarm-table"},
             {"id": "root-cause-card", "type": "root-cause-card"},

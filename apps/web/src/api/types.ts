@@ -2,6 +2,7 @@ import type { CalmCard } from "../app/schemas/calmCard";
 import type { Situation } from "../app/schemas/situation";
 import type { TagFrame } from "../app/schemas/tagFrame";
 import type { AssetStatus, MapEdge, MapNode } from "../features/maps2d/mapTypes";
+import type { Map3DEdge, Map3DNode } from "../features/ops3d/map3dTypes";
 
 export interface ApiErrorBody {
   code?: string;
@@ -46,6 +47,7 @@ export interface HmiViewModel {
   view_id: string;
   version: string;
   map_2d: { nodes: MapNode[]; edges: MapEdge[] };
+  map_3d: { nodes: Map3DNode[]; edges: Map3DEdge[] };
   layout?: { default_view?: "2d" | "3d" };
 }
 

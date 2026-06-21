@@ -24,6 +24,7 @@ import { MapToolbar } from "../maps2d/MapToolbar";
 import { PlantMap2D } from "../maps2d/PlantMap2D";
 import type { MapNode } from "../maps2d/mapTypes";
 import { LazyPlantMap3D } from "../maps3d/LazyPlantMap3D";
+import { adaptMap3DViewModel } from "../ops3d/adapters";
 import { ScenarioLauncher } from "../scenarios/ScenarioLauncher";
 
 function derivePlantHealth(assetStatus: Record<string, string>): string {
@@ -146,8 +147,11 @@ export function RuntimeHMI() {
   }, [hmiRootAssetId, activeSituation?.root_asset_id]);
 
   const hmi = compiledQuery.data?.hmi_view_model;
-  const nodes = hmi?.map_2d?.nodes ?? [];
-  const edges = hmi?.map_2d?.edges ?? [];
+  const nodes2d = hmi?.map_2d?.nodes ?? [];
+  const edges2d = hmi?.map_2d?.edges ?? [];
+  const map3d = useMemo(() => adaptMap3DViewModel(hmi?.map_3d), [hmi?.map_3d]);
+  const nodes3d = map3d.nodes;
+  const edges3d = map3d.edges;
   const plantName = compiledQuery.data?.plant_id?.replace(/_/g, " ") ?? "PlantLens Demo";
 
   const hmiAssetStatus = useMemo(() => buildHmiAssetStatusMap(hmiState), [hmiState]);
@@ -187,8 +191,8 @@ export function RuntimeHMI() {
       : (activeSituation?.affected_asset_ids ?? []);
 
   const selectedNode: MapNode | null = useMemo(
-    () => nodes.find((n) => n.id === selectedAssetId) ?? null,
-    [nodes, selectedAssetId],
+    () => nodes2d.find((n) => n.id === selectedAssetId) ?? null,
+    [nodes2d, selectedAssetId],
   );
 
   const handleSelectAsset = useCallback((id: string) => {
@@ -200,9 +204,9 @@ export function RuntimeHMI() {
     setFocusAssetId(id);
   }, []);
 
-  const mapProps = {
-    nodes,
-    edges,
+  const map2dProps = {
+    nodes: nodes2d,
+    edges: edges2d,
     assetStatus: effectiveAssetStatus,
     causalPath,
     rootAssetId,
@@ -213,6 +217,19 @@ export function RuntimeHMI() {
     density,
     onSelectAsset: handleSelectAsset,
   };
+
+  const map3dProps = {
+    nodes: nodes3d,
+    edges: edges3d,
+    assetStatus: effectiveAssetStatus,
+    causalPath,
+    rootAssetId,
+    reducedMotion,
+    onSelectAsset: handleSelectAsset,
+  };
+
+  const hasMap2d = nodes2d.length > 0;
+  const hasMap3d = nodes3d.length > 0;
 
   return (
     <div className={`runtime-hmi operator-shell${density === "compact" ? " runtime-hmi--compact" : ""}`}>
@@ -256,16 +273,22 @@ export function RuntimeHMI() {
                 Compiled HMI unavailable. Start the API and compile the demo bundle.
               </div>
             )}
-            {nodes.length === 0 && !compiledQuery.isLoading && (
+            {!hasMap2d && !hasMap3d && !compiledQuery.isLoading && (
               <div className="pl-empty-state" role="status">No map nodes — compile the plant bundle first.</div>
             )}
-            {nodes.length > 0 && mapMode === "2d" && <PlantMap2D {...mapProps} />}
-            {nodes.length > 0 && mapMode === "3d" && (
+            {mapMode === "2d" && hasMap2d && <PlantMap2D {...map2dProps} />}
+            {mapMode === "2d" && !hasMap2d && hasMap3d && !compiledQuery.isLoading && (
+              <div className="pl-empty-state" role="status">No 2D map nodes available.</div>
+            )}
+            {mapMode === "3d" && hasMap3d && (
               <LazyPlantMap3D
-                {...mapProps}
+                {...map3dProps}
                 webglAvailable={webglAvailable}
                 onSwitch2D={() => setMapMode("2d")}
               />
+            )}
+            {mapMode === "3d" && !hasMap3d && !compiledQuery.isLoading && (
+              <div className="pl-empty-state" role="status">No 3D map nodes available.</div>
             )}
           </main>
 

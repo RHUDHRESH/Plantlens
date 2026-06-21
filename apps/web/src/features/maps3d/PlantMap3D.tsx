@@ -1,13 +1,14 @@
 import { Suspense, useEffect, useMemo } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { Line, OrbitControls } from "@react-three/drei";
-import type { AssetStatus, MapEdge, MapNode } from "../maps2d/mapTypes";
+import type { AssetStatus } from "../maps2d/mapTypes";
 import { statusForAsset } from "../maps2d/statusStyles";
+import type { Map3DEdge, Map3DNode } from "../ops3d/map3dTypes";
 import { SchematicAssetMesh } from "./AssetMeshes";
 
 export interface PlantMap3DProps {
-  nodes: MapNode[];
-  edges: MapEdge[];
+  nodes: Map3DNode[];
+  edges: Map3DEdge[];
   assetStatus: Record<string, AssetStatus>;
   causalPath?: string[];
   rootAssetId?: string | null;
@@ -18,7 +19,7 @@ export interface PlantMap3DProps {
 function PowerCable({ from, to, highlight }: { from: [number, number, number]; to: [number, number, number]; highlight: boolean }) {
   const mid: [number, number, number] = [
     (from[0] + to[0]) / 2,
-    0.15,
+    (from[1] + to[1]) / 2,
     (from[2] + to[2]) / 2,
   ];
   return (
@@ -36,26 +37,25 @@ function CameraFocus({
   reducedMotion,
 }: {
   targetId: string | null | undefined;
-  nodes: MapNode[];
+  nodes: Map3DNode[];
   reducedMotion: boolean;
 }) {
   const { camera } = useThree();
   const target = nodes.find((n) => n.id === targetId);
   useEffect(() => {
     if (!target?.position) return;
-    const x = target.position.x * 0.02;
-    const z = target.position.y * 0.02;
+    const { x, y, z } = target.position;
     const duration = reducedMotion ? 0 : 400;
     const start = performance.now();
     const from = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
-    const to = { x: x + 2, y: 2.2, z: z + 2 };
+    const to = { x: x + 2, y: y + 2.2, z: z + 2 };
     let frame = 0;
     const tick = (now: number) => {
       const t = reducedMotion ? 1 : Math.min(1, (now - start) / duration);
       camera.position.x = from.x + (to.x - from.x) * t;
       camera.position.y = from.y + (to.y - from.y) * t;
       camera.position.z = from.z + (to.z - from.z) * t;
-      camera.lookAt(x, 0.4, z);
+      camera.lookAt(x, y, z);
       if (t < 1) frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
@@ -76,9 +76,10 @@ function PlantScene({
   const positions = useMemo(
     () =>
       Object.fromEntries(
-        nodes
-          .filter((n) => n.position)
-          .map((n) => [n.id, { x: (n.position!.x) * 0.02, y: 0.4, z: (n.position!.y) * 0.02 }]),
+        nodes.map((n) => [
+          n.id,
+          { x: n.position.x, y: n.position.y, z: n.position.z },
+        ]),
       ),
     [nodes],
   );

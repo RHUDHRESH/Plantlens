@@ -54,10 +54,88 @@
     },
     "map_3d": {
       "type": "object", "additionalProperties": false, "required": ["nodes", "edges"],
-      "description": "Same node ids as map_2d but with scene coords + model names.",
+      "description": "Operational 3D viewport model. Same asset ids as map_2d but with real scene coords from coords_3d.",
       "properties": {
-        "nodes": { "type": "array", "items": { "type": "object" } },
-        "edges": { "type": "array", "items": { "type": "object" } }
+        "nodes": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "label", "asset_type", "position", "status_binding"],
+            "properties": {
+              "id": { "type": "string", "description": "Equals an asset_id." },
+              "label": { "type": "string" },
+              "asset_type": { "type": "string" },
+              "position": {
+                "type": "object", "additionalProperties": false,
+                "required": ["x", "y", "z"],
+                "properties": {
+                  "x": { "type": "number" },
+                  "y": { "type": "number" },
+                  "z": { "type": "number" }
+                }
+              },
+              "rotation": {
+                "type": "object", "additionalProperties": false,
+                "required": ["x", "y", "z"],
+                "properties": {
+                  "x": { "type": "number" },
+                  "y": { "type": "number" },
+                  "z": { "type": "number" }
+                }
+              },
+              "scale": { "type": "number" },
+              "model_key": { "type": "string", "description": "Future GLB/model registry key; procedural fallback when absent." },
+              "area_id": { "type": "string" },
+              "parent_asset_id": { "type": ["string", "null"] },
+              "criticality": { "type": "string", "enum": ["low", "medium", "high"] },
+              "tags": { "type": "array", "items": { "type": "string" } },
+              "alarms": { "type": "array", "items": { "type": "string" } },
+              "status_binding": { "type": "string", "description": "Runtime key the live status maps to, e.g. asset_status.MTR-301." },
+              "ports": {
+                "type": "array",
+                "items": {
+                  "type": "object", "additionalProperties": false,
+                  "required": ["id", "kind", "position"],
+                  "properties": {
+                    "id": { "type": "string" },
+                    "kind": {
+                      "type": "string",
+                      "enum": ["power_in", "power_out", "signal", "airflow", "cooling", "mechanical", "process", "unknown"]
+                    },
+                    "label": { "type": "string" },
+                    "position": {
+                      "type": "object", "additionalProperties": false,
+                      "required": ["x", "y", "z"],
+                      "properties": {
+                        "x": { "type": "number" },
+                        "y": { "type": "number" },
+                        "z": { "type": "number" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["id", "from", "to", "type"],
+            "properties": {
+              "id": { "type": "string" },
+              "from": { "type": "string" },
+              "to": { "type": "string" },
+              "type": {
+                "type": "string",
+                "enum": ["power_flow", "signal", "causal", "cooling", "process", "mechanical"]
+              },
+              "from_port": { "type": "string" },
+              "to_port": { "type": "string" }
+            }
+          }
+        }
       }
     },
     "widgets": {

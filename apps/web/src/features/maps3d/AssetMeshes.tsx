@@ -6,7 +6,8 @@ import { useRef, type ReactNode } from "react";
 import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import type { Mesh } from "three";
-import type { AssetStatus, MapNode } from "../maps2d/mapTypes";
+import type { AssetStatus } from "../maps2d/mapTypes";
+import type { Map3DNode } from "../ops3d/map3dTypes";
 import { resolveIconKey } from "../maps2d/iconRegistry";
 
 /* Deep base colors — the mesh body tint */
@@ -217,7 +218,7 @@ export function SchematicAssetMesh({
   pathStep,
   onSelect,
 }: {
-  node: MapNode;
+  node: Map3DNode;
   status: AssetStatus;
   isRoot: boolean;
   isOnPath: boolean;
@@ -244,8 +245,9 @@ export function SchematicAssetMesh({
     ...(click ? { onSelect: click } : {}),
   };
 
-  const x = (node.position?.x ?? 0) * 0.02;
-  const z = (node.position?.y ?? 0) * 0.02;
+  const x = node.position.x;
+  const y = node.position.y;
+  const z = node.position.z;
 
   let body: ReactNode;
   switch (iconKey) {
@@ -278,7 +280,7 @@ export function SchematicAssetMesh({
   }
 
   return (
-    <group position={[x, 0.4, z]}>
+    <group position={[x, y, z]}>
       {body}
       <Html distanceFactor={12} position={[0, 0.55, 0]} center>
         <span className="map3d-label" data-tabular>

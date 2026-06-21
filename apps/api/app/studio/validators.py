@@ -137,6 +137,16 @@ def validate_completeness(bundle: dict[str, Any]) -> list[Issue]:
                     entity_id=asset["id"],
                 )
             )
+        if "coords_3d" not in asset:
+            warnings.append(
+                Issue(
+                    code="MISSING_COORDS_3D",
+                    severity="warning",
+                    message=f"Asset {asset['id']} is missing coords_3d.",
+                    fix="Add coords_3d for operational 3D viewport placement.",
+                    entity_id=asset["id"],
+                )
+            )
     return warnings
 
 
