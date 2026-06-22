@@ -26,6 +26,10 @@ from app.schemas.ingest.normalized import NormalizedRecord
 
 from app.schemas.ingest.record import RawRecord, SourceRef
 
+API_ROOT = Path(__file__).resolve().parents[3]
+PIPELINE_SOURCE = API_ROOT / "app" / "ingest" / "pipeline.py"
+INGEST_ROOT = API_ROOT / "app" / "ingest"
+
 RUN_ID = "run_00000000-0000-4000-8000-000000000001"
 RUN_ID_2 = "run_00000000-0000-4000-8000-000000000002"
 ART_ID = "art_00000000-0000-4000-8000-000000000001"
@@ -482,7 +486,7 @@ def test_pipeline_register_map_csv_generates_register_draft():
 
 
 def test_pipeline_no_runtime_side_effects():
-    source = Path("app/ingest/pipeline.py").read_text(encoding="utf-8")
+    source = PIPELINE_SOURCE.read_text(encoding="utf-8")
     assert "get_simulator_gateway" not in source
     assert "runtime_state" not in source
     assert "app.routers.ingest" not in source
@@ -672,8 +676,7 @@ def test_no_auto_approval_still_enforced():
             requires_human_approval=False,
         )
 
-    ingest_root = Path("app/ingest")
-    for path in ingest_root.rglob("*.py"):
+    for path in INGEST_ROOT.rglob("*.py"):
         source = path.read_text(encoding="utf-8")
         assert "requires_human_approval=False" not in source
 

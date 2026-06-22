@@ -41,6 +41,7 @@ ALLOWED_API_PREFIXES = (
     "/api/incidents/",
     "/api/agents/",
     "/api/plc/",
+    "/api/library/",
 )
 
 SECRET_FIELD_NAMES = frozenset(

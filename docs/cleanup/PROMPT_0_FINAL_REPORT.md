@@ -60,25 +60,24 @@
 |---------|--------|
 | `pnpm install --frozen-lockfile` | PASS |
 | `pnpm contracts:validate` | PASS |
-| `python -m pytest apps/api/tests -q` | **554 pass, 2 fail** (pre-existing; see KNOWN_FAILURES) |
+| `python -m pytest apps/api/tests -q` | PASS (556 tests; fixed in Prompt 0.1) |
 | `pnpm --filter @plantlens/web typecheck` | PASS |
 | `pnpm --filter @plantlens/web test` | PASS (80 tests) |
 | `pnpm --filter @plantlens/web build` | PASS |
 
 ## 7. Remaining risks
 
-* Two API guardian tests fail from repo root (documented; not cleanup-caused).
-* `TopStrip.tsx` duplicate may confuse agents — noted in frontend unused report.
+* `TopStrip.tsx` duplicate may confuse agents — noted in frontend unused report; safe to delete in Prompt 1 after import check.
 * Router mounts all paths to `RuntimeHMI`; studio page components exist but are not separately routed.
 * `apps/web/public/` is untracked in working tree — verify before Prompt 1 if assets are needed.
 * `mcps/pencil/` in git may look like product code — agents should read `AGENTS.md` first.
 
 ## 8. Recommendation for Prompt 1
 
-**Prompt 1 is safe to run** for frontend-heavy work:
+**Prompt 1 is safe to run** — branch is fully green (Prompt 0.1 resolved the two API test failures).
 
 1. Read `AGENTS.md` → `PLANTLENS.md` → `docs/BUILD_MANUAL_40_PROMPTS.md` (Prompt 1 section).
 2. Do **not** read `docs/archive/` unless reviewing history.
-3. Fix the two pre-existing API test failures if Prompt 1 guardian requires full green pytest from repo root.
+3. Merge `cleanup/prompt-0-repo-deconfusion` before starting frontend-heavy prompts.
 4. Start from `packages/contracts` and `packages/sample-data/demo-microgrid` — unchanged by cleanup.
 5. No product behavior was modified; runtime HMI, maps, and contracts are intact.
