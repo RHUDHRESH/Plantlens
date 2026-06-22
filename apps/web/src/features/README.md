@@ -120,11 +120,26 @@ Always available; never hidden. UI says "N grouped", never "suppressed".
 ScenarioLauncher (list + run), ScenarioControlPanel (start/stop/reset), ScenarioTimeline,
 ScenarioStatusBadge.
 
-## studio-forms/ — authoring source of truth (Chunk 9, FORMS FIRST)
-StudioFormShell, StepRail, ProjectForm, AssetForm, TagForm, AlarmRuleForm, CausalEdgeForm,
-RoleViewForm, ActionEnvelopeForm, ValidationPanel, CompilePreview. Each form uses react-hook-form +
-zodResolver; the zod schemas mirror packages/contracts (in `app/schemas/`). Save → validate →
-compile → preview the SAME 2D HMI.
+## studio-forms/ — draft authoring (Prompt 8, FORMS FIRST)
+| File | Role |
+|------|------|
+| `studioDraftTypes.ts` | Draft bundle, issue, patch, and status types |
+| `studioDraftSchema.ts` | Local draft-shell validation (not canonical schema replacement) |
+| `demoBundleLoader.ts` | Loads demo-microgrid authored JSON into frontend draft |
+| `useStudioDraftStore.ts` | Zustand draft store — load, patch, validate, reset (no save/apply) |
+| `studioSelectors.ts` | Pure selectors over partial bundle shapes |
+| `StudioFormShell.tsx` | Launchpad-integrated form surface with status strip and disabled actions |
+| `EntityList.tsx` | Entity picker with issue and dirty badges |
+| `AssetForm.tsx` | Plant asset draft fields (patch-based, no save) |
+| `TagForm.tsx` | Tag map entry draft fields |
+| `AlarmRuleForm.tsx` | Alarm rule draft fields |
+| `CausalEdgeForm.tsx` | Causal edge draft fields |
+| `ActionEnvelopeForm.tsx` | Action envelope draft fields |
+| `ValidationPanel.tsx` | Grouped validation issues by severity |
+| `index.ts` | Public API |
+
+Draft only — no backend save, no apply, no compile. Demo authored bundle loads on Studio open.
+Graph editing and compile preview come in later prompts.
 
 ## studio-graph/ — React Flow projection (Chunk 9, SECOND)
 StudioCanvas (@xyflow/react), custom nodes (Source/Battery/Bus/Inverter/Motor/Sensor),

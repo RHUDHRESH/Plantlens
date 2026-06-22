@@ -8,7 +8,10 @@ import { ComponentLibraryPage } from "../features/studio-graph/ComponentLibraryP
 export const router = createBrowserRouter([
   { path: "/", element: <RuntimeHMI /> },
   { path: "/hmi", element: <HmiPreviewPage /> },
-  { path: "/studio", element: <StudioFormShell /> },
+  {
+    path: "/studio",
+    element: <StudioFormShell route={{ surface: "asset", targetId: null, mode: "inspect" }} />,
+  },
   { path: "/studio/assembly", element: <AssemblyStudioPage /> },
   { path: "/studio/library", element: <ComponentLibraryPage /> },
   { path: "*", element: <Navigate to="/" replace /> },

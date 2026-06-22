@@ -22,7 +22,8 @@ const MIN_BUNDLE: AuthoredBundle = {
   action_envelope: { actions: [] },
 };
 
-describe("Studio validation", () => {
+/** Legacy local validation used by old studio store — kept for regression coverage. */
+describe("legacy studio validation", () => {
   it("rejects invalid tag reference with fix hint", () => {
     const issues = validateBundleLocally(MIN_BUNDLE);
     expect(issues.some((i) => i.code === "UNKNOWN_ASSET_REF")).toBe(true);

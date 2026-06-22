@@ -1,3 +1,4 @@
+import { StudioFormShell } from "../studio-forms/StudioFormShell";
 import { CompilePreviewShell } from "./CompilePreviewShell";
 import type { StudioRouteState, StudioSurface } from "./studioTypes";
 
@@ -17,17 +18,6 @@ const NAV_ITEMS: Array<{ surface: StudioSurface; label: string }> = [
   { surface: "role_view", label: "Role Views" },
   { surface: "compile_preview", label: "Compile Preview" },
 ];
-
-const SURFACE_LABELS: Record<StudioSurface, string> = {
-  overview: "Overview",
-  asset: "Assets",
-  tag: "Tags",
-  alarm_rule: "Alarm Rules",
-  causal_edge: "Causal Graph",
-  action: "Actions",
-  role_view: "Role Views",
-  compile_preview: "Compile Preview",
-};
 
 function StudioMainPanel({ route }: { route: StudioRouteState }) {
   if (route.surface === "overview") {
@@ -54,19 +44,8 @@ function StudioMainPanel({ route }: { route: StudioRouteState }) {
   }
 
   return (
-    <div className="studio-launchpad__main">
-      <h3>{SURFACE_LABELS[route.surface]}</h3>
-      {route.targetId ? (
-        <p>
-          Target: <span className="data-number">{route.targetId}</span>
-          {route.mode === "edit_intent" ? " · edit intent" : " · inspect"}
-        </p>
-      ) : (
-        <p>Select a lineage reference to open a specific target.</p>
-      )}
-      <p className="studio-launchpad__draft-note">
-        Draft surface not wired yet — coming in next Studio prompt.
-      </p>
+    <div className="studio-launchpad__main studio-launchpad__main--forms">
+      <StudioFormShell route={route} />
     </div>
   );
 }

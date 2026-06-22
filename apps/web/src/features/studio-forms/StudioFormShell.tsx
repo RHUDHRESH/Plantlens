@@ -1,234 +1,224 @@
-import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
-import { getAuthoredBundle, issueDevToken } from "../../api/client";
-import { setAuthToken } from "../../api/config";
-import { useStudioStore, type AuthoredBundle } from "../../app/store/studio";
-import { CompilePreview } from "../hmi-preview/CompilePreview";
-import { StudioCanvas } from "../studio-graph/StudioCanvas";
-import {
-  ActionForm,
-  AlarmForm,
-  AssetForm,
-  EdgeForm,
-  RoleForm,
-  TagForm,
-} from "./forms";
+import { useEffect, useMemo } from "react";
+import type { StudioRouteState } from "../studio-launchpad/studioTypes";
+import { ActionEnvelopeForm } from "./ActionEnvelopeForm";
+import { AlarmRuleForm } from "./AlarmRuleForm";
+import { AssetForm } from "./AssetForm";
+import { CausalEdgeForm } from "./CausalEdgeForm";
+import { EntityList } from "./EntityList";
+import { TagForm } from "./TagForm";
 import { ValidationPanel } from "./ValidationPanel";
-import { validateBundleLocally } from "./validation";
-import "../../styles/studio.css";
+import {
+  entityIdFromRecord,
+  selectAssetOptions,
+  selectEntitiesForFamily,
+  selectIssuesForFamily,
+  selectIssuesForTarget,
+  selectNodeOptions,
+  selectRoles,
+  selectTagOptions,
+  surfaceToFamily,
+} from "./studioSelectors";
+import type { StudioDraftFamily } from "./studioDraftTypes";
+import { useStudioDraftStore } from "./useStudioDraftStore";
 
-const STEPS = [
-  "Assets",
-  "Tags",
-  "Alarms",
-  "Causal edges",
-  "Roles",
-  "Actions",
-  "Graph",
-  "Compile",
-] as const;
+interface StudioFormShellProps {
+  route: StudioRouteState;
+}
 
-type Step = (typeof STEPS)[number];
+const STATUS_LABELS = {
+  clean: "Clean",
+  dirty: "Dirty — local edits not saved",
+  invalid: "Invalid — fix errors before compile",
+} as const;
 
-export function StudioFormShell() {
-  const [step, setStep] = useState<Step>("Assets");
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [authReady, setAuthReady] = useState(false);
-  const [compiledPreview, setCompiledPreview] = useState<AuthoredBundle | null>(null);
+function familyFromRoute(route: StudioRouteState): StudioDraftFamily | null {
+  return surfaceToFamily(route.surface);
+}
 
-  const bundle = useStudioStore((s) => s.bundle);
-  const setBundle = useStudioStore((s) => s.setBundle);
-  const updateAsset = useStudioStore((s) => s.updateAsset);
-  const updateTag = useStudioStore((s) => s.updateTag);
-  const updateAlarm = useStudioStore((s) => s.updateAlarm);
-  const updateEdge = useStudioStore((s) => s.updateEdge);
-  const setValidationIssues = useStudioStore((s) => s.setValidationIssues);
-  const validationIssues = useStudioStore((s) => s.validationIssues);
+export function StudioFormShell({ route }: StudioFormShellProps) {
+  const loaded = useStudioDraftStore((s) => s.loaded);
+  const bundle = useStudioDraftStore((s) => s.bundle);
+  const status = useStudioDraftStore((s) => s.status);
+  const issues = useStudioDraftStore((s) => s.issues);
+  const dirtyFamilies = useStudioDraftStore((s) => s.dirtyFamilies);
+  const selectedFamily = useStudioDraftStore((s) => s.selectedFamily);
+  const selectedTargetId = useStudioDraftStore((s) => s.selectedTargetId);
+  const loadInitialBundle = useStudioDraftStore((s) => s.loadInitialBundle);
+  const selectTarget = useStudioDraftStore((s) => s.selectTarget);
+  const applyPatch = useStudioDraftStore((s) => s.applyPatch);
 
-  const authoredQuery = useQuery({
-    queryKey: ["authored-bundle"],
-    queryFn: ({ signal }) => getAuthoredBundle(signal),
-    enabled: authReady,
-  });
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const token = await issueDevToken("engineer");
-        if (!cancelled) {
-          setAuthToken(token);
-          setAuthReady(true);
-        }
-      } catch {
-        if (!cancelled) setAuthReady(true);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const family = familyFromRoute(route);
 
   useEffect(() => {
-    if (authoredQuery.data && !bundle) {
-      setBundle(authoredQuery.data as unknown as AuthoredBundle);
+    if (!loaded) loadInitialBundle();
+  }, [loaded, loadInitialBundle]);
+
+  useEffect(() => {
+    if (!family) return;
+    if (route.targetId) {
+      selectTarget(family, route.targetId);
+      return;
     }
-  }, [authoredQuery.data, bundle, setBundle]);
+    const entities = selectEntitiesForFamily(bundle, family);
+    const firstId = entities[0] ? entityIdFromRecord(family, entities[0]) : null;
+    if (firstId && selectedFamily !== family) {
+      selectTarget(family, firstId);
+    } else if (!firstId) {
+      selectTarget(family, null);
+    }
+  }, [family, route.targetId, bundle, selectTarget, selectedFamily]);
 
-  const localIssues = useMemo(
-    () => (bundle ? validateBundleLocally(bundle) : []),
-    [bundle],
+  const activeFamily = family ?? selectedFamily;
+  const activeTargetId = route.targetId ?? selectedTargetId;
+
+  const entities = useMemo(
+    () => (activeFamily ? selectEntitiesForFamily(bundle, activeFamily) : []),
+    [bundle, activeFamily],
   );
 
-  useEffect(() => {
-    setValidationIssues(localIssues);
-  }, [localIssues, setValidationIssues]);
+  const selectedEntity = useMemo(() => {
+    if (!activeFamily || !activeTargetId) return null;
+    return entities.find((e) => entityIdFromRecord(activeFamily, e) === activeTargetId) ?? null;
+  }, [entities, activeFamily, activeTargetId]);
 
-  if (!bundle) {
+  const familyIssues = useMemo(
+    () => (activeFamily ? selectIssuesForFamily({ issues }, activeFamily) : issues),
+    [issues, activeFamily],
+  );
+
+  const targetIssues = useMemo(() => {
+    if (!activeFamily || !activeTargetId) return familyIssues;
+    return selectIssuesForTarget({ issues }, activeFamily, activeTargetId);
+  }, [issues, activeFamily, activeTargetId, familyIssues]);
+
+  const assetOptions = useMemo(() => selectAssetOptions(bundle), [bundle]);
+  const tagOptions = useMemo(() => selectTagOptions(bundle), [bundle]);
+  const nodeOptions = useMemo(() => selectNodeOptions(bundle), [bundle]);
+  const assetTypes = useMemo(
+    () => selectEntitiesForFamily(bundle, "plant").map((a) => String(a.type ?? "")),
+    [bundle],
+  );
+  const roles = useMemo(() => selectRoles(bundle), [bundle]);
+
+  if (route.surface === "role_view") {
     return (
-      <div className="studio-shell">
-        <p>{authoredQuery.isLoading ? "Loading authored bundle…" : "No bundle loaded."}</p>
-        <Link to="/">← Runtime HMI</Link>
+      <div className="studio-form-shell">
+        <div className={`studio-form-shell__status studio-form-shell__status--${status}`} role="status">
+          Draft status: {STATUS_LABELS[status]}
+        </div>
+        <div className="studio-form-shell__layout">
+          <div className="studio-form-shell__form">
+            <h3>Role views</h3>
+            <p className="studio-form-field__hint">
+              Role view stubs are represented as plant roles only in this prompt. Full role-view authoring
+              comes after draft persistence.
+            </p>
+            <ul>
+              {roles.map((role) => (
+                <li key={role}>{role}</li>
+              ))}
+            </ul>
+          </div>
+          <ValidationPanel issues={issues} selectedFamily="plant" />
+        </div>
+        <DisabledActionsFooter />
       </div>
     );
   }
 
-  const assets = bundle.plant.assets;
-  const tags = bundle.tag_map.tags;
-  const alarms = bundle.alarm_rules.rules;
-  const edges = bundle.causal_graph.edges;
-  const actions = bundle.action_envelope.actions ?? [];
+  if (!activeFamily) {
+    return null;
+  }
 
   return (
-    <div className="studio-shell">
-      <header className="studio-shell__header">
-        <h1>Studio — {bundle.plant.name}</h1>
-        <Link to="/">Runtime HMI</Link>
-      </header>
-
-      <nav className="studio-shell__steps" aria-label="Authoring steps">
-        {STEPS.map((s) => (
-          <button
-            key={s}
-            type="button"
-            className={step === s ? "active" : undefined}
-            onClick={() => setStep(s)}
-          >
-            {s}
-          </button>
-        ))}
-      </nav>
-
-      <div className="studio-shell__body">
-        <div className="studio-shell__form-area">
-          {step === "Assets" && assets[selectedIndex] && (
-            <>
-              <select
-                value={selectedIndex}
-                onChange={(e) => setSelectedIndex(Number(e.target.value))}
-              >
-                {assets.map((a, i) => (
-                  <option key={a.id} value={i}>
-                    {a.id}
-                  </option>
-                ))}
-              </select>
-              <AssetForm asset={assets[selectedIndex]} onSave={(a) => updateAsset(selectedIndex, a)} />
-            </>
-          )}
-          {step === "Tags" && tags[selectedIndex] && (
-            <>
-              <select value={selectedIndex} onChange={(e) => setSelectedIndex(Number(e.target.value))}>
-                {tags.map((t, i) => (
-                  <option key={t.tag} value={i}>
-                    {t.tag}
-                  </option>
-                ))}
-              </select>
-              <TagForm tag={tags[selectedIndex]} onSave={(t) => updateTag(selectedIndex, t)} />
-            </>
-          )}
-          {step === "Alarms" && alarms[selectedIndex] && (
-            <>
-              <select value={selectedIndex} onChange={(e) => setSelectedIndex(Number(e.target.value))}>
-                {alarms.map((a, i) => (
-                  <option key={a.id} value={i}>
-                    {a.id}
-                  </option>
-                ))}
-              </select>
-              <AlarmForm rule={alarms[selectedIndex]} onSave={(r) => updateAlarm(selectedIndex, r)} />
-            </>
-          )}
-          {step === "Causal edges" && edges[selectedIndex] && (
-            <>
-              <select value={selectedIndex} onChange={(e) => setSelectedIndex(Number(e.target.value))}>
-                {edges.map((e, i) => (
-                  <option key={e.id} value={i}>
-                    {e.id}
-                  </option>
-                ))}
-              </select>
-              <EdgeForm edge={edges[selectedIndex]} onSave={(e) => updateEdge(selectedIndex, e)} />
-            </>
-          )}
-          {step === "Roles" && (
-            <RoleForm
-              roles={bundle.plant.roles ?? []}
-              onSave={(roles) =>
-                setBundle({ ...bundle, plant: { ...bundle.plant, roles } })
-              }
-            />
-          )}
-          {step === "Actions" && actions[selectedIndex] && (
-            <>
-              <select value={selectedIndex} onChange={(e) => setSelectedIndex(Number(e.target.value))}>
-                {actions.map((a, i) => (
-                  <option key={a.id} value={i}>
-                    {a.id}
-                  </option>
-                ))}
-              </select>
-              <ActionForm
-                action={actions[selectedIndex]}
-                onSave={(action) => {
-                  const next = [...actions];
-                  next[selectedIndex] = action;
-                  setBundle({
-                    ...bundle,
-                    action_envelope: { actions: next },
-                  });
-                }}
-              />
-            </>
-          )}
-          {step === "Graph" && <StudioCanvas bundle={bundle} />}
-          {step === "Compile" && (
-            <CompilePreview
-              bundle={bundle}
-              localIssues={localIssues}
-              onResult={(r) => {
-                setValidationIssues([...localIssues, ...r.issues]);
-                if (r.ok && r.compiled) {
-                  setCompiledPreview(bundle);
-                }
-              }}
-            />
-          )}
-        </div>
-        <ValidationPanel issues={[...localIssues, ...validationIssues]} />
+    <div className="studio-form-shell">
+      <div className={`studio-form-shell__status studio-form-shell__status--${status}`} role="status">
+        Draft status: {STATUS_LABELS[status]}
       </div>
 
-      <details className="studio-shell__json">
-        <summary>Canonical JSON (read-only preview)</summary>
-        <pre>{JSON.stringify(bundle, null, 2)}</pre>
-      </details>
-      {compiledPreview && (
-        <p className="studio-shell__saved" role="status">
-          Last successful compile used current form state.
-        </p>
-      )}
+      <div className="studio-form-shell__layout">
+        <EntityList
+          family={activeFamily}
+          items={entities}
+          selectedTargetId={activeTargetId}
+          issues={familyIssues}
+          familyDirty={dirtyFamilies[activeFamily]}
+          onSelect={(id) => selectTarget(activeFamily, id)}
+        />
+
+        <div className="studio-form-shell__form">
+          {selectedEntity && activeFamily === "plant" ? (
+            <AssetForm
+              asset={selectedEntity}
+              assetTypes={assetTypes}
+              issues={targetIssues}
+              onPatch={applyPatch}
+            />
+          ) : null}
+          {selectedEntity && activeFamily === "tag_map" ? (
+            <TagForm
+              tag={selectedEntity}
+              assetOptions={assetOptions}
+              issues={targetIssues}
+              onPatch={applyPatch}
+            />
+          ) : null}
+          {selectedEntity && activeFamily === "alarm_rules" ? (
+            <AlarmRuleForm
+              rule={selectedEntity}
+              tagOptions={tagOptions}
+              issues={targetIssues}
+              onPatch={applyPatch}
+            />
+          ) : null}
+          {selectedEntity && activeFamily === "causal_graph" ? (
+            <CausalEdgeForm
+              edge={selectedEntity}
+              nodeOptions={nodeOptions}
+              issues={targetIssues}
+              onPatch={applyPatch}
+            />
+          ) : null}
+          {selectedEntity && activeFamily === "action_envelope" ? (
+            <ActionEnvelopeForm
+              action={selectedEntity}
+              assetOptions={assetOptions}
+              issues={targetIssues}
+              onPatch={applyPatch}
+            />
+          ) : null}
+          {!selectedEntity ? (
+            <p className="studio-form-field__hint">Select an entity from the list to edit the draft.</p>
+          ) : null}
+        </div>
+
+        <ValidationPanel
+          issues={issues}
+          selectedFamily={activeFamily}
+          selectedTargetId={activeTargetId}
+          onSelectIssue={(issue) => {
+            if (issue.targetId) selectTarget(issue.family, issue.targetId);
+          }}
+        />
+      </div>
+
+      <DisabledActionsFooter />
     </div>
+  );
+}
+
+function DisabledActionsFooter() {
+  return (
+    <footer className="studio-disabled-actions">
+      <button type="button" disabled title="Backend save is not wired in this prompt.">
+        Save draft
+      </button>
+      <button type="button" disabled title="Approval workflow comes after draft persistence.">
+        Submit for approval
+      </button>
+      <button type="button" disabled title="Compile preview comes after forms validation.">
+        Compile preview
+      </button>
+    </footer>
   );
 }

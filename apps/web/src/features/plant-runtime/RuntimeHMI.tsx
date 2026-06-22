@@ -47,6 +47,7 @@ import {
   useCommandPalette,
 } from "../operational-search";
 import { buildAssetSourceLineage } from "../source-lineage";
+import { selectAuthoredBundleInput, useStudioDraftStore } from "../studio-forms";
 import { StudioLaunchpad, useStudioRoute } from "../studio-launchpad";
 
 function derivePlantHealth(assetStatus: Record<string, string>): string {
@@ -170,6 +171,20 @@ export function RuntimeHMI() {
 
   const palette = useCommandPalette();
   const studio = useStudioRoute();
+  const studioDraftLoaded = useStudioDraftStore((s) => s.loaded);
+  const studioDraftBundle = useStudioDraftStore((s) => s.bundle);
+  const loadStudioDraft = useStudioDraftStore((s) => s.loadInitialBundle);
+
+  useEffect(() => {
+    if (studio.open && !studioDraftLoaded) {
+      loadStudioDraft();
+    }
+  }, [studio.open, studioDraftLoaded, loadStudioDraft]);
+
+  const studioAuthoredBundle = useMemo(() => {
+    if (!studioDraftLoaded) return null;
+    return selectAuthoredBundleInput(studioDraftBundle);
+  }, [studioDraftLoaded, studioDraftBundle]);
 
   const hmiRootAssetId = useMemo(() => getPrimaryRootAssetId(hmiState), [hmiState]);
 
@@ -248,6 +263,7 @@ export function RuntimeHMI() {
       activeSituation: activeSituation ?? null,
       calmCard: calmCard ?? null,
       compiledBundle: compiledQuery.data ?? undefined,
+      ...(studioAuthoredBundle ? { authoredBundle: studioAuthoredBundle } : {}),
     });
   }, [
     selectedAssetId,
@@ -258,6 +274,7 @@ export function RuntimeHMI() {
     activeSituation,
     calmCard,
     compiledQuery.data,
+    studioAuthoredBundle,
   ]);
 
   const showStudio = mapRole === "engineer" || mapRole === "maintenance";

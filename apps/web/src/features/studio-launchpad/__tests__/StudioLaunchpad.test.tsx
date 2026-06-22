@@ -1,8 +1,13 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { resetStudioDraftStoreForTests } from "../../studio-forms";
 import { StudioLaunchpad } from "../StudioLaunchpad";
 
 describe("StudioLaunchpad", () => {
+  beforeEach(() => {
+    resetStudioDraftStoreForTests();
+  });
+
   it("renders warning banner and nav when open", () => {
     render(
       <StudioLaunchpad
@@ -16,31 +21,33 @@ describe("StudioLaunchpad", () => {
     expect(screen.getByText(/Compile Preview/i)).toBeInTheDocument();
   });
 
-  it("displays target ID for routed surface", () => {
+  it("asset route renders StudioFormShell", () => {
     render(
       <StudioLaunchpad
         open
-        route={{ surface: "tag", targetId: "MOTOR_301_CURRENT", mode: "edit_intent" }}
+        route={{ surface: "asset", targetId: "PV-101", mode: "edit_intent" }}
         onClose={vi.fn()}
       />,
     );
-    expect(screen.getByText(/MOTOR_301_CURRENT/)).toBeInTheDocument();
-    expect(screen.getByText(/Draft surface not wired yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/Draft status:/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("Entity list")).toBeInTheDocument();
+    expect(screen.queryByText(/Draft surface not wired yet/i)).not.toBeInTheDocument();
   });
 
-  it("has no save or apply buttons", () => {
+  it("has no enabled save or apply buttons", () => {
     render(
       <StudioLaunchpad
         open
-        route={{ surface: "compile_preview", targetId: null, mode: "inspect" }}
+        route={{ surface: "asset", targetId: null, mode: "inspect" }}
         onClose={vi.fn()}
       />,
     );
-    expect(screen.queryByRole("button", { name: /save/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /apply/i })).not.toBeInTheDocument();
+    const save = screen.getByRole("button", { name: /Save draft/i });
+    expect(save).toBeDisabled();
+    expect(screen.queryByRole("button", { name: /^apply/i })).not.toBeInTheDocument();
   });
 
-  it("disabled compile buttons explain why", () => {
+  it("compile preview remains disabled", () => {
     render(
       <StudioLaunchpad
         open
@@ -49,10 +56,10 @@ describe("StudioLaunchpad", () => {
       />,
     );
     const validateBtn = screen.getByRole("button", { name: /Validate authored bundle/i });
+    const compileBtn = screen.getByRole("button", { name: /Compile preview/i });
     expect(validateBtn).toBeDisabled();
-    expect(validateBtn).toHaveAttribute(
-      "title",
-      "Validation action will be wired after Studio forms are connected.",
-    );
+    expect(compileBtn).toBeDisabled();
+    expect(screen.getByText(/Forms validation is local only in Prompt 8/i)).toBeInTheDocument();
+    expect(screen.getByText(/Compile preview is still disabled until Prompt 9/i)).toBeInTheDocument();
   });
 });

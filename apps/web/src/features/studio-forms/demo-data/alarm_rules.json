@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "rules": [
+    { "id": "MOTOR_CURRENT_HIGH", "tag": "MOTOR_301_CURRENT", "asset_id": "MTR-301", "severity": "warning", "priority": 2, "condition": { "op": ">", "threshold": 3.0, "for_ms": 0 }, "deadband": 0.2, "message": "Motor current high", "shelvable": false },
+    { "id": "MOTOR_SPEED_LOW", "tag": "MOTOR_301_RPM", "asset_id": "MTR-301", "severity": "warning", "priority": 2, "condition": { "op": "<", "threshold": 900, "for_ms": 0 }, "deadband": 20, "message": "Motor speed low", "shelvable": false },
+    { "id": "DC_BUS_LOW", "tag": "BUS_101_V", "asset_id": "BUS-101", "severity": "critical", "priority": 1, "condition": { "op": "<", "warning": 42.0, "critical": 38.0, "for_ms": 500 }, "deadband": 0.5, "message": "DC bus voltage low", "shelvable": false, "requires_ack": true },
+    { "id": "INV_UNDERVOLTAGE", "tag": "INV_102_UNDERVOLTAGE", "asset_id": "INV-102", "severity": "warning", "priority": 2, "condition": { "op": "bool_true" }, "message": "Inverter undervoltage active", "shelvable": true, "max_shelve_seconds": 900 },
+    { "id": "MOTOR_TEMP_HIGH", "tag": "MOTOR_301_TEMP", "asset_id": "MTR-301", "severity": "critical", "priority": 1, "condition": { "op": ">=", "threshold": 75.0, "for_ms": 500 }, "deadband": 1.0, "message": "Motor temperature high", "latching": false, "requires_ack": true },
+    { "id": "MOTOR_VIB_HIGH", "tag": "MOTOR_301_VIB", "asset_id": "MTR-301", "severity": "warning", "priority": 3, "condition": { "op": ">=", "threshold": 6.0, "for_ms": 1000 }, "deadband": 0.5, "message": "Motor vibration high", "shelvable": true, "max_shelve_seconds": 900 }
+  ]
+}

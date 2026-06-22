@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0",
+  "sources": [
+    { "source_id": "sim-main", "protocol": "simulator", "poll_ms": 200 },
+    {
+      "source_id": "gw-rs485-1",
+      "protocol": "modbus_rtu",
+      "poll_ms": 250,
+      "serial": { "port": "/dev/ttyUSB0", "baudrate": 9600, "parity": "N", "stopbits": 1, "bytesize": 8, "slave_id": 1 }
+    }
+  ],
+  "tags": [
+    { "tag": "PV_101_V", "asset_id": "PV-101", "source_id": "sim-main", "signal_type": "electrical.voltage.dc", "unit": "V", "sim_address": "sim://pv_voltage", "quality_policy": { "stale_after_ms": 1500 } },
+    { "tag": "PV_101_I", "asset_id": "PV-101", "source_id": "sim-main", "signal_type": "electrical.current", "unit": "A", "sim_address": "sim://pv_current", "quality_policy": { "stale_after_ms": 1500 } },
+    { "tag": "BAT_101_V", "asset_id": "BAT-101", "source_id": "sim-main", "signal_type": "electrical.voltage.dc", "unit": "V", "sim_address": "sim://battery_voltage", "quality_policy": { "stale_after_ms": 1500 } },
+    { "tag": "BUS_101_V", "asset_id": "BUS-101", "source_id": "sim-main", "signal_type": "electrical.voltage.dc", "unit": "V", "sim_address": "sim://dc_bus_voltage", "register": { "table": "holding", "address": 20, "width": 2, "codec": "float32_be", "scale": 1.0 }, "quality_policy": { "stale_after_ms": 1500, "bad_if_null": true } },
+    { "tag": "INV_102_UNDERVOLTAGE", "asset_id": "INV-102", "source_id": "sim-main", "signal_type": "status.bool", "unit": "bool", "sim_address": "sim://inv_undervoltage", "quality_policy": { "stale_after_ms": 2000 } },
+    { "tag": "MOTOR_301_CURRENT", "asset_id": "MTR-301", "source_id": "sim-main", "signal_type": "electrical.current", "unit": "A", "sim_address": "sim://motor_current", "register": { "table": "holding", "address": 30, "width": 2, "codec": "float32_be" }, "quality_policy": { "stale_after_ms": 1500 } },
+    { "tag": "MOTOR_301_RPM", "asset_id": "MTR-301", "source_id": "sim-main", "signal_type": "mechanical.speed.rpm", "unit": "rpm", "sim_address": "sim://motor_rpm", "quality_policy": { "stale_after_ms": 1500 } },
+    { "tag": "MOTOR_301_TEMP", "asset_id": "MTR-301", "source_id": "sim-main", "signal_type": "thermal.temperature", "unit": "C", "sim_address": "sim://motor_temp", "register": { "table": "holding", "address": 42, "width": 2, "codec": "float32_be" }, "quality_policy": { "stale_after_ms": 2000 } },
+    { "tag": "MOTOR_301_VIB", "asset_id": "MTR-301", "source_id": "sim-main", "signal_type": "mechanical.vibration", "unit": "mm/s", "sim_address": "sim://motor_vibration", "register": { "table": "holding", "address": 40, "width": 2, "codec": "float32_be" }, "quality_policy": { "stale_after_ms": 2000 } }
+  ]
+}

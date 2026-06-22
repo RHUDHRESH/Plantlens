@@ -1,0 +1,116 @@
+{
+  "version": "1.0.0",
+  "graph_id": "demo_microgrid_rca",
+  "nodes": [
+    {
+      "id": "PV-101",
+      "kind": "asset",
+      "evidence_tags": ["PV_101_V", "PV_101_I"],
+      "label": "PV Array",
+      "fingerprint_rules": [
+        {
+          "conditions": [
+            { "type": "tag_threshold", "tag_id": "PV_101_I", "op": "lt", "value": 3.0 },
+            { "type": "alarms_any", "alarm_ids": ["DC_BUS_LOW"] }
+          ],
+          "score_bonus": 0.4,
+          "reason": "PV current collapsed before bus sag"
+        }
+      ]
+    },
+    { "id": "MPPT-101", "kind": "asset", "evidence_tags": [], "label": "MPPT Controller" },
+    { "id": "BAT-101", "kind": "asset", "evidence_tags": ["BAT_101_V"], "label": "Battery Bank" },
+    {
+      "id": "BUS-101",
+      "kind": "asset",
+      "evidence_tags": ["BUS_101_V"],
+      "label": "DC Bus",
+      "score_adjustments": [
+        {
+          "when": [
+            { "type": "tag_threshold", "tag_id": "PV_101_I", "op": "lt", "value": 3.0 },
+            { "type": "alarms_any", "alarm_ids": ["DC_BUS_LOW"] }
+          ],
+          "multiply": 0.5,
+          "reason": "Bus sag likely downstream of PV generation loss"
+        }
+      ]
+    },
+    { "id": "INV-102", "kind": "asset", "evidence_tags": ["INV_102_UNDERVOLTAGE"], "label": "Motor Inverter" },
+    {
+      "id": "MTR-301",
+      "kind": "asset",
+      "evidence_tags": ["MOTOR_301_CURRENT", "MOTOR_301_RPM", "MOTOR_301_TEMP", "MOTOR_301_VIB"],
+      "label": "3-Phase Motor"
+    }
+  ],
+  "edges": [
+    { "id": "E1", "from": "PV-101", "to": "MPPT-101", "edge_type": "structural_power", "approved": true, "lag_ms": [0, 1500], "weight": 1.0, "confidence": 1.0, "provenance": "engineer_entered" },
+    { "id": "E2", "from": "MPPT-101", "to": "BAT-101", "edge_type": "structural_power", "approved": true, "lag_ms": [0, 2000], "weight": 1.0, "confidence": 1.0, "provenance": "engineer_entered" },
+    { "id": "E3", "from": "BAT-101", "to": "BUS-101", "edge_type": "structural_power", "approved": true, "lag_ms": [0, 800], "weight": 1.0, "confidence": 1.0, "provenance": "engineer_entered" },
+    { "id": "E4", "from": "BUS-101", "to": "INV-102", "edge_type": "structural_power", "approved": true, "lag_ms": [0, 500], "weight": 1.0, "confidence": 1.0, "provenance": "engineer_entered" },
+    { "id": "E5", "from": "MTR-301", "to": "BUS-101", "edge_type": "structural_load_effect", "approved": true, "lag_ms": [0, 4000], "weight": 0.8, "confidence": 0.9, "provenance": "cause_effect_matrix" },
+    { "id": "E6", "from": "BUS-101", "to": "INV-102", "edge_type": "structural_load_effect", "approved": true, "lag_ms": [0, 2000], "weight": 0.7, "confidence": 0.8, "provenance": "cause_effect_matrix" },
+    { "id": "E_UNAPPROVED", "from": "PV-101", "to": "MTR-301", "edge_type": "cause_to_effect", "approved": false, "lag_ms": [0, 5000], "weight": 0.9, "confidence": 0.5, "provenance": "agent_proposed" }
+  ],
+  "root_cause_rules": [
+    {
+      "target_node": "MTR-301",
+      "logic": "motor_current_high && bus_voltage_low_after_current && motor_current_rose_first",
+      "conditions": [
+        { "type": "alarms_all", "alarm_ids": ["MOTOR_CURRENT_HIGH", "MOTOR_SPEED_LOW", "DC_BUS_LOW"] },
+        { "type": "alarm_before", "first": "MOTOR_CURRENT_HIGH", "second": "DC_BUS_LOW" }
+      ],
+      "score_bonus": 0.5
+    },
+    {
+      "target_node": "PV-101",
+      "logic": "pv_current_low && downstream_bus_low",
+      "conditions": [
+        { "type": "alarms_any", "alarm_ids": ["DC_BUS_LOW"] },
+        { "type": "tag_threshold", "tag_id": "PV_101_I", "op": "lt", "value": 3.0 }
+      ],
+      "score_bonus": 0.5
+    },
+    {
+      "target_node": "BAT-101",
+      "logic": "battery_voltage_low && bus_low",
+      "conditions": [
+        { "type": "alarms_all", "alarm_ids": ["DC_BUS_LOW"] },
+        { "type": "tag_threshold", "tag_id": "BAT_101_V", "op": "lt", "value": 22.0 }
+      ],
+      "score_bonus": 0.4
+    }
+  ],
+  "situation_types": [
+    {
+      "id": "MOTOR_MECHANICAL_OVERLOAD",
+      "title": "Motor Mechanical Overload",
+      "root_asset_id": "MTR-301",
+      "required_alarms": ["MOTOR_CURRENT_HIGH", "MOTOR_SPEED_LOW", "DC_BUS_LOW", "INV_UNDERVOLTAGE"],
+      "require_all_alarms": true,
+      "evidence_order": ["MOTOR_CURRENT_HIGH", "MOTOR_SPEED_LOW", "DC_BUS_LOW", "INV_UNDERVOLTAGE", "MOTOR_TEMP_HIGH"],
+      "min_root_score": 0.1,
+      "why_it_matters": "The motor branch is pulling the DC bus down. The source is not the first suspect because current rose before bus voltage sagged.",
+      "projection": {
+        "tag_id": "MOTOR_301_TEMP",
+        "alarm_id": "MOTOR_TEMP_HIGH",
+        "threshold": 75.0,
+        "label": "Motor temperature limit"
+      }
+    },
+    {
+      "id": "PV_GENERATION_LOSS",
+      "title": "PV Generation Loss",
+      "root_asset_id": "PV-101",
+      "required_alarms": ["DC_BUS_LOW"],
+      "require_all_alarms": false,
+      "evidence_order": ["PV_101_I", "BUS_101_V", "DC_BUS_LOW"],
+      "extra_conditions": [
+        { "type": "tag_threshold", "tag_id": "PV_101_I", "op": "lt", "value": 3.0 }
+      ],
+      "min_root_score": 0.1,
+      "why_it_matters": "PV generation dropped before the bus sagged, indicating an upstream source issue."
+    }
+  ]
+}
