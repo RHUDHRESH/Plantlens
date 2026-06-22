@@ -10,7 +10,7 @@ Audit date: 2026-06-22
 
 ## 2. Latest commit
 
-`ead66d6` (`chore: final readiness cleanup and soc audit`) — includes Prompt 9 base `d84e595`
+`6e3956c` (`chore: final readiness cleanup and soc audit`) — includes Prompt 9 base `d84e595`
 
 ## 3. Feature chain status
 
