@@ -15,6 +15,8 @@ export interface RuntimeTopStripProps {
   onOpenAgents?: () => void;
   onOpenScenarios?: () => void;
   onOpenSearch?: () => void;
+  onOpenStudio?: () => void;
+  showStudio?: boolean;
 }
 
 const CONN: Record<WsConnectionState, { label: string; cls: string; dot: string }> = {
@@ -38,6 +40,8 @@ export function RuntimeTopStrip({
   onOpenAgents,
   onOpenScenarios,
   onOpenSearch,
+  onOpenStudio,
+  showStudio = false,
 }: RuntimeTopStripProps) {
   const conn = CONN[connection];
 
@@ -79,6 +83,16 @@ export function RuntimeTopStrip({
             onClick={onOpenSearch}
           >
             Search <span className="command-palette-trigger__hint">Ctrl K</span>
+          </button>
+        )}
+        {showStudio && onOpenStudio && (
+          <button
+            type="button"
+            className="pl-btn pl-btn--ghost pl-btn--compact"
+            title="Open authored model Studio"
+            onClick={onOpenStudio}
+          >
+            Studio
           </button>
         )}
         {onOpenScenarios && (

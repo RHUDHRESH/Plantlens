@@ -84,6 +84,29 @@ Visual explanation layer only: no diagnosis computation, no AI, no runtime mutat
 
 Frontend-only operational navigation: no AI, no embeddings, no backend mutation.
 
+## source-lineage/ — engineer source-of-truth inspector (Prompt 7)
+| File | Role |
+|------|------|
+| `sourceLineageTypes.ts` | Contract family, edit target, and lineage ref types |
+| `sourceLineageModel.ts` | Deterministic read-only lineage builder over runtime + optional authored bundle |
+| `SourceLineagePanel.tsx` | Role-aware drawer panel — engineer full view, manager summary, operator note |
+| `index.ts` | Public API |
+
+Shows which authored contract objects define a selected asset, plus compiled HMI and runtime
+evidence. No live mutation, no fake authored refs, no raw JSON dumps.
+
+## studio-launchpad/ — Studio shell (Prompt 7)
+| File | Role |
+|------|------|
+| `studioTypes.ts` | Studio surface and route state types |
+| `useStudioRoute.ts` | Frontend-only Studio open/close/route state |
+| `StudioLaunchpad.tsx` | Draft authoring shell — nav + target routing, no save/apply |
+| `CompilePreviewShell.tsx` | Compile pipeline explanation; validate/compile actions disabled |
+| `index.ts` | Public API |
+
+Launchpad shell only — full forms and graph editing come in the next Studio prompt.
+Authored contracts remain source of truth; runtime HMI is compiled output.
+
 ## calm-card/ — the decision layer (Chunk 6)
 CalmCard, CalmCardHeader, FirstSignal, EvidenceChain, RecommendedAction, BlockedActions,
 TimeToConsequenceRing, OperatorAuthority, RawAlarmDisclosure, CalmCardSkeleton. Renders the

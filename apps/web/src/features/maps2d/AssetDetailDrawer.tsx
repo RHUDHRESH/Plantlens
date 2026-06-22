@@ -9,6 +9,8 @@ import {
   type MapZoomBand,
   type UserRole,
 } from "../operational-map";
+import type { AssetSourceLineage, StudioOpenIntent } from "../source-lineage";
+import { SourceLineagePanel } from "../source-lineage";
 import type { AssetStatus, MapNode } from "./mapTypes";
 import { STATUS_VISUALS } from "./statusStyles";
 
@@ -28,6 +30,8 @@ interface AssetDetailDrawerProps {
   onClose: () => void;
   onFocusMap?: (assetId: string) => void;
   onViewRawAlarms?: () => void;
+  sourceLineage?: AssetSourceLineage | null;
+  onOpenStudio?: (intent: StudioOpenIntent) => void;
 }
 
 function operatorStatusSummary(status: AssetStatus): string {
@@ -63,6 +67,8 @@ export function AssetDetailDrawer({
   onClose,
   onFocusMap,
   onViewRawAlarms,
+  sourceLineage,
+  onOpenStudio,
 }: AssetDetailDrawerProps) {
   if (!node) return null;
 
@@ -316,6 +322,14 @@ export function AssetDetailDrawer({
               </li>
             </ul>
           </section>
+        )}
+
+        {sourceLineage && onOpenStudio && (
+          <SourceLineagePanel
+            lineage={sourceLineage}
+            role={role}
+            onOpenStudio={onOpenStudio}
+          />
         )}
 
         <div className="asset-drawer__actions">

@@ -16,7 +16,8 @@ export type OperationalCommandId =
   | "role_maintenance"
   | "role_manager"
   | "toggle_legend"
-  | "toggle_compact_density";
+  | "toggle_compact_density"
+  | "open_studio";
 
 export interface OperationalSearchDocument {
   id: string;
@@ -56,4 +57,5 @@ export interface OperationalSearchActionContext {
   setRole: (role: "operator" | "engineer" | "maintenance" | "manager") => void;
   toggleLegend: () => void;
   toggleCompactDensity: () => void;
+  openStudioOverview?: () => void;
 }

@@ -46,6 +46,8 @@ import {
   scoreOperationalSearch,
   useCommandPalette,
 } from "../operational-search";
+import { buildAssetSourceLineage } from "../source-lineage";
+import { StudioLaunchpad, useStudioRoute } from "../studio-launchpad";
 
 function derivePlantHealth(assetStatus: Record<string, string>): string {
   const values = Object.values(assetStatus);
@@ -167,6 +169,7 @@ export function RuntimeHMI() {
   }, [hmiStateQuery.data]);
 
   const palette = useCommandPalette();
+  const studio = useStudioRoute();
 
   const hmiRootAssetId = useMemo(() => getPrimaryRootAssetId(hmiState), [hmiState]);
 
@@ -233,6 +236,31 @@ export function RuntimeHMI() {
     () => nodes2d.find((n) => n.id === selectedAssetId) ?? null,
     [nodes2d, selectedAssetId],
   );
+
+  const selectedAssetLineage = useMemo(() => {
+    if (!selectedAssetId) return null;
+    return buildAssetSourceLineage({
+      assetId: selectedAssetId,
+      nodes2d,
+      nodes3d,
+      tags,
+      alarms: activeAlarms,
+      activeSituation: activeSituation ?? null,
+      calmCard: calmCard ?? null,
+      compiledBundle: compiledQuery.data ?? undefined,
+    });
+  }, [
+    selectedAssetId,
+    nodes2d,
+    nodes3d,
+    tags,
+    activeAlarms,
+    activeSituation,
+    calmCard,
+    compiledQuery.data,
+  ]);
+
+  const showStudio = mapRole === "engineer" || mapRole === "maintenance";
 
   const handleSelectAsset = useCallback(
     (id: string) => {
@@ -407,6 +435,7 @@ export function RuntimeHMI() {
       toggleLegend: () => setShowLegend((v) => !v),
       toggleCompactDensity: () =>
         setDensity((d) => (d === "compact" ? "comfortable" : "compact")),
+      openStudioOverview: () => studio.openOverview(),
     }),
     [
       selectAsset,
@@ -418,6 +447,7 @@ export function RuntimeHMI() {
       handleFocusRoot,
       setMapMode,
       setMapRole,
+      studio.openOverview,
     ],
   );
 
@@ -513,6 +543,8 @@ export function RuntimeHMI() {
         onOpenAgents={() => setAgentOpen(true)}
         onOpenScenarios={() => setScenarioOpen((v) => !v)}
         onOpenSearch={palette.openPalette}
+        showStudio={showStudio}
+        onOpenStudio={studio.openOverview}
       />
 
       <div className="runtime-hmi__map-row">
@@ -653,6 +685,8 @@ export function RuntimeHMI() {
         onClose={clearSelection}
         onFocusMap={focusAsset}
         onViewRawAlarms={() => setRawExpanded(true)}
+        sourceLineage={selectedAssetLineage}
+        onOpenStudio={studio.openStudio}
       />
 
       <CommandPalette
@@ -666,6 +700,8 @@ export function RuntimeHMI() {
         onExecuteResult={handleExecuteSearchResult}
         onSetActiveIndex={palette.setActiveIndex}
       />
+
+      <StudioLaunchpad open={studio.open} route={studio.route} onClose={studio.closeStudio} />
 
       {incidentId && <IncidentRoom incidentId={incidentId} onClose={() => setIncidentId(null)} />}
       {agentOpen && <AgentConsole onClose={() => setAgentOpen(false)} />}

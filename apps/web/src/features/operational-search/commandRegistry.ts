@@ -104,6 +104,13 @@ const COMMANDS: CommandDef[] = [
     boost: 2,
     available: () => true,
   },
+  {
+    id: "open_studio",
+    title: "Open Studio",
+    subtitle: "Open authored model Studio",
+    boost: 6,
+    available: (p) => p.role === "engineer" || p.role === "maintenance",
+  },
 ];
 
 export function getOperationalCommandDocuments(params: CommandRegistryParams): OperationalSearchDocument[] {
@@ -168,6 +175,9 @@ export function executeOperationalCommand(
       break;
     case "toggle_compact_density":
       context.toggleCompactDensity();
+      break;
+    case "open_studio":
+      context.openStudioOverview?.();
       break;
     default:
       break;
