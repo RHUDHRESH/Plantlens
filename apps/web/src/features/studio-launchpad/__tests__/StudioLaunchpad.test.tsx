@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
-import { resetStudioDraftStoreForTests } from "../../studio-forms";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { resetStudioDraftStoreForTests, useStudioDraftStore } from "../../studio-forms";
 import { StudioLaunchpad } from "../StudioLaunchpad";
 
 describe("StudioLaunchpad", () => {
@@ -47,7 +47,8 @@ describe("StudioLaunchpad", () => {
     expect(screen.queryByRole("button", { name: /^apply/i })).not.toBeInTheDocument();
   });
 
-  it("compile preview remains disabled", () => {
+  it("compile_preview route renders CompilePreviewWorkbench", () => {
+    useStudioDraftStore.getState().loadInitialBundle();
     render(
       <StudioLaunchpad
         open
@@ -55,11 +56,20 @@ describe("StudioLaunchpad", () => {
         onClose={vi.fn()}
       />,
     );
-    const validateBtn = screen.getByRole("button", { name: /Validate authored bundle/i });
-    const compileBtn = screen.getByRole("button", { name: /Compile preview/i });
-    expect(validateBtn).toBeDisabled();
-    expect(compileBtn).toBeDisabled();
-    expect(screen.getByText(/Forms validation is local only in Prompt 8/i)).toBeInTheDocument();
-    expect(screen.getByText(/Compile preview is still disabled until Prompt 9/i)).toBeInTheDocument();
+    expect(screen.getByText(/Local compile preview/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Generate local preview/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Generate local preview/i }));
+    expect(screen.getByText("Compiled")).toBeInTheDocument();
+  });
+
+  it("warning banner still says no live runtime mutation", () => {
+    render(
+      <StudioLaunchpad
+        open
+        route={{ surface: "compile_preview", targetId: null, mode: "inspect" }}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/no live runtime mutation/i)).toBeInTheDocument();
   });
 });

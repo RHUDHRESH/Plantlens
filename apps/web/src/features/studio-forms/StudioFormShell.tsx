@@ -216,7 +216,11 @@ function DisabledActionsFooter() {
       <button type="button" disabled title="Approval workflow comes after draft persistence.">
         Submit for approval
       </button>
-      <button type="button" disabled title="Compile preview comes after forms validation.">
+      <button
+        type="button"
+        disabled
+        title="Open the Compile Preview tab to generate a local read-only preview."
+      >
         Compile preview
       </button>
     </footer>

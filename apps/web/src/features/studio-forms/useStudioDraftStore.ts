@@ -40,6 +40,7 @@ export interface StudioDraftStore extends StudioDraftState {
   markFamilyDirty: (family: StudioDraftFamily) => void;
   clearSelection: () => void;
   getAuthoredBundleInput: () => StudioDraftBundle | null;
+  getDraftSnapshot: () => StudioDraftState;
 }
 
 export const useStudioDraftStore = create<StudioDraftStore>((set, get) => ({
@@ -126,6 +127,20 @@ export const useStudioDraftStore = create<StudioDraftStore>((set, get) => ({
     const { loaded, bundle } = get();
     if (!loaded) return null;
     return cloneBundle(bundle);
+  },
+
+  getDraftSnapshot: () => {
+    const { bundle, status, selectedFamily, selectedTargetId, issues, dirtyFamilies, lastValidatedAt } =
+      get();
+    return {
+      bundle: cloneBundle(bundle),
+      status,
+      selectedFamily,
+      selectedTargetId,
+      issues: [...issues],
+      dirtyFamilies: { ...dirtyFamilies },
+      lastValidatedAt,
+    };
   },
 }));
 

@@ -146,9 +146,22 @@ StudioCanvas (@xyflow/react), custom nodes (Source/Battery/Bus/Inverter/Motor/Se
 custom edges (PowerFlow/Signal/Causal), NodeInspector, CompileDiff. The canonical JSON is the
 source of truth; React Flow is a view/editor over it (applyNodeChanges, not replace).
 
-## hmi-preview/ — compile output preview (Chunk 4/9)
-CompileButton, CompileStatusPanel, ValidationReport (renders {code,message,fix}),
-GeneratedFilesViewer, DynamicHMI (renders compiled_hmi.json without the live store, for preview).
+## hmi-preview/ — local compile preview (Prompt 9)
+| File | Role |
+|------|------|
+| `previewTypes.ts` | Local preview model and compile result types |
+| `localPreviewCompiler.ts` | Pure draft-to-HMI preview compiler (deterministic, no mutation) |
+| `previewDiff.ts` | Diff local preview vs currently loaded compiled HMI |
+| `previewMapAdapter.ts` | Converts preview model to PlantMap2D shapes |
+| `PreviewStatusStrip.tsx` | Status chip, counts, dirty families, read-only copy |
+| `PreviewIssueList.tsx` | Grouped preview issues by severity |
+| `PreviewMapPanel.tsx` | Read-only 2D map + 3D summary (no telemetry) |
+| `PreviewDiffPanel.tsx` | Added/removed/changed diff vs compiled bundle |
+| `CompilePreviewWorkbench.tsx` | Validate / generate / reset local preview |
+| `index.ts` | Public API |
+
+Frontend-only, read-only, no runtime store or WebSocket. Fallback coordinates are warned, not
+written back to draft. HmiPreviewPage and fixture-based runtime preview remain separate.
 
 ## incidents/ — Incident Room (Chunk 10)
 IncidentRoom, IncidentHeader, IncidentStatusBadge, IncidentLiveContext, IncidentCalmCardPanel,

@@ -36,7 +36,10 @@ describe("StudioFormShell", () => {
     expect(compile).toBeDisabled();
     expect(save).toHaveAttribute("title", "Backend save is not wired in this prompt.");
     expect(submit).toHaveAttribute("title", "Approval workflow comes after draft persistence.");
-    expect(compile).toHaveAttribute("title", "Compile preview comes after forms validation.");
+    expect(compile).toHaveAttribute(
+      "title",
+      "Open the Compile Preview tab to generate a local read-only preview.",
+    );
   });
 
   it("renders validation panel", () => {

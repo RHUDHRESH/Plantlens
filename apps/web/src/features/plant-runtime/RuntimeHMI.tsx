@@ -718,7 +718,12 @@ export function RuntimeHMI() {
         onSetActiveIndex={palette.setActiveIndex}
       />
 
-      <StudioLaunchpad open={studio.open} route={studio.route} onClose={studio.closeStudio} />
+      <StudioLaunchpad
+        open={studio.open}
+        route={studio.route}
+        onClose={studio.closeStudio}
+        compiledBundle={compiledQuery.data}
+      />
 
       {incidentId && <IncidentRoom incidentId={incidentId} onClose={() => setIncidentId(null)} />}
       {agentOpen && <AgentConsole onClose={() => setAgentOpen(false)} />}

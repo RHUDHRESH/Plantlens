@@ -6,6 +6,7 @@ interface StudioLaunchpadProps {
   open: boolean;
   route: StudioRouteState;
   onClose: () => void;
+  compiledBundle?: unknown;
 }
 
 const NAV_ITEMS: Array<{ surface: StudioSurface; label: string }> = [
@@ -19,7 +20,13 @@ const NAV_ITEMS: Array<{ surface: StudioSurface; label: string }> = [
   { surface: "compile_preview", label: "Compile Preview" },
 ];
 
-function StudioMainPanel({ route }: { route: StudioRouteState }) {
+function StudioMainPanel({
+  route,
+  compiledBundle,
+}: {
+  route: StudioRouteState;
+  compiledBundle?: unknown;
+}) {
   if (route.surface === "overview") {
     return (
       <div className="studio-launchpad__main">
@@ -37,8 +44,8 @@ function StudioMainPanel({ route }: { route: StudioRouteState }) {
 
   if (route.surface === "compile_preview") {
     return (
-      <div className="studio-launchpad__main">
-        <CompilePreviewShell />
+      <div className="studio-launchpad__main studio-launchpad__main--forms">
+        <CompilePreviewShell compiledBundle={compiledBundle} />
       </div>
     );
   }
@@ -50,7 +57,7 @@ function StudioMainPanel({ route }: { route: StudioRouteState }) {
   );
 }
 
-export function StudioLaunchpad({ open, route, onClose }: StudioLaunchpadProps) {
+export function StudioLaunchpad({ open, route, onClose, compiledBundle }: StudioLaunchpadProps) {
   if (!open) return null;
 
   return (
@@ -85,7 +92,7 @@ export function StudioLaunchpad({ open, route, onClose }: StudioLaunchpadProps) 
             ))}
           </ul>
         </nav>
-        <StudioMainPanel route={route} />
+        <StudioMainPanel route={route} compiledBundle={compiledBundle} />
       </div>
     </div>
   );
