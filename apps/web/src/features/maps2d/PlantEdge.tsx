@@ -24,6 +24,11 @@ export function PlantEdge({ edge, positions, isActivePath = false, reducedMotion
       stroke={stroke}
       strokeWidth={width}
       strokeLinecap="round"
+      strokeDasharray={isActivePath ? undefined : "6 4"}
+      aria-hidden={!isActivePath}
+      {...(isActivePath
+        ? { "aria-label": `Active causal path edge ${edge.from} to ${edge.to}` }
+        : {})}
       style={reducedMotion ? undefined : { transition: "stroke 300ms, stroke-width 300ms" }}
     />
   );

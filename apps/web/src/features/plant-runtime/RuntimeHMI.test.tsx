@@ -169,6 +169,26 @@ describe("RuntimeHMI", () => {
     );
   });
 
+  it("renders causal path rail when active path exists", async () => {
+    useRuntimeStore.getState().applySnapshot(HERO_MOTOR_OVERLOAD);
+    wrap(<RuntimeHMI />);
+    await screen.findByTestId("plant-map-2d");
+    expect(
+      await screen.findByRole("navigation", { name: /causal path explorer/i }),
+    ).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: /Step 1: Motor/i })).toBeInTheDocument();
+  });
+
+  it("clicking a causal path step selects and focuses the asset", async () => {
+    useRuntimeStore.getState().applySnapshot(HERO_MOTOR_OVERLOAD);
+    wrap(<RuntimeHMI />);
+    await screen.findByTestId("plant-map-2d");
+    fireEvent.click(await screen.findByRole("button", { name: /Step 1: Motor/i }));
+    expect(useOperationalMapStore.getState().selectedAssetId).toBe("MTR-301");
+    expect(useOperationalMapStore.getState().focusedAssetId).toBe("MTR-301");
+    expect(await screen.findByLabelText(/Asset detail Motor/i)).toBeInTheDocument();
+  });
+
   it("opens the asset detail drawer when selecting an asset from the 2D map", async () => {
     wrap(<RuntimeHMI />);
     await screen.findByTestId("plant-map-2d");

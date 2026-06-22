@@ -17,7 +17,12 @@ export function CausalPathOverlay({ nodes, causalPath }: CausalPathOverlayProps)
         if (!node?.position) return null;
         const step = index + 1;
         return (
-          <g key={`${assetId}-${step}`} transform={`translate(${node.position.x}, ${node.position.y - 42})`}>
+          <g
+            key={`${assetId}-${step}`}
+            transform={`translate(${node.position.x}, ${node.position.y - 42})`}
+            role="img"
+            aria-label={`Causal path step ${step}: ${node.label}`}
+          >
             <rect
               x={-14}
               y={-12}

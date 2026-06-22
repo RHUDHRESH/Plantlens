@@ -49,6 +49,17 @@ PlantMap3D, PlantScene, AssetMesh, PowerCable3D, StatusGlow, CausalPath3D, Camer
 CameraPresets, CalmCardAnchor3D, map3dTypes. Reads the SAME runtime store; primitives first, GLTF
 later; route-split so it never blocks initial load.
 
+## causal-path/ — causal path explorer (Prompt 4)
+| File | Role |
+|------|------|
+| `causalPathTypes.ts` | View model types for path steps and evidence |
+| `causalPathModel.ts` | Deterministic view model over Situation/Calm Card/tags/alarms — no diagnosis |
+| `CausalPathRail.tsx` | Clickable path rail above the 2D map |
+| `CausalPathEvidencePanel.tsx` | Role-aware selected-step evidence panel |
+| `index.ts` | Public API |
+
+Visual explanation layer only: no diagnosis computation, no AI, no runtime mutation.
+
 ## calm-card/ — the decision layer (Chunk 6)
 CalmCard, CalmCardHeader, FirstSignal, EvidenceChain, RecommendedAction, BlockedActions,
 TimeToConsequenceRing, OperatorAuthority, RawAlarmDisclosure, CalmCardSkeleton. Renders the

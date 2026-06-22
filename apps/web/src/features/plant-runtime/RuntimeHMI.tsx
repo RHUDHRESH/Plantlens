@@ -27,6 +27,11 @@ import { LazyPlantMap3D } from "../maps3d/LazyPlantMap3D";
 import { adaptMap3DViewModel } from "../ops3d/adapters";
 import { ScenarioLauncher } from "../scenarios/ScenarioLauncher";
 import {
+  buildCausalPathViewModel,
+  CausalPathEvidencePanel,
+  CausalPathRail,
+} from "../causal-path";
+import {
   getLockedLayers,
   selectCausalPathVisible,
   useOperationalMapStore,
@@ -276,6 +281,43 @@ export function RuntimeHMI() {
     dispatchMapCommand({ type: "show_causal_path", visible: !showCausalPath });
   }, [dispatchMapCommand, showCausalPath]);
 
+  const causalPathViewModel = useMemo(
+    () =>
+      buildCausalPathViewModel({
+        nodes: nodes2d,
+        assetStatus: effectiveAssetStatus,
+        pathAssetIds: causalPath,
+        affectedAssetIds,
+        selectedAssetId,
+        focusedAssetId: focusAssetId,
+        tags,
+        alarms: activeAlarms,
+        activeSituation,
+        calmCard,
+      }),
+    [
+      nodes2d,
+      effectiveAssetStatus,
+      causalPath,
+      affectedAssetIds,
+      selectedAssetId,
+      focusAssetId,
+      tags,
+      activeAlarms,
+      activeSituation,
+      calmCard,
+    ],
+  );
+
+  const handleCausalPathStep = useCallback(
+    (assetId: string) => {
+      selectAsset(assetId);
+      focusAsset(assetId);
+      map2dControls?.focusAsset(assetId);
+    },
+    [selectAsset, focusAsset, map2dControls],
+  );
+
   const map2dProps = {
     nodes: nodes2d,
     edges: edges2d,
@@ -357,6 +399,15 @@ export function RuntimeHMI() {
             reducedMotion={reducedMotion}
           />
 
+          <CausalPathRail
+            viewModel={causalPathViewModel}
+            role={mapRole}
+            zoomBand={zoomBand}
+            visible={showCausalPath}
+            onSelectAsset={handleCausalPathStep}
+            onFocusAsset={handleCausalPathStep}
+          />
+
           <main className="runtime-hmi__map" aria-label="Plant map">
             {compiledQuery.isLoading && (
               <div className="pl-empty-state" role="status">Loading compiled HMI…</div>
@@ -393,6 +444,17 @@ export function RuntimeHMI() {
         </div>
 
         <aside className="runtime-hmi__situation" aria-label="Active situation">
+          {showCausalPath && causalPathViewModel.hasActivePath && (
+            <CausalPathEvidencePanel
+              viewModel={causalPathViewModel}
+              role={mapRole}
+              zoomBand={zoomBand}
+              visibleLayers={visibleLayers}
+              onSelectAsset={handleCausalPathStep}
+              onFocusAsset={handleCausalPathStep}
+              onOpenRawAlarms={() => setRawExpanded(true)}
+            />
+          )}
           {hmiState ? (
             <HmiStatePanel
               state={hmiState}
