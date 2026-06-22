@@ -19,7 +19,7 @@ const baseProps = {
   density: "comfortable" as const,
   onDensityChange: vi.fn(),
   reducedMotion: false,
-  canNavigate2D: true,
+  canNavigateCurrentMap: true,
   zoomBand: "area" as const,
 };
 
@@ -67,17 +67,35 @@ describe("MapToolbar", () => {
     expect(onZoomOut).toHaveBeenCalledOnce();
   });
 
-  it("disables navigation when map mode is 3D", () => {
+  it("enables navigation in 3D when current map controls exist", () => {
     render(
       <MapToolbar
         {...baseProps}
         mapMode="3d"
+        canNavigateCurrentMap
+        onFitPlant={vi.fn()}
+        onZoomIn={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole("button", { name: /fit plant/i })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /zoom in/i })).toBeEnabled();
+  });
+
+  it("disables navigation when current map controls are missing", () => {
+    render(
+      <MapToolbar
+        {...baseProps}
+        mapMode="3d"
+        canNavigateCurrentMap={false}
         onFitPlant={vi.fn()}
         onZoomIn={vi.fn()}
       />,
     );
     expect(screen.getByRole("button", { name: /fit plant/i })).toBeDisabled();
-    expect(screen.getByRole("button", { name: /zoom in/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /zoom in/i })).toHaveAttribute(
+      "title",
+      "Map controls loading",
+    );
   });
 
   it("shows causal path safety lock title when not in active situation", () => {

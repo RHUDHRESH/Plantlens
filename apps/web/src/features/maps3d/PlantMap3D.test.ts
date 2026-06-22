@@ -25,6 +25,20 @@ describe("PlantMap3D data path", () => {
     expect(source).toContain("n.position.y");
     expect(source).toContain("n.position.z");
   });
+
+  it("uses operational camera hook and exposes viewport controls", () => {
+    const source = readSource("PlantMap3D.tsx");
+    expect(source).toContain("useOperationalCamera3D");
+    expect(source).toContain("onViewportReady");
+    expect(source).not.toContain("CameraFocus");
+    expect(source).toContain("visibleLayers?.causal_path");
+  });
+
+  it("keeps Canvas wrapper and WebGL fallback export", () => {
+    const source = readSource("PlantMap3D.tsx");
+    expect(source).toContain("<Canvas");
+    expect(source).toContain("PlantMap3DFallback");
+  });
 });
 
 describe("AssetMeshes coordinate path", () => {

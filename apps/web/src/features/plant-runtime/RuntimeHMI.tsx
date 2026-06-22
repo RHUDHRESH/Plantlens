@@ -24,6 +24,7 @@ import { MapToolbar } from "../maps2d/MapToolbar";
 import { PlantMap2D, type PlantMap2DViewportControls } from "../maps2d/PlantMap2D";
 import type { MapNode } from "../maps2d/mapTypes";
 import { LazyPlantMap3D } from "../maps3d/LazyPlantMap3D";
+import type { PlantMap3DViewportControls } from "../maps3d/PlantMap3D";
 import { adaptMap3DViewModel } from "../ops3d/adapters";
 import { ScenarioLauncher } from "../scenarios/ScenarioLauncher";
 import {
@@ -68,6 +69,7 @@ export function RuntimeHMI() {
   const [showLegend, setShowLegend] = useState(true);
   const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
   const [map2dControls, setMap2dControls] = useState<PlantMap2DViewportControls | null>(null);
+  const [map3dControls, setMap3dControls] = useState<PlantMap3DViewportControls | null>(null);
 
   const mapMode = useOperationalMapStore((s) => s.mode);
   const zoomBand = useOperationalMapStore((s) => s.zoomBand);
@@ -250,22 +252,38 @@ export function RuntimeHMI() {
     if (rootAssetId) {
       dispatchMapCommand({ type: "focus_root" });
       focusAsset(rootAssetId);
-      map2dControls?.focusRoot();
+      if (mapMode === "2d") {
+        map2dControls?.focusRoot();
+      } else {
+        map3dControls?.focusRoot();
+      }
     }
-  }, [rootAssetId, dispatchMapCommand, focusAsset, map2dControls]);
+  }, [rootAssetId, dispatchMapCommand, focusAsset, mapMode, map2dControls, map3dControls]);
 
   const handleFitPlant = useCallback(() => {
     dispatchMapCommand({ type: "fit_plant" });
-    map2dControls?.fitPlant();
-  }, [dispatchMapCommand, map2dControls]);
+    if (mapMode === "2d") {
+      map2dControls?.fitPlant();
+    } else {
+      map3dControls?.fitPlant();
+    }
+  }, [dispatchMapCommand, mapMode, map2dControls, map3dControls]);
 
   const handleZoomIn = useCallback(() => {
-    map2dControls?.zoomIn();
-  }, [map2dControls]);
+    if (mapMode === "2d") {
+      map2dControls?.zoomIn();
+    } else {
+      map3dControls?.zoomIn();
+    }
+  }, [mapMode, map2dControls, map3dControls]);
 
   const handleZoomOut = useCallback(() => {
-    map2dControls?.zoomOut();
-  }, [map2dControls]);
+    if (mapMode === "2d") {
+      map2dControls?.zoomOut();
+    } else {
+      map3dControls?.zoomOut();
+    }
+  }, [mapMode, map2dControls, map3dControls]);
 
   const handleZoomBandChange = useCallback(
     (band: MapZoomBand) => {
@@ -310,9 +328,13 @@ export function RuntimeHMI() {
     (assetId: string) => {
       selectAsset(assetId);
       focusAsset(assetId);
-      map2dControls?.focusAsset(assetId);
+      if (mapMode === "2d") {
+        map2dControls?.focusAsset(assetId);
+      } else {
+        map3dControls?.focusAsset(assetId);
+      }
     },
-    [selectAsset, focusAsset, map2dControls],
+    [selectAsset, focusAsset, mapMode, map2dControls, map3dControls],
   );
 
   const searchIndex = useMemo(
@@ -371,7 +393,11 @@ export function RuntimeHMI() {
       },
       focusAsset: (assetId: string) => {
         focusAsset(assetId);
-        map2dControls?.focusAsset(assetId);
+        if (mapMode === "2d") {
+          map2dControls?.focusAsset(assetId);
+        } else {
+          map3dControls?.focusAsset(assetId);
+        }
       },
       fitPlant: handleFitPlant,
       focusRoot: handleFocusRoot,
@@ -386,6 +412,8 @@ export function RuntimeHMI() {
       selectAsset,
       focusAsset,
       map2dControls,
+      map3dControls,
+      mapMode,
       handleFitPlant,
       handleFocusRoot,
       setMapMode,
@@ -449,9 +477,22 @@ export function RuntimeHMI() {
     assetStatus: effectiveAssetStatus,
     causalPath,
     rootAssetId,
+    selectedAssetId,
+    focusAssetId,
+    role: mapRole,
+    zoomBand,
+    visibleLayers,
     reducedMotion,
     onSelectAsset: handleSelectAsset,
+    onViewportReady: setMap3dControls,
+    onZoomBandChange: handleZoomBandChange,
   };
+
+  const activeMapControls = mapMode === "2d" ? map2dControls : map3dControls;
+  const canNavigateCurrentMap = Boolean(activeMapControls);
+  const scaleLabel = activeMapControls
+    ? `${Math.round(activeMapControls.scale * 100)}%`
+    : undefined;
 
   const hasMap2d = nodes2d.length > 0;
   const hasMap3d = nodes3d.length > 0;
@@ -494,11 +535,9 @@ export function RuntimeHMI() {
             onFitPlant={handleFitPlant}
             onZoomIn={handleZoomIn}
             onZoomOut={handleZoomOut}
-            canNavigate2D={Boolean(map2dControls)}
+            canNavigateCurrentMap={canNavigateCurrentMap}
             zoomBand={zoomBand}
-            {...(map2dControls
-              ? { scaleLabel: `${Math.round(map2dControls.scale * 100)}%` }
-              : {})}
+            {...(scaleLabel ? { scaleLabel } : {})}
             density={density}
             onDensityChange={setDensity}
             reducedMotion={reducedMotion}

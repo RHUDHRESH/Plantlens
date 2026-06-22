@@ -169,6 +169,17 @@ describe("RuntimeHMI", () => {
     );
   });
 
+  it("passes operational 3D viewport props to LazyPlantMap3D", async () => {
+    wrap(<RuntimeHMI />);
+    await screen.findByTestId("plant-map-2d");
+    fireEvent.click(screen.getByRole("button", { name: /3D/i }));
+    await screen.findByTestId("plant-map-3d");
+    expect(latestMap3dProps?.onViewportReady).toBeTypeOf("function");
+    expect(latestMap3dProps?.onZoomBandChange).toBeTypeOf("function");
+    expect(latestMap3dProps?.visibleLayers).toBeDefined();
+    expect(latestMap3dProps?.focusAssetId).toBeNull();
+  });
+
   it("renders causal path rail when active path exists", async () => {
     useRuntimeStore.getState().applySnapshot(HERO_MOTOR_OVERLOAD);
     wrap(<RuntimeHMI />);

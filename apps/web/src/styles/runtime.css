@@ -1117,6 +1117,10 @@
   min-height: 320px;
 }
 
+.plant-map-3d__hud {
+  position: relative;
+}
+
 .plant-map-3d canvas {
   width: 100% !important;
   height: 100% !important;
@@ -1131,6 +1135,26 @@
   border-radius: 2px;
   white-space: nowrap;
   font-family: var(--font-data);
+}
+
+.map3d-label__root {
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  border: 1px solid rgba(28, 200, 255, 0.45);
+  border-radius: 2px;
+  padding: 0 3px;
+  margin-left: 2px;
+}
+
+.map3d-selected-ring,
+.map3d-focus-ring {
+  pointer-events: none;
+}
+
+.map3d-layer-note {
+  font-size: 10px;
+  color: var(--text-muted);
 }
 
 .map3d-fallback {

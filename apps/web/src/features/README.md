@@ -45,9 +45,17 @@ Does **not** own telemetry/runtime facts or change diagnosis. `app/store/runtime
 | `nodeOperationalMeta.ts` | Deterministic per-asset tag/alarm meta for progressive map badges (Prompt 3) |
 
 ## maps3d/ — R3F plant map (Chunk 8, lazy enhancement)
-PlantMap3D, PlantScene, AssetMesh, PowerCable3D, StatusGlow, CausalPath3D, CameraRig,
-CameraPresets, CalmCardAnchor3D, map3dTypes. Reads the SAME runtime store; primitives first, GLTF
-later; route-split so it never blocks initial load.
+| File | Role |
+|------|------|
+| `PlantMap3D.tsx` | Lazy R3F Canvas; operational viewport with layer-aware rendering |
+| `LazyPlantMap3D.tsx` | Route-split boundary + WebGL fallback/error handling |
+| `AssetMeshes.tsx` | Procedural low-poly schematic meshes (placeholders until asset-library prompt) |
+| `sceneMath3D.ts` | Deterministic 3D bounds/fit/focus/zoom-band math |
+| `useOperationalCamera3D.tsx` | Fit plant, focus root/asset, zoom in/out; exposes viewport controls |
+
+3D remains a lazy-loaded enhancement; 2D is canonical/default. Operational camera commands mirror
+2D toolbar/search behavior. Causal path, selection, and focus use non-color rings/outlines.
+No diagnosis computation in 3D — reads compiled map + runtime store projections only.
 
 ## causal-path/ — causal path explorer (Prompt 4)
 | File | Role |

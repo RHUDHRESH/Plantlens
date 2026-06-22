@@ -26,7 +26,7 @@ interface MapToolbarProps {
   onFitPlant?: () => void;
   onZoomIn?: () => void;
   onZoomOut?: () => void;
-  canNavigate2D?: boolean;
+  canNavigateCurrentMap?: boolean;
   zoomBand?: MapZoomBand;
   scaleLabel?: string;
   density: "comfortable" | "compact";
@@ -67,7 +67,7 @@ export function MapToolbar({
   onFitPlant,
   onZoomIn,
   onZoomOut,
-  canNavigate2D = true,
+  canNavigateCurrentMap = true,
   zoomBand,
   scaleLabel,
   density,
@@ -75,8 +75,8 @@ export function MapToolbar({
   reducedMotion,
 }: MapToolbarProps) {
   const lockedSet = new Set(lockedLayers);
-  const navDisabled = mapMode !== "2d" || !canNavigate2D;
-  const navTitle = mapMode !== "2d" ? "2D navigation only" : !canNavigate2D ? "Map controls loading" : undefined;
+  const navDisabled = !canNavigateCurrentMap;
+  const navTitle = !canNavigateCurrentMap ? "Map controls loading" : undefined;
 
   return (
     <div className="map-toolbar" role="toolbar" aria-label="Map controls">

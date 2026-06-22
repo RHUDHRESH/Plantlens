@@ -209,33 +209,54 @@ function GenericMesh({ color, emissive, intensity, onSelect }: { color: string; 
   );
 }
 
+function SelectionRing({ variant }: { variant: "selected" | "focused" }) {
+  const className = variant === "selected" ? "map3d-selected-ring" : "map3d-focus-ring";
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} userData={{ className }}>
+      <ringGeometry args={[0.38, 0.44, 32]} />
+      <meshBasicMaterial
+        color={variant === "selected" ? "#1cc8ff" : "#8aa4b8"}
+        transparent
+        opacity={variant === "selected" ? 0.95 : 0.65}
+        depthWrite={false}
+      />
+    </mesh>
+  );
+}
+
 export function SchematicAssetMesh({
   node,
   status,
   isRoot,
+  isSelected = false,
+  isFocused = false,
   isOnPath,
   reducedMotion,
   pathStep,
+  layerHints,
   onSelect,
 }: {
   node: Map3DNode;
   status: AssetStatus;
   isRoot: boolean;
+  isSelected?: boolean;
+  isFocused?: boolean;
   isOnPath: boolean;
   reducedMotion: boolean;
   pathStep?: number;
+  layerHints?: {
+    showCausalStep?: boolean;
+    showStatus?: boolean;
+  };
   onSelect?: (id: string) => void;
 }) {
   const color = statusColor(status);
   const baseEmissive = statusEmissive(status);
   const baseIntensity = statusEmissiveIntensity(status);
-  /* Root/path boost on top of status glow */
-  const emissive = isRoot ? "#ef4444" : isOnPath ? "#f59e0b" : baseEmissive;
-  const intensity = isRoot
-    ? Math.max(baseIntensity, 0.75)
-    : isOnPath
-      ? Math.max(baseIntensity, 0.45)
-      : baseIntensity;
+  const showStatus = layerHints?.showStatus ?? true;
+  const showCausalStep = layerHints?.showCausalStep ?? false;
+  const emissive = showStatus ? baseEmissive : "#000000";
+  const intensity = showStatus ? baseIntensity : 0;
   const iconKey = resolveIconKey(node.asset_type);
   const click = onSelect ? () => onSelect(node.id) : undefined;
   const meshProps = {
@@ -282,10 +303,24 @@ export function SchematicAssetMesh({
   return (
     <group position={[x, y, z]}>
       {body}
+      {isSelected && <SelectionRing variant="selected" />}
+      {!isSelected && isFocused && <SelectionRing variant="focused" />}
+      {isOnPath && showCausalStep && (
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
+          <ringGeometry args={[0.3, 0.34, 24]} />
+          <meshBasicMaterial color="#f59e0b" transparent opacity={0.7} depthWrite={false} />
+        </mesh>
+      )}
       <Html distanceFactor={12} position={[0, 0.55, 0]} center>
         <span className="map3d-label" data-tabular>
           {node.label ?? node.id}
-          {pathStep !== undefined ? ` · ${pathStep}` : ""}
+          {isRoot ? (
+            <span className="map3d-label__root" aria-label="root cause">
+              {" "}
+              ROOT
+            </span>
+          ) : null}
+          {showCausalStep && pathStep !== undefined ? ` · ${pathStep}` : ""}
         </span>
       </Html>
     </group>
