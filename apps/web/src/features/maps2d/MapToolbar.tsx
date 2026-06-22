@@ -1,10 +1,19 @@
+import type { MapLayerId, MapMode, UserRole } from "../operational-map";
+import { ALL_USER_ROLES, getLayerDefinition, getRoleLabel } from "../operational-map";
+
 interface MapToolbarProps {
-  mapMode: "2d" | "3d";
-  onMapModeChange: (mode: "2d" | "3d") => void;
+  mapMode: MapMode;
+  onMapModeChange: (mode: MapMode) => void;
+  role: UserRole;
+  onRoleChange: (role: UserRole) => void;
+  visibleLayers: Record<MapLayerId, boolean>;
+  lockedLayers: MapLayerId[];
+  onToggleLayer: (layerId: MapLayerId) => void;
   showLegend: boolean;
   onToggleLegend: () => void;
   showCausalPath: boolean;
   onToggleCausalPath: () => void;
+  causalPathLocked: boolean;
   onFocusRoot?: () => void;
   hasRoot?: boolean;
   density: "comfortable" | "compact";
@@ -12,19 +21,36 @@ interface MapToolbarProps {
   reducedMotion: boolean;
 }
 
+const TOGGLEABLE_LAYERS: MapLayerId[] = [
+  "causal_path",
+  "raw_alarms",
+  "tags",
+  "actions",
+  "maintenance",
+  "audit",
+];
+
 export function MapToolbar({
   mapMode,
   onMapModeChange,
+  role,
+  onRoleChange,
+  visibleLayers,
+  lockedLayers,
+  onToggleLayer,
   showLegend,
   onToggleLegend,
   showCausalPath,
   onToggleCausalPath,
+  causalPathLocked,
   onFocusRoot,
   hasRoot,
   density,
   onDensityChange,
   reducedMotion,
 }: MapToolbarProps) {
+  const lockedSet = new Set(lockedLayers);
+
   return (
     <div className="map-toolbar" role="toolbar" aria-label="Map controls">
       <div className="pl-segmented" role="group" aria-label="Map view mode">
@@ -46,6 +72,20 @@ export function MapToolbar({
         </button>
       </div>
 
+      <div className="pl-segmented map-toolbar__role" role="group" aria-label="Role lens">
+        {ALL_USER_ROLES.map((r) => (
+          <button
+            key={r}
+            type="button"
+            className={`pl-segmented__btn${role === r ? " pl-segmented__btn--active" : ""}`}
+            aria-pressed={role === r}
+            onClick={() => onRoleChange(r)}
+          >
+            {getRoleLabel(r)}
+          </button>
+        ))}
+      </div>
+
       {hasRoot && onFocusRoot && (
         <button type="button" className="pl-btn pl-btn--compact" onClick={onFocusRoot} aria-label="Focus root asset">
           Focus root
@@ -61,14 +101,43 @@ export function MapToolbar({
         Legend
       </button>
 
-      <button
-        type="button"
-        className={`pl-btn pl-btn--ghost pl-btn--compact${showCausalPath ? " map-toolbar__active" : ""}`}
-        aria-pressed={showCausalPath}
-        onClick={onToggleCausalPath}
-      >
-        Causal path
-      </button>
+      <div className="map-toolbar__layers" role="group" aria-label="Map layers">
+        {TOGGLEABLE_LAYERS.map((layerId) => {
+          const def = getLayerDefinition(layerId);
+          const locked = lockedSet.has(layerId);
+          const active = layerId === "causal_path" ? showCausalPath : visibleLayers[layerId];
+          const onClick =
+            layerId === "causal_path"
+              ? locked
+                ? undefined
+                : onToggleCausalPath
+              : locked
+                ? undefined
+                : () => onToggleLayer(layerId);
+
+          return (
+            <button
+              key={layerId}
+              type="button"
+              className={`pl-btn pl-btn--ghost pl-btn--compact${active ? " map-toolbar__active" : ""}${locked ? " map-toolbar__locked" : ""}`}
+              aria-pressed={active}
+              aria-disabled={locked}
+              disabled={locked}
+              title={locked ? `${def.label} locked` : def.description}
+              onClick={onClick}
+            >
+              {def.label}
+              {locked && <span className="map-toolbar__lock-mark" aria-hidden="true"> ·</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {causalPathLocked && (
+        <span className="map-toolbar__hint" role="status">
+          Causal path locked
+        </span>
+      )}
 
       <button
         type="button"

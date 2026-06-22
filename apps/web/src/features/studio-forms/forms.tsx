@@ -3,6 +3,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import type { AlarmRule } from "../../app/schemas/alarm";
+
+/** Bridge Zod 4 schemas to @hookform/resolvers until upstream types align. */
+function studioFormResolver<T extends z.ZodTypeAny>(schema: T) {
+  return zodResolver(schema as never);
+}
 import type { PlantAsset, TagEntry, CausalEdge, StudioAction } from "../../app/store/studio";
 
 const assetSchema = z.object({
@@ -82,7 +87,7 @@ export function AssetForm({
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(assetSchema),
+    resolver: studioFormResolver(assetSchema),
     defaultValues: {
       id: asset.id,
       type: asset.type,
@@ -139,7 +144,7 @@ export function TagForm({ tag, onSave }: { tag: TagEntry; onSave: (tag: TagEntry
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({ resolver: zodResolver(tagSchema), defaultValues: tag });
+  } = useForm({ resolver: studioFormResolver(tagSchema), defaultValues: tag });
 
   return (
     <form className="studio-form" onSubmit={handleSubmit((v) => onSave(v))}>
@@ -175,7 +180,7 @@ export function AlarmForm({
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(alarmSchema),
+    resolver: studioFormResolver(alarmSchema),
     defaultValues: {
       id: rule.id,
       tag: rule.tag,
@@ -246,7 +251,7 @@ export function EdgeForm({
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(edgeSchema),
+    resolver: studioFormResolver(edgeSchema),
     defaultValues: {
       id: edge.id,
       from: edge.from,
@@ -303,7 +308,7 @@ export function RoleForm({
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(roleSchema),
+    resolver: studioFormResolver(roleSchema),
     defaultValues: { roles: roles.join(", ") },
   });
 
@@ -339,7 +344,7 @@ export function ActionForm({
     handleSubmit,
     formState: { errors },
   } = useForm({
-    resolver: zodResolver(actionSchema),
+    resolver: studioFormResolver(actionSchema),
     defaultValues: {
       id: action.id,
       label: action.label,

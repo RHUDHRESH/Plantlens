@@ -26,6 +26,7 @@ import type { MapNode } from "../maps2d/mapTypes";
 import { LazyPlantMap3D } from "../maps3d/LazyPlantMap3D";
 import { adaptMap3DViewModel } from "../ops3d/adapters";
 import { ScenarioLauncher } from "../scenarios/ScenarioLauncher";
+import { getLockedLayers, selectCausalPathVisible, useOperationalMapStore } from "../operational-map";
 
 function derivePlantHealth(assetStatus: Record<string, string>): string {
   const values = Object.values(assetStatus);
@@ -43,15 +44,31 @@ export function RuntimeHMI() {
 
   const [rawExpanded, setRawExpanded] = useState(false);
   const [authReady, setAuthReady] = useState(false);
-  const [mapMode, setMapMode] = useState<"2d" | "3d">("2d");
   const [incidentId, setIncidentId] = useState<string | null>(null);
   const [agentOpen, setAgentOpen] = useState(false);
   const [scenarioOpen, setScenarioOpen] = useState(false);
-  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
-  const [focusAssetId, setFocusAssetId] = useState<string | null>(null);
   const [showLegend, setShowLegend] = useState(true);
-  const [showCausalPath, setShowCausalPath] = useState(true);
   const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
+
+  const mapMode = useOperationalMapStore((s) => s.mode);
+  const mapRole = useOperationalMapStore((s) => s.role);
+  const selectedAssetId = useOperationalMapStore((s) => s.selectedAssetId);
+  const focusAssetId = useOperationalMapStore((s) => s.focusedAssetId);
+  const visibleLayers = useOperationalMapStore((s) => s.visibleLayers);
+  const activeSituationLocked = useOperationalMapStore((s) => s.activeSituationLocked);
+  const setMapMode = useOperationalMapStore((s) => s.setMode);
+  const setMapRole = useOperationalMapStore((s) => s.setRole);
+  const selectAsset = useOperationalMapStore((s) => s.selectAsset);
+  const focusAsset = useOperationalMapStore((s) => s.focusAsset);
+  const clearSelection = useOperationalMapStore((s) => s.clearSelection);
+  const toggleLayer = useOperationalMapStore((s) => s.toggleLayer);
+  const setActiveSituationLocked = useOperationalMapStore((s) => s.setActiveSituationLocked);
+  const dispatchMapCommand = useOperationalMapStore((s) => s.dispatchMapCommand);
+  const showCausalPath = useOperationalMapStore(selectCausalPathVisible);
+  const lockedLayers = useMemo(
+    () => getLockedLayers(activeSituationLocked),
+    [activeSituationLocked],
+  );
 
   const connection = useRuntimeStore((s) => s.connection);
   const assetStatus = useRuntimeStore((s) => s.assetStatus);
@@ -130,21 +147,31 @@ export function RuntimeHMI() {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       if (selectedAssetId) {
-        setSelectedAssetId(null);
+        clearSelection();
         return;
       }
       if (scenarioOpen) setScenarioOpen(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selectedAssetId, scenarioOpen]);
+  }, [selectedAssetId, scenarioOpen, clearSelection]);
 
   const hmiRootAssetId = useMemo(() => getPrimaryRootAssetId(hmiState), [hmiState]);
 
+  const hasActiveSituation = Boolean(hmiRootAssetId ?? activeSituation?.root_asset_id);
+
+  useEffect(() => {
+    if (useOperationalMapStore.getState().activeSituationLocked !== hasActiveSituation) {
+      setActiveSituationLocked(hasActiveSituation);
+    }
+  }, [hasActiveSituation, setActiveSituationLocked]);
+
   useEffect(() => {
     const nextRoot = hmiRootAssetId ?? activeSituation?.root_asset_id ?? null;
-    if (nextRoot) setFocusAssetId(nextRoot);
-  }, [hmiRootAssetId, activeSituation?.root_asset_id]);
+    if (nextRoot && useOperationalMapStore.getState().focusedAssetId !== nextRoot) {
+      focusAsset(nextRoot);
+    }
+  }, [hmiRootAssetId, activeSituation?.root_asset_id, focusAsset]);
 
   const hmi = compiledQuery.data?.hmi_view_model;
   const nodes2d = hmi?.map_2d?.nodes ?? [];
@@ -195,14 +222,30 @@ export function RuntimeHMI() {
     [nodes2d, selectedAssetId],
   );
 
-  const handleSelectAsset = useCallback((id: string) => {
-    setSelectedAssetId(id);
-    setFocusAssetId(id);
-  }, []);
+  const handleSelectAsset = useCallback(
+    (id: string) => {
+      selectAsset(id);
+    },
+    [selectAsset],
+  );
 
-  const handleHighlightAsset = useCallback((id: string) => {
-    setFocusAssetId(id);
-  }, []);
+  const handleHighlightAsset = useCallback(
+    (id: string) => {
+      focusAsset(id);
+    },
+    [focusAsset],
+  );
+
+  const handleFocusRoot = useCallback(() => {
+    if (rootAssetId) {
+      dispatchMapCommand({ type: "focus_root" });
+      focusAsset(rootAssetId);
+    }
+  }, [rootAssetId, dispatchMapCommand, focusAsset]);
+
+  const handleToggleCausalPath = useCallback(() => {
+    dispatchMapCommand({ type: "show_causal_path", visible: !showCausalPath });
+  }, [dispatchMapCommand, showCausalPath]);
 
   const map2dProps = {
     nodes: nodes2d,
@@ -239,7 +282,7 @@ export function RuntimeHMI() {
         mode="Runtime"
         dataSource={dataSource}
         timeLabel={timeLabel}
-        role="operator"
+        role={mapRole}
         connection={connection}
         apiAvailable={!compiledQuery.isError}
         scenarioId={scenarioState.scenarioId}
@@ -253,11 +296,17 @@ export function RuntimeHMI() {
           <MapToolbar
             mapMode={mapMode}
             onMapModeChange={setMapMode}
+            role={mapRole}
+            onRoleChange={setMapRole}
+            visibleLayers={visibleLayers}
+            lockedLayers={lockedLayers}
+            onToggleLayer={toggleLayer}
             showLegend={showLegend}
             onToggleLegend={() => setShowLegend((v) => !v)}
             showCausalPath={showCausalPath}
-            onToggleCausalPath={() => setShowCausalPath((v) => !v)}
-            onFocusRoot={() => rootAssetId && setFocusAssetId(rootAssetId)}
+            onToggleCausalPath={handleToggleCausalPath}
+            causalPathLocked={activeSituationLocked}
+            onFocusRoot={handleFocusRoot}
             hasRoot={Boolean(rootAssetId)}
             density={density}
             onDensityChange={setDensity}
@@ -284,7 +333,7 @@ export function RuntimeHMI() {
               <LazyPlantMap3D
                 {...map3dProps}
                 webglAvailable={webglAvailable}
-                onSwitch2D={() => setMapMode("2d")}
+                onSwitch2D={() => setMapMode("2d" as const)}
               />
             )}
             {mapMode === "3d" && !hasMap3d && !compiledQuery.isLoading && (
@@ -320,7 +369,7 @@ export function RuntimeHMI() {
                   onViewRawAlarms={() => setRawExpanded(true)}
                   onEscalate={() => escalateMutation.mutate()}
                   onHighlightAsset={handleHighlightAsset}
-                  onFocusRoot={() => rootAssetId && setFocusAssetId(rootAssetId)}
+                  onFocusRoot={handleFocusRoot}
                   escalating={escalateMutation.isPending}
                 />
               ) : (
@@ -344,8 +393,8 @@ export function RuntimeHMI() {
         tags={tags}
         alarms={activeAlarms}
         open={Boolean(selectedNode)}
-        onClose={() => setSelectedAssetId(null)}
-        onFocusMap={(id) => setFocusAssetId(id)}
+        onClose={clearSelection}
+        onFocusMap={focusAsset}
         onViewRawAlarms={() => setRawExpanded(true)}
       />
 

@@ -6,6 +6,7 @@ import { RuntimeHMI } from "./RuntimeHMI";
 import { useRuntimeStore } from "../../app/store/runtime";
 import { motorObstructionHmiState } from "../hmi-state/__fixtures__/plantHmiState.fixture";
 import { HERO_MOTOR_OVERLOAD } from "../../test-fixtures/heroSnapshot";
+import { getDefaultVisibleLayersForRole, useOperationalMapStore } from "../operational-map";
 import type { PlantMap2DProps } from "../maps2d/PlantMap2D";
 import type { PlantMap3DProps } from "../maps3d/PlantMap3D";
 
@@ -94,6 +95,16 @@ function wrap(ui: ReactElement) {
 describe("RuntimeHMI", () => {
   beforeEach(() => {
     useRuntimeStore.getState().reset();
+    useOperationalMapStore.setState({
+      mode: "2d",
+      role: "operator",
+      zoomBand: "plant",
+      visibleLayers: getDefaultVisibleLayersForRole("operator"),
+      selectedAssetId: null,
+      focusedAssetId: null,
+      lastCommand: null,
+      activeSituationLocked: false,
+    });
     latestMap2dProps = null;
     latestMap3dProps = null;
     vi.mocked(getRuntimeHmiState).mockReset();

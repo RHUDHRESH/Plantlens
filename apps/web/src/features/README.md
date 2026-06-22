@@ -4,6 +4,20 @@ Each feature folder owns its components, hooks, and types. Features read the run
 (`app/store/runtime.ts`) and the typed API client; they don't talk to the WebSocket directly
 (only `api/ws.ts` writes the store). Below: every folder, its files, and what to build.
 
+## operational-map/ — shared map UI kernel (Prompt 1+)
+| File | Role |
+|------|------|
+| `mapKernelTypes.ts` | Map mode, role lens, zoom band, layer, and command types |
+| `layerRegistry.ts` | Deterministic layer definitions and safety-critical rules |
+| `roleLenses.ts` | Operator/engineer/maintenance/manager visibility defaults |
+| `zoomBands.ts` | Scale → zoom band helpers |
+| `useOperationalMapStore.ts` | Zustand store for map navigation state (not telemetry) |
+| `selectors.ts` | Pure selectors for layer/role visibility |
+| `index.ts` | Public API |
+
+Owns UI navigation state for 2D/3D maps: mode, role lens, layers, selection, focus, zoom band, commands.
+Does **not** own telemetry/runtime facts or change diagnosis. `app/store/runtime.ts` remains the WebSocket/HMI snapshot source.
+
 ## plant-runtime/ — the runtime HMI shell (Chunk 5)
 | File | Build |
 |------|-------|

@@ -188,6 +188,27 @@
   letter-spacing: 0.04em;
 }
 
+.map-toolbar__layers {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.map-toolbar__role {
+  flex-shrink: 0;
+}
+
+.map-toolbar__locked {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.map-toolbar__lock-mark {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
 /* ── 2D map ── */
 
 .plant-map-2d-wrap {
