@@ -1,6 +1,14 @@
 import { useEffect, useMemo } from "react";
-import type { MapZoomBand } from "../operational-map";
+import type { ActiveAlarm } from "../../api/types";
+import type { TagFrame } from "../../app/schemas/tagFrame";
+import {
+  getMapNodeDetailPolicy,
+  type MapLayerId,
+  type MapZoomBand,
+  type UserRole,
+} from "../operational-map";
 import type { MapEdge, MapNode } from "./mapTypes";
+import { buildNodeOperationalMeta } from "./nodeOperationalMeta";
 import { CausalPathOverlay } from "./CausalPathOverlay";
 import { MapLegend } from "./MapLegend";
 import { PlantEdge } from "./PlantEdge";
@@ -32,6 +40,11 @@ export interface PlantMap2DProps {
   onSelectAsset?: (id: string) => void;
   onViewportReady?: (controls: PlantMap2DViewportControls) => void;
   onZoomBandChange?: (band: MapZoomBand) => void;
+  role?: UserRole;
+  zoomBand?: MapZoomBand;
+  visibleLayers?: Record<MapLayerId, boolean>;
+  tags?: Record<string, TagFrame>;
+  alarms?: ActiveAlarm[];
 }
 
 export function PlantMap2D({
@@ -48,6 +61,11 @@ export function PlantMap2D({
   onSelectAsset,
   onViewportReady,
   onZoomBandChange,
+  role = "operator",
+  zoomBand: zoomBandProp,
+  visibleLayers,
+  tags = {},
+  alarms = [],
 }: PlantMap2DProps) {
   const viewport = useSvgViewport({
     nodes,
@@ -98,6 +116,36 @@ export function PlantMap2D({
     [causalPath],
   );
   const affected = useMemo(() => new Set(affectedAssetIds), [affectedAssetIds]);
+
+  const effectiveZoomBand = zoomBandProp ?? viewport.zoomBand;
+  const detailPolicy = useMemo(
+    () =>
+      getMapNodeDetailPolicy({
+        role,
+        zoomBand: effectiveZoomBand,
+        visibleLayers: visibleLayers ?? {
+          status: true,
+          causal_path: true,
+          raw_alarms: true,
+          tags: false,
+          actions: true,
+          maintenance: false,
+          audit: false,
+          geometry: true,
+        },
+      }),
+    [role, effectiveZoomBand, visibleLayers],
+  );
+
+  const nodeMeta = useMemo(
+    () =>
+      buildNodeOperationalMeta({
+        assetIds: nodes.map((n) => n.id),
+        tags,
+        alarms,
+      }),
+    [nodes, tags, alarms],
+  );
 
   if (!nodes.length) {
     return (
@@ -173,6 +221,9 @@ export function PlantMap2D({
             key={node.id}
             node={node}
             status={statusForAsset(node.id, assetStatus)}
+            detailPolicy={detailPolicy}
+            zoomBand={effectiveZoomBand}
+            {...(nodeMeta[node.id] ? { meta: nodeMeta[node.id] } : {})}
             isRoot={node.id === rootAssetId}
             isAffected={affected.has(node.id)}
             isFocused={isFocused}

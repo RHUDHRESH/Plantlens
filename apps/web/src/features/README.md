@@ -13,12 +13,14 @@ Each feature folder owns its components, hooks, and types. Features read the run
 | `zoomBands.ts` | Scale → zoom band helpers |
 | `viewportTypes.ts` | SVG viewBox, bounds, and viewport command types |
 | `viewportMath.ts` | Pure pan/zoom/focus viewBox math and zoom-band derivation (Prompt 2) |
+| `detailPolicy.ts` | Progressive detail policy by role, zoom band, and layer visibility (Prompt 3) |
 | `useOperationalMapStore.ts` | Zustand store for map navigation state (not telemetry) |
 | `selectors.ts` | Pure selectors for layer/role visibility |
 | `index.ts` | Public API |
 
 Owns UI navigation state for 2D/3D maps: mode, role lens, layers, selection, focus, zoom band, commands.
 Prompt 2 adds deterministic SVG viewport math for pan/zoom/focus and zoom-band derivation from view scale.
+Prompt 3 adds progressive disclosure: zoom band + role lens control what map nodes and the asset drawer reveal.
 Does **not** own telemetry/runtime facts or change diagnosis. `app/store/runtime.ts` remains the WebSocket/HMI snapshot source.
 
 ## plant-runtime/ — the runtime HMI shell (Chunk 5)
@@ -40,6 +42,7 @@ Does **not** own telemetry/runtime facts or change diagnosis. `app/store/runtime
 | `mapTypes.ts` | shared `AssetStatus`, `MapNode`, `MapEdge`, `RuntimeState` types |
 | `MapToolbar.tsx` | zoom/fit/layer toggles and role lens controls |
 | `useSvgViewport.ts` | Native SVG pan/zoom/focus behavior for PlantMap2D (Prompt 2) |
+| `nodeOperationalMeta.ts` | Deterministic per-asset tag/alarm meta for progressive map badges (Prompt 3) |
 
 ## maps3d/ — R3F plant map (Chunk 8, lazy enhancement)
 PlantMap3D, PlantScene, AssetMesh, PowerCable3D, StatusGlow, CausalPath3D, CameraRig,

@@ -606,6 +606,46 @@
   margin-top: var(--space-lg);
 }
 
+.asset-drawer__summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.asset-drawer__metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+}
+
+.asset-drawer__metric-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.asset-drawer__role-note {
+  margin: 0 0 var(--space-md);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.plant-node__micro-badges {
+  pointer-events: none;
+}
+
+.plant-node__micro-badge {
+  opacity: 0.9;
+}
+
 /* ── Raw alarm strip ── */
 
 .raw-alarm-strip {

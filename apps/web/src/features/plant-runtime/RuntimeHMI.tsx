@@ -290,6 +290,11 @@ export function RuntimeHMI() {
     onSelectAsset: handleSelectAsset,
     onViewportReady: setMap2dControls,
     onZoomBandChange: handleZoomBandChange,
+    role: mapRole,
+    zoomBand,
+    visibleLayers,
+    tags,
+    alarms: activeAlarms,
   };
 
   const map3dProps = {
@@ -429,8 +434,15 @@ export function RuntimeHMI() {
       <AssetDetailDrawer
         node={selectedNode}
         status={selectedNode ? (effectiveAssetStatus[selectedNode.id] ?? "unknown") : "unknown"}
+        role={mapRole}
+        zoomBand={zoomBand}
+        visibleLayers={visibleLayers}
+        rootAssetId={rootAssetId}
+        affectedAssetIds={affectedAssetIds}
         tags={tags}
         alarms={activeAlarms}
+        calmCard={calmCard}
+        activeSituation={activeSituation}
         open={Boolean(selectedNode)}
         onClose={clearSelection}
         onFocusMap={focusAsset}

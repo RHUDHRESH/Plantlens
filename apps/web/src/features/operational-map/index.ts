@@ -54,6 +54,9 @@ export type {
   ViewportTransform,
 } from "./viewportTypes";
 
+export type { AssetInspectorPolicy, MapNodeDetailPolicy } from "./detailPolicy";
+export { getAssetInspectorPolicy, getMapNodeDetailPolicy } from "./detailPolicy";
+
 export {
   boundsFromNodes,
   boundsToViewBox,
