@@ -37,6 +37,14 @@ import {
   useOperationalMapStore,
   type MapZoomBand,
 } from "../operational-map";
+import {
+  buildExecuteCommandParams,
+  buildOperationalSearchIndex,
+  CommandPalette,
+  executeOperationalSearchResult,
+  scoreOperationalSearch,
+  useCommandPalette,
+} from "../operational-search";
 
 function derivePlantHealth(assetStatus: Record<string, string>): string {
   const values = Object.values(assetStatus);
@@ -156,18 +164,7 @@ export function RuntimeHMI() {
     }
   }, [hmiStateQuery.data]);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      if (selectedAssetId) {
-        clearSelection();
-        return;
-      }
-      if (scenarioOpen) setScenarioOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [selectedAssetId, scenarioOpen, clearSelection]);
+  const palette = useCommandPalette();
 
   const hmiRootAssetId = useMemo(() => getPrimaryRootAssetId(hmiState), [hmiState]);
 
@@ -318,6 +315,113 @@ export function RuntimeHMI() {
     [selectAsset, focusAsset, map2dControls],
   );
 
+  const searchIndex = useMemo(
+    () =>
+      buildOperationalSearchIndex({
+        nodes: nodes2d,
+        assetStatus: effectiveAssetStatus,
+        tags,
+        alarms: activeAlarms,
+        causalPathViewModel,
+        role: mapRole,
+        visibleLayers,
+        rootAssetId,
+        mapMode,
+        showLegend,
+        density,
+      }),
+    [
+      nodes2d,
+      effectiveAssetStatus,
+      tags,
+      activeAlarms,
+      causalPathViewModel,
+      mapRole,
+      visibleLayers,
+      rootAssetId,
+      mapMode,
+      showLegend,
+      density,
+    ],
+  );
+
+  const searchResults = useMemo(
+    () => scoreOperationalSearch(searchIndex, palette.query, { role: mapRole, limit: 20 }),
+    [searchIndex, palette.query, mapRole],
+  );
+
+  const commandParams = useMemo(
+    () =>
+      buildExecuteCommandParams({
+        role: mapRole,
+        mapMode,
+        showLegend,
+        density,
+        rootAssetId,
+        alarmCount: activeAlarms.length,
+        visibleLayers,
+      }),
+    [mapRole, mapMode, showLegend, density, rootAssetId, activeAlarms.length, visibleLayers],
+  );
+
+  const searchActionContext = useMemo(
+    () => ({
+      selectAsset: (assetId: string) => {
+        selectAsset(assetId);
+      },
+      focusAsset: (assetId: string) => {
+        focusAsset(assetId);
+        map2dControls?.focusAsset(assetId);
+      },
+      fitPlant: handleFitPlant,
+      focusRoot: handleFocusRoot,
+      openRawAlarms: () => setRawExpanded(true),
+      setMapMode: (mode: "2d" | "3d") => setMapMode(mode),
+      setRole: (role: "operator" | "engineer" | "maintenance" | "manager") => setMapRole(role),
+      toggleLegend: () => setShowLegend((v) => !v),
+      toggleCompactDensity: () =>
+        setDensity((d) => (d === "compact" ? "comfortable" : "compact")),
+    }),
+    [
+      selectAsset,
+      focusAsset,
+      map2dControls,
+      handleFitPlant,
+      handleFocusRoot,
+      setMapMode,
+      setMapRole,
+    ],
+  );
+
+  const handleExecuteSearchResult = useCallback(
+    (result: (typeof searchResults)[number]) => {
+      executeOperationalSearchResult({
+        result,
+        context: searchActionContext,
+        commandParams,
+      });
+      palette.closePalette();
+    },
+    [searchActionContext, commandParams, palette],
+  );
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (palette.open) {
+        palette.closePalette();
+        return;
+      }
+      if (selectedAssetId) {
+        clearSelection();
+        return;
+      }
+      if (scenarioOpen) setScenarioOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedAssetId, scenarioOpen, clearSelection, palette]);
+
   const map2dProps = {
     nodes: nodes2d,
     edges: edges2d,
@@ -367,6 +471,7 @@ export function RuntimeHMI() {
         scenarioStatus={scenarioState.status}
         onOpenAgents={() => setAgentOpen(true)}
         onOpenScenarios={() => setScenarioOpen((v) => !v)}
+        onOpenSearch={palette.openPalette}
       />
 
       <div className="runtime-hmi__map-row">
@@ -509,6 +614,18 @@ export function RuntimeHMI() {
         onClose={clearSelection}
         onFocusMap={focusAsset}
         onViewRawAlarms={() => setRawExpanded(true)}
+      />
+
+      <CommandPalette
+        open={palette.open}
+        query={palette.query}
+        activeIndex={palette.activeIndex}
+        results={searchResults}
+        onQueryChange={palette.setQuery}
+        onClose={palette.closePalette}
+        onMoveActive={(delta) => palette.moveActive(delta, searchResults.length)}
+        onExecuteResult={handleExecuteSearchResult}
+        onSetActiveIndex={palette.setActiveIndex}
       />
 
       {incidentId && <IncidentRoom incidentId={incidentId} onClose={() => setIncidentId(null)} />}

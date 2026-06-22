@@ -14,6 +14,7 @@ export interface RuntimeTopStripProps {
   scenarioStatus?: ScenarioRunStatus;
   onOpenAgents?: () => void;
   onOpenScenarios?: () => void;
+  onOpenSearch?: () => void;
 }
 
 const CONN: Record<WsConnectionState, { label: string; cls: string; dot: string }> = {
@@ -36,6 +37,7 @@ export function RuntimeTopStrip({
   scenarioStatus,
   onOpenAgents,
   onOpenScenarios,
+  onOpenSearch,
 }: RuntimeTopStripProps) {
   const conn = CONN[connection];
 
@@ -69,6 +71,16 @@ export function RuntimeTopStrip({
       </div>
 
       <div className="runtime-top-strip__actions">
+        {onOpenSearch && (
+          <button
+            type="button"
+            className="pl-btn pl-btn--ghost pl-btn--compact command-palette-trigger"
+            title="Search assets, alarms, tags, commands"
+            onClick={onOpenSearch}
+          >
+            Search <span className="command-palette-trigger__hint">Ctrl K</span>
+          </button>
+        )}
         {onOpenScenarios && (
           <button type="button" className="pl-btn pl-btn--ghost pl-btn--compact" onClick={onOpenScenarios}>
             Scenarios

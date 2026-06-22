@@ -60,6 +60,22 @@ later; route-split so it never blocks initial load.
 
 Visual explanation layer only: no diagnosis computation, no AI, no runtime mutation.
 
+## operational-search/ — deterministic command palette (Prompt 5)
+| File | Role |
+|------|------|
+| `searchTypes.ts` | Search document, result, and action context types |
+| `tokenizer.ts` | Deterministic text normalization and industrial ID tokenization |
+| `thesaurus.ts` | Controlled alias map (motor/mtr, fault/alarm, etc.) |
+| `searchIndex.ts` | Builds search documents from runtime state |
+| `commandRegistry.ts` | Safe UI-only command docs and executor |
+| `scoring.ts` | Deterministic scorer with alias expansion and tie-breaks |
+| `executeSearchResult.ts` | Routes result execution to map/drawer/commands |
+| `useCommandPalette.ts` | Palette state + Ctrl+K / `/` keyboard shortcuts |
+| `CommandPalette.tsx` | Accessible combobox/listbox palette UI |
+| `index.ts` | Public API |
+
+Frontend-only operational navigation: no AI, no embeddings, no backend mutation.
+
 ## calm-card/ — the decision layer (Chunk 6)
 CalmCard, CalmCardHeader, FirstSignal, EvidenceChain, RecommendedAction, BlockedActions,
 TimeToConsequenceRing, OperatorAuthority, RawAlarmDisclosure, CalmCardSkeleton. Renders the
