@@ -163,6 +163,16 @@ source of truth; React Flow is a view/editor over it (applyNodeChanges, not repl
 Frontend-only, read-only, no runtime store or WebSocket. Fallback coordinates are warned, not
 written back to draft. HmiPreviewPage and fixture-based runtime preview remain separate.
 
+## battery-soc/ — honest state of charge (readiness gate)
+| File | Role |
+|------|------|
+| `socTypes.ts` | SOC reading types and config |
+| `socEstimator.ts` | Direct BMS / coulomb / OCV gates — no fake voltage-only SoC |
+| `SocBadge.tsx` | Text + icon SOC display with unavailable state |
+| `index.ts` | Public API |
+
+Demo microgrid: **SOC_NOT_AVAILABLE** — battery drawer shows honest unavailable copy.
+
 ## incidents/ — Incident Room (Chunk 10)
 IncidentRoom, IncidentHeader, IncidentStatusBadge, IncidentLiveContext, IncidentCalmCardPanel,
 IncidentEvidenceTimeline, IncidentChecklist, IncidentLog (comments), IncidentResolutionPanel,

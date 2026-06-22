@@ -1772,6 +1772,56 @@
   color: var(--text-muted);
 }
 
+.soc-badge {
+  font-size: 12px;
+  padding: var(--space-sm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+}
+
+.soc-badge__title {
+  margin: 0 0 var(--space-xs);
+  font-size: 12px;
+}
+
+.soc-badge__value {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.soc-badge__icon {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.soc-badge__source {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.soc-badge__unavailable {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.soc-badge__meta {
+  margin: var(--space-xs) 0 0;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.soc-badge__warnings {
+  margin: var(--space-xs) 0 0;
+  padding-left: var(--space-md);
+  font-size: 10px;
+  color: var(--status-warning, #a80);
+}
+
 /* ── Incident room & agent console ── */
 
 .incident-room,

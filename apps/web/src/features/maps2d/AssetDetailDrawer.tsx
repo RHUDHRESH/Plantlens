@@ -9,6 +9,7 @@ import {
   type MapZoomBand,
   type UserRole,
 } from "../operational-map";
+import { resolveBatterySoc, SocBadge } from "../battery-soc";
 import type { AssetSourceLineage, StudioOpenIntent } from "../source-lineage";
 import { SourceLineagePanel } from "../source-lineage";
 import type { AssetStatus, MapNode } from "./mapTypes";
@@ -89,6 +90,22 @@ export function AssetDetailDrawer({
     ? `${primaryTag.tag_id}: ${String(primaryTag.value ?? "—")} ${primaryTag.unit}`
     : null;
 
+  const isBatteryAsset =
+    node.asset_type.includes("battery") || node.asset_type.startsWith("storage.");
+  const socReading = isBatteryAsset
+    ? resolveBatterySoc({
+        assetId: node.id,
+        assetType: node.asset_type,
+        samples: assetTags.map((tag) => ({
+          tag_id: tag.tag_id,
+          value: typeof tag.value === "number" ? tag.value : null,
+          unit: tag.unit,
+          quality: tag.quality,
+          timestamp: tag.timestamp,
+        })),
+      })
+    : null;
+
   const showRecommendedForAsset =
     calmCard &&
     (calmCard.root_asset_id === node.id ||
@@ -138,6 +155,12 @@ export function AssetDetailDrawer({
             {isAffected && "Affected asset"}
           </p>
         )}
+
+        {socReading ? (
+          <div className="asset-drawer__section">
+            <SocBadge reading={socReading} />
+          </div>
+        ) : null}
 
         {policy.showOperatorSummary && (
           <section className="asset-drawer__section">
