@@ -1643,6 +1643,53 @@
   color: var(--status-warning, #a80);
 }
 
+.preview-report-panel {
+  width: 200px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  font-size: 11px;
+  border-right: 1px solid var(--border);
+  padding-right: var(--space-sm);
+}
+
+.preview-report-panel h3 {
+  margin: 0 0 var(--space-xs);
+  font-size: 12px;
+}
+
+.preview-report-panel__note {
+  margin: 0 0 var(--space-sm);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.preview-report-panel__meta {
+  margin: 0 0 var(--space-sm);
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.preview-report-panel__meta dt {
+  font-size: 9px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.preview-report-panel__meta dd {
+  margin: 0;
+  font-size: 11px;
+  word-break: break-word;
+}
+
+.preview-report-panel__summary {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .preview-issue-list {
   width: 220px;
   flex-shrink: 0;

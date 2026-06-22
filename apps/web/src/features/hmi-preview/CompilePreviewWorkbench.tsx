@@ -4,6 +4,7 @@ import { compileLocalHmiPreview } from "./localPreviewCompiler";
 import { PreviewDiffPanel } from "./PreviewDiffPanel";
 import { PreviewIssueList } from "./PreviewIssueList";
 import { PreviewMapPanel } from "./PreviewMapPanel";
+import { PreviewReportPanel } from "./PreviewReportPanel";
 import { PreviewStatusStrip } from "./PreviewStatusStrip";
 import { diffPreviewAgainstCompiled } from "./previewDiff";
 import type { PreviewCompileResult } from "./previewTypes";
@@ -40,31 +41,43 @@ export function CompilePreviewWorkbench({ compiledBundle }: CompilePreviewWorkbe
     [result.model, compiledBundle],
   );
 
+  function draftIssuesToPreview(state: ReturnType<typeof useStudioDraftStore.getState>["issues"]) {
+    return state.map((i) => ({
+      id: i.id,
+      severity: i.severity,
+      family: i.family,
+      targetId: i.targetId,
+      code: i.code,
+      message: i.message,
+      source: "draft_validation" as const,
+    }));
+  }
+
   function handleValidate() {
     validateDraft();
-    const state = useStudioDraftStore.getState();
-    const errors = state.issues.some((i) => i.severity === "error");
+    const snapshot = useStudioDraftStore.getState().getDraftSnapshot();
+    const errors = snapshot.issues.some((i) => i.severity === "error");
     setResult({
       status: errors ? "invalid" : "idle",
-      issues: state.issues.map((i) => ({
-        id: i.id,
-        severity: i.severity,
-        family: i.family,
-        targetId: i.targetId,
-        code: i.code,
-        message: i.message,
-        source: "draft_validation" as const,
-      })),
+      issues: draftIssuesToPreview(snapshot.issues),
       model: null,
     });
   }
 
   function handleGenerate() {
     validateDraft();
-    const state = useStudioDraftStore.getState();
+    const snapshot = useStudioDraftStore.getState().getDraftSnapshot();
+    if (snapshot.issues.some((i) => i.severity === "error")) {
+      setResult({
+        status: "invalid",
+        issues: draftIssuesToPreview(snapshot.issues),
+        model: null,
+      });
+      return;
+    }
     const compiled = compileLocalHmiPreview({
-      bundle: state.bundle,
-      draftIssues: state.issues,
+      bundle: snapshot.bundle,
+      draftIssues: snapshot.issues,
     });
     setResult(compiled);
     if (compiled.model?.map2d.nodes[0]) {
@@ -134,6 +147,7 @@ export function CompilePreviewWorkbench({ compiledBundle }: CompilePreviewWorkbe
 
       <div className="compile-preview-workbench__layout">
         <PreviewIssueList issues={displayResult.issues} />
+        <PreviewReportPanel model={displayResult.model} />
         <PreviewMapPanel
           model={displayResult.model}
           selectedAssetId={selectedAssetId}

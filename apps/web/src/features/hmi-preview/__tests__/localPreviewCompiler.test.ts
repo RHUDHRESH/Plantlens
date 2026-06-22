@@ -135,4 +135,43 @@ describe("localPreviewCompiler", () => {
     compileLocalHmiPreview({ bundle, draftIssues: validateDraftBundle(bundle), now: () => "fixed" });
     expect(JSON.stringify(bundle)).toBe(before);
   });
+
+  it("warns on unknown connection kind", () => {
+    const bundle = clone(getInitialStudioDraftBundle());
+    const plant = bundle.plant as Record<string, unknown>;
+    plant.connections = [
+      ...(plant.connections as Array<Record<string, unknown>>),
+      { from: "PV-101", to: "BAT-101", kind: "hydraulic" },
+    ];
+    const result = compileLocalHmiPreview({
+      bundle,
+      draftIssues: validateDraftBundle(bundle),
+      now: () => "fixed",
+    });
+    expect(result.issues.some((i) => i.code === "UNKNOWN_CONNECTION_KIND")).toBe(true);
+    expect(result.model!.map2d.edges.find((e) => e.id === "conn:PV-101:BAT-101")?.kind).toBe(
+      "unknown",
+    );
+  });
+
+  it("warns on missing asset type", () => {
+    const bundle = clone(getInitialStudioDraftBundle());
+    const plant = bundle.plant as Record<string, unknown>;
+    plant.assets = (plant.assets as Array<Record<string, unknown>>).map((a) => {
+      if (a.id === "LD-201") {
+        const { type: _type, ...rest } = a;
+        return rest;
+      }
+      return a;
+    });
+    const result = compileLocalHmiPreview({
+      bundle,
+      draftIssues: validateDraftBundle(bundle),
+      now: () => "fixed",
+    });
+    expect(result.issues.some((i) => i.code === "UNKNOWN_ASSET_TYPE" && i.targetId === "LD-201")).toBe(
+      true,
+    );
+    expect(result.model!.map2d.nodes.find((n) => n.id === "LD-201")?.asset_type).toBe("unknown");
+  });
 });

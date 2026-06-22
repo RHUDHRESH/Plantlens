@@ -34,11 +34,18 @@ export function PreviewStatusStrip({ result, draftStatus, dirtyFamilies }: Previ
       <span className="preview-status-strip__metric">{warnings} warnings</span>
       {summary ? (
         <>
+          <span className="preview-status-strip__metric">Plant: {result.model!.plantId}</span>
+          <span className="preview-status-strip__metric">Generated: {result.model!.generatedAt}</span>
           <span className="preview-status-strip__metric">{summary.assetCount} assets</span>
           <span className="preview-status-strip__metric">{summary.tagCount} tags</span>
           <span className="preview-status-strip__metric">{summary.alarmRuleCount} alarms</span>
           <span className="preview-status-strip__metric">{summary.causalEdgeCount} causal edges</span>
           <span className="preview-status-strip__metric">{summary.actionCount} actions</span>
+          {summary.fallbackCoordinateCount > 0 ? (
+            <span className="preview-status-strip__metric preview-warning">
+              {summary.fallbackCoordinateCount} fallback coords
+            </span>
+          ) : null}
         </>
       ) : null}
       {dirty.length > 0 ? (

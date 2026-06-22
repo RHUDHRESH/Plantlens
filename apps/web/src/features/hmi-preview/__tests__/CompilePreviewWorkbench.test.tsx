@@ -40,6 +40,27 @@ describe("CompilePreviewWorkbench", () => {
     expect(screen.getByText("Compiled")).toBeInTheDocument();
     expect(screen.getByLabelText(/Live plant map/i)).toBeInTheDocument();
     expect(screen.getByText(/local preview only/i)).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /Preview report/i })).toBeInTheDocument();
+  });
+
+  it("shows issue list when generate blocked by validation errors", () => {
+    useStudioDraftStore.getState().loadInitialBundle();
+    useStudioDraftStore.setState({
+      issues: [
+        {
+          id: "plant:A:ERR",
+          family: "plant",
+          targetId: "A",
+          severity: "error",
+          code: "ERR",
+          message: "broken asset reference",
+        },
+      ],
+      status: "invalid",
+    });
+    render(<CompilePreviewWorkbench />);
+    expect(screen.getByText(/broken asset reference/i)).toBeInTheDocument();
+    expect(screen.getByText("Invalid")).toBeInTheDocument();
   });
 
   it("Reset local preview clears model", () => {

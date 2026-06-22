@@ -157,6 +157,7 @@ source of truth; React Flow is a view/editor over it (applyNodeChanges, not repl
 | `PreviewIssueList.tsx` | Grouped preview issues by severity |
 | `PreviewMapPanel.tsx` | Read-only 2D map + 3D summary (no telemetry) |
 | `PreviewDiffPanel.tsx` | Added/removed/changed diff vs compiled bundle |
+| `PreviewReportPanel.tsx` | Generated preview report (plant ID, counts, fallback note) |
 | `CompilePreviewWorkbench.tsx` | Validate / generate / reset local preview |
 | `index.ts` | Public API |
 

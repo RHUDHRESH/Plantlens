@@ -72,6 +72,25 @@ describe("useStudioDraftStore", () => {
     expect(state.dirtyFamilies.plant).toBe(false);
   });
 
+  it("getDraftSnapshot returns cloned state", () => {
+    useStudioDraftStore.getState().loadInitialBundle();
+    useStudioDraftStore.getState().applyPatch(
+      createFieldPatch("plant", {
+        arrayKey: "assets",
+        idKey: "id",
+        targetId: "PV-101",
+        field: "display_name",
+        value: "Snapshot test",
+        reason: "test",
+      }),
+    );
+    const snapshot = useStudioDraftStore.getState().getDraftSnapshot();
+    expect(snapshot.status).toBe("dirty");
+    expect(snapshot.dirtyFamilies.plant).toBe(true);
+    expect(snapshot.bundle).not.toBe(useStudioDraftStore.getState().bundle);
+    expect(snapshot.issues).not.toBe(useStudioDraftStore.getState().issues);
+  });
+
   it("does not mutate previous bundle object", () => {
     useStudioDraftStore.getState().loadInitialBundle();
     const prev = useStudioDraftStore.getState().bundle;

@@ -159,6 +159,19 @@ export function compileLocalHmiPreview({
 
   const map2dNodes: PreviewMap2DNode[] = assets.map((asset, index) => {
     const id = readString(asset, "id");
+    const assetType = readString(asset, "type");
+    if (!assetType) {
+      issues.push(
+        compileIssue(
+          "warning",
+          "plant",
+          id,
+          "UNKNOWN_ASSET_TYPE",
+          `Asset ${id} has no authored type — preview uses "unknown".`,
+          "preview_projection",
+        ),
+      );
+    }
     const coords = readCoords2D(asset);
     if (!coords) {
       fallbackCoordinateCount += 1;
@@ -176,13 +189,14 @@ export function compileLocalHmiPreview({
     return {
       id,
       label: readString(asset, "display_name") || id,
-      asset_type: readString(asset, "type") || "unknown",
+      asset_type: assetType || "unknown",
       position: coords ?? buildFallback2DPosition(index),
     };
   });
 
   const map3dNodes: PreviewMap3DNode[] = assets.map((asset, index) => {
     const id = readString(asset, "id");
+    const assetType = readString(asset, "type");
     const coords = readCoords3D(asset);
     if (!coords) {
       issues.push(
@@ -199,7 +213,7 @@ export function compileLocalHmiPreview({
     return {
       id,
       label: readString(asset, "display_name") || id,
-      asset_type: readString(asset, "type") || "unknown",
+      asset_type: assetType || "unknown",
       position: coords ?? buildFallback3DPosition(index),
     };
   });
@@ -212,7 +226,20 @@ export function compileLocalHmiPreview({
     const from = readString(conn, "from");
     const to = readString(conn, "to");
     if (!from || !to) continue;
-    const kind = connectionKind(readString(conn, "kind"));
+    const rawKind = readString(conn, "kind");
+    const kind = connectionKind(rawKind);
+    if (rawKind && kind === "unknown") {
+      issues.push(
+        compileIssue(
+          "warning",
+          "plant",
+          `${from}:${to}`,
+          "UNKNOWN_CONNECTION_KIND",
+          `Connection ${from} → ${to} has unrecognized kind "${rawKind}" — preview edge marked unknown.`,
+          "preview_projection",
+        ),
+      );
+    }
     const id = `conn:${from}:${to}`;
     edgeMap.set(id, { id, from, to, kind });
   }

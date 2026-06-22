@@ -25,4 +25,5 @@ export { PreviewStatusStrip } from "./PreviewStatusStrip";
 export { PreviewIssueList } from "./PreviewIssueList";
 export { PreviewDiffPanel } from "./PreviewDiffPanel";
 export { PreviewMapPanel } from "./PreviewMapPanel";
+export { PreviewReportPanel } from "./PreviewReportPanel";
 export { CompilePreviewWorkbench } from "./CompilePreviewWorkbench";
