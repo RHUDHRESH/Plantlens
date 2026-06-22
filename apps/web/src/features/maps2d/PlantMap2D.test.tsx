@@ -38,6 +38,20 @@ describe("PlantMap2D", () => {
     expect(screen.getByText(/No map nodes/i)).toBeInTheDocument();
   });
 
+  it("renders with viewBox from viewport hook", () => {
+    const { container } = render(
+      <PlantMap2D
+        nodes={NODES}
+        edges={EDGES}
+        assetStatus={HERO_MOTOR_OVERLOAD.asset_status}
+        reducedMotion
+      />,
+    );
+    const svg = container.querySelector("svg.plant-map-2d");
+    expect(svg).toBeInTheDocument();
+    expect(svg?.getAttribute("viewBox")).toMatch(/^-?\d+(\.\d+)? -?\d+(\.\d+)? \d+(\.\d+)? \d+(\.\d+)?$/);
+  });
+
   it("orders causal path steps 1-2-3", () => {
     render(
       <PlantMap2D

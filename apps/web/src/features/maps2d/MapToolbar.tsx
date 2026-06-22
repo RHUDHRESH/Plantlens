@@ -1,5 +1,12 @@
-import type { MapLayerId, MapMode, UserRole } from "../operational-map";
+import type { MapLayerId, MapMode, MapZoomBand, UserRole } from "../operational-map";
 import { ALL_USER_ROLES, getLayerDefinition, getRoleLabel } from "../operational-map";
+
+const ZOOM_BAND_LABELS: Record<MapZoomBand, string> = {
+  plant: "Plant",
+  area: "Area",
+  asset: "Asset",
+  component: "Component",
+};
 
 interface MapToolbarProps {
   mapMode: MapMode;
@@ -16,6 +23,12 @@ interface MapToolbarProps {
   causalPathLocked: boolean;
   onFocusRoot?: () => void;
   hasRoot?: boolean;
+  onFitPlant?: () => void;
+  onZoomIn?: () => void;
+  onZoomOut?: () => void;
+  canNavigate2D?: boolean;
+  zoomBand?: MapZoomBand;
+  scaleLabel?: string;
   density: "comfortable" | "compact";
   onDensityChange: (d: "comfortable" | "compact") => void;
   reducedMotion: boolean;
@@ -29,6 +42,12 @@ const TOGGLEABLE_LAYERS: MapLayerId[] = [
   "maintenance",
   "audit",
 ];
+
+function causalPathLockTitle(layerId: MapLayerId, causalPathLocked: boolean): string | undefined {
+  if (layerId !== "causal_path") return undefined;
+  if (causalPathLocked) return "Causal path locked while Situation is active";
+  return "Causal path locked by safety layer";
+}
 
 export function MapToolbar({
   mapMode,
@@ -45,11 +64,19 @@ export function MapToolbar({
   causalPathLocked,
   onFocusRoot,
   hasRoot,
+  onFitPlant,
+  onZoomIn,
+  onZoomOut,
+  canNavigate2D = true,
+  zoomBand,
+  scaleLabel,
   density,
   onDensityChange,
   reducedMotion,
 }: MapToolbarProps) {
   const lockedSet = new Set(lockedLayers);
+  const navDisabled = mapMode !== "2d" || !canNavigate2D;
+  const navTitle = mapMode !== "2d" ? "2D navigation only" : !canNavigate2D ? "Map controls loading" : undefined;
 
   return (
     <div className="map-toolbar" role="toolbar" aria-label="Map controls">
@@ -86,10 +113,56 @@ export function MapToolbar({
         ))}
       </div>
 
-      {hasRoot && onFocusRoot && (
-        <button type="button" className="pl-btn pl-btn--compact" onClick={onFocusRoot} aria-label="Focus root asset">
-          Focus root
+      <div className="map-toolbar__nav" role="group" aria-label="Map navigation">
+        <button
+          type="button"
+          className="pl-btn pl-btn--compact"
+          onClick={onFitPlant}
+          disabled={navDisabled}
+          title={navTitle}
+          aria-label="Fit plant"
+        >
+          Fit plant
         </button>
+        <button
+          type="button"
+          className="pl-btn pl-btn--compact"
+          onClick={onZoomIn}
+          disabled={navDisabled}
+          title={navTitle}
+          aria-label="Zoom in"
+        >
+          Zoom in
+        </button>
+        <button
+          type="button"
+          className="pl-btn pl-btn--compact"
+          onClick={onZoomOut}
+          disabled={navDisabled}
+          title={navTitle}
+          aria-label="Zoom out"
+        >
+          Zoom out
+        </button>
+        {hasRoot && onFocusRoot && (
+          <button
+            type="button"
+            className="pl-btn pl-btn--compact"
+            onClick={onFocusRoot}
+            disabled={navDisabled}
+            title={navTitle}
+            aria-label="Focus root asset"
+          >
+            Focus root
+          </button>
+        )}
+      </div>
+
+      {zoomBand && (
+        <span className="map-toolbar__zoom-band" role="status" aria-label={`Zoom band: ${ZOOM_BAND_LABELS[zoomBand]}`}>
+          {ZOOM_BAND_LABELS[zoomBand]}
+          {scaleLabel ? ` · ${scaleLabel}` : ""}
+        </span>
       )}
 
       <button
@@ -106,6 +179,7 @@ export function MapToolbar({
           const def = getLayerDefinition(layerId);
           const locked = lockedSet.has(layerId);
           const active = layerId === "causal_path" ? showCausalPath : visibleLayers[layerId];
+          const lockTitle = locked ? (causalPathLockTitle(layerId, causalPathLocked) ?? `${def.label} locked`) : undefined;
           const onClick =
             layerId === "causal_path"
               ? locked
@@ -123,7 +197,7 @@ export function MapToolbar({
               aria-pressed={active}
               aria-disabled={locked}
               disabled={locked}
-              title={locked ? `${def.label} locked` : def.description}
+              title={lockTitle ?? def.description}
               onClick={onClick}
             >
               {def.label}

@@ -21,12 +21,17 @@ import { RawAlarmTable } from "../alarms/RawAlarmTable";
 import { IncidentRoom } from "../incidents/IncidentRoom";
 import { AssetDetailDrawer } from "../maps2d/AssetDetailDrawer";
 import { MapToolbar } from "../maps2d/MapToolbar";
-import { PlantMap2D } from "../maps2d/PlantMap2D";
+import { PlantMap2D, type PlantMap2DViewportControls } from "../maps2d/PlantMap2D";
 import type { MapNode } from "../maps2d/mapTypes";
 import { LazyPlantMap3D } from "../maps3d/LazyPlantMap3D";
 import { adaptMap3DViewModel } from "../ops3d/adapters";
 import { ScenarioLauncher } from "../scenarios/ScenarioLauncher";
-import { getLockedLayers, selectCausalPathVisible, useOperationalMapStore } from "../operational-map";
+import {
+  getLockedLayers,
+  selectCausalPathVisible,
+  useOperationalMapStore,
+  type MapZoomBand,
+} from "../operational-map";
 
 function derivePlantHealth(assetStatus: Record<string, string>): string {
   const values = Object.values(assetStatus);
@@ -49,8 +54,10 @@ export function RuntimeHMI() {
   const [scenarioOpen, setScenarioOpen] = useState(false);
   const [showLegend, setShowLegend] = useState(true);
   const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
+  const [map2dControls, setMap2dControls] = useState<PlantMap2DViewportControls | null>(null);
 
   const mapMode = useOperationalMapStore((s) => s.mode);
+  const zoomBand = useOperationalMapStore((s) => s.zoomBand);
   const mapRole = useOperationalMapStore((s) => s.role);
   const selectedAssetId = useOperationalMapStore((s) => s.selectedAssetId);
   const focusAssetId = useOperationalMapStore((s) => s.focusedAssetId);
@@ -64,6 +71,7 @@ export function RuntimeHMI() {
   const toggleLayer = useOperationalMapStore((s) => s.toggleLayer);
   const setActiveSituationLocked = useOperationalMapStore((s) => s.setActiveSituationLocked);
   const dispatchMapCommand = useOperationalMapStore((s) => s.dispatchMapCommand);
+  const setZoomBand = useOperationalMapStore((s) => s.setZoomBand);
   const showCausalPath = useOperationalMapStore(selectCausalPathVisible);
   const lockedLayers = useMemo(
     () => getLockedLayers(activeSituationLocked),
@@ -240,8 +248,29 @@ export function RuntimeHMI() {
     if (rootAssetId) {
       dispatchMapCommand({ type: "focus_root" });
       focusAsset(rootAssetId);
+      map2dControls?.focusRoot();
     }
-  }, [rootAssetId, dispatchMapCommand, focusAsset]);
+  }, [rootAssetId, dispatchMapCommand, focusAsset, map2dControls]);
+
+  const handleFitPlant = useCallback(() => {
+    dispatchMapCommand({ type: "fit_plant" });
+    map2dControls?.fitPlant();
+  }, [dispatchMapCommand, map2dControls]);
+
+  const handleZoomIn = useCallback(() => {
+    map2dControls?.zoomIn();
+  }, [map2dControls]);
+
+  const handleZoomOut = useCallback(() => {
+    map2dControls?.zoomOut();
+  }, [map2dControls]);
+
+  const handleZoomBandChange = useCallback(
+    (band: MapZoomBand) => {
+      setZoomBand(band);
+    },
+    [setZoomBand],
+  );
 
   const handleToggleCausalPath = useCallback(() => {
     dispatchMapCommand({ type: "show_causal_path", visible: !showCausalPath });
@@ -259,6 +288,8 @@ export function RuntimeHMI() {
     focusAssetId,
     density,
     onSelectAsset: handleSelectAsset,
+    onViewportReady: setMap2dControls,
+    onZoomBandChange: handleZoomBandChange,
   };
 
   const map3dProps = {
@@ -308,6 +339,14 @@ export function RuntimeHMI() {
             causalPathLocked={activeSituationLocked}
             onFocusRoot={handleFocusRoot}
             hasRoot={Boolean(rootAssetId)}
+            onFitPlant={handleFitPlant}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            canNavigate2D={Boolean(map2dControls)}
+            zoomBand={zoomBand}
+            {...(map2dControls
+              ? { scaleLabel: `${Math.round(map2dControls.scale * 100)}%` }
+              : {})}
             density={density}
             onDensityChange={setDensity}
             reducedMotion={reducedMotion}

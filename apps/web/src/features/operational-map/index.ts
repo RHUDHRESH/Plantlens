@@ -44,3 +44,27 @@ export {
   selectShouldShowCausalPath,
   selectVisibleLayers,
 } from "./selectors";
+
+export type {
+  MapBounds,
+  MapViewBox,
+  ViewportCommand,
+  ViewportFocusOptions,
+  ViewportSize,
+  ViewportTransform,
+} from "./viewportTypes";
+
+export {
+  boundsFromNodes,
+  boundsToViewBox,
+  clientPointToSvgPoint,
+  fitBoundsToViewport,
+  focusPointViewBox,
+  getAssetFocusViewBox,
+  getRootFocusViewBox,
+  getViewBoxScale,
+  getViewportTransform,
+  panViewBox,
+  viewBoxToString,
+  zoomViewBoxAtPoint,
+} from "./viewportMath";

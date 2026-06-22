@@ -209,6 +209,28 @@
   color: var(--text-muted);
 }
 
+.map-toolbar__nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.map-toolbar__zoom-band {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.map-toolbar__nav .pl-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── 2D map ── */
 
 .plant-map-2d-wrap {
@@ -226,6 +248,11 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
+  touch-action: none;
+}
+
+.plant-map-2d--panning {
+  cursor: grabbing;
 }
 
 .plant-map-2d-wrap--compact .plant-map-2d {

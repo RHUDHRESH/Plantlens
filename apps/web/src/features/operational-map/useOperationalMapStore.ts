@@ -6,6 +6,7 @@ import {
   isSafetyCriticalLayer,
 } from "./layerRegistry";
 import { getRoleLens } from "./roleLenses";
+import { getZoomBandFromScale } from "./zoomBands";
 
 export interface OperationalMapStore {
   mode: MapMode;
@@ -20,6 +21,7 @@ export interface OperationalMapStore {
   setRole: (role: UserRole) => void;
   setMode: (mode: MapMode) => void;
   setZoomBand: (band: MapZoomBand) => void;
+  setZoomBandFromScale: (scale: number) => void;
   setActiveSituationLocked: (locked: boolean) => void;
   selectAsset: (assetId: string) => void;
   focusAsset: (assetId: string) => void;
@@ -63,6 +65,7 @@ export const useOperationalMapStore = create<OperationalMapStore>((set, get) => 
   lastCommand: null,
   activeSituationLocked: false,
 
+  // Command intent is stored here; viewport pan/zoom/focus execution lives in map components.
   dispatchMapCommand: (command) => {
     set({ lastCommand: command });
     const store = get();
@@ -71,6 +74,7 @@ export const useOperationalMapStore = create<OperationalMapStore>((set, get) => 
         store.setZoomBand("plant");
         break;
       case "focus_root":
+        // Observable command; RuntimeHMI + PlantMap2D perform the actual viewport focus.
         break;
       case "focus_asset":
         store.focusAsset(command.assetId);
@@ -122,7 +126,16 @@ export const useOperationalMapStore = create<OperationalMapStore>((set, get) => 
 
   setMode: (mode) => set({ mode }),
 
-  setZoomBand: (band) => set({ zoomBand: band }),
+  setZoomBand: (band) => {
+    if (get().zoomBand === band) return;
+    set({ zoomBand: band });
+  },
+
+  setZoomBandFromScale: (scale) => {
+    const band = getZoomBandFromScale(scale);
+    if (get().zoomBand === band) return;
+    set({ zoomBand: band });
+  },
 
   setActiveSituationLocked: (locked) => {
     const { visibleLayers, activeSituationLocked } = get();

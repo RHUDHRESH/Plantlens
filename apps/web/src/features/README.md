@@ -11,11 +11,14 @@ Each feature folder owns its components, hooks, and types. Features read the run
 | `layerRegistry.ts` | Deterministic layer definitions and safety-critical rules |
 | `roleLenses.ts` | Operator/engineer/maintenance/manager visibility defaults |
 | `zoomBands.ts` | Scale → zoom band helpers |
+| `viewportTypes.ts` | SVG viewBox, bounds, and viewport command types |
+| `viewportMath.ts` | Pure pan/zoom/focus viewBox math and zoom-band derivation (Prompt 2) |
 | `useOperationalMapStore.ts` | Zustand store for map navigation state (not telemetry) |
 | `selectors.ts` | Pure selectors for layer/role visibility |
 | `index.ts` | Public API |
 
 Owns UI navigation state for 2D/3D maps: mode, role lens, layers, selection, focus, zoom band, commands.
+Prompt 2 adds deterministic SVG viewport math for pan/zoom/focus and zoom-band derivation from view scale.
 Does **not** own telemetry/runtime facts or change diagnosis. `app/store/runtime.ts` remains the WebSocket/HMI snapshot source.
 
 ## plant-runtime/ — the runtime HMI shell (Chunk 5)
@@ -35,7 +38,8 @@ Does **not** own telemetry/runtime facts or change diagnosis. `app/store/runtime
 | `CausalPathOverlay.tsx` | numbered 1-2-3 markers along the situation's causal_path |
 | `AssetPopover.tsx` | side panel: tags, alarms, related situation, actions |
 | `mapTypes.ts` | shared `AssetStatus`, `MapNode`, `MapEdge`, `RuntimeState` types |
-| `MapToolbar.tsx` | zoom/fit/layer toggles (add after the basics work) |
+| `MapToolbar.tsx` | zoom/fit/layer toggles and role lens controls |
+| `useSvgViewport.ts` | Native SVG pan/zoom/focus behavior for PlantMap2D (Prompt 2) |
 
 ## maps3d/ — R3F plant map (Chunk 8, lazy enhancement)
 PlantMap3D, PlantScene, AssetMesh, PowerCable3D, StatusGlow, CausalPath3D, CameraRig,

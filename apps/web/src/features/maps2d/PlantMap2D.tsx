@@ -1,10 +1,22 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import type { MapZoomBand } from "../operational-map";
 import type { MapEdge, MapNode } from "./mapTypes";
 import { CausalPathOverlay } from "./CausalPathOverlay";
 import { MapLegend } from "./MapLegend";
 import { PlantEdge } from "./PlantEdge";
 import { PlantNode } from "./PlantNode";
 import { statusForAsset } from "./statusStyles";
+import { useSvgViewport } from "./useSvgViewport";
+
+export interface PlantMap2DViewportControls {
+  fitPlant: () => void;
+  focusRoot: () => void;
+  focusAsset: (assetId: string) => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  scale: number;
+  zoomBand: MapZoomBand;
+}
 
 export interface PlantMap2DProps {
   nodes: MapNode[];
@@ -18,18 +30,8 @@ export interface PlantMap2DProps {
   focusAssetId?: string | null;
   density?: "comfortable" | "compact";
   onSelectAsset?: (id: string) => void;
-}
-
-function computeViewBox(nodes: MapNode[]): string {
-  if (!nodes.length) return "0 0 800 400";
-  const xs = nodes.map((n) => n.position?.x ?? 0);
-  const ys = nodes.map((n) => n.position?.y ?? 0);
-  const pad = 80;
-  const minX = Math.min(...xs) - pad;
-  const minY = Math.min(...ys) - pad;
-  const maxX = Math.max(...xs) + pad;
-  const maxY = Math.max(...ys) + pad;
-  return `${minX} ${minY} ${maxX - minX} ${maxY - minY}`;
+  onViewportReady?: (controls: PlantMap2DViewportControls) => void;
+  onZoomBandChange?: (band: MapZoomBand) => void;
 }
 
 export function PlantMap2D({
@@ -44,7 +46,42 @@ export function PlantMap2D({
   focusAssetId,
   density = "comfortable",
   onSelectAsset,
+  onViewportReady,
+  onZoomBandChange,
 }: PlantMap2DProps) {
+  const viewport = useSvgViewport({
+    nodes,
+    focusAssetId: focusAssetId ?? null,
+    rootAssetId: rootAssetId ?? null,
+    reducedMotion,
+    ...(onZoomBandChange ? { onZoomBandChange } : {}),
+  });
+
+  const viewportControls = useMemo<PlantMap2DViewportControls>(
+    () => ({
+      fitPlant: viewport.fitPlant,
+      focusRoot: viewport.focusRoot,
+      focusAsset: viewport.focusAsset,
+      zoomIn: viewport.zoomIn,
+      zoomOut: viewport.zoomOut,
+      scale: viewport.scale,
+      zoomBand: viewport.zoomBand,
+    }),
+    [
+      viewport.fitPlant,
+      viewport.focusRoot,
+      viewport.focusAsset,
+      viewport.zoomIn,
+      viewport.zoomOut,
+      viewport.scale,
+      viewport.zoomBand,
+    ],
+  );
+
+  useEffect(() => {
+    onViewportReady?.(viewportControls);
+  }, [onViewportReady, viewportControls]);
+
   const positions = useMemo(
     () =>
       Object.fromEntries(
@@ -62,8 +99,6 @@ export function PlantMap2D({
   );
   const affected = useMemo(() => new Set(affectedAssetIds), [affectedAssetIds]);
 
-  const viewBox = computeViewBox(nodes);
-
   if (!nodes.length) {
     return (
       <div className="map-empty" role="status">
@@ -78,11 +113,17 @@ export function PlantMap2D({
     <div className={`plant-map-2d-wrap plant-map-2d-wrap--${density}`}>
       {showLegend && <MapLegend reducedMotion={reducedMotion} />}
       <svg
-        viewBox={viewBox}
-        className="plant-map-2d"
+        ref={viewport.svgRef}
+        viewBox={viewport.viewBoxString}
+        className={`plant-map-2d${viewport.isPanning ? " plant-map-2d--panning" : ""}`}
         role="img"
         aria-label="Live plant map"
         preserveAspectRatio="xMidYMid meet"
+        onPointerDown={viewport.onPointerDown}
+        onPointerMove={viewport.onPointerMove}
+        onPointerUp={viewport.onPointerUp}
+        onPointerLeave={viewport.onPointerLeave}
+        onWheel={viewport.onWheel}
       >
       <defs>
         <pattern id="grid" width={24} height={24} patternUnits="userSpaceOnUse">

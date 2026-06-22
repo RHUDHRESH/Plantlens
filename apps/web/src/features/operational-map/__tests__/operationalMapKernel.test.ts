@@ -174,6 +174,25 @@ describe("operational map store", () => {
     expect(state.visibleLayers.tags).toBe(true);
   });
 
+  it("setZoomBand skips update when band unchanged", () => {
+    useOperationalMapStore.getState().setZoomBand("plant");
+    const before = snapshotState().zoomBand;
+    useOperationalMapStore.getState().setZoomBand("plant");
+    expect(snapshotState().zoomBand).toBe(before);
+  });
+
+  it("setZoomBandFromScale derives band from scale", () => {
+    useOperationalMapStore.getState().setZoomBandFromScale(2);
+    expect(snapshotState().zoomBand).toBe("asset");
+    useOperationalMapStore.getState().setZoomBandFromScale(2);
+    expect(snapshotState().zoomBand).toBe("asset");
+  });
+
+  it("focus_root command records lastCommand", () => {
+    useOperationalMapStore.getState().dispatchMapCommand({ type: "focus_root" });
+    expect(snapshotState().lastCommand).toEqual({ type: "focus_root" });
+  });
+
   it("setRole preserves selection and mode", () => {
     useOperationalMapStore.getState().setMode("3d");
     useOperationalMapStore.getState().selectAsset("ASSET-9");
