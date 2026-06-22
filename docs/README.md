@@ -1,5 +1,7 @@
 # PlantLens docs
 
+> **CURRENT SOURCE OF TRUTH — safe for build agents.**
+
 Read in this order:
 
 1. [`../PLANTLENS.md`](../PLANTLENS.md) — master build document (start here). The system, the
@@ -19,3 +21,5 @@ Read in this order:
 
 Every source folder in the repo also has its own `README.md` describing every file that belongs
 there and why. The docs here explain the system; the folder READMEs explain the files.
+
+**Do not start from archived docs.** Historical context lives in [`archive/`](archive/) only.

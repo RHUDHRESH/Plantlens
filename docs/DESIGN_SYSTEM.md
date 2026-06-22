@@ -1,5 +1,7 @@
 # PlantLens Design System
 
+> **CURRENT SOURCE OF TRUTH — safe for build agents.**
+
 The brief: **calm, industrial, Scandinavian-minimal, second-to-none.** Operators do not need
 dribbble candy; they need legibility, focus, and trust. If you want it to feel expensive, the
 secret is restraint, not decoration. Reference feel: IKEA configurator + Google Maps zoom +

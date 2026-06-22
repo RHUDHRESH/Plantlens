@@ -1,5 +1,7 @@
 # PlantLens Algorithms
 
+> **CURRENT SOURCE OF TRUTH — safe for build agents.**
+
 Deterministic runtime cognition pipeline. **AI does not diagnose live faults.**
 
 ## Pipeline

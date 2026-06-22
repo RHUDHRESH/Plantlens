@@ -43,7 +43,23 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 
-# Harness leftovers
+# Temp / scratch
+tmp/
+temp/
+agent-tools/
+terminals/
+
+# Harness leftovers (local only)
 terminals/*.txt
 terminals/.next-id
-agent-tools/
+
+# Pre-PlantLens hardware experiments at repo root (do not re-commit)
+/bms_*.py
+/bms_*.html
+/bms_*.png
+/bms_*.db
+/hmi_probe.py
+/modbus_scout.py
+
+# Local Claude/Codex backups
+.claude.project.backup-*/

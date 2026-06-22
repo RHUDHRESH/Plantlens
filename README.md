@@ -2,154 +2,85 @@
 
 Deterministic, read-only industrial cognition for alarm floods.
 
-PlantLens turns raw plant telemetry into one evidence-backed Situation, renders it on a live HMI, and keeps a hash-chained audit trail for operator decisions. AI is allowed to draft explanations and contract changes, but the live runtime diagnosis stays deterministic and human-gated.
+PlantLens turns raw plant telemetry into one evidence-backed Situation, renders it on a live HMI, and keeps a hash-chained audit trail for operator decisions. AI drafts explanations and contract changes only; live runtime diagnosis stays deterministic and human-gated.
 
-## What It Does
+**Current product rule:** deterministic runtime, AI draft-only, 2D default, 3D lazy.
 
-- Collapses alarm floods into a single root-cause Situation.
-- Shows a Runtime HMI with a 2D/3D plant map, Calm Card, raw alarms, and scenario launcher.
-- Uses approved causal graph edges only; no ML or LLM runs in the live diagnosis path.
-- Emits canonical evidence packets for Calm Cards, audits, and agent review.
-- Lets agents draft changes, while humans approve before contracts or runtime bundles change.
-- Preserves consequential actions in an append-only hash-chained audit.
+**Do not start from archived docs.** Use the source-of-truth list below.
 
-## Demo Status
+## Source of truth (read in order)
 
-Demo-ready as of June 2026.
+1. [`PLANTLENS.md`](PLANTLENS.md) — system rules, demo domain, architecture map
+2. [`FINAL_READY_STATE.md`](FINAL_READY_STATE.md) — demo-ready status and verification
+3. [`docs/BUILD_ORDER.md`](docs/BUILD_ORDER.md) — build sequence (chunks 0–13)
+4. [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) — tokens, status rules, motion, copy
+5. [`docs/ALGORITHMS.md`](docs/ALGORITHMS.md) — quality, alarms, DAG, Situation, Calm Card
+6. [`docs/DEMO_SCENARIO.md`](docs/DEMO_SCENARIO.md) — hero scenario and regression matrix
 
-Implemented and covered:
+Agent instructions: [`AGENTS.md`](AGENTS.md)
 
-- Deterministic runtime pipeline: `TagFrame -> quality -> alarms -> DAG -> Situation -> RuntimeEvidencePacket -> Calm Card -> asset status`
-- Eight-scenario regression matrix: motor overload, PV loss, stale sensor, unapproved edge, gateway dropout, recovery, downstream-only, temporal violation
-- Runtime HMI: map, Calm Card, alarm table, scenario launcher, incident room
-- Studio compiler path for authored plant contracts
-- Agent safety boundary: draft-only, service-unavailable fallback, human approval bridge
-- Auth/RBAC red-team tests for bypass attempts, tampered tokens, agent approval denial, and protected alarm acknowledgment
-- Offline authored-knowledge ingestion under `/api/offline-ingest` — produces human-review drafts only
+Archived historical context only: [`docs/archive/`](docs/archive/) — **not** build instructions.
 
-## Run Locally
-
-Prerequisites:
-
-- Node.js 22+
-- pnpm 10+
-- Python 3.12+ or `uv`
+## Install and run
 
 ```bash
+# Install
 pnpm install --frozen-lockfile
+pip install -e "./apps/api[dev]"
 
-cd apps/api
-pip install -e ".[dev]"
-copy .env.example .env
-uvicorn app.main:app --reload --port 8000
-```
+# Run API (from repo root)
+cd apps/api && PLANTLENS_DEV_JWT_SECRET=change-this-local-dev-secret uvicorn app.main:app --reload --port 8000
 
-In a second terminal from the repo root:
-
-```bash
+# Run web
 pnpm --filter @plantlens/web dev
+
+# Run simulator scenario (API, engineer token)
+curl -X POST http://localhost:8000/api/scenarios/scn_motor_overload/start \
+  -H "Authorization: Bearer <token>"
+
+# Docker compose (web on :8080, proxies /api and /ws)
+docker compose -f deploy/docker/compose.full.yml up --build
 ```
-
-Open [http://127.0.0.1:5173/](http://127.0.0.1:5173/).
-
-For `uv` users, the API can also run from the repo root:
-
-```bash
-uv run --directory apps/api uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
-
-## Demo Flow
-
-1. Start the API and web app.
-2. Open the Runtime HMI.
-3. Use the scenario launcher, or start the hero scenario with an engineer token.
-4. Watch the runtime derive alarms, root cause, Situation, Calm Card, and asset status.
-5. Inspect raw alarms and evidence.
-6. Escalate to an incident room if needed.
 
 ## Validation
 
 ```bash
 python -m pytest apps/api/tests -q
 pnpm contracts:validate
+pnpm --filter @plantlens/web typecheck
 pnpm --filter @plantlens/web test
 pnpm --filter @plantlens/web build
-pnpm typecheck
 ```
 
-Current local verification:
-
-- API tests: 215 passing
-- Web tests: 26 passing
-- Web production build: passing
-- Browser smoke test: no console errors, failed requests, or HTTP 4xx/5xx responses
-
-## Safety Model
-
-PlantLens is advisory. It does not trip equipment, write PLC registers, or mutate live control state.
-
-Hard rules:
-
-- One canonical plant model in `packages/contracts`.
-- Runtime DAG traversal is deterministic and read-only.
-- Only approved causal graph edges can affect root cause.
-- Simulator and gateway emit the same `TagFrame` contract.
-- Agents draft only; humans approve consequential changes.
-- The agent role cannot approve, acknowledge alarms, or bypass human gates.
-- Audit records are append-only and hash-chained.
-
-## Red-Team Coverage
-
-The auth guardian tests exercise:
-
-- Missing, malformed, non-Bearer, expired, and tampered tokens
-- Dev-token endpoint hidden in production
-- Production auth returning 503 instead of silently bypassing
-- Invalid role claims rejected at verification time
-- Agent role and agent actor type denied on human-gated approval
-- Viewer/agent denied on alarm acknowledgment
-- Human approver matrix pinned for operator, maintenance, engineer, and admin
-- Auth package isolation from runtime/studio/gateway/agent engines
-- Secret-like strings not leaking in auth errors
-
-## Repository Layout
+## Repository layout
 
 ```text
 plantlens/
-├─ PLANTLENS.md            # system truth, rules, demo domain
-├─ docs/                   # architecture, algorithms, agent boundary, demo script
+├─ PLANTLENS.md            # master build document
+├─ AGENTS.md               # strict agent instructions
+├─ FINAL_READY_STATE.md    # demo-ready verification
+├─ docs/                   # architecture, algorithms, build order
 ├─ packages/
 │  ├─ contracts/           # JSON Schema contract spine
-│  ├─ sample-data/         # demo microgrid plant bundle
-│  ├─ ui-tokens/           # shared UI tokens
-│  └─ icons/               # domain SVG symbols
+│  └─ sample-data/         # demo-microgrid bundle
 ├─ apps/
-│  ├─ api/                 # FastAPI runtime, compiler, incidents, audit, auth
+│  ├─ api/                 # FastAPI runtime, compiler, incidents, audit
 │  ├─ gateway/             # read-only Modbus/RS485 poller
-│  ├─ agents/              # optional draft-only AI service
+│  ├─ agents/              # draft-only AI service
 │  └─ web/                 # React 19 + Vite HMI and Studio
-├─ deploy/                 # Docker, compose, k8s, CI
+├─ deploy/                 # Docker, compose
 └─ legacy/cliffords-ts/    # frozen ingestion oracle
 ```
 
-## Key Docs
+## Safety model
 
-| Doc | Purpose |
-| --- | --- |
-| [`PLANTLENS.md`](PLANTLENS.md) | Master build document and non-negotiable rules |
-| [`docs/ALGORITHMS.md`](docs/ALGORITHMS.md) | Quality, alarms, DAG, Situation, Calm Card |
-| [`docs/AGENT_BOUNDARY.md`](docs/AGENT_BOUNDARY.md) | What agents may and may not do |
-| [`docs/DEMO_SCENARIO.md`](docs/DEMO_SCENARIO.md) | Hero scenario and regression matrix |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Service boundaries and data flow |
-| [`docs/RUNTIME_CONTRACTS.md`](docs/RUNTIME_CONTRACTS.md) | REST and WebSocket contracts |
+PlantLens is advisory. It does not trip equipment, write PLC registers, or mutate live control state.
 
-## Docker
-
-```bash
-docker compose -f deploy/docker/compose.full.yml up --build
-```
-
-The Docker profile serves the web app through the configured frontend container and proxies API/WebSocket traffic to the backend.
+- One canonical plant model in `packages/contracts`
+- Runtime DAG is deterministic and read-only; approved edges only
+- Simulator and gateway emit the same `TagFrame` contract
+- Agents draft only; humans approve consequential changes
+- Append-only hash-chained audit
 
 ## License
 

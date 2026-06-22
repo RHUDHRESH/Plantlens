@@ -1,5 +1,7 @@
 # PlantLens Build Order
 
+> **CURRENT SOURCE OF TRUTH — safe for build agents.**
+
 Build in this order. Do **not** skip ahead — each chunk depends on the previous. Each chunk
 lists the files to write (all already scaffolded with SPEC headers), the libraries you install
 *for that chunk only*, and the "done" test that proves the chunk works.

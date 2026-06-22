@@ -1,5 +1,6 @@
 # PlantLens — Master Build Document
 
+> **CURRENT SOURCE OF TRUTH — safe for build agents.**
 > This is the single source of truth for the PlantLens refactor. Read this file first.
 > It reconciles the 5 deep-research reports and the 13 idea documents into ONE buildable
 > architecture. Every folder in this repo has its own `README.md` describing exactly what

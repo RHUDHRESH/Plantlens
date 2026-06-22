@@ -1,5 +1,7 @@
 # PlantLens v1 — Final Ready State Report
 
+> **CURRENT SOURCE OF TRUTH — safe for build agents.**
+
 **Date:** 2026-06-19  
 **Branch:** `main` (logic hardening + agent boundary pass)
 
