@@ -1,0 +1,65 @@
+{
+  "version": "1.0",
+  "situations": {
+    "MOTOR.vibration_HIGH": {
+      "title": "Motor M-04 bearing degradation suspected",
+      "what_happened": "Motor vibration exceeded normal range at {first_signal_time}. Temperature and current deviated within expected causal windows. Pattern is consistent with bearing wear or mechanical imbalance.",
+      "projected_consequence": "If vibration continues rising, thermal protection may trip the motor. Estimated {time_to_limit} before HIHI threshold.",
+      "check_first": [
+        "Inspect motor bearing — check for noise or heat on housing",
+        "Check VFD output frequency — rule out electrical imbalance",
+        "Verify vibration sensor mounting (false read if loose)"
+      ],
+      "counter_evidence": [
+        "Vibration sensor may give false high if mounting is loose",
+        "A VFD frequency transient can cause momentary current rise without mechanical cause"
+      ],
+      "authority": "No automatic action taken. Operator confirmation required before any response."
+    },
+    "MOTOR.temperature_HIGH": {
+      "title": "Motor M-04 thermal excursion",
+      "what_happened": "Motor temperature exceeded normal range at {first_signal_time}. Downstream current and speed deviations may follow within causal windows.",
+      "projected_consequence": "Thermal protection may trip if temperature continues rising. Estimated {time_to_limit} before HIHI threshold.",
+      "check_first": [
+        "Verify motor cooling airflow and ambient temperature",
+        "Check load on shaft — mechanical drag increases heat",
+        "Confirm temperature sensor contact and calibration"
+      ],
+      "counter_evidence": [
+        "Ambient temperature spike can raise body temperature without mechanical fault",
+        "Sensor contact loss can read artificially high"
+      ],
+      "authority": "No automatic action taken. Operator confirmation required before any response."
+    },
+    "VFD.current_HIGH": {
+      "title": "VFD output current elevated",
+      "what_happened": "VFD output current exceeded limit at {first_signal_time}. Motor speed may degrade if load continues.",
+      "projected_consequence": "Sustained overcurrent may trip VFD protection. Estimated {time_to_limit} before trip.",
+      "check_first": [
+        "Check motor mechanical load and coupling alignment",
+        "Verify VFD parameter settings and acceleration ramp",
+        "Inspect DC bus voltage — sag can cause current rise"
+      ],
+      "counter_evidence": [
+        "Brief inrush during acceleration is normal",
+        "Bus voltage transient can cause momentary current spike"
+      ],
+      "authority": "No automatic action taken. Operator confirmation required before any response."
+    },
+    "DCBUS.voltage_LOW": {
+      "title": "DC bus voltage sag",
+      "what_happened": "DC bus voltage dropped below normal at {first_signal_time}. Downstream loads may be affected.",
+      "projected_consequence": "Continued sag may cause inverter undervoltage trips. Estimated {time_to_limit} before critical threshold.",
+      "check_first": [
+        "Check upstream generation — PV and mains charger output",
+        "Verify battery state of charge and health",
+        "Inspect motor branch load — mechanical overload pulls bus down"
+      ],
+      "counter_evidence": [
+        "Transient sag during motor start is expected",
+        "Metering lag can make bus appear low while recovering"
+      ],
+      "authority": "No automatic action taken. Operator confirmation required before any response."
+    }
+  }
+}

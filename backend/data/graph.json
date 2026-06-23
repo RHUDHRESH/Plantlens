@@ -1,0 +1,62 @@
+{
+  "version": "1.0",
+  "approved_by": "Rhudhresh K.",
+  "approved_date": "2026-06-22",
+  "nodes": [
+    { "id": "MOTOR.vibration_HIGH", "equipment_id": "MOTOR-M04", "alarm_type": "HIGH" },
+    { "id": "MOTOR.temperature_HIGH", "equipment_id": "MOTOR-M04", "alarm_type": "HIGH" },
+    { "id": "VFD.current_HIGH", "equipment_id": "VFD", "alarm_type": "HIGH" },
+    { "id": "MOTOR.speed_LOW", "equipment_id": "MOTOR-M04", "alarm_type": "LOW" },
+    { "id": "DCBUS.voltage_LOW", "equipment_id": "DCBUS", "alarm_type": "LOW" }
+  ],
+  "edges": [
+    {
+      "id": "edge_001",
+      "cause": "MOTOR.vibration_HIGH",
+      "effect": "MOTOR.temperature_HIGH",
+      "propagation_min_s": 2,
+      "propagation_max_s": 60,
+      "confidence_prior": 0.87,
+      "approved_by": "Rhudhresh K.",
+      "approved_date": "2026-06-22",
+      "source_reference": "HAZOP worksheet row 14",
+      "hash": "sha256:a3f2c8e91b4d5f6a7c8e9d0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9c91"
+    },
+    {
+      "id": "edge_002",
+      "cause": "MOTOR.temperature_HIGH",
+      "effect": "VFD.current_HIGH",
+      "propagation_min_s": 5,
+      "propagation_max_s": 45,
+      "confidence_prior": 0.79,
+      "approved_by": "Rhudhresh K.",
+      "approved_date": "2026-06-22",
+      "source_reference": "HAZOP worksheet row 15",
+      "hash": "sha256:b7d4e2f1a3c5d7e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0f44"
+    },
+    {
+      "id": "edge_003",
+      "cause": "VFD.current_HIGH",
+      "effect": "MOTOR.speed_LOW",
+      "propagation_min_s": 3,
+      "propagation_max_s": 30,
+      "confidence_prior": 0.91,
+      "approved_by": "Rhudhresh K.",
+      "approved_date": "2026-06-22",
+      "source_reference": "HAZOP worksheet row 16",
+      "hash": "sha256:c2e6a8d0f1b3c5d7e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9a88"
+    },
+    {
+      "id": "edge_004",
+      "cause": "MOTOR.speed_LOW",
+      "effect": "DCBUS.voltage_LOW",
+      "propagation_min_s": 2,
+      "propagation_max_s": 40,
+      "confidence_prior": 0.75,
+      "approved_by": "Rhudhresh K.",
+      "approved_date": "2026-06-22",
+      "source_reference": "HAZOP worksheet row 17",
+      "hash": "sha256:d4f8b0c2e4a6c8e0f2a4b6c8e0f2a4b6c8e0f2a4b6c8e0f2a4b6c8e0f2a4"
+    }
+  ]
+}

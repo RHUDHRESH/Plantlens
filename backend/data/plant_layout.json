@@ -1,0 +1,24 @@
+{
+  "plant_layout": {
+    "positions": {
+      "horizontal": {
+        "PV-SOURCE": { "x": 40, "y": 60 },
+        "MAINS-CHARGER": { "x": 40, "y": 140 },
+        "BATTERY": { "x": 180, "y": 100 },
+        "INVERTER": { "x": 40, "y": 220 },
+        "DCBUS": { "x": 320, "y": 100 },
+        "VFD": { "x": 460, "y": 100 },
+        "MOTOR-M04": { "x": 600, "y": 100 }
+      },
+      "vertical": {
+        "PV-SOURCE": { "x": 120, "y": 40 },
+        "MAINS-CHARGER": { "x": 120, "y": 120 },
+        "BATTERY": { "x": 120, "y": 200 },
+        "INVERTER": { "x": 120, "y": 280 },
+        "DCBUS": { "x": 120, "y": 360 },
+        "VFD": { "x": 120, "y": 440 },
+        "MOTOR-M04": { "x": 120, "y": 520 }
+      }
+    }
+  }
+}

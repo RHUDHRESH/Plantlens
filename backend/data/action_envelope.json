@@ -1,0 +1,51 @@
+{
+  "version": "1.0",
+  "actions": [
+    {
+      "id": "INSPECT_MOTOR_BEARING",
+      "action_code": 601,
+      "label": "Inspect motor bearing, coupling, and shaft load",
+      "root_alarm_ids": ["MOTOR.vibration_HIGH", "MOTOR.temperature_HIGH"],
+      "allowed_roles": ["operator", "maintenance"],
+      "risk_level": "medium",
+      "requires_isolation": true,
+      "safety_note": "Follow site isolation procedure before touching rotating equipment.",
+      "target_equipment_id": "MOTOR-M04",
+      "blocked_if": []
+    },
+    {
+      "id": "VERIFY_VFD_SETTINGS",
+      "action_code": 602,
+      "label": "Verify VFD output frequency and parameter settings",
+      "root_alarm_ids": ["VFD.current_HIGH"],
+      "allowed_roles": ["operator", "engineer"],
+      "risk_level": "low",
+      "requires_isolation": false,
+      "target_equipment_id": "VFD",
+      "blocked_if": ["MOTOR.temperature_HIGH"]
+    },
+    {
+      "id": "CHECK_DC_BUS_INPUT",
+      "action_code": 603,
+      "label": "Check DC bus input sources and battery state",
+      "root_alarm_ids": ["DCBUS.voltage_LOW"],
+      "allowed_roles": ["operator", "maintenance"],
+      "risk_level": "medium",
+      "requires_isolation": false,
+      "target_equipment_id": "DCBUS",
+      "blocked_if": []
+    },
+    {
+      "id": "REQUEST_SAFE_STOP_MOTOR",
+      "action_code": 610,
+      "label": "Request safe stop for motor M-04",
+      "root_alarm_ids": ["MOTOR.vibration_HIGH", "MOTOR.temperature_HIGH", "MOTOR.speed_LOW"],
+      "allowed_roles": ["operator", "maintenance"],
+      "risk_level": "high",
+      "requires_operator_confirm": true,
+      "target_equipment_id": "MOTOR-M04",
+      "blocked_if": ["MOTOR.temperature_HIHI"],
+      "blocked_message": "Safe-stop request blocked while motor HIHI thermal alarm is active."
+    }
+  ]
+}

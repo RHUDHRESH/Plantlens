@@ -1,0 +1,31 @@
+{
+  "plant_id": "physical_bench_001",
+  "name": "PlantLens Physical Bench",
+  "version": "1.0",
+  "timezone": "Asia/Kolkata",
+  "topology": "electrical_dc_microgrid",
+  "areas": [
+    { "id": "SOURCES", "name": "Generation Sources", "kind": "generation" },
+    { "id": "DISTRIBUTION", "name": "DC Distribution", "kind": "distribution" },
+    { "id": "DRIVES", "name": "Motor Drives", "kind": "conversion" },
+    { "id": "MOTOR", "name": "Motor Load", "kind": "consumption" }
+  ],
+  "assets": [
+    { "id": "PV-SOURCE", "type": "source.solar", "display_name": "PV Source (M1)", "area_id": "SOURCES", "criticality": "medium" },
+    { "id": "MAINS-CHARGER", "type": "source.mains", "display_name": "Mains Charger (M2)", "area_id": "SOURCES", "criticality": "medium" },
+    { "id": "BATTERY", "type": "storage.battery", "display_name": "24V Battery (M3)", "area_id": "SOURCES", "criticality": "high" },
+    { "id": "INVERTER", "type": "drive.inverter", "display_name": "AC Inverter (M4)", "area_id": "SOURCES", "criticality": "medium" },
+    { "id": "DCBUS", "type": "distribution.dc_bus", "display_name": "DC Bus", "area_id": "DISTRIBUTION", "criticality": "high" },
+    { "id": "VFD", "type": "drive.vfd", "display_name": "Variable Frequency Drive", "area_id": "DRIVES", "criticality": "high" },
+    { "id": "MOTOR-M04", "type": "load.motor_3phase", "display_name": "Motor M-04", "area_id": "MOTOR", "criticality": "high" }
+  ],
+  "connections": [
+    { "from": "PV-SOURCE", "to": "DCBUS", "kind": "power" },
+    { "from": "MAINS-CHARGER", "to": "DCBUS", "kind": "power" },
+    { "from": "BATTERY", "to": "DCBUS", "kind": "power" },
+    { "from": "DCBUS", "to": "VFD", "kind": "power" },
+    { "from": "VFD", "to": "MOTOR-M04", "kind": "power" },
+    { "from": "INVERTER", "to": "DCBUS", "kind": "power" }
+  ],
+  "roles": ["operator", "engineer", "maintenance", "supervisor", "admin"]
+}
