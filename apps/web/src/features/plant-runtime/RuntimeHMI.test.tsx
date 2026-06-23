@@ -47,6 +47,30 @@ vi.mock("../../api/hmi", () => ({
   isRuntimeEndpointUnavailable: vi.fn(() => true),
 }));
 
+vi.mock("../connection/api", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../connection/api")>();
+  return {
+    ...actual,
+    listPorts: vi.fn().mockResolvedValue([]),
+    getConnectionStatus: vi.fn().mockResolvedValue({
+      connected: false,
+      port: null,
+      slaveId: null,
+      pollHz: null,
+      lastPollTs: null,
+      okCount: 0,
+      errorCount: 0,
+      lastError: null,
+    }),
+    getModelBundle: vi.fn().mockResolvedValue({ tags: [] }),
+    connectModbus: vi.fn(),
+    disconnectModbus: vi.fn(),
+    scanRegisters: vi.fn().mockResolvedValue([]),
+    testRead: vi.fn(),
+    commitBindings: vi.fn(),
+  };
+});
+
 import { getCompiledBundle, getGatewayStatus, getRuntimeSnapshot } from "../../api/client";
 import { getRuntimeHmiState } from "../../api/hmi";
 
@@ -247,5 +271,14 @@ describe("RuntimeHMI", () => {
     expect(screen.getByRole("button", { name: /Horizontal/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Zoom in/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Zoom out/i })).toBeInTheDocument();
+  });
+
+  it("navigates to COMMS connection screen", async () => {
+    wrap(<RuntimeHMI />);
+    await screen.findByText("Plant hierarchy");
+    fireEvent.click(screen.getByRole("button", { name: "Connection" }));
+    expect(await screen.findByText("Connection / Commissioning")).toBeInTheDocument();
+    expect(screen.getByText(/No control writes/i)).toBeInTheDocument();
+    expect(screen.queryByText("Plant hierarchy")).not.toBeInTheDocument();
   });
 });

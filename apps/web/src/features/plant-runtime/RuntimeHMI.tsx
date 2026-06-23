@@ -50,6 +50,7 @@ import { selectAuthoredBundleInput, useStudioDraftStore } from "../studio-forms"
 import { StudioLaunchpad, useStudioRoute } from "../studio-launchpad";
 import { AppIconRail, type AppScreen } from "../../components/shell/AppIconRail";
 import { AtlasScreen } from "../atlas";
+import { ConnectionScreen } from "../connection";
 import { useAtlasStore } from "../../app/store/atlas";
 
 function derivePlantHealth(assetStatus: Record<string, string>): string {
@@ -574,6 +575,23 @@ export function RuntimeHMI() {
             <ScenarioLauncher onClose={() => setScenarioOpen(false)} />
           </div>
         )}
+      </ScreenWrap>
+
+      {/* ── CONNECTION screen ── */}
+      <ScreenWrap active={screen === "connection"} className="runtime-hmi__connection flex flex-1 min-h-0 flex-col">
+        <ConnectionScreen
+          runtimeConnection={connection}
+          runtimeTags={tags}
+          runtimeLastSnapshotTs={lastSnapshotTs}
+          onOpenAtlas={(assetId) => {
+            setScreen("atlas");
+            if (assetId) {
+              selectAsset(assetId);
+              focusAsset(assetId);
+              useAtlasStore.getState().selectEquipment(assetId);
+            }
+          }}
+        />
       </ScreenWrap>
 
       {/* ── ALARMS screen ── */}

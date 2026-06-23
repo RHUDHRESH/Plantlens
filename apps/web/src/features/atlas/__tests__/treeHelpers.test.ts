@@ -4,6 +4,8 @@ import type { TagFrame } from "../../../app/schemas/tagFrame";
 import {
   alarmsInLastTenMinutes,
   buildCausalPath,
+  countDegradedTags,
+  formatTagValue,
   getUnitForTag,
   formatTreeValue,
   tagNumericValue,
@@ -115,6 +117,58 @@ describe("atlas treeHelpers", () => {
     };
     expect(buildCausalPath(situation)).toEqual(["MTR-301", "BUS-101", "INV-102"]);
     expect(buildCausalPath(null)).toEqual([]);
+  });
+
+  it("formatTagValue hides BAD values as em dash", () => {
+    const bad: TagFrame = {
+      tag_id: "MOTOR_301_RPM",
+      asset_id: "MTR-301",
+      value: 0,
+      unit: "rpm",
+      quality: "BAD",
+      timestamp: "2026-01-01T10:00:00Z",
+      source: "modbus_rtu",
+      seq: 1,
+    };
+    expect(formatTagValue(bad, "rpm")).toEqual({ display: "—", quality: "BAD" });
+  });
+
+  it("formatTagValue shows GOOD numeric values", () => {
+    const good: TagFrame = {
+      tag_id: "MOTOR_301_RPM",
+      asset_id: "MTR-301",
+      value: 842,
+      unit: "rpm",
+      quality: "GOOD",
+      timestamp: "2026-01-01T10:00:00Z",
+      source: "modbus_rtu",
+      seq: 1,
+    };
+    expect(formatTagValue(good).display).toContain("842");
+  });
+
+  it("counts degraded tags", () => {
+    const tags: Record<string, TagFrame> = {
+      A: {
+        tag_id: "A",
+        asset_id: "X",
+        value: 1,
+        unit: "",
+        quality: "BAD",
+        timestamp: "2026-01-01T10:00:00Z",
+        source: "simulator",
+      },
+      B: {
+        tag_id: "B",
+        asset_id: "X",
+        value: 2,
+        unit: "",
+        quality: "GOOD",
+        timestamp: "2026-01-01T10:00:00Z",
+        source: "simulator",
+      },
+    };
+    expect(countDegradedTags(tags)).toBe(1);
   });
 
   it("counts alarms in the last ten minutes", () => {

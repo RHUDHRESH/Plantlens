@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import type { ActiveAlarm } from "../../api/types";
 import type { CalmCard } from "../../app/schemas/calmCard";
 import type { Situation } from "../../app/schemas/situation";
@@ -10,6 +10,7 @@ import { AtlasPlantMap } from "./AtlasPlantMap";
 import { PlantHealthPanel } from "./PlantHealthPanel";
 import { SituationPanel } from "./SituationPanel";
 import { StatusStrip } from "./StatusStrip";
+import { countDegradedTags } from "./treeHelpers";
 
 export interface AtlasScreenProps {
   tags: Record<string, TagFrame>;
@@ -49,6 +50,7 @@ export function AtlasScreen({
 }: AtlasScreenProps) {
   const selectEquipment = useAtlasStore((s) => s.selectEquipment);
   const situationActive = Boolean(activeSituation);
+  const degradedTagCount = useMemo(() => countDegradedTags(tags), [tags]);
 
   const handleSelectEquipment = useCallback(
     (equipmentId: string) => {
@@ -110,6 +112,7 @@ export function AtlasScreen({
         situations={situations}
         alarms={alarms}
         plantHealthy={plantHealthy}
+        degradedTagCount={degradedTagCount}
         onViewRawAlarms={onViewRawAlarms}
       />
 

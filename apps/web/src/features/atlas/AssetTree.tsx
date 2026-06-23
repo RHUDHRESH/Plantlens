@@ -35,6 +35,14 @@ export function AssetTree({ className, tags, situations, assetStatus, onSelectEq
     return result;
   }, [tags]);
 
+  const qualitiesByTag = useMemo(() => {
+    const result: Record<string, DataQuality> = {};
+    for (const [tagId, frame] of Object.entries(tags)) {
+      result[tagId] = frame.quality ?? "BAD";
+    }
+    return result;
+  }, [tags]);
+
   return (
     <div className={cn("overflow-y-auto flex-1", className)}>
       <div className="p-3 text-[11px] font-semibold uppercase tracking-wide text-ink-500 mb-2">
@@ -52,6 +60,7 @@ export function AssetTree({ className, tags, situations, assetStatus, onSelectEq
             selectedEquipmentId={selectedEquipmentId ?? null}
             qualityByEquipment={qualityByEquipment}
             valuesByTag={valuesByTag}
+            qualitiesByTag={qualitiesByTag}
           />
         ))}
       </div>

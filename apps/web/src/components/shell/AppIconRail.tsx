@@ -1,4 +1,4 @@
-export type AppScreen = "atlas" | "alarms" | "event" | "twin" | "actions";
+export type AppScreen = "atlas" | "connection" | "alarms" | "event" | "twin" | "actions";
 
 interface AppIconRailProps {
   screen: AppScreen;
@@ -45,6 +45,22 @@ export function AppIconRail({
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
             <path d="M9 3 3 5v16l6-2 6 2 6-2V3l-6 2-6-2Z" />
             <path d="M9 3v16M15 5v16" />
+          </svg>
+        </RailBtn>
+
+        <RailBtn
+          id="connection"
+          label="COMMS"
+          title="Connection / Commissioning"
+          ariaLabel="Connection"
+          active={screen === "connection"}
+          onNav={onNav}
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+            <path d="M12 22v-5" />
+            <path d="M9 17h6" />
+            <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+            <rect x="5" y="11" width="14" height="7" rx="2" />
           </svg>
         </RailBtn>
 
@@ -99,20 +115,24 @@ function RailBtn({
   active,
   onNav,
   children,
+  title,
+  ariaLabel,
 }: {
   id: AppScreen;
   label: string;
   active: boolean;
   onNav: (s: AppScreen) => void;
   children: React.ReactNode;
+  title?: string;
+  ariaLabel?: string;
 }) {
   return (
     <button
       type="button"
       className={`app-icon-rail__btn${active ? " app-icon-rail__btn--active" : ""}`}
-      title={label}
+      title={title ?? label}
       onClick={() => onNav(id)}
-      aria-label={label}
+      aria-label={ariaLabel ?? label}
       aria-current={active ? "page" : undefined}
     >
       {children}

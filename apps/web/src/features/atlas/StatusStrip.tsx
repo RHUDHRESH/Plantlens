@@ -8,6 +8,7 @@ interface StatusStripProps {
   situations: Situation[];
   alarms: ActiveAlarm[];
   plantHealthy: boolean;
+  degradedTagCount?: number;
   onViewRawAlarms: () => void;
 }
 
@@ -15,11 +16,13 @@ export function StatusStrip({
   situations,
   alarms,
   plantHealthy,
+  degradedTagCount = 0,
   onViewRawAlarms,
 }: StatusStripProps) {
   const situationCount = situations.length;
   const alarmRate = alarmsInLastTenMinutes(alarms);
   const isFlood = alarmRate > 10;
+  const liveDataDegraded = degradedTagCount > 0 && situationCount === 0 && alarms.length === 0;
 
   return (
     <footer
@@ -30,18 +33,26 @@ export function StatusStrip({
         <span
           className={cn(
             "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-pill text-[11px] font-semibold uppercase tracking-wide",
-            plantHealthy && situationCount === 0
-              ? "bg-healthy/10 text-healthy"
-              : "bg-critical-tint text-critical",
+            liveDataDegraded
+              ? "bg-advisory-tint text-advisory"
+              : plantHealthy && situationCount === 0
+                ? "bg-healthy/10 text-healthy"
+                : "bg-critical-tint text-critical",
           )}
         >
           <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden />
-          {plantHealthy && situationCount === 0
-            ? "All nominal"
-            : `${situationCount} situation${situationCount === 1 ? "" : "s"} active`}
+          {liveDataDegraded
+            ? "Live data degraded"
+            : plantHealthy && situationCount === 0
+              ? "All nominal"
+              : `${situationCount} situation${situationCount === 1 ? "" : "s"} active`}
         </span>
         <span className="text-xs text-ink-500 hidden sm:inline">
-          {situationCount === 0 ? "Plant healthy" : "Review situation panel"}
+          {liveDataDegraded
+            ? `${degradedTagCount} tag(s) not good`
+            : situationCount === 0
+              ? "Plant healthy"
+              : "Review situation panel"}
         </span>
       </div>
 

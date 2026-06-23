@@ -12,6 +12,7 @@ interface TreeNodeProps {
   selectedEquipmentId?: string | null;
   qualityByEquipment: Record<string, DataQuality>;
   valuesByTag: Record<string, number | null>;
+  qualitiesByTag: Record<string, DataQuality>;
 }
 
 const DOT_CLASS: Record<DataQuality | "unknown", string> = {
@@ -32,6 +33,7 @@ export function TreeNode({
   selectedEquipmentId,
   qualityByEquipment,
   valuesByTag,
+  qualitiesByTag,
 }: TreeNodeProps) {
   const isSelected = node.equipment_id === selectedEquipmentId;
   const hasChildren = Boolean(node.children?.length);
@@ -84,8 +86,18 @@ export function TreeNode({
         <span className="text-sm text-ink-900 truncate">{node.label}</span>
 
         {leafTag && (
-          <span className="text-xs text-ink-500 font-mono ml-auto shrink-0 tabular-nums">
-            {formatTreeValue(leafTag, valuesByTag[leafTag] ?? null)} {getUnitForTag(leafTag)}
+          <span className="ml-auto shrink-0 flex items-center gap-1.5">
+            <span className="text-xs text-ink-500 font-mono tabular-nums">
+              {formatTreeValue(leafTag, valuesByTag[leafTag] ?? null)}{" "}
+              {getUnitForTag(leafTag)}
+            </span>
+            {qualitiesByTag[leafTag] && qualitiesByTag[leafTag] !== "GOOD" && (
+              <span
+                className={cn("w-1.5 h-1.5 rounded-full shrink-0", DOT_CLASS[qualitiesByTag[leafTag]])}
+                title={qualitiesByTag[leafTag]}
+                aria-label={qualitiesByTag[leafTag]}
+              />
+            )}
           </span>
         )}
       </div>
@@ -103,6 +115,7 @@ export function TreeNode({
               selectedEquipmentId={selectedEquipmentId ?? null}
               qualityByEquipment={qualityByEquipment}
               valuesByTag={valuesByTag}
+              qualitiesByTag={qualitiesByTag}
             />
           ))}
         </div>

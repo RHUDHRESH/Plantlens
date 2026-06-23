@@ -1,34 +1,49 @@
-import { Check } from "lucide-react";
+import { AlertTriangle, Check } from "lucide-react";
 import type { ActiveAlarm } from "../../api/types";
 import type { TagFrame } from "../../app/schemas/tagFrame";
-import { alarmsInLastTenMinutes, tagNumericValue } from "./treeHelpers";
+import { alarmsInLastTenMinutes, countDegradedTags, formatTagValue } from "./treeHelpers";
 
 interface PlantHealthPanelProps {
   tags: Record<string, TagFrame>;
   alarms: ActiveAlarm[];
 }
 
-function displayValue(tagId: string, tags: Record<string, TagFrame>, digits = 1): string {
-  const value = tagNumericValue(tags[tagId]);
-  if (value === null) return "—";
-  return digits === 0 ? value.toFixed(0) : value.toFixed(digits);
+function panelValue(tagId: string, tags: Record<string, TagFrame>, fallbackUnit: string): string {
+  const formatted = formatTagValue(tags[tagId], fallbackUnit);
+  if (formatted.display === "—" && fallbackUnit) return `— ${fallbackUnit}`;
+  return formatted.display;
 }
 
 export function PlantHealthPanel({ tags, alarms }: PlantHealthPanelProps) {
   const alarmRate = alarmsInLastTenMinutes(alarms);
   const isFlood = alarmRate > 10;
+  const degradedTagCount = countDegradedTags(tags);
+  const liveDataDegraded = degradedTagCount > 0 && alarms.length === 0;
 
   return (
     <div className="flex flex-col h-full bg-surface">
       <div className="px-4 py-4 border-b border-line">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-6 h-6 rounded-full flex items-center justify-center bg-healthy/15 text-healthy">
-            <Check size={14} strokeWidth={1.75} />
-          </div>
-          <span className="text-base font-semibold text-ink-900">All nominal</span>
+          {liveDataDegraded ? (
+            <>
+              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-advisory-tint text-advisory">
+                <AlertTriangle size={14} strokeWidth={1.75} />
+              </div>
+              <span className="text-base font-semibold text-ink-900">Live data degraded</span>
+            </>
+          ) : (
+            <>
+              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-healthy/15 text-healthy">
+                <Check size={14} strokeWidth={1.75} />
+              </div>
+              <span className="text-base font-semibold text-ink-900">All nominal</span>
+            </>
+          )}
         </div>
         <p className="text-xs text-ink-500">
-          No active situations · {alarmRate} alarms in last 10 min
+          {liveDataDegraded
+            ? `${degradedTagCount} tag(s) not good · no active situations`
+            : `No active situations · ${alarmRate} alarms in last 10 min`}
         </p>
       </div>
 
@@ -37,7 +52,7 @@ export function PlantHealthPanel({ tags, alarms }: PlantHealthPanelProps) {
         <div className="mb-6">
           <div className="flex items-baseline gap-1 mb-1">
             <span className="text-[28px] leading-[34px] font-semibold font-mono tabular-nums text-ink-900">
-              {displayValue("BUS_101_V", tags)}
+              {panelValue("BUS_101_V", tags, "V").replace(/ V$/, "")}
             </span>
             <span className="text-xs text-ink-500">V</span>
           </div>
@@ -49,7 +64,7 @@ export function PlantHealthPanel({ tags, alarms }: PlantHealthPanelProps) {
           <div>
             <div className="flex items-baseline gap-1 mb-1">
               <span className="text-base font-semibold font-mono tabular-nums text-ink-900">
-                {displayValue("MOTOR_301_RPM", tags, 0)}
+                {panelValue("MOTOR_301_RPM", tags, "rpm").replace(/ rpm$/, "")}
               </span>
               <span className="text-xs text-ink-500">RPM</span>
             </div>
@@ -58,7 +73,7 @@ export function PlantHealthPanel({ tags, alarms }: PlantHealthPanelProps) {
           <div>
             <div className="flex items-baseline gap-1 mb-1">
               <span className="text-base font-semibold font-mono tabular-nums text-ink-900">
-                {displayValue("MOTOR_301_TEMP", tags)}
+                {panelValue("MOTOR_301_TEMP", tags, "°C").replace(/ °C$/, "")}
               </span>
               <span className="text-xs text-ink-500">°C</span>
             </div>
@@ -67,7 +82,7 @@ export function PlantHealthPanel({ tags, alarms }: PlantHealthPanelProps) {
           <div>
             <div className="flex items-baseline gap-1 mb-1">
               <span className="text-base font-semibold font-mono tabular-nums text-ink-900">
-                {displayValue("MOTOR_301_VIB", tags)}
+                {panelValue("MOTOR_301_VIB", tags, "mm/s").replace(/ mm\/s$/, "")}
               </span>
               <span className="text-xs text-ink-500">mm/s</span>
             </div>
@@ -82,17 +97,11 @@ export function PlantHealthPanel({ tags, alarms }: PlantHealthPanelProps) {
             <span className="text-xs text-ink-500">alarms / 10 min</span>
           </div>
           <div className="text-xs text-ink-500">ISA-18.2 flood threshold: &gt;10 alarms</div>
-          <div className={cnHealth(isFlood)}>
+          <div className={isFlood ? "text-xs mt-2 text-critical" : "text-xs mt-2 text-healthy"}>
             {isFlood ? "Flood active" : "✓ All normal"}
           </div>
         </div>
       </div>
     </div>
   );
-}
-
-function cnHealth(isFlood: boolean): string {
-  return isFlood
-    ? "text-xs mt-2 text-critical"
-    : "text-xs mt-2 text-healthy";
 }
