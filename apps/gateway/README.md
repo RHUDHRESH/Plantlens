@@ -7,6 +7,20 @@ root cause, compiles UI, or runs an LLM. If the gateway dies, the API + last-kno
 > Optional for the demo (simulator-first covers it). Build in Chunk 7 when you want the real
 > hardware path, and Chunk 12 for the advisory PLC bridge.
 
+## Canonical runtime seam (do not bypass)
+
+```text
+apps/gateway  --POST /api/ingest/frame-->  apps/api  --WS /api/ws/runtime-->  apps/web
+```
+
+- Gateway emits contract `TagFrame` (`asset_id`, `timestamp`, `source`, `seq`, `quality`, `value`).
+- API broadcasts `type: "runtime.snapshot"` only. The web client ignores any other message shape.
+- Commissioning (`/commission/ports`, `/commission/probe`) is exposed on the gateway health server
+  (default port `9101`) and proxied by `apps/api` at `/api/gateway/ports` and `/api/gateway/probe`.
+
+**Do not use** the legacy repo-root `backend/` experiment. It speaks `LIVE`/`ALARM` WebSocket
+messages and a different tag shape. That path is gitignored and not part of the product.
+
 ## Files
 | File | Responsibility |
 |------|----------------|

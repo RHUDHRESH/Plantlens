@@ -43,6 +43,48 @@ export interface RuntimeSnapshot {
   asset_status: Record<string, AssetStatus>;
 }
 
+export interface GatewaySerialPort {
+  device: string;
+  description: string;
+  hwid: string;
+}
+
+export interface GatewayPortsResponse {
+  status: "ok" | "unavailable";
+  checked_at: string;
+  ports: GatewaySerialPort[];
+  gateway_reachable: boolean;
+  detail?: string;
+}
+
+export interface GatewayPortProbeResponse {
+  status: "ok" | "unavailable";
+  checked_at: string;
+  port: string;
+  available: boolean;
+  detail?: string;
+}
+
+export interface GatewayConnectionStatus {
+  status: "ok";
+  checked_at: string;
+  api_runtime: GatewayStatus["api_runtime"];
+  gateway_health: GatewayStatus["gateway_health"];
+  poller: null | {
+    status?: string;
+    last_good_read_ts?: string | null;
+    error_count?: number;
+    crc_failures?: number;
+    reconnect_count?: number;
+    stale_tag_count?: number;
+  };
+  contract: {
+    websocket: string;
+    message_type: string;
+    ingest: string;
+  };
+}
+
 export interface GatewayStatus {
   status: "ok";
   checked_at: string;

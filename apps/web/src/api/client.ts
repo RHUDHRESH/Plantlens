@@ -2,7 +2,15 @@
  * Typed REST client — no diagnosis logic; surfaces structured {code,message,fix} errors.
  */
 import { getApiBaseUrl, getAuthToken } from "./config";
-import type { ApiErrorBody, CompiledBundle, GatewayStatus, RuntimeSnapshot } from "./types";
+import type {
+  ApiErrorBody,
+  CompiledBundle,
+  GatewayConnectionStatus,
+  GatewayPortProbeResponse,
+  GatewayPortsResponse,
+  GatewayStatus,
+  RuntimeSnapshot,
+} from "./types";
 import { ApiError } from "./types";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -89,6 +97,26 @@ export function getRuntimeSnapshot(signal?: AbortSignal): Promise<RuntimeSnapsho
 
 export function getGatewayStatus(signal?: AbortSignal): Promise<GatewayStatus> {
   return apiFetch<GatewayStatus>("/api/gateway/status", signal ? { signal } : {});
+}
+
+export function getGatewayPorts(signal?: AbortSignal): Promise<GatewayPortsResponse> {
+  return apiFetch<GatewayPortsResponse>("/api/gateway/ports", signal ? { signal } : {});
+}
+
+export function probeGatewayPort(
+  port: string,
+  baudrate = 9600,
+  signal?: AbortSignal,
+): Promise<GatewayPortProbeResponse> {
+  const params = new URLSearchParams({ port, baudrate: String(baudrate) });
+  return apiFetch<GatewayPortProbeResponse>(`/api/gateway/probe?${params}`, signal ? { signal } : {});
+}
+
+export function getGatewayConnectionStatus(signal?: AbortSignal): Promise<GatewayConnectionStatus> {
+  return apiFetch<GatewayConnectionStatus>(
+    "/api/gateway/connection/status",
+    signal ? { signal } : {},
+  );
 }
 
 export function ackAlarm(alarmId: string): Promise<{ status: string; alarm_id: string; audit_id: string }> {

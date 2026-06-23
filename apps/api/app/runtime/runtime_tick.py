@@ -223,6 +223,13 @@ def evaluate_runtime_tick(
     }
 
 
+def _sanitize_unusable_values(frame: TagFrame) -> TagFrame:
+    """Non-GOOD qualities must not carry process values into the runtime seam."""
+    if frame.quality in {"BAD", "STALE", "MISSING"} and frame.value is not None:
+        return frame.model_copy(update={"value": None})
+    return frame
+
+
 def on_tag_frame(
     state: RuntimeState,
     frame: TagFrame,
@@ -231,7 +238,8 @@ def on_tag_frame(
     now = frame.timestamp
     if now.tzinfo is None:
         now = now.replace(tzinfo=timezone.utc)
-    normalized = normalize_tag_quality(frame, config, state, now=now)
+    sanitized = _sanitize_unusable_values(frame)
+    normalized = normalize_tag_quality(sanitized, config, state, now=now)
     if normalized.ingest_ts is None and frame.source != "simulator":
         normalized = normalized.model_copy(update={"ingest_ts": now})
     state.update_tag(normalized)

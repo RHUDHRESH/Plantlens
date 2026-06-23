@@ -5,6 +5,7 @@ import {
   alarmsInLastTenMinutes,
   buildCausalPath,
   getUnitForTag,
+  formatTreeValue,
   tagNumericValue,
   walkTreeForQuality,
   walkTreeForValues,
@@ -15,6 +16,21 @@ describe("atlas treeHelpers", () => {
   it("returns units for known tags", () => {
     expect(getUnitForTag("MOTOR_301_RPM")).toBe("rpm");
     expect(getUnitForTag("UNKNOWN")).toBe("");
+  });
+
+  it("never surfaces numeric values when quality is BAD", () => {
+    const badWithZero: TagFrame = {
+      tag_id: "MOTOR_301_RPM",
+      asset_id: "MTR-301",
+      value: 0,
+      unit: "rpm",
+      quality: "BAD",
+      timestamp: "2026-01-01T10:00:00Z",
+      source: "modbus_rtu",
+      seq: 1,
+    };
+    expect(tagNumericValue(badWithZero)).toBeNull();
+    expect(formatTreeValue("MOTOR_301_RPM", tagNumericValue(badWithZero))).toBe("—");
   });
 
   it("reads numeric values only when quality is GOOD", () => {
