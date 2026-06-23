@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+
 import type { MapNodeDetailPolicy } from "../operational-map/detailPolicy";
 import type { MapZoomBand } from "../operational-map";
 import { AssetIcon } from "./iconRegistry";
@@ -97,9 +97,9 @@ export function PlantNode({
   const y = node.position?.y ?? 0;
   const transition = reducedMotion ? undefined : "stroke 180ms, fill 180ms";
   const abnormal = isAbnormalStatus(status) || isRoot || isAffected;
-  const showHalo =
-    visual.halo && (status === "warning" || status === "critical" || isAffected);
-  const haloSteady = status === "critical" || isRoot || reducedMotion;
+  const showAbnormalRing =
+    visual.pulse && (status === "warning" || status === "critical" || isAffected);
+  const ringSteady = reducedMotion;
 
   const showStatusText =
     detailPolicy.showStatusText ||
@@ -157,19 +157,13 @@ export function PlantNode({
       style={{ cursor: "pointer" }}
       className={isFocused ? "plant-node--focused" : undefined}
     >
-      {showHalo && (
+      {showAbnormalRing && (
         <path
           d={haloPath(NODE_W, NODE_H, 4)}
           fill="none"
           stroke={visual.border}
           strokeWidth={status === "critical" || isRoot ? 2.5 : 2}
-          opacity={haloSteady ? 0.45 : 0.35}
-          className={haloSteady ? "status-halo--steady" : reducedMotion ? undefined : "status-halo"}
-          style={
-            !haloSteady && !reducedMotion
-              ? ({ ["--halo-duration" as string]: visual.haloDuration } as CSSProperties)
-              : undefined
-          }
+          className={ringSteady ? undefined : "abnormal-asset-pulse"}
         />
       )}
 
@@ -276,7 +270,7 @@ export function PlantNode({
       {detailPolicy.showCausalStep && pathStep !== undefined && (
         <g transform={`translate(${NODE_W - 16}, ${NODE_H - 14})`}>
           <path d="M 8,0 L 16,8 L 8,16 L 0,8 Z" fill="var(--accent)" />
-          <text x={8} y={12} textAnchor="middle" fill="#fff" fontSize={10} fontWeight={700}>
+          <text x={8} y={12} textAnchor="middle" fill="var(--inverse)" fontSize={10} fontWeight={700}>
             {pathStep}
           </text>
         </g>

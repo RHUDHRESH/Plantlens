@@ -5,6 +5,7 @@ import { RouterProvider } from "react-router-dom";
 import { queryClient } from "./app/queryClient";
 import { router } from "./app/router";
 import "./styles/tokens.css";
+import "./styles/tailwind.css";
 import "./styles/globals.css";
 import "./styles/runtime.css";
 

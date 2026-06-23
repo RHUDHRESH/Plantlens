@@ -4,15 +4,15 @@
  */
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-// import tailwindcss from "@tailwindcss/vite";  // add in Chunk 5
+import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  plugins: [react() /*, tailwindcss() */],
+  plugins: [react(), tailwindcss()],
   server: {
     port: 5173,
     proxy: {
       "/internal": { target: "http://localhost:8000", changeOrigin: true },
-      "/api": { target: "http://localhost:8000", changeOrigin: true },
+      "/api": { target: "http://localhost:8000", changeOrigin: true, ws: true },
       "/ws": { target: "ws://localhost:8000", ws: true }
     }
   },

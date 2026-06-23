@@ -1,7 +1,7 @@
 .assembly-studio {
   min-height: 100vh;
-  background: #08111f;
-  color: #dce8f5;
+  background: var(--canvas);
+  color: var(--ink-900);
   padding: var(--space-lg);
   font-family: var(--font-ui, "Helvetica Neue", sans-serif);
 }
@@ -11,11 +11,11 @@
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 0.02em;
-  color: #dce8f5;
+  color: var(--ink-900);
 }
 
 .assembly-studio__title-bracket {
-  color: #1cc8ff;
+  color: var(--accent);
   opacity: 0.7;
   font-weight: 300;
 }
@@ -33,21 +33,21 @@
 }
 
 .compile-badge--pass {
-  background: rgba(0, 214, 143, 0.15);
-  color: #00d68f;
-  border: 1px solid rgba(0, 214, 143, 0.35);
+  background: var(--accent-tint);
+  color: var(--healthy);
+  border: 1px solid var(--healthy);
 }
 
 .compile-badge--warn {
-  background: rgba(245, 158, 11, 0.12);
-  color: #f59e0b;
-  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: var(--warning-tint);
+  color: var(--warning);
+  border: 1px solid var(--warning);
 }
 
 .compile-badge--fail {
-  background: rgba(239, 68, 68, 0.12);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: var(--critical-tint);
+  color: var(--critical);
+  border: 1px solid var(--critical);
 }
 
 .assembly-studio__header {
@@ -65,7 +65,7 @@
 
 .assembly-studio__header p {
   margin: 0;
-  color: #7e93aa;
+  color: var(--ink-500);
   font-size: 13px;
 }
 
@@ -75,7 +75,7 @@
 }
 
 .assembly-studio__header nav a {
-  color: #1cc8ff;
+  color: var(--accent);
   text-decoration: none;
   font-size: 13px;
 }
@@ -85,7 +85,7 @@
   padding: 10px 12px;
   border-radius: 8px;
   background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.35);
+  border: 1px solid var(--critical);
   color: #fca5a5;
   font-size: 13px;
 }
@@ -102,13 +102,13 @@
 .analysis-sidebar__header h2 {
   margin: 0 0 0.25rem;
   font-size: 1.05rem;
-  color: #dce8f5;
+  color: var(--ink-900);
 }
 
 .analysis-sidebar__header p {
   margin: 0 0 1rem;
   font-size: 0.82rem;
-  color: #7e93aa;
+  color: var(--ink-500);
 }
 
 .analysis-panel {
@@ -121,7 +121,7 @@
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  color: #7e93aa;
+  color: var(--ink-500);
 }
 
 .analysis-panel__stats {
@@ -136,11 +136,11 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.85rem;
-  color: #dce8f5;
+  color: var(--ink-900);
 }
 
 .analysis-panel__stats strong {
-  color: #1cc8ff;
+  color: var(--accent);
   font-family: ui-monospace, monospace;
 }
 
@@ -160,24 +160,24 @@
   border-radius: 3px;
   background: rgba(8, 17, 31, 0.7);
   border: 1px solid rgba(28, 200, 255, 0.12);
-  color: #dce8f5;
+  color: var(--ink-900);
 }
 
 .analysis-panel__empty,
 .analysis-muted {
-  color: #7e93aa;
+  color: var(--ink-500);
   font-size: 0.82rem;
 }
 
 .analysis-panel__error {
-  color: #ef4444;
+  color: var(--critical);
   font-size: 0.85rem;
 }
 
 .analysis-panel__warnings {
   margin: 0.5rem 0 0;
   padding-left: 1rem;
-  color: #f59e0b;
+  color: var(--warning);
   font-size: 0.82rem;
 }
 
@@ -193,17 +193,17 @@
 }
 
 .analysis-badge--observable {
-  background: rgba(0, 214, 143, 0.15);
-  color: #00D68F;
+  background: var(--accent-tint);
+  color: var(--healthy);
   border: 1px solid rgba(0, 214, 143, 0.3);
 }
 .analysis-badge--weakly_observable {
-  background: rgba(245, 158, 11, 0.12);
+  background: var(--warning-tint);
   color: #F59E0B;
   border: 1px solid rgba(245, 158, 11, 0.3);
 }
 .analysis-badge--unobservable {
-  background: rgba(239, 68, 68, 0.12);
+  background: var(--critical-tint);
   color: #EF4444;
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
@@ -219,7 +219,7 @@
   border-radius: var(--radius-sm, 3px);
   border: 1px solid rgba(28, 200, 255, 0.5);
   background: rgba(28, 200, 255, 0.1);
-  color: #1cc8ff;
+  color: var(--accent);
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
@@ -263,7 +263,7 @@
 .assembly-canvas {
   width: 100%;
   height: 600px;
-  background: linear-gradient(180deg, #08111f 0%, #0a1523 100%);
+  background: var(--canvas);
 }
 
 .assembly-node {
@@ -274,12 +274,12 @@
   /* Angular clip: top-right corner cut — low-poly MATLAB style */
   clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
   padding: 10px;
-  color: #dce8f5;
+  color: var(--ink-900);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(28, 200, 255, 0.08);
 }
 
 .assembly-node--selected {
-  border-color: #8b5cf6;
+  border-color: var(--advisory);
   box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.5), 0 0 16px rgba(139, 92, 246, 0.2);
   clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
 }
@@ -299,7 +299,7 @@
 .assembly-node__category {
   display: block;
   font-size: 10px;
-  color: #7e93aa;
+  color: var(--ink-500);
   text-transform: uppercase;
 }
 
@@ -341,27 +341,27 @@
 }
 
 .assembly-port__meta {
-  color: #7e93aa;
+  color: var(--ink-500);
   font-family: ui-monospace, monospace;
 }
 
 .assembly-port__handle {
   width: 9px !important;
   height: 9px !important;
-  border: 1.5px solid #1cc8ff !important;
-  background: #08111f !important;
+  border: 1.5px solid var(--accent) !important;
+  background: var(--canvas) !important;
   border-radius: 0 !important;
   /* Diamond — safe to use rotate vs clip-path on draggable handles */
   transform: rotate(45deg) !important;
 }
 
 .assembly-port__handle--dc_power {
-  border-color: #1cc8ff !important;
+  border-color: var(--accent) !important;
 }
 
 .assembly-port__handle--analog_signal,
 .assembly-port__handle--digital_signal {
-  border-color: #8b5cf6 !important;
+  border-color: var(--advisory) !important;
 }
 
 .assembly-port__handle--airflow {
@@ -375,7 +375,7 @@
   align-items: center;
   gap: 8px;
   font-size: 12px;
-  color: #1cc8ff;
+  color: var(--accent);
   padding: 8px 0;
   animation: spin-icon 1s linear infinite;
 }
@@ -394,17 +394,17 @@
 }
 
 .compile-result--pass {
-  border-color: #00d68f;
+  border-color: var(--healthy);
   background: rgba(0, 214, 143, 0.07);
 }
 
 .compile-result--warn {
-  border-color: #f59e0b;
+  border-color: var(--warning);
   background: rgba(245, 158, 11, 0.07);
 }
 
 .compile-result--fail {
-  border-color: #ef4444;
+  border-color: var(--critical);
   background: rgba(239, 68, 68, 0.07);
 }
 
@@ -422,13 +422,13 @@
   font-family: ui-monospace, monospace;
 }
 
-.compile-result--pass .compile-result__tag { color: #00d68f; }
-.compile-result--warn .compile-result__tag { color: #f59e0b; }
-.compile-result--fail .compile-result__tag { color: #ef4444; }
+.compile-result--pass .compile-result__tag { color: var(--healthy); }
+.compile-result--warn .compile-result__tag { color: var(--warning); }
+.compile-result--fail .compile-result__tag { color: var(--critical); }
 
 .compile-result__mode {
   font-size: 9px;
-  color: #7e93aa;
+  color: var(--ink-500);
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
@@ -453,14 +453,14 @@
 .compile-result__metric-val {
   font-size: 18px;
   font-weight: 700;
-  color: #1cc8ff;
+  color: var(--accent);
   font-family: ui-monospace, monospace;
   line-height: 1;
 }
 
 .compile-result__metric-key {
   font-size: 8px;
-  color: #7e93aa;
+  color: var(--ink-500);
   text-transform: uppercase;
   letter-spacing: 0.07em;
   margin-top: 3px;
@@ -482,12 +482,12 @@
 }
 
 .compile-result__issue--error {
-  color: #ef4444;
+  color: var(--critical);
   background: rgba(239, 68, 68, 0.08);
 }
 
 .compile-result__issue--warn {
-  color: #f59e0b;
+  color: var(--warning);
   background: rgba(245, 158, 11, 0.08);
 }
 
@@ -509,13 +509,13 @@
 .assembly-inspector h2 {
   margin: 0 0 var(--space-sm);
   font-size: 14px;
-  color: #7e93aa;
+  color: var(--ink-500);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .assembly-inspector__hint {
-  color: #7e93aa;
+  color: var(--ink-500);
   margin: 0;
 }
 
@@ -531,7 +531,7 @@
 }
 
 .assembly-inspector__dl dt {
-  color: #7e93aa;
+  color: var(--ink-500);
 }
 
 .assembly-inspector__dl dd {
@@ -541,7 +541,7 @@
 }
 
 .assembly-inspector__reason {
-  color: #1cc8ff;
+  color: var(--accent);
   margin: 0 0 var(--space-sm);
 }
 
@@ -560,10 +560,10 @@
 
 .assembly-inspector__field input,
 .assembly-inspector__field textarea {
-  background: #0e1a2a;
+  background: var(--surface);
   border: 1px solid rgba(28, 200, 255, 0.2);
   border-radius: 6px;
-  color: #dce8f5;
+  color: var(--ink-900);
   padding: 6px 8px;
 }
 
@@ -574,7 +574,7 @@
   border: 1px solid rgba(28, 200, 255, 0.35);
   border-radius: 6px;
   background: rgba(28, 200, 255, 0.1);
-  color: #1cc8ff;
+  color: var(--accent);
   cursor: pointer;
   font-size: 12px;
 }

@@ -77,7 +77,7 @@ export function OperationalDagPanel({
           <h2>Approved DAG</h2>
           <p>
             {approvedEdges.length} approved edge{approvedEdges.length === 1 ? "" : "s"}
-            {hiddenEdgeCount > 0 ? ` · ${hiddenEdgeCount} draft hidden` : ""}
+            {hiddenEdgeCount > 0 ? ` · ${hiddenEdgeCount} draft edges pending review` : ""}
           </p>
         </div>
         <span className="operational-dag__mode">

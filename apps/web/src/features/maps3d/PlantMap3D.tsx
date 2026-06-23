@@ -3,6 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { Line, OrbitControls } from "@react-three/drei";
 import type { AssetStatus } from "../maps2d/mapTypes";
 import { statusForAsset } from "../maps2d/statusStyles";
+import { getMapTheme } from "./mapTheme";
 import type { MapLayerId, MapZoomBand, UserRole } from "../operational-map";
 import type { Map3DEdge, Map3DNode } from "../ops3d/map3dTypes";
 import { SchematicAssetMesh } from "./AssetMeshes";
@@ -34,10 +35,12 @@ function PowerCable({
   from,
   to,
   highlight,
+  theme,
 }: {
   from: [number, number, number];
   to: [number, number, number];
   highlight: boolean;
+  theme: ReturnType<typeof getMapTheme>;
 }) {
   const mid: [number, number, number] = [
     (from[0] + to[0]) / 2,
@@ -47,8 +50,8 @@ function PowerCable({
   return (
     <Line
       points={[from, mid, to]}
-      color={highlight ? "#1cc8ff" : "#1a3a5c"}
-      lineWidth={highlight ? 2.5 : 1}
+      color={highlight ? theme.edgeHighlight : theme.edge}
+      lineWidth={highlight ? 2 : 1}
     />
   );
 }
@@ -104,15 +107,15 @@ function PlantScene({
   );
 
   const maxControlDistance = Math.max(sceneFit.radius * 5, 14);
+  const theme = getMapTheme();
 
   return (
     <>
-      <color attach="background" args={["#08111f"]} />
-      <ambientLight intensity={0.15} color="#0a2040" />
-      <hemisphereLight args={["#0d2a4a", "#050e1a", 0.35]} />
-      <directionalLight position={[4, 8, 3]} intensity={0.7} color="#d0eeff" castShadow />
-      <pointLight position={[0, 4, 0]} intensity={0.4} color="#1cc8ff" distance={12} />
-      <gridHelper args={[14, 28, "rgba(28,200,255,0.15)", "rgba(28,200,255,0.05)"]} position={[0, 0, 0]} />
+      <color attach="background" args={[theme.canvas]} />
+      <ambientLight intensity={0.65} color={theme.canvas} />
+      <hemisphereLight args={[theme.surface, theme.canvas, 0.55]} />
+      <directionalLight position={[4, 8, 3]} intensity={0.55} color="#FFFFFF" castShadow />
+      <gridHelper args={[14, 28, theme.zoneStroke, theme.edge]} position={[0, 0, 0]} />
       {edges.map((edge) => {
         const a = positions[edge.from];
         const b = positions[edge.to];
@@ -124,6 +127,7 @@ function PlantScene({
             from={[a.x, a.y, a.z]}
             to={[b.x, b.y, b.z]}
             highlight={highlight}
+            theme={theme}
           />
         );
       })}

@@ -72,7 +72,9 @@ export function HmiEvidenceList({ state }: HmiEvidenceListProps) {
 
       {state.suppressed_symptoms.length > 0 && (
         <div className="hmi-evidence-list__section hmi-evidence-list__section--muted">
-          <h4>Suppressed symptoms</h4>
+          <h4>
+            {state.suppressed_symptoms.length} symptoms grouped — view receipts
+          </h4>
           <ul className="hmi-evidence-list__muted">
             {state.suppressed_symptoms.map((symptom) => (
               <li key={symptom}>{symptom}</li>

@@ -68,8 +68,8 @@
 .component-card {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: linear-gradient(180deg, #0e1a2a 0%, #09131f 100%);
-  color: #dce8f5;
+  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-sunken) 100%);
+  color: var(--ink-900);
   padding: var(--space-md);
   box-shadow: var(--shadow-sm);
 }
@@ -90,7 +90,7 @@
 .component-card__id {
   margin: 2px 0 0;
   font-size: 11px;
-  color: #7e93aa;
+  color: var(--ink-500);
   font-family: ui-monospace, monospace;
 }
 
@@ -103,7 +103,7 @@
   border-radius: 4px;
   background: rgba(239, 68, 68, 0.2);
   color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.35);
+  border: 1px solid var(--critical);
 }
 
 .component-card__description {
@@ -129,7 +129,7 @@
 
 .component-card__stats dt {
   font-size: 10px;
-  color: #7e93aa;
+  color: var(--ink-500);
   text-transform: uppercase;
 }
 
@@ -137,7 +137,7 @@
   margin: 0;
   font-size: 14px;
   font-weight: 600;
-  color: #1cc8ff;
+  color: var(--accent);
 }
 
 .component-card__tags {
@@ -174,7 +174,7 @@
 .component-icon--fallback {
   background: #15263b;
   border: 1px solid rgba(28, 200, 255, 0.35);
-  color: #1cc8ff;
+  color: var(--accent);
   font-size: 12px;
   font-weight: 700;
 }

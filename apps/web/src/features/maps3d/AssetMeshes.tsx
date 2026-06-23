@@ -9,46 +9,23 @@ import type { Mesh } from "three";
 import type { AssetStatus } from "../maps2d/mapTypes";
 import type { Map3DNode } from "../ops3d/map3dTypes";
 import { resolveIconKey } from "../maps2d/iconRegistry";
+import { getMapTheme } from "./mapTheme";
 
-/* Deep base colors — the mesh body tint */
-const STATUS_COLOR: Record<AssetStatus, string> = {
-  normal: "#0a3030",
-  warning: "#4a2800",
-  critical: "#3d0000",
-  sensor_bad: "#1e1060",
-  offline: "#18181b",
-  unknown: "#18181b",
-};
-
-/* Emissive glow — what you SEE in sci-fi dark lighting */
-const STATUS_EMISSIVE: Record<AssetStatus, string> = {
-  normal: "#00d68f",
-  warning: "#f59e0b",
-  critical: "#ef4444",
-  sensor_bad: "#8b5cf6",
-  offline: "#000000",
-  unknown: "#000000",
-};
-
-const STATUS_EMISSIVE_INTENSITY: Record<AssetStatus, number> = {
-  normal: 0.28,
-  warning: 0.55,
-  critical: 0.72,
-  sensor_bad: 0.45,
-  offline: 0,
-  unknown: 0,
-};
-
-function statusColor(status: AssetStatus): string {
-  return STATUS_COLOR[status];
-}
-
-function statusEmissive(status: AssetStatus): string {
-  return STATUS_EMISSIVE[status];
-}
-
-function statusEmissiveIntensity(status: AssetStatus): number {
-  return STATUS_EMISSIVE_INTENSITY[status];
+/** ISA-101: neutral body for healthy; semantic tint only when abnormal. */
+function statusMaterial(status: AssetStatus) {
+  const theme = getMapTheme();
+  switch (status) {
+    case "warning":
+      return { color: theme.warning, emissive: theme.warning, intensity: 0.12 };
+    case "critical":
+      return { color: theme.critical, emissive: theme.critical, intensity: 0.15 };
+    case "sensor_bad":
+      return { color: theme.advisory, emissive: theme.advisory, intensity: 0.12 };
+    case "offline":
+      return { color: theme.ink300, emissive: "#000000", intensity: 0 };
+    default:
+      return { color: theme.surface, emissive: theme.assetStroke, intensity: 0.04 };
+  }
 }
 
 function MeshBody({
@@ -210,14 +187,15 @@ function GenericMesh({ color, emissive, intensity, onSelect }: { color: string; 
 }
 
 function SelectionRing({ variant }: { variant: "selected" | "focused" }) {
+  const theme = getMapTheme();
   const className = variant === "selected" ? "map3d-selected-ring" : "map3d-focus-ring";
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} userData={{ className }}>
       <ringGeometry args={[0.38, 0.44, 32]} />
       <meshBasicMaterial
-        color={variant === "selected" ? "#1cc8ff" : "#8aa4b8"}
+        color={variant === "selected" ? theme.accent : theme.ink500}
         transparent
-        opacity={variant === "selected" ? 0.95 : 0.65}
+        opacity={variant === "selected" ? 0.95 : 0.55}
         depthWrite={false}
       />
     </mesh>
@@ -250,13 +228,13 @@ export function SchematicAssetMesh({
   };
   onSelect?: (id: string) => void;
 }) {
-  const color = statusColor(status);
-  const baseEmissive = statusEmissive(status);
-  const baseIntensity = statusEmissiveIntensity(status);
+  const material = statusMaterial(status);
   const showStatus = layerHints?.showStatus ?? true;
   const showCausalStep = layerHints?.showCausalStep ?? false;
-  const emissive = showStatus ? baseEmissive : "#000000";
-  const intensity = showStatus ? baseIntensity : 0;
+  const color = showStatus ? material.color : getMapTheme().surface;
+  const emissive = showStatus ? material.emissive : "#000000";
+  const intensity = showStatus ? material.intensity : 0;
+
   const iconKey = resolveIconKey(node.asset_type);
   const click = onSelect ? () => onSelect(node.id) : undefined;
   const meshProps = {
@@ -308,7 +286,7 @@ export function SchematicAssetMesh({
       {isOnPath && showCausalStep && (
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.03, 0]}>
           <ringGeometry args={[0.3, 0.34, 24]} />
-          <meshBasicMaterial color="#f59e0b" transparent opacity={0.7} depthWrite={false} />
+          <meshBasicMaterial color={getMapTheme().warning} transparent opacity={0.55} depthWrite={false} />
         </mesh>
       )}
       <Html distanceFactor={12} position={[0, 0.55, 0]} center>

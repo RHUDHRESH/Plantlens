@@ -27,7 +27,12 @@ export function AlarmGroups({ groups }: AlarmGroupsProps) {
             </p>
             <p>Grouped: {group.grouped_alarms.join(", ") || "—"}</p>
             {group.suppressed_duplicates.length > 0 && (
-              <p>Suppressed: {group.suppressed_duplicates.join(", ")}</p>
+              <p>
+                {group.suppressed_duplicates.length} alarms grouped —{" "}
+                <button type="button" className="pl-btn pl-btn--ghost pl-btn--compact">
+                  view receipts
+                </button>
+              </p>
             )}
           </li>
         ))}

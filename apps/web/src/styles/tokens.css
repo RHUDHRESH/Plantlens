@@ -1,73 +1,156 @@
-/* PlantLens design tokens — unified dark sci-fi industrial */
+/* PlantLens design tokens — Uber-clean × ISA-101 (source: packages/ui-tokens/tokens.json) */
 :root {
-  /* Deep space industrial base — both Studio and Runtime HMI */
-  --bg: #08111F;
-  --surface: #0E1A2A;
-  --surface-muted: #0A1420;
-  --surface-elevated: #112236;
-  --surface-raised: #152844;
-  --grid: rgba(28, 200, 255, 0.06);
-  --border: rgba(28, 200, 255, 0.16);
-  --border-subtle: rgba(28, 200, 255, 0.08);
-  --text: #DCE8F5;
-  --text-muted: #7E93AA;
-  --accent: #1CC8FF;
-  --accent-dim: rgba(28, 200, 255, 0.12);
-  --accent2: #8B5CF6;
+  /* 2.1 Neutrals — the 90% */
+  --ink-900: #16191C;
+  --ink-700: #3C4248;
+  --ink-500: #687077;
+  --ink-300: #A6ADB4;
+  --line: #E4E7EA;
+  --line-strong: #CDD2D7;
+  --surface: #FFFFFF;
+  --surface-sunken: #F0F2F4;
+  --canvas: #F6F7F8;
+  --inverse: #FFFFFF;
 
-  /* Status — high-saturation for engineering readability at a glance */
-  --status-normal: #00D68F;
-  --status-warning: #F59E0B;
-  --status-critical: #EF4444;
-  --status-sensor-bad: #A78BFA;
-  --status-offline: #4B5563;
-  --status-unknown: #6B7280;
+  /* 2.2 Accent — interactive ONLY */
+  --accent: #2563EB;
+  --accent-press: #1D4FD7;
+  --accent-tint: #EAF1FE;
+  --focus-ring: #2563EB;
 
-  --status-warning-fill: rgba(245, 158, 11, 0.12);
-  --status-critical-fill: rgba(239, 68, 68, 0.14);
-  --status-sensor-fill: rgba(167, 139, 250, 0.14);
+  /* 2.3 Semantic status — abnormal only */
+  --advisory: #B45309;
+  --advisory-tint: #FBF1E3;
+  --warning: #C2410C;
+  --warning-tint: #FBEAE1;
+  --critical: #B42318;
+  --critical-tint: #FBE9E7;
+  --healthy: #1F8A4C;
 
-  /* Angular radii — MATLAB-like precision, minimal rounding */
-  --radius-sm: 3px;
-  --radius-md: 5px;
-  --radius: 6px;
-  --radius-dialog: 6px;
+  /* Legacy aliases — keep existing CSS working during migration */
+  --bg: var(--canvas);
+  --text: var(--ink-900);
+  --text-muted: var(--ink-500);
+  --text-subtle: var(--ink-300);
+  --border: var(--line);
+  --border-subtle: var(--line);
+  --surface-muted: var(--surface-sunken);
+  --surface-elevated: var(--surface);
+  --surface-raised: var(--surface);
+  --grid: var(--line-strong);
+  --accent-dim: var(--accent-tint);
+  --accent-hover: var(--accent-press);
+  --accent2: var(--advisory);
 
+  --status-normal: var(--healthy);
+  --status-warning: var(--warning);
+  --status-critical: var(--critical);
+  --status-sensor-bad: var(--advisory);
+  --status-offline: var(--ink-300);
+  --status-unknown: var(--ink-500);
+  --status-warning-fill: var(--warning-tint);
+  --status-critical-fill: var(--critical-tint);
+  --status-sensor-fill: var(--advisory-tint);
+
+  /* 4. Spacing — 4px grid */
+  --space-0\.5: 2px;
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 12px;
   --space-lg: 16px;
   --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+  --space-4xl: 64px;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.6);
-  --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.7);
-  --shadow-glow: 0 0 16px rgba(28, 200, 255, 0.22);
-  --shadow-glow-warn: 0 0 16px rgba(245, 158, 11, 0.28);
-  --shadow-glow-crit: 0 0 16px rgba(239, 68, 68, 0.3);
+  /* 5. Radius / elevation */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+  --radius: var(--radius-lg);
+  --radius-dialog: var(--radius-lg);
 
-  --z-strip: 10;
-  --z-toolbar: 20;
-  --z-drawer: 30;
-  --z-overlay: 40;
+  --shadow-e1: 0 1px 2px rgba(22, 25, 28, 0.06), 0 2px 6px rgba(22, 25, 28, 0.06);
+  --shadow-e2: 0 8px 24px rgba(22, 25, 28, 0.12);
+  --shadow-e3: 0 16px 48px rgba(22, 25, 28, 0.18);
+  --shadow-sm: var(--shadow-e1);
+  --shadow-md: var(--shadow-e2);
+
+  /* 6. Z-index layers */
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-sidebar: 20;
+  --z-popover: 30;
+  --z-drawer: 40;
   --z-modal: 50;
+  --z-toast: 60;
+  --z-critical: 70;
+  --z-strip: var(--z-sticky);
+  --z-toolbar: var(--z-sidebar);
+  --z-overlay: var(--z-modal);
 
-  --font-ui: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
-  --font-data: ui-monospace, "Cascadia Code", "Fira Code", "Consolas", monospace;
+  /* 3. Typography */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-ui: var(--font-sans);
+  --font-data: var(--font-mono);
 
-  --motion-status: 180ms;
-  --motion-card: 220ms;
-  --motion-panel: 240ms;
-  --motion-path: 300ms;
-  --motion-camera: 400ms;
+  --type-display-size: 28px;
+  --type-display-lh: 34px;
+  --type-h1-size: 22px;
+  --type-h1-lh: 28px;
+  --type-h2-size: 18px;
+  --type-h2-lh: 24px;
+  --type-h3-size: 16px;
+  --type-h3-lh: 22px;
+  --type-body-size: 14px;
+  --type-body-lh: 20px;
+  --type-caption-size: 12px;
+  --type-caption-lh: 16px;
+  --type-micro-size: 11px;
+  --type-micro-lh: 15px;
+  --type-micro-tracking: 0.4px;
+
+  /* 11. Motion */
+  --motion-micro: 120ms;
+  --motion-standard: 200ms;
+  --motion-large: 240ms;
+  --motion-camera: 600ms;
+  --motion-abnormal-pulse: 1.8s;
+  --motion-status: var(--motion-micro);
+  --motion-card: var(--motion-standard);
+  --motion-panel: var(--motion-large);
+  --motion-path: var(--motion-standard);
+  --motion-camera-legacy: var(--motion-camera);
+
+  /* 7. Layout shell */
+  --sidebar-rail: 64px;
+  --sidebar-expanded: 240px;
+  --top-bar: 56px;
+  --context-panel: 360px;
+  --status-strip: 48px;
+  --content-gutter: 24px;
+  --form-max-width: 720px;
+
+  /* Map / 3D — same tokens as 2D */
+  --map-ground: var(--canvas);
+  --map-zone-stroke: var(--line-strong);
+  --map-asset-stroke: var(--ink-500);
+  --map-edge: var(--line-strong);
+  --map-edge-highlight: var(--accent);
+  --map-label-bg: var(--surface);
+  --map-label-text: var(--ink-700);
+  --map-scrim: rgba(22, 25, 28, 0.45);
 }
 
-/* Runtime HMI — slightly deeper surface variant */
+/* Operator runtime — same light tokens; map is full-bleed hero */
 .runtime-hmi,
 .operator-shell {
-  --surface: #0B1826;
-  --surface-elevated: #0F1F32;
-  --border: rgba(28, 200, 255, 0.18);
-  --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.75);
+  --bg: var(--canvas);
+  --surface: var(--surface);
+  --surface-elevated: var(--surface);
+  --border: var(--line);
 }
 
 @media (prefers-reduced-motion: reduce) {
