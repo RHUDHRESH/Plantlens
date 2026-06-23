@@ -115,7 +115,7 @@ describe("localPreviewCompiler", () => {
     });
     const s = result.model!.summary;
     expect(s.assetCount).toBe(8);
-    expect(s.tagCount).toBe(9);
+    expect(s.tagCount).toBe(16);
     expect(s.alarmRuleCount).toBe(6);
     expect(s.causalEdgeCount).toBeGreaterThan(0);
     expect(s.actionCount).toBe(4);

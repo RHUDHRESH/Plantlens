@@ -92,6 +92,7 @@ const LIVE_TAG_ORDER = [
   "INV_102_I",
   "INV_102_W",
   "VFD_V",
+  "VFD_I",
   "VFD_W",
   "MOTOR_301_CURRENT",
   "MOTOR_301_RPM",

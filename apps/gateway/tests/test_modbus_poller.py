@@ -42,6 +42,7 @@ async def test_poll_plan_includes_register_backed_tags():
     assert "MAINS_V" in tag_ids
     assert "INV_102_W" in tag_ids
     assert "VFD_V" in tag_ids
+    assert "VFD_I" in tag_ids
     assert "MOTOR_301_CURRENT" in tag_ids
     assert "VIB_Z" in tag_ids
 
@@ -53,9 +54,16 @@ async def test_poll_plan_converts_one_based_register_table_to_zero_based_reads()
     by_tag = {tag.tag_id: group for group in plan for tag in group.tags}
     assert by_tag["PV_101_V"].start_address == 0
     assert by_tag["PV_101_I"].start_address == 2
-    assert by_tag["MOTOR_301_CURRENT"].start_address == 23
+    assert by_tag["MOTOR_301_CURRENT"].start_address == 26
     assert by_tag["VFD_V"].start_address == 24
-    assert by_tag["VFD_W"].start_address == 25
+    assert by_tag["VFD_I"].start_address == 26
+    assert by_tag["VFD_W"].start_address == 28
+    assert by_tag["VIB_TEMP"].start_address == 30
+    assert by_tag["VIB_X"].start_address == 32
+    assert by_tag["VIB_Y"].start_address == 34
+    assert by_tag["VIB_Z"].start_address == 36
+    assert by_tag["MOTOR_301_RPM"].start_address == 38
+    assert by_tag["MOTOR_301_TEMP"].start_address == 40
 
 
 @pytest.mark.asyncio

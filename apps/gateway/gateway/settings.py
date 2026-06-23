@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     poll_enabled: bool = Field(default=True, alias="POLL_ENABLED")
     plc_bridge_enabled: bool = Field(default=False, alias="PLC_BRIDGE_ENABLED")
     plc_slave_id: int = Field(default=1, alias="PLC_SLAVE_ID")
-    health_port: int = Field(default=8081, alias="HEALTH_PORT")
+    health_port: int = Field(default=9101, alias="HEALTH_PORT")
 
 
 @lru_cache

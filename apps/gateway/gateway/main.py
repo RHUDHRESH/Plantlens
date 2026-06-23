@@ -9,7 +9,7 @@ import signal
 import structlog
 
 from gateway.health import start_health_server
-from gateway.modbus_poller import ModbusPoller, build_poll_plan
+from gateway.modbus_poller import ModbusPoller, PollDiagnostics, build_poll_plan
 from gateway.publish import FramePublisher
 from gateway.raw_serial_reader import RawSerialLineReader, build_line_tag_index
 from gateway.serial_client import create_client
@@ -37,7 +37,9 @@ async def main() -> None:
         token=settings.gateway_ingest_token,
     )
     await publisher.start()
+    line_diagnostics = PollDiagnostics()
     if settings.serial_mode == "line":
+        start_health_server(settings.health_port, line_diagnostics)
         port = settings.serial_port_override or source.get("serial", {}).get("port", "COM3")
         baudrate = settings.serial_baudrate or int(source.get("serial", {}).get("baudrate", 9600))
         reader = RawSerialLineReader(
