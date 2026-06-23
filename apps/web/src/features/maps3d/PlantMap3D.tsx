@@ -130,7 +130,6 @@ function PlantScene({
       {nodes.map((node) => {
         const step = pathSteps[node.id];
         const meshProps = {
-          key: node.id,
           node,
           status: statusForAsset(node.id, assetStatus),
           isRoot: node.id === rootAssetId,
@@ -145,7 +144,7 @@ function PlantScene({
           ...(step !== undefined ? { pathStep: step } : {}),
           ...(onSelectAsset ? { onSelect: onSelectAsset } : {}),
         };
-        return <SchematicAssetMesh {...meshProps} />;
+        return <SchematicAssetMesh key={node.id} {...meshProps} />;
       })}
       {/* tags, audit, maintenance: no 3D overlays yet — layer toggles are honored by omission */}
       <OrbitControls

@@ -60,6 +60,38 @@ def test_gateway_imports_avoid_runtime_and_llm():
     assert result.stdout.strip() == "[]"
 
 
+@pytest.mark.asyncio
+async def test_gateway_serial_port_override_keeps_contract_tag_map_read_only():
+    from gateway.serial_client import create_client
+
+    client = create_client(
+        {
+            "protocol": "modbus_rtu",
+            "serial": {
+                "port": "/dev/ttyUSB0",
+                "baudrate": 9600,
+                "parity": "N",
+                "stopbits": 1,
+                "bytesize": 8,
+            },
+        },
+        serial_port_override="COM3",
+    )
+    try:
+        assert client.comm_params.host == "COM3"
+    finally:
+        client.close()
+
+
+def test_default_tag_map_path_resolves_from_gateway_workdir(monkeypatch: pytest.MonkeyPatch):
+    from gateway.settings import Settings, resolve_tag_map_path
+
+    monkeypatch.chdir(GATEWAY_ROOT)
+    path = resolve_tag_map_path(Settings())
+    assert path.exists()
+    assert path.name == "tag_map.json"
+
+
 def test_plc_bridge_has_no_coil_writes():
     from gateway.plc_bridge.bridge_service import PlcBridgeService
 

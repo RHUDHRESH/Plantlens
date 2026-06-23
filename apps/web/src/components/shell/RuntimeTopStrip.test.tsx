@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { RuntimeTopStrip } from "./RuntimeTopStrip";
+import type { RuntimeTopStripProps } from "./RuntimeTopStrip";
 
 const BASE_PROPS = {
   plantName: "Demo Plant",
@@ -11,7 +12,7 @@ const BASE_PROPS = {
   role: "engineer",
   connection: "live" as const,
   apiAvailable: true,
-};
+} satisfies RuntimeTopStripProps;
 
 describe("RuntimeTopStrip", () => {
   it("hides Studio button when showStudio is false", () => {

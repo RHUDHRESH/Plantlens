@@ -16,6 +16,7 @@ from app.routers import (
     compiler,
     health,
     hmi,
+    gateway_status,
     incidents,
     ingest,
     internal_auth,
@@ -65,6 +66,7 @@ def create_app() -> FastAPI:
     app.include_router(compiler.router)
     app.include_router(library.router)
     app.include_router(hmi.router)
+    app.include_router(gateway_status.router)
     app.include_router(runtime_api.router)
     app.include_router(ingest.router)
     app.include_router(offline_ingest.router)

@@ -43,6 +43,36 @@ export interface RuntimeSnapshot {
   asset_status: Record<string, AssetStatus>;
 }
 
+export interface GatewayStatus {
+  status: "ok";
+  checked_at: string;
+  api_runtime: {
+    tag_count: number;
+    alarm_count: number;
+    latest_frame: null | {
+      tag_id: string;
+      asset_id: string;
+      source: string;
+      gateway_id?: string | null;
+      timestamp: string;
+      quality: string;
+    };
+  };
+  gateway_health: {
+    reachable: boolean;
+    status_code: number | null;
+    body?: {
+      status?: string;
+      last_good_read_ts?: string | null;
+      error_count?: number;
+      crc_failures?: number;
+      reconnect_count?: number;
+      stale_tag_count?: number;
+    };
+    detail?: string;
+  };
+}
+
 export interface HmiViewModel {
   view_id: string;
   version: string;

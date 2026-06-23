@@ -26,9 +26,7 @@ Does **not** own telemetry/runtime facts or change diagnosis. `app/store/runtime
 ## plant-runtime/ — the runtime HMI shell (Chunk 5)
 | File | Build |
 |------|-------|
-| `RuntimeHMI.tsx` | the shell: top strip (health/mode/source/time/role) + 2D map (hero) + Calm Card (right) + raw alarms (bottom). Loads compiled bundle; opens WS; renders from runtime store. |
-| `TopStrip.tsx` | plant health, mode, data-source indicator, clock, role, the "DATA STALE" badge |
-| `ViewToggle.tsx` | 2D / 3D / Raw-alarms switch (3D lazy-loaded) |
+| `RuntimeHMI.tsx` | the shell: runtime top strip, app rail, 2D map, Calm Card/HMI state, raw alarms, and lazy 3D. Loads compiled bundle; opens WS; renders from runtime store. |
 
 ## maps2d/ — SVG plant map (Chunk 5, canonical + default)
 | File | Build |

@@ -1,17 +1,20 @@
 import type { WsConnectionState } from "../../api/types";
 import type { ScenarioRunStatus } from "../../app/store/runtime";
 
+export type MapRole = "operator" | "engineer" | "maintenance" | "manager";
+
 export interface RuntimeTopStripProps {
   plantName: string;
   plantHealth: string;
   mode: string;
   dataSource: string;
   timeLabel: string;
-  role: string;
+  role: MapRole;
   connection: WsConnectionState;
   apiAvailable: boolean;
   scenarioId?: string | null;
   scenarioStatus?: ScenarioRunStatus;
+  onRoleChange?: (role: MapRole) => void;
   onOpenAgents?: () => void;
   onOpenScenarios?: () => void;
   onOpenSearch?: () => void;
@@ -26,6 +29,13 @@ const CONN: Record<WsConnectionState, { label: string; cls: string; dot: string 
   disconnected: { label: "OFFLINE", cls: "conn-off", dot: "status-dot--offline" },
 };
 
+const ROLE_LABELS: { id: MapRole; label: string }[] = [
+  { id: "operator", label: "Operator" },
+  { id: "engineer", label: "Engineer" },
+  { id: "maintenance", label: "Maint" },
+  { id: "manager", label: "Manager" },
+];
+
 export function RuntimeTopStrip({
   plantName,
   plantHealth,
@@ -37,6 +47,7 @@ export function RuntimeTopStrip({
   apiAvailable,
   scenarioId,
   scenarioStatus,
+  onRoleChange,
   onOpenAgents,
   onOpenScenarios,
   onOpenSearch,
@@ -47,39 +58,56 @@ export function RuntimeTopStrip({
 
   return (
     <header className="runtime-top-strip" role="banner">
+      {/* Brand + breadcrumb */}
       <div className="runtime-top-strip__brand">
+        <span className="runtime-top-strip__plant-label">PlantLens</span>
+        <span className="runtime-top-strip__sep" aria-hidden>/</span>
         <span className="runtime-top-strip__plant">{plantName}</span>
-        <span className={`status-badge status-badge--${healthBadge(plantHealth)}`}>
-          {plantHealth}
+        <span className={`runtime-top-strip__live-pill runtime-top-strip__live-pill--${conn.cls}`}>
+          <span className={`status-dot ${conn.dot}`} aria-hidden />
+          {connection === "live" ? "LIVE · READ-ONLY" : conn.label}
         </span>
       </div>
 
+      {/* Compact meta row */}
       <div className="runtime-top-strip__meta">
         <MetaItem label="Mode" value={mode} />
         <MetaItem label="Source" value={dataSource} />
         <MetaItem label="Time" value={timeLabel} tabular />
-        <MetaItem label="Role" value={role} />
+        <MetaItem label="Health" value={plantHealth} />
+        {scenarioId && scenarioStatus && scenarioStatus !== "idle" && (
+          <div className="runtime-top-strip__item">
+            <span className="runtime-top-strip__label">Scenario</span>
+            <span className="data-number">{scenarioId}</span>
+            <span className="status-badge status-badge--warning">{scenarioStatus}</span>
+          </div>
+        )}
       </div>
 
-      {scenarioId && scenarioStatus && scenarioStatus !== "idle" && (
-        <div className="runtime-top-strip__scenario" role="status" aria-live="polite">
-          <span className="runtime-top-strip__label">Scenario</span>
-          <span className="data-number">{scenarioId}</span>
-          <span className="status-badge status-badge--warning">{scenarioStatus}</span>
+      {/* Role segmented control */}
+      {onRoleChange && (
+        <div className="runtime-top-strip__role-seg" role="group" aria-label="Active role">
+          {ROLE_LABELS.map(({ id, label }) => (
+            <button
+              key={id}
+              type="button"
+              className={`runtime-top-strip__role-btn${role === id ? " runtime-top-strip__role-btn--active" : ""}`}
+              onClick={() => onRoleChange(id)}
+              aria-pressed={role === id}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       )}
 
-      <div className={`runtime-top-strip__conn ${conn.cls}`} aria-live="polite">
-        <span className={`status-dot ${conn.dot}`} aria-hidden />
-        <span>{conn.label}</span>
-      </div>
-
+      {/* Actions */}
       <div className="runtime-top-strip__actions">
         {onOpenSearch && (
           <button
             type="button"
             className="pl-btn pl-btn--ghost pl-btn--compact command-palette-trigger"
-            title="Search assets, alarms, tags, commands"
+            title="Search assets, alarms, tags, commands (Ctrl K)"
             onClick={onOpenSearch}
           >
             Search <span className="command-palette-trigger__hint">Ctrl K</span>
@@ -123,13 +151,4 @@ function MetaItem({ label, value, tabular }: { label: string; value: string; tab
       <span className={tabular ? "data-number" : undefined}>{value}</span>
     </div>
   );
-}
-
-function healthBadge(health: string): string {
-  const h = health.toLowerCase();
-  if (h.includes("critical")) return "critical";
-  if (h.includes("warning")) return "warning";
-  if (h.includes("sensor")) return "sensor_bad";
-  if (h.includes("normal")) return "normal";
-  return "offline";
 }

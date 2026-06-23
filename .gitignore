@@ -62,4 +62,5 @@ terminals/.next-id
 /modbus_scout.py
 
 # Local Claude/Codex backups
+.claude/
 .claude.project.backup-*/

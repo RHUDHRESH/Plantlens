@@ -84,7 +84,8 @@ def build_poll_plan(tag_map: dict[str, Any]) -> list[PollGroup]:
         if not reg:
             continue
         table = reg.get("table", "holding")
-        address = int(reg["address"])
+        address_base = int(source.get("serial", {}).get("address_base", 0))
+        address = int(reg["address"]) - address_base
         width = int(reg.get("width", 1))
         codec = reg.get("codec", "uint16")
         scale = float(reg.get("scale", 1.0))

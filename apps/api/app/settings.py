@@ -53,6 +53,10 @@ class Settings(BaseSettings):
         default="change-me",
         validation_alias=AliasChoices("GATEWAY_INGEST_TOKEN"),
     )
+    gateway_health_url: str = Field(
+        default="http://127.0.0.1:9101/health",
+        validation_alias=AliasChoices("GATEWAY_HEALTH_URL"),
+    )
     agents_base_url: str = Field(
         default="http://localhost:8100",
         validation_alias=AliasChoices("AGENTS_BASE_URL"),

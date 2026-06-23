@@ -15,3 +15,4 @@ export {
 
 export { CausalPathRail } from "./CausalPathRail";
 export { CausalPathEvidencePanel } from "./CausalPathEvidencePanel";
+export { OperationalDagPanel } from "./OperationalDagPanel";

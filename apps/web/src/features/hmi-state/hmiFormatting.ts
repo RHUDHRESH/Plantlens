@@ -107,6 +107,35 @@ export function getActiveCausalityAssetPath(state: PlantHMIState | null): string
   const activeEdges = getActiveCausalityEdges(state);
   if (!activeEdges.length) return [];
 
+  const rootAssetId = getPrimaryRootAssetId(state);
+  if (rootAssetId) {
+    const path: string[] = [];
+    const seen = new Set<string>();
+    const outgoing = new Map<string, string[]>();
+
+    for (const edge of activeEdges) {
+      const targets = outgoing.get(edge.from_asset_id) ?? [];
+      targets.push(edge.to_asset_id);
+      outgoing.set(edge.from_asset_id, targets);
+    }
+
+    const visit = (assetId: string) => {
+      if (seen.has(assetId)) return;
+      seen.add(assetId);
+      path.push(assetId);
+      for (const next of outgoing.get(assetId) ?? []) {
+        visit(next);
+      }
+    };
+
+    visit(rootAssetId);
+    for (const edge of activeEdges) {
+      visit(edge.from_asset_id);
+      visit(edge.to_asset_id);
+    }
+    return path;
+  }
+
   const path: string[] = [];
   for (const edge of activeEdges) {
     if (!path.includes(edge.from_asset_id)) path.push(edge.from_asset_id);

@@ -10,7 +10,11 @@ from pymodbus.client import AsyncModbusSerialClient, AsyncModbusTcpClient
 log = structlog.get_logger()
 
 
-def create_client(source: dict[str, Any]) -> AsyncModbusSerialClient | AsyncModbusTcpClient:
+def create_client(
+    source: dict[str, Any],
+    *,
+    serial_port_override: str | None = None,
+) -> AsyncModbusSerialClient | AsyncModbusTcpClient:
     protocol = source.get("protocol", "modbus_rtu")
     if protocol == "modbus_tcp":
         host = source.get("host", "127.0.0.1")
@@ -18,7 +22,7 @@ def create_client(source: dict[str, Any]) -> AsyncModbusSerialClient | AsyncModb
         return AsyncModbusTcpClient(host=host, port=port)
     serial = source.get("serial", {})
     return AsyncModbusSerialClient(
-        port=serial.get("port", "/dev/ttyUSB0"),
+        port=serial_port_override or serial.get("port", "/dev/ttyUSB0"),
         baudrate=int(serial.get("baudrate", 9600)),
         parity=serial.get("parity", "N"),
         stopbits=int(serial.get("stopbits", 1)),

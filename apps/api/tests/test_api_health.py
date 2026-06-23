@@ -33,6 +33,7 @@ ALLOWED_API_PREFIXES = (
     "/api/scenarios/",
     "/api/compiler/",
     "/api/hmi/",
+    "/api/gateway/",
     "/api/runtime/",
     "/api/ws/",
     "/api/ingest/",

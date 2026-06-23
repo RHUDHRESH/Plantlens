@@ -28,7 +28,8 @@
               "parity": { "type": "string", "enum": ["N", "E", "O"], "default": "N" },
               "stopbits": { "type": "integer", "enum": [1, 2], "default": 1 },
               "bytesize": { "type": "integer", "enum": [7, 8], "default": 8 },
-              "slave_id": { "type": "integer", "default": 1 }
+              "slave_id": { "type": "integer", "default": 1 },
+              "address_base": { "type": "integer", "enum": [0, 1], "default": 0, "description": "0 for pymodbus/native zero-based addresses; 1 when the device register table starts at 1." }
             }
           },
           "tcp": {
@@ -66,7 +67,7 @@
               "table": { "type": "string", "enum": ["holding", "input", "coil", "discrete"], "description": "FC03 holding / FC04 input / FC01 coil / FC02 discrete." },
               "address": { "type": "integer", "minimum": 0 },
               "width": { "type": "integer", "enum": [1, 2], "default": 2, "description": "Registers to read (2 for 32-bit values)." },
-              "codec": { "type": "string", "enum": ["uint16", "int16", "uint32_be", "int32_be", "float32_be", "float32_le", "bool"], "default": "float32_be" },
+              "codec": { "type": "string", "enum": ["uint16", "int16", "uint32_be", "int32_be", "float32_be", "float32_le", "float32_cdab", "bool"], "default": "float32_be" },
               "scale": { "type": "number", "default": 1.0 },
               "offset": { "type": "number", "default": 0.0 }
             }

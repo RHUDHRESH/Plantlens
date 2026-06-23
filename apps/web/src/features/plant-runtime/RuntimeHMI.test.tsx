@@ -36,6 +36,19 @@ vi.mock("../maps3d/LazyPlantMap3D", () => ({
 vi.mock("../../api/client", () => ({
   issueDevToken: vi.fn().mockResolvedValue("test-token"),
   getCompiledBundle: vi.fn(),
+  getGatewayStatus: vi.fn().mockResolvedValue({
+    status: "ok",
+    checked_at: "2026-01-01T10:00:00Z",
+    api_runtime: { tag_count: 0, alarm_count: 0, latest_frame: null },
+    gateway_health: { reachable: false, status_code: null, detail: "not running" },
+  }),
+  getRuntimeSnapshot: vi.fn().mockResolvedValue({
+    tags: {},
+    active_alarms: [],
+    active_situations: [],
+    latest_calm_card: null,
+    asset_status: {},
+  }),
   escalateIncident: vi.fn(),
 }));
 
@@ -48,7 +61,7 @@ vi.mock("../../api/hmi", () => ({
   isRuntimeEndpointUnavailable: vi.fn(() => true),
 }));
 
-import { getCompiledBundle } from "../../api/client";
+import { getCompiledBundle, getGatewayStatus, getRuntimeSnapshot } from "../../api/client";
 import { getRuntimeHmiState } from "../../api/hmi";
 
 const COMPILED_FIXTURE = {
@@ -111,6 +124,21 @@ describe("RuntimeHMI", () => {
     vi.mocked(getRuntimeHmiState).mockRejectedValue(new Error("hmi offline"));
     vi.mocked(getCompiledBundle).mockReset();
     vi.mocked(getCompiledBundle).mockResolvedValue(COMPILED_FIXTURE);
+    vi.mocked(getRuntimeSnapshot).mockReset();
+    vi.mocked(getRuntimeSnapshot).mockResolvedValue({
+      tags: {},
+      active_alarms: [],
+      active_situations: [],
+      latest_calm_card: null,
+      asset_status: {},
+    });
+    vi.mocked(getGatewayStatus).mockReset();
+    vi.mocked(getGatewayStatus).mockResolvedValue({
+      status: "ok",
+      checked_at: "2026-01-01T10:00:00Z",
+      api_runtime: { tag_count: 0, alarm_count: 0, latest_frame: null },
+      gateway_health: { reachable: false, status_code: null, detail: "not running" },
+    });
   });
 
   it("renders shell with no-situation and connection strip when HMI runtime fails", async () => {
@@ -118,6 +146,11 @@ describe("RuntimeHMI", () => {
     wrap(<RuntimeHMI />);
     expect(await screen.findByText(/All clear/i)).toBeInTheDocument();
     expect(screen.getByText(/OFFLINE/i)).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /Live values/i })).toHaveTextContent(
+      /waiting for frames/i,
+    );
+    expect(screen.getByRole("region", { name: /Live values/i })).toHaveTextContent(/Gateway/i);
+    expect(screen.getByRole("region", { name: /Live values/i })).toHaveTextContent(/not reachable/i);
     expect(screen.getByLabelText(/Raw alarms/i)).toBeInTheDocument();
     expect(screen.getByRole("banner")).toHaveClass("runtime-top-strip");
   });
@@ -139,7 +172,7 @@ describe("RuntimeHMI", () => {
   });
 
   it("shows CalmCard fallback and warning when HMI runtime fails but snapshot has calm card", async () => {
-    useRuntimeStore.getState().applySnapshot(HERO_MOTOR_OVERLOAD);
+    vi.mocked(getRuntimeSnapshot).mockResolvedValue(HERO_MOTOR_OVERLOAD);
     wrap(<RuntimeHMI />);
     await waitFor(
       () => {
@@ -148,6 +181,27 @@ describe("RuntimeHMI", () => {
       { timeout: 3000 },
     );
     expect(screen.getByRole("heading", { name: /Motor mechanical overload/i })).toBeInTheDocument();
+  });
+
+  it("renders latest live tag values from the runtime snapshot", async () => {
+    vi.mocked(getRuntimeSnapshot).mockResolvedValue({
+      ...HERO_MOTOR_OVERLOAD,
+      tags: {
+        MOTOR_301_CURRENT: {
+          tag_id: "MOTOR_301_CURRENT",
+          asset_id: "MTR-301",
+          value: 42.25,
+          unit: "A",
+          quality: "GOOD",
+          timestamp: "2026-01-01T10:32:14Z",
+          source: "modbus_rtu",
+          seq: 1,
+        },
+      },
+    });
+    wrap(<RuntimeHMI />);
+    expect(await screen.findByText("MOTOR_301_CURRENT")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /Live values/i })).toHaveTextContent("A");
   });
 
   it("passes map_2d data to PlantMap2D", async () => {
@@ -181,7 +235,7 @@ describe("RuntimeHMI", () => {
   });
 
   it("renders causal path rail when active path exists", async () => {
-    useRuntimeStore.getState().applySnapshot(HERO_MOTOR_OVERLOAD);
+    vi.mocked(getRuntimeSnapshot).mockResolvedValue(HERO_MOTOR_OVERLOAD);
     wrap(<RuntimeHMI />);
     await screen.findByTestId("plant-map-2d");
     expect(
@@ -191,7 +245,7 @@ describe("RuntimeHMI", () => {
   });
 
   it("clicking a causal path step selects and focuses the asset", async () => {
-    useRuntimeStore.getState().applySnapshot(HERO_MOTOR_OVERLOAD);
+    vi.mocked(getRuntimeSnapshot).mockResolvedValue(HERO_MOTOR_OVERLOAD);
     wrap(<RuntimeHMI />);
     await screen.findByTestId("plant-map-2d");
     fireEvent.click(await screen.findByRole("button", { name: /Step 1: Motor/i }));

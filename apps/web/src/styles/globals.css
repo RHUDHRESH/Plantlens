@@ -18,7 +18,17 @@ body {
   font-size: 14px;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.16  0 0 0 0 0.14  0 0 0 0 0.12  0 0 0 0.03 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 240px 240px;
 }
+
+::selection {
+  background: rgba(217, 119, 87, 0.20);
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
 
 button,
 input,
@@ -74,33 +84,33 @@ a:focus-visible,
 }
 
 .status-badge--warning {
-  border-color: var(--status-warning);
-  color: var(--status-warning);
-  background: rgba(201, 137, 16, 0.12);
+  border-color: #E89878;
+  color: #C26645;
+  background: rgba(217, 119, 87, 0.10);
 }
 
 .status-badge--critical {
   border-color: var(--status-critical);
   color: var(--status-critical);
-  background: rgba(179, 38, 30, 0.12);
+  background: rgba(196, 74, 63, 0.09);
 }
 
 .status-badge--sensor_bad {
   border-color: var(--status-sensor-bad);
   color: var(--status-sensor-bad);
-  background: rgba(107, 93, 211, 0.12);
+  background: rgba(139, 107, 139, 0.09);
 }
 
 .status-badge--normal {
   border-color: var(--status-normal);
   color: var(--status-normal);
-  background: rgba(122, 132, 113, 0.12);
+  background: rgba(92, 138, 90, 0.09);
 }
 
 .status-badge--offline {
   border-color: var(--status-offline);
   color: var(--status-offline);
-  background: rgba(138, 138, 138, 0.1);
+  background: rgba(156, 147, 132, 0.09);
 }
 
 .status-dot {
@@ -177,6 +187,11 @@ a:focus-visible,
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
+}
+
+.pl-btn--primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .pl-btn--ghost {

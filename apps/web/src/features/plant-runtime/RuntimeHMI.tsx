@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { escalateIncident, getCompiledBundle, issueDevToken } from "../../api/client";
+import {
+  escalateIncident,
+  getCompiledBundle,
+  getGatewayStatus,
+  getRuntimeSnapshot,
+  issueDevToken,
+} from "../../api/client";
 import { setAuthToken } from "../../api/config";
 import { getRuntimeHmiState, isRuntimeEndpointUnavailable } from "../../api/hmi";
 import { connectRuntimeSocket } from "../../api/ws";
@@ -31,6 +38,7 @@ import {
   buildCausalPathViewModel,
   CausalPathEvidencePanel,
   CausalPathRail,
+  OperationalDagPanel,
 } from "../causal-path";
 import {
   getLockedLayers,
@@ -48,7 +56,9 @@ import {
 } from "../operational-search";
 import { buildAssetSourceLineage } from "../source-lineage";
 import { selectAuthoredBundleInput, useStudioDraftStore } from "../studio-forms";
+import causalGraphData from "../studio-forms/demo-data/causal_graph.json";
 import { StudioLaunchpad, useStudioRoute } from "../studio-launchpad";
+import { AppIconRail, type AppScreen } from "../../components/shell/AppIconRail";
 
 function derivePlantHealth(assetStatus: Record<string, string>): string {
   const values = Object.values(assetStatus);
@@ -59,11 +69,56 @@ function derivePlantHealth(assetStatus: Record<string, string>): string {
   return "Normal";
 }
 
+function formatLiveValue(value: unknown, unit: string): string {
+  if (value === null || value === undefined || value === "") return "--";
+  if (typeof value === "number") {
+    const formatted = Number.isInteger(value) ? String(value) : value.toFixed(2);
+    return unit ? `${formatted} ${unit}` : formatted;
+  }
+  return unit ? `${String(value)} ${unit}` : String(value);
+}
+
+const LIVE_TAG_ORDER = [
+  "BAT_101_V",
+  "BAT_101_I",
+  "BAT_101_W",
+  "PV_101_V",
+  "PV_101_I",
+  "PV_101_W",
+  "MAINS_V",
+  "MAINS_I",
+  "MAINS_W",
+  "INV_102_V",
+  "INV_102_I",
+  "INV_102_W",
+  "VFD_V",
+  "VFD_W",
+  "MOTOR_301_CURRENT",
+  "MOTOR_301_RPM",
+  "MOTOR_301_TEMP",
+  "VIB_TEMP",
+  "VIB_X",
+  "VIB_Y",
+  "VIB_Z",
+];
+
+function compareLiveTags(a: { tag_id: string }, b: { tag_id: string }): number {
+  const ai = LIVE_TAG_ORDER.indexOf(a.tag_id);
+  const bi = LIVE_TAG_ORDER.indexOf(b.tag_id);
+  if (ai !== -1 || bi !== -1) {
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  }
+  return a.tag_id.localeCompare(b.tag_id);
+}
+
 export function RuntimeHMI() {
   const reducedMotion = useReducedMotion();
   const webglAvailable = useWebGLAvailable();
   const socketRef = useRef<ReturnType<typeof connectRuntimeSocket> | null>(null);
 
+  const [screen, setScreen] = useState<AppScreen>("atlas");
   const [rawExpanded, setRawExpanded] = useState(false);
   const [authReady, setAuthReady] = useState(false);
   const [incidentId, setIncidentId] = useState<string | null>(null);
@@ -110,6 +165,22 @@ export function RuntimeHMI() {
   const hmiStateQuery = useQuery({
     queryKey: ["hmi-runtime-state"],
     queryFn: ({ signal }) => getRuntimeHmiState(signal),
+    enabled: authReady,
+    refetchInterval: 1500,
+    retry: 1,
+  });
+
+  const runtimeSnapshotQuery = useQuery({
+    queryKey: ["runtime-snapshot"],
+    queryFn: ({ signal }) => getRuntimeSnapshot(signal),
+    enabled: authReady,
+    refetchInterval: 1000,
+    retry: 1,
+  });
+
+  const gatewayStatusQuery = useQuery({
+    queryKey: ["gateway-status"],
+    queryFn: ({ signal }) => getGatewayStatus(signal),
     enabled: authReady,
     refetchInterval: 1500,
     retry: 1,
@@ -169,6 +240,12 @@ export function RuntimeHMI() {
     }
   }, [hmiStateQuery.data]);
 
+  useEffect(() => {
+    if (runtimeSnapshotQuery.data) {
+      useRuntimeStore.getState().applySnapshot(runtimeSnapshotQuery.data);
+    }
+  }, [runtimeSnapshotQuery.data]);
+
   const palette = useCommandPalette();
   const studio = useStudioRoute();
   const studioDraftLoaded = useStudioDraftStore((s) => s.loaded);
@@ -186,7 +263,30 @@ export function RuntimeHMI() {
     return selectAuthoredBundleInput(studioDraftBundle);
   }, [studioDraftLoaded, studioDraftBundle]);
 
-  const hmiRootAssetId = useMemo(() => getPrimaryRootAssetId(hmiState), [hmiState]);
+  const hmi = compiledQuery.data?.hmi_view_model;
+  const nodes2d = hmi?.map_2d?.nodes ?? [];
+  const edges2d = hmi?.map_2d?.edges ?? [];
+  const map3d = useMemo(() => adaptMap3DViewModel(hmi?.map_3d), [hmi?.map_3d]);
+  const nodes3d = map3d.nodes;
+  const edges3d = map3d.edges;
+  const plantName = compiledQuery.data?.plant_id?.replace(/_/g, " ") ?? "PlantLens Demo";
+  const liveTagRows = useMemo(
+    () =>
+      Object.values(tags)
+        .sort(compareLiveTags)
+        .slice(0, 32),
+    [tags],
+  );
+  const hmiProjectionContradictsLive = useMemo(() => {
+    const missingSignals = hmiState?.data_quality?.missing_signals ?? [];
+    if (!missingSignals.length) return false;
+    const liveTagIds = new Set(Object.keys(tags));
+    if (!liveTagIds.size) return false;
+    const missingButLive = missingSignals.filter((tagId) => liveTagIds.has(tagId));
+    return missingButLive.length >= Math.max(3, Math.ceil(missingSignals.length * 0.5));
+  }, [hmiState?.data_quality?.missing_signals, tags]);
+  const displayHmiState = hmiProjectionContradictsLive ? null : hmiState;
+  const hmiRootAssetId = useMemo(() => getPrimaryRootAssetId(displayHmiState), [displayHmiState]);
 
   const hasActiveSituation = Boolean(hmiRootAssetId ?? activeSituation?.root_asset_id);
 
@@ -203,21 +303,13 @@ export function RuntimeHMI() {
     }
   }, [hmiRootAssetId, activeSituation?.root_asset_id, focusAsset]);
 
-  const hmi = compiledQuery.data?.hmi_view_model;
-  const nodes2d = hmi?.map_2d?.nodes ?? [];
-  const edges2d = hmi?.map_2d?.edges ?? [];
-  const map3d = useMemo(() => adaptMap3DViewModel(hmi?.map_3d), [hmi?.map_3d]);
-  const nodes3d = map3d.nodes;
-  const edges3d = map3d.edges;
-  const plantName = compiledQuery.data?.plant_id?.replace(/_/g, " ") ?? "PlantLens Demo";
-
-  const hmiAssetStatus = useMemo(() => buildHmiAssetStatusMap(hmiState), [hmiState]);
+  const hmiAssetStatus = useMemo(() => buildHmiAssetStatusMap(displayHmiState), [displayHmiState]);
   const effectiveAssetStatus = useMemo(
     () => (Object.keys(hmiAssetStatus).length ? hmiAssetStatus : assetStatus),
     [hmiAssetStatus, assetStatus],
   );
 
-  const hmiCausalPath = useMemo(() => getActiveCausalityAssetPath(hmiState), [hmiState]);
+  const hmiCausalPath = useMemo(() => getActiveCausalityAssetPath(displayHmiState), [displayHmiState]);
   const causalPath = showCausalPath
     ? hmiCausalPath.length
       ? hmiCausalPath
@@ -225,13 +317,19 @@ export function RuntimeHMI() {
     : [];
 
   const plantHealth = useMemo(
-    () => (hmiState ? formatOverallStatus(hmiState.overall_status) : derivePlantHealth(assetStatus)),
-    [hmiState, assetStatus],
+    () => (displayHmiState ? formatOverallStatus(displayHmiState.overall_status) : derivePlantHealth(assetStatus)),
+    [displayHmiState, assetStatus],
   );
   const timeLabel = lastHmiStateTs ?? lastSnapshotTs ?? "—";
-  const dataSource = hmiState ? "HMI Projection" : "WebSocket";
+  const dataSource = displayHmiState ? "HMI Projection" : "Live Snapshot";
+  const gatewayStatus = gatewayStatusQuery.data;
+  const gatewayHealth = gatewayStatus?.gateway_health;
+  const latestGatewayFrame = gatewayStatus?.api_runtime.latest_frame;
 
   const hmiRuntimeError = useMemo(() => {
+    if (hmiProjectionContradictsLive) {
+      return "HMI projection disagrees with live gateway tags. Showing verified live snapshot.";
+    }
     if (!hmiStateQuery.isError) return null;
     const error = hmiStateQuery.error;
     if (isRuntimeEndpointUnavailable(error)) {
@@ -239,12 +337,12 @@ export function RuntimeHMI() {
     }
     if (error instanceof Error) return error.message;
     return "HMI runtime projection unavailable. Showing WebSocket snapshot fallback.";
-  }, [hmiStateQuery.isError, hmiStateQuery.error]);
+  }, [hmiProjectionContradictsLive, hmiStateQuery.isError, hmiStateQuery.error]);
 
   const rootAssetId = hmiRootAssetId ?? activeSituation?.root_asset_id ?? null;
   const affectedAssetIds =
-    hmiState?.active_incident?.affected_assets?.length
-      ? hmiState.active_incident.affected_assets
+    displayHmiState?.active_incident?.affected_assets?.length
+      ? displayHmiState.active_incident.affected_assets
       : (activeSituation?.affected_asset_ids ?? []);
 
   const selectedNode: MapNode | null = useMemo(
@@ -544,8 +642,28 @@ export function RuntimeHMI() {
   const hasMap2d = nodes2d.length > 0;
   const hasMap3d = nodes3d.length > 0;
 
+  const handleNavScreen = useCallback(
+    (next: AppScreen) => {
+      setScreen(next);
+      if (next === "twin" && mapMode !== "3d") setMapMode("3d");
+      if (next === "atlas" && mapMode === "3d") setMapMode("2d");
+    },
+    [mapMode, setMapMode],
+  );
+
   return (
     <div className={`runtime-hmi operator-shell${density === "compact" ? " runtime-hmi--compact" : ""}`}>
+      <AppIconRail
+        screen={screen}
+        alarmCount={activeAlarms.length}
+        hasActiveEvent={Boolean(hasActiveSituation)}
+        onNav={handleNavScreen}
+        onOpenStudio={studio.openOverview}
+        reducedMotion={reducedMotion}
+      />
+
+      <div className="runtime-hmi__body">
+
       <RuntimeTopStrip
         plantName={plantName}
         plantHealth={plantHealth}
@@ -557,12 +675,62 @@ export function RuntimeHMI() {
         apiAvailable={!compiledQuery.isError}
         scenarioId={scenarioState.scenarioId}
         scenarioStatus={scenarioState.status}
+        onRoleChange={setMapRole}
         onOpenAgents={() => setAgentOpen(true)}
         onOpenScenarios={() => setScenarioOpen((v) => !v)}
         onOpenSearch={palette.openPalette}
         showStudio={showStudio}
         onOpenStudio={studio.openOverview}
       />
+
+      {/* ── ATLAS screen ── */}
+      <ScreenWrap active={screen === "atlas"}>
+
+      <section className="runtime-hmi__live-values" aria-label="Live values">
+        <div className="runtime-hmi__live-values-head">
+          <h2>Live values</h2>
+          <span className="runtime-hmi__live-values-count">
+            {liveTagRows.length ? `${liveTagRows.length} latest` : "waiting for frames"}
+          </span>
+        </div>
+        {liveTagRows.length === 0 ? (
+          <p className="runtime-hmi__live-values-empty">
+            No live telemetry received yet. Start the simulator or gateway on COM3.
+          </p>
+        ) : (
+          <ul className="runtime-hmi__live-values-list">
+            {liveTagRows.map((tag) => (
+              <li key={tag.tag_id}>
+                <span className="data-number">{tag.tag_id}</span>
+                <span className="data-number">{formatLiveValue(tag.value, tag.unit)}</span>
+                <span
+                  className={`status-badge status-badge--${tag.quality === "GOOD" ? "normal" : "sensor_bad"}`}
+                >
+                  {tag.quality}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <dl className="runtime-hmi__connection-status" aria-label="Connections">
+          <div>
+            <dt>API</dt>
+            <dd>{runtimeSnapshotQuery.isError ? "unreachable" : authReady ? "connected" : "auth"}</dd>
+          </div>
+          <div>
+            <dt>Gateway</dt>
+            <dd>{gatewayHealth?.reachable ? "health ok" : "not reachable"}</dd>
+          </div>
+          <div>
+            <dt>Serial</dt>
+            <dd>{latestGatewayFrame ? latestGatewayFrame.gateway_id ?? latestGatewayFrame.source : "no frames"}</dd>
+          </div>
+          <div>
+            <dt>Last read</dt>
+            <dd>{gatewayHealth?.body?.last_good_read_ts ?? latestGatewayFrame?.timestamp ?? "none"}</dd>
+          </div>
+        </dl>
+      </section>
 
       <div className="runtime-hmi__map-row">
         <div className="runtime-hmi__map-panel">
@@ -597,6 +765,18 @@ export function RuntimeHMI() {
             role={mapRole}
             zoomBand={zoomBand}
             visible={showCausalPath}
+            onSelectAsset={handleCausalPathStep}
+            onFocusAsset={handleCausalPathStep}
+          />
+
+          <OperationalDagPanel
+            nodes={causalGraphData.nodes}
+            edges={causalGraphData.edges}
+            mapNodes={nodes2d}
+            assetStatus={effectiveAssetStatus}
+            activePath={causalPath}
+            tags={tags}
+            alarms={activeAlarms}
             onSelectAsset={handleCausalPathStep}
             onFocusAsset={handleCausalPathStep}
           />
@@ -648,9 +828,9 @@ export function RuntimeHMI() {
               onOpenRawAlarms={() => setRawExpanded(true)}
             />
           )}
-          {hmiState ? (
+          {displayHmiState ? (
             <HmiStatePanel
-              state={hmiState}
+              state={displayHmiState}
               runtimeError={hmiRuntimeError}
               onViewRawAlarms={() => setRawExpanded(true)}
               onHighlightAsset={handleHighlightAsset}
@@ -685,6 +865,91 @@ export function RuntimeHMI() {
         defaultExpanded={rawExpanded}
         onExpandedChange={setRawExpanded}
       />
+
+      </ScreenWrap>
+
+      {/* ── ALARMS screen ── */}
+      <ScreenWrap active={screen === "alarms"}>
+        <div className="runtime-hmi__fullscreen-panel">
+          <div className="runtime-hmi__fullscreen-header">
+            <span className="runtime-hmi__screen-title">Active Alarms</span>
+            <span className="runtime-hmi__screen-count">{activeAlarms.length} active</span>
+          </div>
+          <RawAlarmTable
+            alarms={activeAlarms}
+            situationTitle={activeSituation?.title ?? null}
+            defaultExpanded
+            onExpandedChange={() => undefined}
+          />
+        </div>
+      </ScreenWrap>
+
+      {/* ── EVENT screen ── */}
+      <ScreenWrap active={screen === "event"}>
+        <div className="runtime-hmi__fullscreen-panel runtime-hmi__event-panel">
+          {displayHmiState ? (
+            <HmiStatePanel
+              state={displayHmiState}
+              runtimeError={hmiRuntimeError}
+              onViewRawAlarms={() => { setRawExpanded(true); setScreen("alarms"); }}
+              onHighlightAsset={handleHighlightAsset}
+            />
+          ) : calmCard ? (
+            <CalmCard
+              card={calmCard}
+              onViewRawAlarms={() => { setRawExpanded(true); setScreen("alarms"); }}
+              onEscalate={() => escalateMutation.mutate()}
+              onHighlightAsset={handleHighlightAsset}
+              onFocusRoot={handleFocusRoot}
+              escalating={escalateMutation.isPending}
+            />
+          ) : (
+            <NoActiveSituation />
+          )}
+        </div>
+      </ScreenWrap>
+
+      {/* ── TWIN screen ── */}
+      <ScreenWrap active={screen === "twin"}>
+        <div className="runtime-hmi__twin-screen">
+          {hasMap3d ? (
+            <LazyPlantMap3D
+              {...map3dProps}
+              webglAvailable={webglAvailable}
+              onSwitch2D={() => { setMapMode("2d"); setScreen("atlas"); }}
+            />
+          ) : (
+            <div className="pl-empty-state" role="status">
+              No 3D model available — compile the plant bundle first.
+            </div>
+          )}
+        </div>
+      </ScreenWrap>
+
+      {/* ── ACTIONS screen ── */}
+      <ScreenWrap active={screen === "actions"}>
+        <div className="runtime-hmi__fullscreen-panel runtime-hmi__actions-panel">
+          <div className="runtime-hmi__fullscreen-header">
+            <span className="runtime-hmi__screen-title">Operator Actions</span>
+          </div>
+          {displayHmiState?.operator_actions?.length ? (
+            <div className="runtime-hmi__actions-inner">
+              <HmiStatePanel
+                state={displayHmiState}
+                runtimeError={null}
+                onViewRawAlarms={() => setScreen("alarms")}
+                onHighlightAsset={(id) => { handleHighlightAsset(id); setScreen("atlas"); }}
+              />
+            </div>
+          ) : (
+            <div className="pl-empty-state" role="status">
+              No pending operator actions.
+            </div>
+          )}
+        </div>
+      </ScreenWrap>
+
+      </div>{/* end runtime-hmi__body */}
 
       <AssetDetailDrawer
         node={selectedNode}
@@ -729,4 +994,9 @@ export function RuntimeHMI() {
       {agentOpen && <AgentConsole onClose={() => setAgentOpen(false)} />}
     </div>
   );
+}
+
+function ScreenWrap({ active, children }: { active: boolean; children: ReactNode }) {
+  if (!active) return null;
+  return <>{children}</>;
 }

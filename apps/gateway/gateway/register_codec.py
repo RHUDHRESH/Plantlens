@@ -10,6 +10,13 @@ class CodecError(ValueError):
     """Register slice cannot be decoded."""
 
 
+def _scaled_number(raw: int, *, scale: float, offset: float) -> int | float:
+    value = raw * scale + offset
+    if scale == 1.0 and offset == 0.0:
+        return int(value)
+    return float(value)
+
+
 def _require_length(registers: list[int], words: int, codec: str) -> None:
     if len(registers) < words:
         msg = f"codec {codec} needs {words} register(s), got {len(registers)}"
@@ -27,25 +34,30 @@ def decode(
     if codec == "uint16":
         _require_length(registers, 1, codec)
         raw = registers[0] & 0xFFFF
-        return int(raw * scale + offset)
+        return _scaled_number(raw, scale=scale, offset=offset)
     if codec == "int16":
         _require_length(registers, 1, codec)
         raw = registers[0]
         if raw > 0x7FFF:
             raw -= 0x10000
-        return int(raw * scale + offset)
+        return _scaled_number(raw, scale=scale, offset=offset)
     if codec == "uint32_be":
         _require_length(registers, 2, codec)
         raw = (registers[0] << 16) | (registers[1] & 0xFFFF)
-        return int(raw * scale + offset)
+        return _scaled_number(raw, scale=scale, offset=offset)
     if codec == "int32_be":
         _require_length(registers, 2, codec)
         packed = struct.pack(">HH", registers[0] & 0xFFFF, registers[1] & 0xFFFF)
         raw = struct.unpack(">i", packed)[0]
-        return int(raw * scale + offset)
+        return _scaled_number(raw, scale=scale, offset=offset)
     if codec == "float32_be":
         _require_length(registers, 2, codec)
         packed = struct.pack(">HH", registers[0] & 0xFFFF, registers[1] & 0xFFFF)
+        raw = struct.unpack(">f", packed)[0]
+        return float(raw * scale + offset)
+    if codec == "float32_cdab":
+        _require_length(registers, 2, codec)
+        packed = struct.pack(">HH", registers[1] & 0xFFFF, registers[0] & 0xFFFF)
         raw = struct.unpack(">f", packed)[0]
         return float(raw * scale + offset)
     if codec == "float32_le":

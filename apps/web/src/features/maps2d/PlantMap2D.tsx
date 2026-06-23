@@ -180,6 +180,28 @@ export function PlantMap2D({
         <pattern id="offline-stripe" width={6} height={6} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
           <line x1="0" y1="0" x2="0" y2="6" stroke="var(--status-offline)" strokeWidth={1} opacity={0.35} />
         </pattern>
+        <marker
+          id="map-edge-arrow"
+          viewBox="0 0 10 10"
+          refX="8"
+          refY="5"
+          markerWidth="5"
+          markerHeight="5"
+          orient="auto-start-reverse"
+        >
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--text-muted)" opacity={0.55} />
+        </marker>
+        <marker
+          id="map-edge-arrow-active"
+          viewBox="0 0 10 10"
+          refX="8"
+          refY="5"
+          markerWidth="6"
+          markerHeight="6"
+          orient="auto-start-reverse"
+        >
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)" />
+        </marker>
       </defs>
       {/* Dark canvas base */}
       <rect x={-9999} y={-9999} width={20000} height={20000} fill="var(--bg)" />

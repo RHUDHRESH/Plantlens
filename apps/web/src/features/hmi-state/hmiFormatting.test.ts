@@ -42,6 +42,30 @@ describe("hmiFormatting", () => {
     expect(path).toEqual(["MTR-12V", "FAN-01", "BLW-01"]);
   });
 
+  it("anchors active causality paths at the root candidate when edges arrive out of order", () => {
+    const path = getActiveCausalityAssetPath({
+      ...motorObstructionHmiState,
+      causality_edges: [
+        {
+          edge_id: "fan-to-blower",
+          from_asset_id: "FAN-01",
+          to_asset_id: "BLW-01",
+          relation: "downstream",
+          active: true,
+        },
+        {
+          edge_id: "motor-to-fan",
+          from_asset_id: "MTR-12V",
+          to_asset_id: "FAN-01",
+          relation: "mechanical",
+          active: true,
+        },
+      ],
+    });
+
+    expect(path).toEqual(["MTR-12V", "FAN-01", "BLW-01"]);
+  });
+
   it("returns primary root asset from candidate", () => {
     expect(getPrimaryRootAssetId(motorObstructionHmiState)).toBe("MTR-12V");
   });

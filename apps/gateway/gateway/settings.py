@@ -17,6 +17,10 @@ class Settings(BaseSettings):
         alias="TAG_MAP_PATH",
     )
     gateway_id: str = Field(default="gw-rs485-1", alias="GATEWAY_ID")
+    serial_port_override: str | None = Field(default=None, alias="GATEWAY_SERIAL_PORT")
+    serial_mode: str = Field(default="modbus_rtu", alias="GATEWAY_SERIAL_MODE")
+    serial_baudrate: int | None = Field(default=None, alias="GATEWAY_SERIAL_BAUDRATE")
+    line_default_tag_id: str = Field(default="MOTOR_301_CURRENT", alias="LINE_DEFAULT_TAG_ID")
     poll_enabled: bool = Field(default=True, alias="POLL_ENABLED")
     plc_bridge_enabled: bool = Field(default=False, alias="PLC_BRIDGE_ENABLED")
     plc_slave_id: int = Field(default=1, alias="PLC_SLAVE_ID")
@@ -32,4 +36,13 @@ def resolve_tag_map_path(settings: Settings) -> Path:
     path = Path(settings.tag_map_path)
     if path.is_absolute():
         return path
-    return Path(__file__).resolve().parents[3] / settings.tag_map_path
+    repo_root = Path(__file__).resolve().parents[3]
+    candidates = (
+        Path.cwd() / path,
+        repo_root / path,
+        repo_root / "apps" / "gateway" / path,
+    )
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return candidates[0]

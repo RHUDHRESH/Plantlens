@@ -2,7 +2,7 @@
  * Typed REST client — no diagnosis logic; surfaces structured {code,message,fix} errors.
  */
 import { getApiBaseUrl, getAuthToken } from "./config";
-import type { ApiErrorBody, CompiledBundle, RuntimeSnapshot } from "./types";
+import type { ApiErrorBody, CompiledBundle, GatewayStatus, RuntimeSnapshot } from "./types";
 import { ApiError } from "./types";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -85,6 +85,10 @@ export function getCompiledBundle(signal?: AbortSignal): Promise<CompiledBundle>
 
 export function getRuntimeSnapshot(signal?: AbortSignal): Promise<RuntimeSnapshot> {
   return apiFetch<RuntimeSnapshot>("/api/runtime/snapshot", signal ? { signal } : {});
+}
+
+export function getGatewayStatus(signal?: AbortSignal): Promise<GatewayStatus> {
+  return apiFetch<GatewayStatus>("/api/gateway/status", signal ? { signal } : {});
 }
 
 export function ackAlarm(alarmId: string): Promise<{ status: string; alarm_id: string; audit_id: string }> {

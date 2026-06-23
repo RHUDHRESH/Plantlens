@@ -1,5 +1,5 @@
 /**
- * Live runtime snapshot store (Zustand) — written only by api/ws.ts.
+ * Live runtime snapshot store (Zustand) — written by WebSocket updates and REST snapshot refresh.
  * REST/cache state lives in TanStack Query, not here.
  */
 import { create } from "zustand";

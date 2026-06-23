@@ -38,8 +38,24 @@ async def test_poll_plan_includes_register_backed_tags():
     tag_map = json.loads(TAG_MAP.read_text(encoding="utf-8"))
     plan = build_poll_plan(tag_map)
     tag_ids = {tag.tag_id for group in plan for tag in group.tags}
-    assert "BUS_101_V" in tag_ids
+    assert "PV_101_V" in tag_ids
+    assert "MAINS_V" in tag_ids
+    assert "INV_102_W" in tag_ids
+    assert "VFD_V" in tag_ids
     assert "MOTOR_301_CURRENT" in tag_ids
+    assert "VIB_Z" in tag_ids
+
+
+@pytest.mark.asyncio
+async def test_poll_plan_converts_one_based_register_table_to_zero_based_reads():
+    tag_map = json.loads(TAG_MAP.read_text(encoding="utf-8"))
+    plan = build_poll_plan(tag_map)
+    by_tag = {tag.tag_id: group for group in plan for tag in group.tags}
+    assert by_tag["PV_101_V"].start_address == 0
+    assert by_tag["PV_101_I"].start_address == 2
+    assert by_tag["MOTOR_301_CURRENT"].start_address == 23
+    assert by_tag["VFD_V"].start_address == 24
+    assert by_tag["VFD_W"].start_address == 25
 
 
 @pytest.mark.asyncio

@@ -11,6 +11,7 @@ import structlog
 from gateway.health import start_health_server
 from gateway.modbus_poller import ModbusPoller, build_poll_plan
 from gateway.publish import FramePublisher
+from gateway.raw_serial_reader import RawSerialLineReader, build_line_tag_index
 from gateway.serial_client import create_client
 from gateway.settings import get_settings, resolve_tag_map_path
 
@@ -31,17 +32,35 @@ async def main() -> None:
 
     source_id = modbus_sources[0]
     source = sources[source_id]
-    plan = build_poll_plan(tag_map)
-    if not plan:
-        log.warning("empty_poll_plan")
-        return
-
     publisher = FramePublisher(
         api_base=settings.api_base_url,
         token=settings.gateway_ingest_token,
     )
     await publisher.start()
-    client = create_client(source)
+    if settings.serial_mode == "line":
+        port = settings.serial_port_override or source.get("serial", {}).get("port", "COM3")
+        baudrate = settings.serial_baudrate or int(source.get("serial", {}).get("baudrate", 9600))
+        reader = RawSerialLineReader(
+            port=port,
+            baudrate=baudrate,
+            tag_index=build_line_tag_index(tag_map),
+            default_tag_id=settings.line_default_tag_id,
+            gateway_id=settings.gateway_id,
+            publish=publisher.publish,
+        )
+        try:
+            await reader.run_forever()
+        finally:
+            await publisher.close()
+        return
+
+    plan = build_poll_plan(tag_map)
+    if not plan:
+        log.warning("empty_poll_plan")
+        await publisher.close()
+        return
+
+    client = create_client(source, serial_port_override=settings.serial_port_override)
     poller = ModbusPoller(
         client=client,
         gateway_id=settings.gateway_id,

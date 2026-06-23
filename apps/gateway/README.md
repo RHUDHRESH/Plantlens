@@ -35,3 +35,33 @@ root cause, compiles UI, or runs an LLM. If the gateway dies, the API + last-kno
 ## The contract
 Every published frame validates against `packages/contracts/tag_frame.schema.json` with
 `source="modbus_rtu"`. That is the entire integration story — everything downstream is unchanged.
+
+## Local COM diagnostics
+
+Check whether Windows exposes the expected port and whether the API ingest path is reachable:
+
+```powershell
+uv run python -m gateway.diagnostics --port COM3
+```
+
+To inspect how a raw line would decode without changing live runtime state:
+
+```powershell
+uv run python -m gateway.diagnostics --port COM3 --line "MOTOR_301_CURRENT=12.3"
+```
+
+`--line` is parse-only. It does not POST to the API. Use `--post` only for deliberate test-only
+ingest checks, because it writes to the live runtime snapshot.
+
+If a bench device streams line-oriented values instead of Modbus, run the gateway in line mode:
+
+```powershell
+$env:GATEWAY_SERIAL_MODE="line"
+$env:GATEWAY_SERIAL_PORT="COM3"
+$env:GATEWAY_INGEST_TOKEN="change-me"
+uv run python -m gateway.main
+```
+
+Line mode accepts bare numeric values, `TAG=value`, comma-separated pairs, JSON tag/value objects,
+or full `TagFrame` JSON. Bare numeric values map to `LINE_DEFAULT_TAG_ID` (default:
+`MOTOR_301_CURRENT`).
