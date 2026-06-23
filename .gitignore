@@ -64,3 +64,6 @@ terminals/.next-id
 # Local Claude/Codex backups
 .claude/
 .claude.project.backup-*/
+
+# Local duplicate backend experiment (canonical API lives in apps/api)
+/backend/
