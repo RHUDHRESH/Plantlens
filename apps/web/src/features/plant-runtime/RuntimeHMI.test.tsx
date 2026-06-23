@@ -4,27 +4,13 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RuntimeHMI } from "./RuntimeHMI";
 import { useRuntimeStore } from "../../app/store/runtime";
+import { useAtlasStore } from "../../app/store/atlas";
 import { motorObstructionHmiState } from "../hmi-state/__fixtures__/plantHmiState.fixture";
 import { HERO_MOTOR_OVERLOAD } from "../../test-fixtures/heroSnapshot";
 import { getDefaultVisibleLayersForRole, useOperationalMapStore } from "../operational-map";
-import type { PlantMap2DProps } from "../maps2d/PlantMap2D";
 import type { PlantMap3DProps } from "../maps3d/PlantMap3D";
 
-let latestMap2dProps: PlantMap2DProps | null = null;
 let latestMap3dProps: PlantMap3DProps | null = null;
-
-vi.mock("../maps2d/PlantMap2D", () => ({
-  PlantMap2D: (props: PlantMap2DProps) => {
-    latestMap2dProps = props;
-    return (
-      <div data-testid="plant-map-2d">
-        <button type="button" onClick={() => props.onSelectAsset?.("MTR-301")}>
-          Select MTR-301
-        </button>
-      </div>
-    );
-  },
-}));
 
 vi.mock("../maps3d/LazyPlantMap3D", () => ({
   LazyPlantMap3D: (props: PlantMap3DProps & { webglAvailable: boolean; onSwitch2D: () => void }) => {
@@ -108,6 +94,11 @@ function wrap(ui: ReactElement) {
 describe("RuntimeHMI", () => {
   beforeEach(() => {
     useRuntimeStore.getState().reset();
+    useAtlasStore.setState({
+      selectedEquipmentId: null,
+      mapOrientation: "vertical",
+      mapScale: 1,
+    });
     useOperationalMapStore.setState({
       mode: "2d",
       role: "operator",
@@ -118,7 +109,6 @@ describe("RuntimeHMI", () => {
       lastCommand: null,
       activeSituationLocked: false,
     });
-    latestMap2dProps = null;
     latestMap3dProps = null;
     vi.mocked(getRuntimeHmiState).mockReset();
     vi.mocked(getRuntimeHmiState).mockRejectedValue(new Error("hmi offline"));
@@ -141,18 +131,15 @@ describe("RuntimeHMI", () => {
     });
   });
 
-  it("renders shell with no-situation and connection strip when HMI runtime fails", async () => {
+  it("renders atlas shell with plant hierarchy and offline strip when HMI runtime fails", async () => {
     useRuntimeStore.getState().setConnection("disconnected");
     wrap(<RuntimeHMI />);
-    expect(await screen.findByText(/All clear/i)).toBeInTheDocument();
+    expect(await screen.findByText("Plant hierarchy")).toBeInTheDocument();
+    expect(screen.getByText(/All nominal/i)).toBeInTheDocument();
     expect(screen.getByText(/OFFLINE/i)).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: /Live values/i })).toHaveTextContent(
-      /waiting for frames/i,
-    );
-    expect(screen.getByRole("region", { name: /Live values/i })).toHaveTextContent(/Gateway/i);
-    expect(screen.getByRole("region", { name: /Live values/i })).toHaveTextContent(/not reachable/i);
     expect(screen.getByLabelText(/Raw alarms/i)).toBeInTheDocument();
     expect(screen.getByRole("banner")).toHaveClass("runtime-top-strip");
+    expect(screen.getByRole("contentinfo", { name: /Plant status/i })).toBeInTheDocument();
   });
 
   it("shows stale badge without layout-breaking duplicate conn labels", async () => {
@@ -165,33 +152,36 @@ describe("RuntimeHMI", () => {
   it("renders HMI root cause panel when runtime HMI resolves", async () => {
     vi.mocked(getRuntimeHmiState).mockResolvedValue(motorObstructionHmiState);
     wrap(<RuntimeHMI />);
+    fireEvent.click(await screen.findByRole("button", { name: /EVENT/i }));
     expect(
       await screen.findByRole("heading", { name: /Motor-side mechanical obstruction/i }),
     ).toBeInTheDocument();
     expect(screen.getByText("MOTOR_MECHANICAL_OBSTRUCTION")).toBeInTheDocument();
   });
 
-  it("shows CalmCard fallback and warning when HMI runtime fails but snapshot has calm card", async () => {
+  it("shows CalmCard on atlas when HMI runtime fails but snapshot has calm card", async () => {
     vi.mocked(getRuntimeSnapshot).mockResolvedValue(HERO_MOTOR_OVERLOAD);
     wrap(<RuntimeHMI />);
     await waitFor(
       () => {
-        expect(screen.getByText(/HMI runtime projection unavailable/i)).toBeInTheDocument();
+        expect(screen.getAllByRole("heading", { name: /Motor mechanical overload/i }).length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/alarms grouped/i).length).toBeGreaterThan(0);
       },
       { timeout: 3000 },
     );
-    expect(screen.getByRole("heading", { name: /Motor mechanical overload/i })).toBeInTheDocument();
   });
 
-  it("renders latest live tag values from the runtime snapshot", async () => {
+  it("renders latest live tag values in the atlas tree", async () => {
     vi.mocked(getRuntimeSnapshot).mockResolvedValue({
       ...HERO_MOTOR_OVERLOAD,
+      active_situations: [],
+      latest_calm_card: null,
       tags: {
-        MOTOR_301_CURRENT: {
-          tag_id: "MOTOR_301_CURRENT",
+        MOTOR_301_RPM: {
+          tag_id: "MOTOR_301_RPM",
           asset_id: "MTR-301",
-          value: 42.25,
-          unit: "A",
+          value: 842,
+          unit: "rpm",
           quality: "GOOD",
           timestamp: "2026-01-01T10:32:14Z",
           source: "modbus_rtu",
@@ -200,21 +190,15 @@ describe("RuntimeHMI", () => {
       },
     });
     wrap(<RuntimeHMI />);
-    expect(await screen.findByText("MOTOR_301_CURRENT")).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: /Live values/i })).toHaveTextContent("A");
+    await waitFor(() => {
+      expect(screen.getAllByText(/842/).length).toBeGreaterThan(0);
+    });
   });
 
-  it("passes map_2d data to PlantMap2D", async () => {
+  it("passes map_3d data to LazyPlantMap3D when twin screen is selected", async () => {
     wrap(<RuntimeHMI />);
-    await screen.findByTestId("plant-map-2d");
-    expect(latestMap2dProps?.nodes).toEqual(COMPILED_FIXTURE.hmi_view_model.map_2d.nodes);
-    expect(latestMap2dProps?.edges).toEqual(COMPILED_FIXTURE.hmi_view_model.map_2d.edges);
-  });
-
-  it("passes map_3d data to LazyPlantMap3D when 3D mode is selected", async () => {
-    wrap(<RuntimeHMI />);
-    await screen.findByTestId("plant-map-2d");
-    fireEvent.click(screen.getByRole("button", { name: /3D/i }));
+    await screen.findByText("Plant hierarchy");
+    fireEvent.click(screen.getByRole("button", { name: /TWIN/i }));
     await screen.findByTestId("plant-map-3d");
     expect(latestMap3dProps?.nodes[0]?.position).toEqual({ x: -4, y: -1, z: 0 });
     expect(latestMap3dProps?.edges).toEqual(COMPILED_FIXTURE.hmi_view_model.map_3d.edges);
@@ -225,8 +209,8 @@ describe("RuntimeHMI", () => {
 
   it("passes operational 3D viewport props to LazyPlantMap3D", async () => {
     wrap(<RuntimeHMI />);
-    await screen.findByTestId("plant-map-2d");
-    fireEvent.click(screen.getByRole("button", { name: /3D/i }));
+    await screen.findByText("Plant hierarchy");
+    fireEvent.click(screen.getByRole("button", { name: /TWIN/i }));
     await screen.findByTestId("plant-map-3d");
     expect(latestMap3dProps?.onViewportReady).toBeTypeOf("function");
     expect(latestMap3dProps?.onZoomBandChange).toBeTypeOf("function");
@@ -234,30 +218,34 @@ describe("RuntimeHMI", () => {
     expect(latestMap3dProps?.focusAssetId).toBeNull();
   });
 
-  it("renders causal path rail when active path exists", async () => {
+  it("slides situation panel in when active situation exists", async () => {
     vi.mocked(getRuntimeSnapshot).mockResolvedValue(HERO_MOTOR_OVERLOAD);
     wrap(<RuntimeHMI />);
-    await screen.findByTestId("plant-map-2d");
-    expect(
-      await screen.findByRole("navigation", { name: /causal path explorer/i }),
-    ).toBeInTheDocument();
-    expect(await screen.findByRole("button", { name: /Step 1: Motor/i })).toBeInTheDocument();
+    await screen.findByText("Plant hierarchy");
+    await waitFor(() => {
+      expect(screen.getAllByText(/alarms grouped/i).length).toBeGreaterThan(0);
+      expect(
+        screen.getAllByRole("heading", { name: /Motor mechanical overload/i }).length,
+      ).toBeGreaterThan(0);
+    });
   });
 
-  it("clicking a causal path step selects and focuses the asset", async () => {
-    vi.mocked(getRuntimeSnapshot).mockResolvedValue(HERO_MOTOR_OVERLOAD);
+  it("clicking a tree node selects and focuses the asset", async () => {
     wrap(<RuntimeHMI />);
-    await screen.findByTestId("plant-map-2d");
-    fireEvent.click(await screen.findByRole("button", { name: /Step 1: Motor/i }));
+    await screen.findByText("Plant hierarchy");
+    fireEvent.click(screen.getAllByText("Motor M-301")[0]!);
     expect(useOperationalMapStore.getState().selectedAssetId).toBe("MTR-301");
     expect(useOperationalMapStore.getState().focusedAssetId).toBe("MTR-301");
+    expect(useAtlasStore.getState().selectedEquipmentId).toBe("MTR-301");
     expect(await screen.findByLabelText(/Asset detail Motor/i)).toBeInTheDocument();
   });
 
-  it("opens the asset detail drawer when selecting an asset from the 2D map", async () => {
+  it("renders atlas map controls for orientation and zoom", async () => {
     wrap(<RuntimeHMI />);
-    await screen.findByTestId("plant-map-2d");
-    fireEvent.click(screen.getByRole("button", { name: /Select MTR-301/i }));
-    expect(await screen.findByLabelText(/Asset detail Motor/i)).toBeInTheDocument();
+    await screen.findByText("Plant hierarchy");
+    expect(screen.getByRole("button", { name: /Vertical/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Horizontal/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Zoom in/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Zoom out/i })).toBeInTheDocument();
   });
 });

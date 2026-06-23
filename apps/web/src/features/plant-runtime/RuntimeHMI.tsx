@@ -4,7 +4,6 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   escalateIncident,
   getCompiledBundle,
-  getGatewayStatus,
   getRuntimeSnapshot,
   issueDevToken,
 } from "../../api/client";
@@ -27,21 +26,13 @@ import {
 import { RawAlarmTable } from "../alarms/RawAlarmTable";
 import { IncidentRoom } from "../incidents/IncidentRoom";
 import { AssetDetailDrawer } from "../maps2d/AssetDetailDrawer";
-import { MapToolbar } from "../maps2d/MapToolbar";
-import { PlantMap2D, type PlantMap2DViewportControls } from "../maps2d/PlantMap2D";
 import type { MapNode } from "../maps2d/mapTypes";
 import { LazyPlantMap3D } from "../maps3d/LazyPlantMap3D";
 import type { PlantMap3DViewportControls } from "../maps3d/PlantMap3D";
 import { adaptMap3DViewModel } from "../ops3d/adapters";
 import { ScenarioLauncher } from "../scenarios/ScenarioLauncher";
+import { buildCausalPathViewModel } from "../causal-path";
 import {
-  buildCausalPathViewModel,
-  CausalPathEvidencePanel,
-  CausalPathRail,
-  OperationalDagPanel,
-} from "../causal-path";
-import {
-  getLockedLayers,
   selectCausalPathVisible,
   useOperationalMapStore,
   type MapZoomBand,
@@ -56,9 +47,10 @@ import {
 } from "../operational-search";
 import { buildAssetSourceLineage } from "../source-lineage";
 import { selectAuthoredBundleInput, useStudioDraftStore } from "../studio-forms";
-import causalGraphData from "../studio-forms/demo-data/causal_graph.json";
 import { StudioLaunchpad, useStudioRoute } from "../studio-launchpad";
 import { AppIconRail, type AppScreen } from "../../components/shell/AppIconRail";
+import { AtlasScreen } from "../atlas";
+import { useAtlasStore } from "../../app/store/atlas";
 
 function derivePlantHealth(assetStatus: Record<string, string>): string {
   const values = Object.values(assetStatus);
@@ -67,51 +59,6 @@ function derivePlantHealth(assetStatus: Record<string, string>): string {
   if (values.some((s) => s === "warning")) return "Warning";
   if (values.some((s) => s === "sensor_bad")) return "Sensor fault";
   return "Normal";
-}
-
-function formatLiveValue(value: unknown, unit: string): string {
-  if (value === null || value === undefined || value === "") return "--";
-  if (typeof value === "number") {
-    const formatted = Number.isInteger(value) ? String(value) : value.toFixed(2);
-    return unit ? `${formatted} ${unit}` : formatted;
-  }
-  return unit ? `${String(value)} ${unit}` : String(value);
-}
-
-const LIVE_TAG_ORDER = [
-  "BAT_101_V",
-  "BAT_101_I",
-  "BAT_101_W",
-  "PV_101_V",
-  "PV_101_I",
-  "PV_101_W",
-  "MAINS_V",
-  "MAINS_I",
-  "MAINS_W",
-  "INV_102_V",
-  "INV_102_I",
-  "INV_102_W",
-  "VFD_V",
-  "VFD_I",
-  "VFD_W",
-  "MOTOR_301_CURRENT",
-  "MOTOR_301_RPM",
-  "MOTOR_301_TEMP",
-  "VIB_TEMP",
-  "VIB_X",
-  "VIB_Y",
-  "VIB_Z",
-];
-
-function compareLiveTags(a: { tag_id: string }, b: { tag_id: string }): number {
-  const ai = LIVE_TAG_ORDER.indexOf(a.tag_id);
-  const bi = LIVE_TAG_ORDER.indexOf(b.tag_id);
-  if (ai !== -1 || bi !== -1) {
-    if (ai === -1) return 1;
-    if (bi === -1) return -1;
-    return ai - bi;
-  }
-  return a.tag_id.localeCompare(b.tag_id);
 }
 
 export function RuntimeHMI() {
@@ -127,7 +74,6 @@ export function RuntimeHMI() {
   const [scenarioOpen, setScenarioOpen] = useState(false);
   const [showLegend, setShowLegend] = useState(true);
   const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
-  const [map2dControls, setMap2dControls] = useState<PlantMap2DViewportControls | null>(null);
   const [map3dControls, setMap3dControls] = useState<PlantMap3DViewportControls | null>(null);
 
   const mapMode = useOperationalMapStore((s) => s.mode);
@@ -136,22 +82,15 @@ export function RuntimeHMI() {
   const selectedAssetId = useOperationalMapStore((s) => s.selectedAssetId);
   const focusAssetId = useOperationalMapStore((s) => s.focusedAssetId);
   const visibleLayers = useOperationalMapStore((s) => s.visibleLayers);
-  const activeSituationLocked = useOperationalMapStore((s) => s.activeSituationLocked);
   const setMapMode = useOperationalMapStore((s) => s.setMode);
   const setMapRole = useOperationalMapStore((s) => s.setRole);
   const selectAsset = useOperationalMapStore((s) => s.selectAsset);
   const focusAsset = useOperationalMapStore((s) => s.focusAsset);
   const clearSelection = useOperationalMapStore((s) => s.clearSelection);
-  const toggleLayer = useOperationalMapStore((s) => s.toggleLayer);
   const setActiveSituationLocked = useOperationalMapStore((s) => s.setActiveSituationLocked);
   const dispatchMapCommand = useOperationalMapStore((s) => s.dispatchMapCommand);
   const setZoomBand = useOperationalMapStore((s) => s.setZoomBand);
   const showCausalPath = useOperationalMapStore(selectCausalPathVisible);
-  const lockedLayers = useMemo(
-    () => getLockedLayers(activeSituationLocked),
-    [activeSituationLocked],
-  );
-
   const connection = useRuntimeStore((s) => s.connection);
   const assetStatus = useRuntimeStore((s) => s.assetStatus);
   const calmCard = useRuntimeStore((s) => s.calmCard);
@@ -176,14 +115,6 @@ export function RuntimeHMI() {
     queryFn: ({ signal }) => getRuntimeSnapshot(signal),
     enabled: authReady,
     refetchInterval: 1000,
-    retry: 1,
-  });
-
-  const gatewayStatusQuery = useQuery({
-    queryKey: ["gateway-status"],
-    queryFn: ({ signal }) => getGatewayStatus(signal),
-    enabled: authReady,
-    refetchInterval: 1500,
     retry: 1,
   });
 
@@ -266,18 +197,10 @@ export function RuntimeHMI() {
 
   const hmi = compiledQuery.data?.hmi_view_model;
   const nodes2d = hmi?.map_2d?.nodes ?? [];
-  const edges2d = hmi?.map_2d?.edges ?? [];
   const map3d = useMemo(() => adaptMap3DViewModel(hmi?.map_3d), [hmi?.map_3d]);
   const nodes3d = map3d.nodes;
   const edges3d = map3d.edges;
   const plantName = compiledQuery.data?.plant_id?.replace(/_/g, " ") ?? "PlantLens Demo";
-  const liveTagRows = useMemo(
-    () =>
-      Object.values(tags)
-        .sort(compareLiveTags)
-        .slice(0, 32),
-    [tags],
-  );
   const hmiProjectionContradictsLive = useMemo(() => {
     const missingSignals = hmiState?.data_quality?.missing_signals ?? [];
     if (!missingSignals.length) return false;
@@ -323,10 +246,6 @@ export function RuntimeHMI() {
   );
   const timeLabel = lastHmiStateTs ?? lastSnapshotTs ?? "—";
   const dataSource = displayHmiState ? "HMI Projection" : "Live Snapshot";
-  const gatewayStatus = gatewayStatusQuery.data;
-  const gatewayHealth = gatewayStatus?.gateway_health;
-  const latestGatewayFrame = gatewayStatus?.api_runtime.latest_frame;
-
   const hmiRuntimeError = useMemo(() => {
     if (hmiProjectionContradictsLive) {
       return "HMI projection disagrees with live gateway tags. Showing verified live snapshot.";
@@ -396,38 +315,21 @@ export function RuntimeHMI() {
     if (rootAssetId) {
       dispatchMapCommand({ type: "focus_root" });
       focusAsset(rootAssetId);
-      if (mapMode === "2d") {
-        map2dControls?.focusRoot();
-      } else {
+      useAtlasStore.getState().selectEquipment(rootAssetId);
+      if (mapMode === "3d") {
         map3dControls?.focusRoot();
       }
     }
-  }, [rootAssetId, dispatchMapCommand, focusAsset, mapMode, map2dControls, map3dControls]);
+  }, [rootAssetId, dispatchMapCommand, focusAsset, mapMode, map3dControls]);
 
   const handleFitPlant = useCallback(() => {
     dispatchMapCommand({ type: "fit_plant" });
-    if (mapMode === "2d") {
-      map2dControls?.fitPlant();
-    } else {
+    if (mapMode === "3d") {
       map3dControls?.fitPlant();
-    }
-  }, [dispatchMapCommand, mapMode, map2dControls, map3dControls]);
-
-  const handleZoomIn = useCallback(() => {
-    if (mapMode === "2d") {
-      map2dControls?.zoomIn();
     } else {
-      map3dControls?.zoomIn();
+      useAtlasStore.getState().resetZoom();
     }
-  }, [mapMode, map2dControls, map3dControls]);
-
-  const handleZoomOut = useCallback(() => {
-    if (mapMode === "2d") {
-      map2dControls?.zoomOut();
-    } else {
-      map3dControls?.zoomOut();
-    }
-  }, [mapMode, map2dControls, map3dControls]);
+  }, [dispatchMapCommand, mapMode, map3dControls]);
 
   const handleZoomBandChange = useCallback(
     (band: MapZoomBand) => {
@@ -435,10 +337,6 @@ export function RuntimeHMI() {
     },
     [setZoomBand],
   );
-
-  const handleToggleCausalPath = useCallback(() => {
-    dispatchMapCommand({ type: "show_causal_path", visible: !showCausalPath });
-  }, [dispatchMapCommand, showCausalPath]);
 
   const causalPathViewModel = useMemo(
     () =>
@@ -466,19 +364,6 @@ export function RuntimeHMI() {
       activeSituation,
       calmCard,
     ],
-  );
-
-  const handleCausalPathStep = useCallback(
-    (assetId: string) => {
-      selectAsset(assetId);
-      focusAsset(assetId);
-      if (mapMode === "2d") {
-        map2dControls?.focusAsset(assetId);
-      } else {
-        map3dControls?.focusAsset(assetId);
-      }
-    },
-    [selectAsset, focusAsset, mapMode, map2dControls, map3dControls],
   );
 
   const searchIndex = useMemo(
@@ -537,9 +422,8 @@ export function RuntimeHMI() {
       },
       focusAsset: (assetId: string) => {
         focusAsset(assetId);
-        if (mapMode === "2d") {
-          map2dControls?.focusAsset(assetId);
-        } else {
+        useAtlasStore.getState().selectEquipment(assetId);
+        if (mapMode === "3d") {
           map3dControls?.focusAsset(assetId);
         }
       },
@@ -556,7 +440,6 @@ export function RuntimeHMI() {
     [
       selectAsset,
       focusAsset,
-      map2dControls,
       map3dControls,
       mapMode,
       handleFitPlant,
@@ -596,27 +479,6 @@ export function RuntimeHMI() {
     return () => window.removeEventListener("keydown", onKey);
   }, [selectedAssetId, scenarioOpen, clearSelection, palette]);
 
-  const map2dProps = {
-    nodes: nodes2d,
-    edges: edges2d,
-    assetStatus: effectiveAssetStatus,
-    causalPath,
-    rootAssetId,
-    affectedAssetIds,
-    reducedMotion,
-    showLegend,
-    focusAssetId,
-    density,
-    onSelectAsset: handleSelectAsset,
-    onViewportReady: setMap2dControls,
-    onZoomBandChange: handleZoomBandChange,
-    role: mapRole,
-    zoomBand,
-    visibleLayers,
-    tags,
-    alarms: activeAlarms,
-  };
-
   const map3dProps = {
     nodes: nodes3d,
     edges: edges3d,
@@ -634,13 +496,6 @@ export function RuntimeHMI() {
     onZoomBandChange: handleZoomBandChange,
   };
 
-  const activeMapControls = mapMode === "2d" ? map2dControls : map3dControls;
-  const canNavigateCurrentMap = Boolean(activeMapControls);
-  const scaleLabel = activeMapControls
-    ? `${Math.round(activeMapControls.scale * 100)}%`
-    : undefined;
-
-  const hasMap2d = nodes2d.length > 0;
   const hasMap3d = nodes3d.length > 0;
 
   const handleNavScreen = useCallback(
@@ -685,188 +540,40 @@ export function RuntimeHMI() {
       />
 
       {/* ── ATLAS screen ── */}
-      <ScreenWrap active={screen === "atlas"}>
-
-      <section className="runtime-hmi__live-values" aria-label="Live values">
-        <div className="runtime-hmi__live-values-head">
-          <h2>Live values</h2>
-          <span className="runtime-hmi__live-values-count">
-            {liveTagRows.length ? `${liveTagRows.length} latest` : "waiting for frames"}
-          </span>
-        </div>
-        {liveTagRows.length === 0 ? (
-          <p className="runtime-hmi__live-values-empty">
-            No live telemetry received yet. Start the simulator or gateway on COM3.
-          </p>
-        ) : (
-          <ul className="runtime-hmi__live-values-list">
-            {liveTagRows.map((tag) => (
-              <li key={tag.tag_id}>
-                <span className="data-number">{tag.tag_id}</span>
-                <span className="data-number">{formatLiveValue(tag.value, tag.unit)}</span>
-                <span
-                  className={`status-badge status-badge--${tag.quality === "GOOD" ? "normal" : "sensor_bad"}`}
-                >
-                  {tag.quality}
-                </span>
-              </li>
-            ))}
-          </ul>
+      <ScreenWrap active={screen === "atlas"} className="runtime-hmi__atlas flex flex-1 min-h-0 flex-col relative">
+        <AtlasScreen
+          tags={tags}
+          assetStatus={effectiveAssetStatus}
+          activeSituation={activeSituation}
+          situations={activeSituation ? [activeSituation] : []}
+          calmCard={calmCard}
+          alarms={activeAlarms}
+          reducedMotion={reducedMotion}
+          plantHealthy={!hasActiveSituation && plantHealth === "Normal"}
+          onSelectEquipment={(id) => {
+            handleSelectAsset(id);
+            focusAsset(id);
+            useAtlasStore.getState().selectEquipment(id);
+          }}
+          onViewRawAlarms={() => setRawExpanded(true)}
+          onEscalate={() => escalateMutation.mutate()}
+          onHighlightAsset={handleHighlightAsset}
+          onFocusRoot={handleFocusRoot}
+          escalating={escalateMutation.isPending}
+          rawAlarmTable={
+            <RawAlarmTable
+              alarms={activeAlarms}
+              situationTitle={activeSituation?.title ?? null}
+              defaultExpanded={rawExpanded}
+              onExpandedChange={setRawExpanded}
+            />
+          }
+        />
+        {scenarioOpen && (
+          <div className="runtime-hmi__scenario-panel runtime-hmi__scenario-panel--atlas">
+            <ScenarioLauncher onClose={() => setScenarioOpen(false)} />
+          </div>
         )}
-        <dl className="runtime-hmi__connection-status" aria-label="Connections">
-          <div>
-            <dt>API</dt>
-            <dd>{runtimeSnapshotQuery.isError ? "unreachable" : authReady ? "connected" : "auth"}</dd>
-          </div>
-          <div>
-            <dt>Gateway</dt>
-            <dd>{gatewayHealth?.reachable ? "health ok" : "not reachable"}</dd>
-          </div>
-          <div>
-            <dt>Serial</dt>
-            <dd>{latestGatewayFrame ? latestGatewayFrame.gateway_id ?? latestGatewayFrame.source : "no frames"}</dd>
-          </div>
-          <div>
-            <dt>Last read</dt>
-            <dd>{gatewayHealth?.body?.last_good_read_ts ?? latestGatewayFrame?.timestamp ?? "none"}</dd>
-          </div>
-        </dl>
-      </section>
-
-      <div className="runtime-hmi__map-row">
-        <div className="runtime-hmi__map-panel">
-          <MapToolbar
-            mapMode={mapMode}
-            onMapModeChange={setMapMode}
-            role={mapRole}
-            onRoleChange={setMapRole}
-            visibleLayers={visibleLayers}
-            lockedLayers={lockedLayers}
-            onToggleLayer={toggleLayer}
-            showLegend={showLegend}
-            onToggleLegend={() => setShowLegend((v) => !v)}
-            showCausalPath={showCausalPath}
-            onToggleCausalPath={handleToggleCausalPath}
-            causalPathLocked={activeSituationLocked}
-            onFocusRoot={handleFocusRoot}
-            hasRoot={Boolean(rootAssetId)}
-            onFitPlant={handleFitPlant}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            canNavigateCurrentMap={canNavigateCurrentMap}
-            zoomBand={zoomBand}
-            {...(scaleLabel ? { scaleLabel } : {})}
-            density={density}
-            onDensityChange={setDensity}
-            reducedMotion={reducedMotion}
-          />
-
-          <CausalPathRail
-            viewModel={causalPathViewModel}
-            role={mapRole}
-            zoomBand={zoomBand}
-            visible={showCausalPath}
-            onSelectAsset={handleCausalPathStep}
-            onFocusAsset={handleCausalPathStep}
-          />
-
-          <OperationalDagPanel
-            nodes={causalGraphData.nodes}
-            edges={causalGraphData.edges}
-            mapNodes={nodes2d}
-            assetStatus={effectiveAssetStatus}
-            activePath={causalPath}
-            tags={tags}
-            alarms={activeAlarms}
-            onSelectAsset={handleCausalPathStep}
-            onFocusAsset={handleCausalPathStep}
-          />
-
-          <main className="runtime-hmi__map" aria-label="Plant map">
-            {compiledQuery.isLoading && (
-              <div className="pl-empty-state" role="status">Loading compiled HMI…</div>
-            )}
-            {compiledQuery.isError && (
-              <div className="pl-error-state" role="alert">
-                Compiled HMI unavailable. Start the API and compile the demo bundle.
-              </div>
-            )}
-            {!hasMap2d && !hasMap3d && !compiledQuery.isLoading && (
-              <div className="pl-empty-state" role="status">No map nodes — compile the plant bundle first.</div>
-            )}
-            {mapMode === "2d" && hasMap2d && <PlantMap2D {...map2dProps} />}
-            {mapMode === "2d" && !hasMap2d && hasMap3d && !compiledQuery.isLoading && (
-              <div className="pl-empty-state" role="status">No 2D map nodes available.</div>
-            )}
-            {mapMode === "3d" && hasMap3d && (
-              <LazyPlantMap3D
-                {...map3dProps}
-                webglAvailable={webglAvailable}
-                onSwitch2D={() => setMapMode("2d" as const)}
-              />
-            )}
-            {mapMode === "3d" && !hasMap3d && !compiledQuery.isLoading && (
-              <div className="pl-empty-state" role="status">No 3D map nodes available.</div>
-            )}
-          </main>
-
-          {scenarioOpen && (
-            <div className="runtime-hmi__scenario-panel">
-              <ScenarioLauncher onClose={() => setScenarioOpen(false)} />
-            </div>
-          )}
-        </div>
-
-        <aside className="runtime-hmi__situation" aria-label="Active situation">
-          {showCausalPath && causalPathViewModel.hasActivePath && (
-            <CausalPathEvidencePanel
-              viewModel={causalPathViewModel}
-              role={mapRole}
-              zoomBand={zoomBand}
-              visibleLayers={visibleLayers}
-              onSelectAsset={handleCausalPathStep}
-              onFocusAsset={handleCausalPathStep}
-              onOpenRawAlarms={() => setRawExpanded(true)}
-            />
-          )}
-          {displayHmiState ? (
-            <HmiStatePanel
-              state={displayHmiState}
-              runtimeError={hmiRuntimeError}
-              onViewRawAlarms={() => setRawExpanded(true)}
-              onHighlightAsset={handleHighlightAsset}
-            />
-          ) : (
-            <>
-              {hmiRuntimeError && (
-                <div className="hmi-runtime-fallback-warn" role="alert">
-                  {hmiRuntimeError}
-                </div>
-              )}
-              {calmCard ? (
-                <CalmCard
-                  card={calmCard}
-                  onViewRawAlarms={() => setRawExpanded(true)}
-                  onEscalate={() => escalateMutation.mutate()}
-                  onHighlightAsset={handleHighlightAsset}
-                  onFocusRoot={handleFocusRoot}
-                  escalating={escalateMutation.isPending}
-                />
-              ) : (
-                <NoActiveSituation />
-              )}
-            </>
-          )}
-        </aside>
-      </div>
-
-      <RawAlarmTable
-        alarms={activeAlarms}
-        situationTitle={activeSituation?.title ?? null}
-        defaultExpanded={rawExpanded}
-        onExpandedChange={setRawExpanded}
-      />
-
       </ScreenWrap>
 
       {/* ── ALARMS screen ── */}
@@ -997,7 +704,16 @@ export function RuntimeHMI() {
   );
 }
 
-function ScreenWrap({ active, children }: { active: boolean; children: ReactNode }) {
+function ScreenWrap({
+  active,
+  children,
+  className,
+}: {
+  active: boolean;
+  children: ReactNode;
+  className?: string;
+}) {
   if (!active) return null;
+  if (className) return <div className={className}>{children}</div>;
   return <>{children}</>;
 }
