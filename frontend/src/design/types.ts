@@ -12,9 +12,11 @@ export type ConnectionStatus = "online" | "degraded" | "offline";
 
 export type BottomSheetMode = "collapsed" | "peek" | "expanded";
 
-export type MobileTab = "map" | "situations" | "copilot" | "role" | "more";
+export type MobileTab = "map" | "situations" | "copilot" | "studio" | "more";
 
-export type AppScreen = "map" | "evidence" | "dag";
+export type AppScreen = "map" | "evidence" | "dag" | "assetStudio";
+
+export type AssetValidationStatus = "valid" | "warning" | "error" | "unknown";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "warning";
 

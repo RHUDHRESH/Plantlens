@@ -12,6 +12,7 @@ import { MobileBottomNav } from "./components/shell/MobileBottomNav";
 import { Copilot } from "./copilot/Copilot";
 import { SituationEvidenceRoom } from "./screens/SituationEvidenceRoom";
 import { EngineerDagView } from "./screens/EngineerDagView";
+import { AssetStudio } from "./screens/AssetStudio";
 
 export default function App() {
   const connect = useStore((s) => s.connect);
@@ -27,6 +28,10 @@ export default function App() {
 
   if (screen === "dag") {
     return <EngineerDagView />;
+  }
+
+  if (screen === "assetStudio") {
+    return <AssetStudio />;
   }
 
   return (

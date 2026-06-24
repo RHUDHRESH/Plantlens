@@ -12,6 +12,7 @@ import {
 } from "../data/demoPlant";
 import type {
   AppScreen,
+  AssetValidationStatus,
   BottomSheetMode,
   ConnectionStatus,
   MobileTab,
@@ -19,6 +20,14 @@ import type {
   SourceMode,
   ThemeMode,
 } from "../design/types";
+import type { ValidationItem } from "../components/studio/studioTypes";
+import {
+  buildParameterMap,
+  getAssetTemplate,
+  getDefaultTemplateId,
+  resolveTemplateForInstance,
+  validateAssetDraft as runAssetValidation,
+} from "../components/studio/demoAssetTemplates";
 import type {
   DagHighlightMode,
   DagLayerName,
@@ -72,6 +81,15 @@ interface State {
   dagLayerVisibility: DagLayerVisibility;
   dagHighlightMode: DagHighlightMode;
   dagSearchQuery: string;
+  selectedAssetTypeId: string;
+  selectedAssetInstanceId: string | null;
+  assetDraftParameters: Record<string, number | string>;
+  assetDraftDirty: boolean;
+  assetDraftSaved: boolean;
+  assetValidationStatus: AssetValidationStatus;
+  assetValidationItems: ValidationItem[];
+  studioLibrarySearch: string;
+  studioParameterSearch: string;
   connect: () => Promise<void>;
   setZoom: (z: State["zoom"]) => void;
   setActive: (s: Situation | null) => void;
@@ -105,6 +123,14 @@ interface State {
   toggleDagLayer: (layer: DagLayerName) => void;
   setDagHighlightMode: (mode: DagHighlightMode) => void;
   setDagSearchQuery: (query: string) => void;
+  openAssetStudio: (assetTypeId?: string, assetInstanceId?: string | null) => void;
+  goBackToDag: () => void;
+  setSelectedAssetTypeId: (typeId: string) => void;
+  updateAssetParameter: (key: string, value: number | string) => void;
+  validateAssetDraft: () => void;
+  saveAssetDraft: () => void;
+  setStudioLibrarySearch: (query: string) => void;
+  setStudioParameterSearch: (query: string) => void;
 }
 
 function connectionFromDegraded(degraded: boolean): ConnectionStatus {
@@ -113,6 +139,18 @@ function connectionFromDegraded(degraded: boolean): ConnectionStatus {
 
 const initialSituations = DEMO_SITUATIONS;
 const initialTop = initialSituations[0] ?? null;
+const initialAssetTypeId = getDefaultTemplateId();
+const initialTemplate = getAssetTemplate(initialAssetTypeId);
+const initialDraftParams = initialTemplate
+  ? buildParameterMap(initialTemplate)
+  : {};
+
+function initialValidation(): { status: AssetValidationStatus; items: ValidationItem[] } {
+  if (!initialTemplate) return { status: "unknown", items: [] };
+  return runAssetValidation(initialTemplate, initialDraftParams);
+}
+
+const initialValidationResult = initialValidation();
 
 export const useStore = create<State>((set, get) => ({
   values: [],
@@ -145,6 +183,15 @@ export const useStore = create<State>((set, get) => ({
   },
   dagHighlightMode: "path",
   dagSearchQuery: "",
+  selectedAssetTypeId: initialAssetTypeId,
+  selectedAssetInstanceId: DEMO_ASSETS[0]?.id ?? null,
+  assetDraftParameters: initialDraftParams,
+  assetDraftDirty: false,
+  assetDraftSaved: false,
+  assetValidationStatus: initialValidationResult.status,
+  assetValidationItems: initialValidationResult.items,
+  studioLibrarySearch: "",
+  studioParameterSearch: "",
 
   connect: async () => {
     try {
@@ -274,4 +321,91 @@ export const useStore = create<State>((set, get) => ({
     })),
   setDagHighlightMode: (mode) => set({ dagHighlightMode: mode }),
   setDagSearchQuery: (query) => set({ dagSearchQuery: query }),
+
+  openAssetStudio: (assetTypeId, assetInstanceId) => {
+    const instanceId =
+      assetInstanceId !== undefined
+        ? assetInstanceId
+        : get().selectedAssetInstanceId ?? get().selectedAssetId;
+    const typeId =
+      assetTypeId ??
+      (instanceId ? resolveTemplateForInstance(instanceId) : get().selectedAssetTypeId);
+    const template = getAssetTemplate(typeId);
+    if (!template) return;
+    const params = buildParameterMap(template);
+    const validation = runAssetValidation(template, params);
+    set({
+      screen: "assetStudio",
+      selectedAssetTypeId: typeId,
+      selectedAssetInstanceId: instanceId ?? null,
+      assetDraftParameters: params,
+      assetDraftDirty: false,
+      assetDraftSaved: false,
+      assetValidationStatus: validation.status,
+      assetValidationItems: validation.items,
+      studioLibrarySearch: "",
+      studioParameterSearch: "",
+      leftRailOpen: true,
+      rightPanelOpen: true,
+      mobileTab: "studio",
+    });
+  },
+
+  goBackToDag: () => {
+    const id = get().selectedSituationId ?? get().situations[0]?.id;
+    if (id) {
+      get().openDagView(id);
+    } else {
+      set({ screen: "dag" });
+    }
+  },
+
+  setSelectedAssetTypeId: (typeId) => {
+    const template = getAssetTemplate(typeId);
+    if (!template) return;
+    const params = buildParameterMap(template);
+    const validation = runAssetValidation(template, params);
+    set({
+      selectedAssetTypeId: typeId,
+      assetDraftParameters: params,
+      assetDraftDirty: false,
+      assetDraftSaved: false,
+      assetValidationStatus: validation.status,
+      assetValidationItems: validation.items,
+    });
+  },
+
+  updateAssetParameter: (key, value) => {
+    if (get().role !== "engineer") return;
+    const typeId = get().selectedAssetTypeId;
+    const template = getAssetTemplate(typeId);
+    if (!template) return;
+    const next = { ...get().assetDraftParameters, [key]: value };
+    const validation = runAssetValidation(template, next);
+    set({
+      assetDraftParameters: next,
+      assetDraftDirty: true,
+      assetDraftSaved: false,
+      assetValidationStatus: validation.status,
+      assetValidationItems: validation.items,
+    });
+  },
+
+  validateAssetDraft: () => {
+    const template = getAssetTemplate(get().selectedAssetTypeId);
+    if (!template) return;
+    const validation = runAssetValidation(template, get().assetDraftParameters);
+    set({
+      assetValidationStatus: validation.status,
+      assetValidationItems: validation.items,
+    });
+  },
+
+  saveAssetDraft: () => {
+    if (!get().assetDraftDirty) return;
+    set({ assetDraftDirty: false, assetDraftSaved: true });
+  },
+
+  setStudioLibrarySearch: (query) => set({ studioLibrarySearch: query }),
+  setStudioParameterSearch: (query) => set({ studioParameterSearch: query }),
 }));

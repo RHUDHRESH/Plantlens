@@ -4,6 +4,7 @@ import type { Situation } from "../../store/useStore";
 import { getDemoDagForSituation } from "./demoDagData";
 import { Panel } from "../ui/Panel";
 import { Badge } from "../ui/Badge";
+import { Button } from "../ui/Button";
 import { IconButton } from "../ui/IconButton";
 
 interface DagInspectorPanelProps {
@@ -16,6 +17,8 @@ export function DagInspectorPanel({ situation, situationId }: DagInspectorPanelP
     selectedDagNodeId,
     selectedDagEdgeId,
     toggleRightPanel,
+    openAssetStudio,
+    role,
   } = useStore();
 
   const { nodes, edges } = useMemo(
@@ -127,6 +130,11 @@ export function DagInspectorPanel({ situation, situationId }: DagInspectorPanelP
             Select a node or edge to inspect causal evidence.
           </p>
           <Badge variant="readonly">Read-only live</Badge>
+          {role === "engineer" && (
+            <Button variant="secondary" size="sm" onClick={() => openAssetStudio()}>
+              Open Asset Spec
+            </Button>
+          )}
         </Panel>
       )}
     </div>

@@ -10,6 +10,8 @@ export function DagCommandBar() {
     setDagSearchQuery,
     goBackToEvidence,
     goBackToMap,
+    openAssetStudio,
+    role,
   } = useStore();
 
   return (
@@ -49,6 +51,11 @@ export function DagCommandBar() {
         <Button variant="secondary" size="md" onClick={goBackToMap}>
           Back Map
         </Button>
+        {role === "engineer" && (
+          <Button variant="secondary" size="md" onClick={() => openAssetStudio()}>
+            Open Asset Spec
+          </Button>
+        )}
         <Button variant="ghost" size="md" disabled title="Disabled in live read-only view">
           Propose Fix — disabled live
         </Button>

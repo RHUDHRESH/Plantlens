@@ -28,6 +28,7 @@ export function RightInspectorPanel() {
     role,
     openEvidenceRoom,
     openDagView,
+    openAssetStudio,
   } = useStore();
 
   if (!rightPanelOpen) return null;
@@ -124,6 +125,22 @@ export function RightInspectorPanel() {
             Open DAG
           </Button>
           <span className="pl-scaffold-tag">Demo fallback</span>
+        </Panel>
+      )}
+
+      {displayAsset && (
+        <Panel title="Asset spec" scaffold subtitle="Model draft editor">
+          <p className="pl-right-panel__placeholder">
+            Parameterized block editor — configure datasheet specs without code.
+          </p>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => openAssetStudio(undefined, selectedAssetId ?? displayAsset.id)}
+          >
+            Open Asset Spec
+          </Button>
+          <Badge variant="readonly">Draft only — no plant control</Badge>
         </Panel>
       )}
     </div>

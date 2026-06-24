@@ -6,7 +6,7 @@ const TABS: { id: MobileTab; label: string; icon: () => ReactNode }[] = [
   { id: "map", label: "Map", icon: MapIcon },
   { id: "situations", label: "Situations", icon: SituationsIcon },
   { id: "copilot", label: "AI", icon: CopilotIcon },
-  { id: "role", label: "Role", icon: RoleIcon },
+  { id: "studio", label: "Studio", icon: StudioIcon },
   { id: "more", label: "More", icon: MoreIcon },
 ];
 
@@ -19,14 +19,13 @@ export function MobileBottomNav() {
     toggleCopilot,
     setBottomSheetMode,
     toggleLeftRail,
-    setRightPanelOpen,
     copilotOpen,
     leftRailOpen,
-    rightPanelOpen,
-    cycleRole,
     goBackToMap,
     goBackToEvidence,
     openEvidenceRoom,
+    openAssetStudio,
+    role,
   } = useStore();
 
   const handleTab = (tab: MobileTab) => {
@@ -34,14 +33,14 @@ export function MobileBottomNav() {
 
     switch (tab) {
       case "map":
-        if (screen === "dag" || screen === "evidence") {
+        if (screen === "dag" || screen === "evidence" || screen === "assetStudio") {
           goBackToMap();
         } else {
           setBottomSheetMode("peek");
         }
         break;
       case "situations":
-        if (screen === "dag") {
+        if (screen === "dag" || screen === "assetStudio") {
           goBackToEvidence();
         } else if (situations[0]) {
           openEvidenceRoom(situations[0].id);
@@ -53,9 +52,12 @@ export function MobileBottomNav() {
       case "copilot":
         toggleCopilot();
         break;
-      case "role":
-        cycleRole();
-        setRightPanelOpen(true);
+      case "studio":
+        if (role === "engineer") {
+          openAssetStudio();
+        } else {
+          openAssetStudio();
+        }
         break;
       case "more":
         toggleLeftRail();
@@ -69,8 +71,9 @@ export function MobileBottomNav() {
         const active =
           tab.id === mobileTab ||
           (tab.id === "copilot" && copilotOpen) ||
-          (tab.id === "situations" && leftRailOpen) ||
-          (tab.id === "role" && rightPanelOpen);
+          (tab.id === "situations" && screen === "evidence") ||
+          (tab.id === "studio" && screen === "assetStudio") ||
+          (tab.id === "more" && leftRailOpen);
 
         return (
           <button
@@ -113,10 +116,10 @@ function CopilotIcon() {
   );
 }
 
-function RoleIcon() {
+function StudioIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 22 22" fill="currentColor" aria-hidden="true">
-      <path d="M11 11a4 4 0 100-8 4 4 0 000 8zm-7 9a7 7 0 0114 0H4z" />
+      <path d="M4 4h6v6H4V4zm8 0h6v6h-6V4zM4 12h6v6H4v-6zm8 3h6v3h-6v-3z" />
     </svg>
   );
 }
