@@ -30,6 +30,7 @@ export function RightInspectorPanel() {
     openDagView,
     openAssetStudio,
     openHmiPreview,
+    openAuditCenter,
   } = useStore();
 
   if (!rightPanelOpen) return null;
@@ -138,6 +139,18 @@ export function RightInspectorPanel() {
             Preview HMI
           </Button>
           <Badge variant="readonly">Draft only — no runtime deploy</Badge>
+        </Panel>
+      )}
+
+      {(role === "engineer" || role === "supervisor") && (
+        <Panel title="Governance" scaffold subtitle="Audit & approvals">
+          <p className="pl-right-panel__placeholder">
+            Audit ledger, hash chain integrity, pending model/HMI approvals, and blocked AI actions.
+          </p>
+          <Button variant="secondary" size="sm" onClick={openAuditCenter}>
+            Open Audit Center
+          </Button>
+          <Badge variant="readonly">Local review only — no runtime mutation</Badge>
         </Panel>
       )}
 

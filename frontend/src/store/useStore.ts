@@ -56,6 +56,11 @@ import {
   LAST_TOOL_TRACE,
   generateCopilotResponse,
 } from "../components/copilotRoom/demoCopilotData";
+import type {
+  ApprovalReviewState,
+  AuditFilter,
+  HashChainStatus,
+} from "../components/audit/auditTypes";
 import type { ValidationItem } from "../components/studio/studioTypes";
 import {
   buildParameterMap,
@@ -146,6 +151,12 @@ interface State {
   copilotGroundingStatus: CopilotGroundingStatus;
   copilotShowToolTrace: boolean;
   copilotOriginScreen: AppScreen | null;
+  selectedAuditEventId: string | null;
+  selectedApprovalId: string | null;
+  auditFilter: AuditFilter;
+  auditLedgerSearch: string;
+  hashChainStatus: HashChainStatus;
+  approvalReviewState: ApprovalReviewState;
   connect: () => Promise<void>;
   setZoom: (z: State["zoom"]) => void;
   setActive: (s: Situation | null) => void;
@@ -209,6 +220,17 @@ interface State {
   sendCopilotMessage: (text: string) => void;
   clearCopilotChat: () => void;
   setCopilotShowToolTrace: (show: boolean) => void;
+  openAuditCenter: () => void;
+  goBackToHmiPreview: () => void;
+  setSelectedAuditEventId: (id: string | null) => void;
+  setAuditFilter: (filter: AuditFilter) => void;
+  setHashChainStatus: (status: HashChainStatus) => void;
+  setSelectedApprovalId: (id: string | null) => void;
+  setApprovalReviewState: (state: ApprovalReviewState) => void;
+  setAuditLedgerSearch: (query: string) => void;
+  verifyHashChain: () => void;
+  recordApprovalDecision: (state: Exclude<ApprovalReviewState, "none">) => void;
+  requestApprovalChanges: () => void;
 }
 
 function connectionFromDegraded(degraded: boolean): ConnectionStatus {
@@ -290,6 +312,12 @@ export const useStore = create<State>((set, get) => ({
   copilotGroundingStatus: "grounded",
   copilotShowToolTrace: true,
   copilotOriginScreen: null,
+  selectedAuditEventId: "evt-1051",
+  selectedApprovalId: "appr-asset-1",
+  auditFilter: "all",
+  auditLedgerSearch: "",
+  hashChainStatus: "verified",
+  approvalReviewState: "none",
 
   connect: async () => {
     try {
@@ -673,4 +701,49 @@ export const useStore = create<State>((set, get) => ({
     }),
 
   setCopilotShowToolTrace: (show) => set({ copilotShowToolTrace: show }),
+
+  openAuditCenter: () => {
+    set({
+      screen: "auditCenter",
+      selectedAuditEventId: get().selectedAuditEventId ?? "evt-1051",
+      selectedApprovalId: get().selectedApprovalId ?? "appr-asset-1",
+      hashChainStatus: get().hashChainStatus === "unknown" ? "verified" : get().hashChainStatus,
+      leftRailOpen: true,
+      rightPanelOpen: true,
+      mobileTab: "more",
+    });
+  },
+
+  goBackToHmiPreview: () => {
+    set({
+      screen: "hmiPreview",
+      mobileTab: "studio",
+    });
+  },
+
+  setSelectedAuditEventId: (id) =>
+    set({ selectedAuditEventId: id, selectedApprovalId: null }),
+
+  setAuditFilter: (filter) => set({ auditFilter: filter }),
+
+  setHashChainStatus: (status) => set({ hashChainStatus: status }),
+
+  setSelectedApprovalId: (id) =>
+    set({ selectedApprovalId: id, selectedAuditEventId: null }),
+
+  setApprovalReviewState: (state) => set({ approvalReviewState: state }),
+
+  setAuditLedgerSearch: (query) => set({ auditLedgerSearch: query }),
+
+  verifyHashChain: () => set({ hashChainStatus: "verified" }),
+
+  recordApprovalDecision: (state) => {
+    if (get().role !== "supervisor" && get().role !== "engineer") return;
+    set({ approvalReviewState: state });
+  },
+
+  requestApprovalChanges: () => {
+    if (!get().selectedApprovalId) return;
+    get().recordApprovalDecision("changesRequested");
+  },
 }));

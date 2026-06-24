@@ -16,6 +16,7 @@ import { AssetStudio } from "./screens/AssetStudio";
 import { PlantLayoutStudio } from "./screens/PlantLayoutStudio";
 import { HmiGenerationPreview } from "./screens/HmiGenerationPreview";
 import { CopilotExplainRoom } from "./screens/CopilotExplainRoom";
+import { AuditApprovalCenter } from "./screens/AuditApprovalCenter";
 
 export default function App() {
   const connect = useStore((s) => s.connect);
@@ -47,6 +48,10 @@ export default function App() {
 
   if (screen === "copilotRoom") {
     return <CopilotExplainRoom />;
+  }
+
+  if (screen === "auditCenter") {
+    return <AuditApprovalCenter />;
   }
 
   return (

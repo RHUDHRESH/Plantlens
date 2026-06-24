@@ -12,6 +12,7 @@ export function HmiCompilerCommandBar() {
     setHmiDeviceTarget,
     regenerateHmiPreview,
     goBackToPlantLayout,
+    openAuditCenter,
     hmiValidationStatus,
   } = useStore();
 
@@ -45,6 +46,9 @@ export function HmiCompilerCommandBar() {
         </Button>
         <Button variant="secondary" size="md" onClick={goBackToPlantLayout}>
           Back Layout
+        </Button>
+        <Button variant="secondary" size="md" onClick={openAuditCenter}>
+          Open Audit Center
         </Button>
         <Button variant="ghost" size="md" disabled title="Screen spec scaffold — not wired">
           Open Screen Spec

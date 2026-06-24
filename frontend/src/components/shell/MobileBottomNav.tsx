@@ -27,6 +27,7 @@ export function MobileBottomNav() {
     openPlantLayoutStudio,
     openHmiPreview,
     openCopilotRoom,
+    openAuditCenter,
   } = useStore();
 
   const handleTab = (tab: MobileTab) => {
@@ -40,7 +41,8 @@ export function MobileBottomNav() {
           screen === "assetStudio" ||
           screen === "plantLayoutStudio" ||
           screen === "hmiPreview" ||
-          screen === "copilotRoom"
+          screen === "copilotRoom" ||
+          screen === "auditCenter"
         ) {
           goBackToMap();
         } else {
@@ -53,7 +55,8 @@ export function MobileBottomNav() {
           screen === "assetStudio" ||
           screen === "plantLayoutStudio" ||
           screen === "hmiPreview" ||
-          screen === "copilotRoom"
+          screen === "copilotRoom" ||
+          screen === "auditCenter"
         ) {
           goBackToEvidence();
         } else if (situations[0]) {
@@ -67,7 +70,9 @@ export function MobileBottomNav() {
         openCopilotRoom();
         break;
       case "studio":
-        if (screen === "hmiPreview") {
+        if (screen === "auditCenter") {
+          openHmiPreview();
+        } else if (screen === "hmiPreview") {
           openHmiPreview();
         } else if (screen === "plantLayoutStudio") {
           openPlantLayoutStudio();
@@ -78,7 +83,11 @@ export function MobileBottomNav() {
         }
         break;
       case "more":
-        toggleLeftRail();
+        if (screen === "map" || screen === "evidence") {
+          openAuditCenter();
+        } else {
+          toggleLeftRail();
+        }
         break;
     }
   };
@@ -93,8 +102,9 @@ export function MobileBottomNav() {
           (tab.id === "studio" &&
             (screen === "assetStudio" ||
               screen === "plantLayoutStudio" ||
-              screen === "hmiPreview")) ||
-          (tab.id === "more" && leftRailOpen);
+              screen === "hmiPreview" ||
+              screen === "auditCenter")) ||
+          (tab.id === "more" && (leftRailOpen || screen === "auditCenter"));
 
         return (
           <button

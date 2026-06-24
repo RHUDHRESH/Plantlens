@@ -21,7 +21,8 @@ export type AppScreen =
   | "assetStudio"
   | "plantLayoutStudio"
   | "hmiPreview"
-  | "copilotRoom";
+  | "copilotRoom"
+  | "auditCenter";
 
 export type LayoutValidationStatus = "valid" | "warning" | "error" | "unknown";
 

@@ -5,6 +5,7 @@ export function CopilotCommandBar() {
   const {
     goBackToEvidence,
     goBackToMap,
+    openAuditCenter,
     clearCopilotChat,
     setCopilotShowToolTrace,
     copilotShowToolTrace,
@@ -22,6 +23,9 @@ export function CopilotCommandBar() {
         </Button>
         <Button variant="secondary" size="md" onClick={goBackToMap}>
           Back Map
+        </Button>
+        <Button variant="secondary" size="md" onClick={openAuditCenter}>
+          Open Audit Center
         </Button>
         <Button
           variant="ghost"
