@@ -18,7 +18,7 @@ export function BottomCommandSheet() {
     openEvidenceRoom,
     openDagView,
     role,
-    toggleCopilot,
+    openCopilotRoom,
     toggleRightPanel,
   } = useStore();
 
@@ -39,9 +39,9 @@ export function BottomCommandSheet() {
 
   const quickActions = [
     { label: "View evidence", action: openEvidence },
-    { label: "Explain grouping", action: () => toggleCopilot() },
+    { label: "Explain grouping", action: () => openCopilotRoom("Why grouped?") },
     { label: "Open inspector", action: () => toggleRightPanel() },
-    { label: "Ask copilot", action: () => toggleCopilot() },
+    { label: "Ask copilot", action: () => openCopilotRoom() },
     ...(role === "engineer" && topSituation
       ? [{ label: "Open DAG", action: () => openDagView(topSituation.id) }]
       : []),

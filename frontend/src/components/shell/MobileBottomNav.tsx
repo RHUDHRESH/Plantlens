@@ -16,7 +16,6 @@ export function MobileBottomNav() {
     setMobileTab,
     screen,
     situations,
-    toggleCopilot,
     setBottomSheetMode,
     toggleLeftRail,
     copilotOpen,
@@ -27,6 +26,7 @@ export function MobileBottomNav() {
     openAssetStudio,
     openPlantLayoutStudio,
     openHmiPreview,
+    openCopilotRoom,
   } = useStore();
 
   const handleTab = (tab: MobileTab) => {
@@ -39,7 +39,8 @@ export function MobileBottomNav() {
           screen === "evidence" ||
           screen === "assetStudio" ||
           screen === "plantLayoutStudio" ||
-          screen === "hmiPreview"
+          screen === "hmiPreview" ||
+          screen === "copilotRoom"
         ) {
           goBackToMap();
         } else {
@@ -51,7 +52,8 @@ export function MobileBottomNav() {
           screen === "dag" ||
           screen === "assetStudio" ||
           screen === "plantLayoutStudio" ||
-          screen === "hmiPreview"
+          screen === "hmiPreview" ||
+          screen === "copilotRoom"
         ) {
           goBackToEvidence();
         } else if (situations[0]) {
@@ -62,7 +64,7 @@ export function MobileBottomNav() {
         }
         break;
       case "copilot":
-        toggleCopilot();
+        openCopilotRoom();
         break;
       case "studio":
         if (screen === "hmiPreview") {
@@ -86,7 +88,7 @@ export function MobileBottomNav() {
       {TABS.map((tab) => {
         const active =
           tab.id === mobileTab ||
-          (tab.id === "copilot" && copilotOpen) ||
+          (tab.id === "copilot" && (copilotOpen || screen === "copilotRoom")) ||
           (tab.id === "situations" && screen === "evidence") ||
           (tab.id === "studio" &&
             (screen === "assetStudio" ||

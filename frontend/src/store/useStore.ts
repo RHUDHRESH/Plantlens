@@ -46,6 +46,16 @@ import {
   DEMO_HMI_VALIDATION_ITEMS,
   runHmiCompilerValidation,
 } from "../components/hmiCompiler/demoHmiCompilerData";
+import type {
+  CopilotGroundingStatus,
+  CopilotMessage,
+  CopilotTool,
+} from "../components/copilotRoom/copilotRoomTypes";
+import {
+  INITIAL_DEMO_MESSAGES,
+  LAST_TOOL_TRACE,
+  generateCopilotResponse,
+} from "../components/copilotRoom/demoCopilotData";
 import type { ValidationItem } from "../components/studio/studioTypes";
 import {
   buildParameterMap,
@@ -131,6 +141,11 @@ interface State {
   hmiVariant: HmiVariant;
   hmiValidationStatus: HmiValidationStatus;
   hmiValidationItems: CompilerValidationItem[];
+  copilotMessages: CopilotMessage[];
+  copilotToolTrace: CopilotTool[];
+  copilotGroundingStatus: CopilotGroundingStatus;
+  copilotShowToolTrace: boolean;
+  copilotOriginScreen: AppScreen | null;
   connect: () => Promise<void>;
   setZoom: (z: State["zoom"]) => void;
   setActive: (s: Situation | null) => void;
@@ -190,6 +205,10 @@ interface State {
   setHmiVariant: (variant: HmiVariant) => void;
   setHmiValidationStatus: (status: HmiValidationStatus) => void;
   regenerateHmiPreview: () => void;
+  openCopilotRoom: (prompt?: string) => void;
+  sendCopilotMessage: (text: string) => void;
+  clearCopilotChat: () => void;
+  setCopilotShowToolTrace: (show: boolean) => void;
 }
 
 function connectionFromDegraded(degraded: boolean): ConnectionStatus {
@@ -266,6 +285,11 @@ export const useStore = create<State>((set, get) => ({
   hmiVariant: "warning",
   hmiValidationStatus: "warning",
   hmiValidationItems: DEMO_HMI_VALIDATION_ITEMS,
+  copilotMessages: INITIAL_DEMO_MESSAGES,
+  copilotToolTrace: LAST_TOOL_TRACE,
+  copilotGroundingStatus: "grounded",
+  copilotShowToolTrace: true,
+  copilotOriginScreen: null,
 
   connect: async () => {
     try {
@@ -356,8 +380,9 @@ export const useStore = create<State>((set, get) => ({
       mobileTab: "map",
       bottomSheetMode: "peek",
     }),
-  openCopilotWithPrompt: (prompt) =>
-    set({ copilotOpen: true, copilotPrefill: prompt }),
+  openCopilotWithPrompt: (prompt) => {
+    get().openCopilotRoom(prompt);
+  },
   clearCopilotPrefill: () => set({ copilotPrefill: null }),
   openDagView: (situationId) => {
     const id = situationId ?? get().selectedSituationId ?? get().situations[0]?.id;
@@ -591,4 +616,61 @@ export const useStore = create<State>((set, get) => ({
       hmiValidationItems: validation.items,
     });
   },
+
+  openCopilotRoom: (prompt) => {
+    const origin = get().screen;
+    const updates: Partial<State> = {
+      screen: "copilotRoom",
+      copilotOriginScreen: origin === "copilotRoom" ? get().copilotOriginScreen : origin,
+      copilotOpen: false,
+      leftRailOpen: true,
+      rightPanelOpen: true,
+      copilotShowToolTrace: true,
+      mobileTab: "copilot",
+    };
+
+    if (prompt?.trim()) {
+      const userMsg: CopilotMessage = {
+        id: `msg-user-${Date.now()}`,
+        role: "user",
+        text: prompt.trim(),
+        timestamp: Date.now(),
+      };
+      const response = generateCopilotResponse(prompt);
+      set({
+        ...updates,
+        copilotMessages: [...get().copilotMessages, userMsg, response.message],
+        copilotToolTrace: response.toolTrace,
+        copilotGroundingStatus: response.grounding,
+      });
+    } else {
+      set(updates);
+    }
+  },
+
+  sendCopilotMessage: (text) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const userMsg: CopilotMessage = {
+      id: `msg-user-${Date.now()}`,
+      role: "user",
+      text: trimmed,
+      timestamp: Date.now(),
+    };
+    const response = generateCopilotResponse(trimmed);
+    set({
+      copilotMessages: [...get().copilotMessages, userMsg, response.message],
+      copilotToolTrace: response.toolTrace,
+      copilotGroundingStatus: response.grounding,
+    });
+  },
+
+  clearCopilotChat: () =>
+    set({
+      copilotMessages: [],
+      copilotToolTrace: [],
+      copilotGroundingStatus: "unknown",
+    }),
+
+  setCopilotShowToolTrace: (show) => set({ copilotShowToolTrace: show }),
 }));

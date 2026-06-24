@@ -10,14 +10,13 @@ interface EvidenceCommandBarProps {
 export function EvidenceCommandBar({ situationId }: EvidenceCommandBarProps) {
   const goBackToMap = useStore((s) => s.goBackToMap);
   const openDagView = useStore((s) => s.openDagView);
-  const openCopilotWithPrompt = useStore((s) => s.openCopilotWithPrompt);
-  const setCopilotOpen = useStore((s) => s.setCopilotOpen);
+  const openCopilotRoom = useStore((s) => s.openCopilotRoom);
 
   return (
     <div className="pl-evidence-command-bar" role="toolbar" aria-label="Evidence actions">
       <CommandInput
         placeholder="Ask read-only copilot about this evidence…"
-        onSubmit={() => openCopilotWithPrompt("Explain this evidence")}
+        onSubmit={() => openCopilotRoom("Explain this evidence")}
         className="pl-evidence-command-bar__input"
       />
       <div className="pl-evidence-command-bar__actions">
@@ -27,14 +26,14 @@ export function EvidenceCommandBar({ situationId }: EvidenceCommandBarProps) {
         <Button
           variant="secondary"
           size="md"
-          onClick={() => openCopilotWithPrompt("Explain active situation evidence")}
+          onClick={() => openCopilotRoom("Explain active situation evidence")}
         >
           Ask Read-only Copilot
         </Button>
         <Button
           variant="secondary"
           size="md"
-          onClick={() => openCopilotWithPrompt("Why grouped?")}
+          onClick={() => openCopilotRoom("Why grouped?")}
         >
           Explain Grouping
         </Button>
@@ -48,7 +47,7 @@ export function EvidenceCommandBar({ situationId }: EvidenceCommandBarProps) {
         <Button variant="ghost" size="md" disabled title="Export scaffold — not wired">
           Export Incident
         </Button>
-        <Button variant="ghost" size="md" onClick={() => setCopilotOpen(true)}>
+        <Button variant="ghost" size="md" onClick={() => openCopilotRoom()}>
           Explain
         </Button>
         <PressHoldAck situationId={situationId} compact />

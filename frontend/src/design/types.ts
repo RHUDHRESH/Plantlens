@@ -20,7 +20,8 @@ export type AppScreen =
   | "dag"
   | "assetStudio"
   | "plantLayoutStudio"
-  | "hmiPreview";
+  | "hmiPreview"
+  | "copilotRoom";
 
 export type LayoutValidationStatus = "valid" | "warning" | "error" | "unknown";
 
