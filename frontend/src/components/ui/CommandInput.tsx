@@ -3,11 +3,13 @@ import type { InputHTMLAttributes, KeyboardEvent } from "react";
 interface CommandInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
   onSubmit?: () => void;
   readOnlyHint?: boolean;
+  large?: boolean;
 }
 
 export function CommandInput({
   onSubmit,
   readOnlyHint = true,
+  large = false,
   className = "",
   placeholder = "Command or query…",
   ...props
@@ -21,7 +23,7 @@ export function CommandInput({
   };
 
   return (
-    <div className={`pl-command-input ${className}`}>
+    <div className={`pl-command-input ${large ? "pl-command-input--large" : ""} ${className}`}>
       <input
         type="text"
         className="pl-command-input__field"

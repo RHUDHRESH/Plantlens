@@ -1,27 +1,32 @@
 import { useStore } from "../../store/useStore";
 import { Badge } from "../ui/Badge";
 import { IconButton } from "../ui/IconButton";
+import { SegmentedControl } from "../ui/SegmentedControl";
+import { DEMO_PLANT_NAME } from "../../data/demoPlant";
+import type { Role, SourceMode } from "../../design/types";
 
-const ROLE_LABELS = {
+const ROLE_LABELS: Record<Role, string> = {
   operator: "Operator",
   maintenance: "Maintenance",
   supervisor: "Supervisor",
   engineer: "Engineer",
-} as const;
+};
 
-const SOURCE_LABELS = {
-  sim: "Simulator",
-  modbus: "Modbus",
+const SOURCE_LABELS: Record<SourceMode, string> = {
+  sim: "SIM",
+  modbus: "MODBUS",
   opcua: "OPC UA",
-} as const;
+};
+
+const ROLES: Role[] = ["operator", "maintenance", "supervisor", "engineer"];
 
 export function TopStatusBar() {
-  const plantName = "demo_plant";
   const {
     situations,
     connectionStatus,
     sourceMode,
     role,
+    setRole,
     degraded,
     toggleLeftRail,
     toggleRightPanel,
@@ -30,7 +35,6 @@ export function TopStatusBar() {
   } = useStore();
 
   const situationCount = situations.length;
-  const isHealthy = situationCount === 0 && connectionStatus === "online";
 
   return (
     <header className="pl-top-bar">
@@ -46,11 +50,13 @@ export function TopStatusBar() {
       <div className="pl-top-bar__main">
         <div className="pl-top-bar__brand">
           <span className="pl-top-bar__wordmark">PlantLens</span>
-          <span className="pl-top-bar__plant">{plantName}</span>
+          <span className="pl-top-bar__plant">{DEMO_PLANT_NAME}</span>
         </div>
 
         <div className="pl-top-bar__meta">
-          <Badge variant="info">{SOURCE_LABELS[sourceMode]}</Badge>
+          <Badge variant="info" dot>
+            {SOURCE_LABELS[sourceMode]}
+          </Badge>
 
           <Badge
             variant={
@@ -58,37 +64,43 @@ export function TopStatusBar() {
                 ? "success"
                 : connectionStatus === "degraded"
                   ? "warning"
-                  : "danger"
+                  : "critical"
             }
             dot
           >
-            {connectionStatus}
+            {connectionStatus.toUpperCase()}
           </Badge>
 
-          <span className="pl-top-bar__role">{ROLE_LABELS[role]}</span>
+          <Badge variant="readonly">Read-only</Badge>
 
-          <span
-            className={`pl-top-bar__health ${isHealthy ? "pl-top-bar__health--ok" : "pl-top-bar__health--alert"}`}
-            aria-live="polite"
-          >
+          <span className="pl-top-bar__role pl-top-bar__role--desktop">{ROLE_LABELS[role]}</span>
+
+          <span className="pl-top-bar__health" aria-live="polite">
             {situationCount === 0
               ? "All normal"
-              : `${situationCount} active situation${situationCount > 1 ? "s" : ""}`}
+              : `${situationCount} situation${situationCount > 1 ? "s" : ""}`}
           </span>
+        </div>
+
+        <div className="pl-top-bar__role-switch pl-top-bar__role-switch--desktop">
+          <SegmentedControl
+            options={ROLES.map((r) => ({ value: r, label: ROLE_LABELS[r] }))}
+            value={role}
+            onChange={setRole}
+            ariaLabel="Select role view"
+          />
         </div>
 
         <div className="pl-top-bar__actions">
           <IconButton
             label={leftRailOpen ? "Close context rail" : "Open context rail"}
             onClick={toggleLeftRail}
-            className="pl-top-bar__toggle pl-top-bar__toggle--left"
           >
             <MenuIcon />
           </IconButton>
           <IconButton
             label={rightPanelOpen ? "Close inspector" : "Open inspector"}
             onClick={toggleRightPanel}
-            className="pl-top-bar__toggle pl-top-bar__toggle--right"
           >
             <PanelIcon />
           </IconButton>

@@ -1,47 +1,86 @@
 /**
  * CalmCard (Domain M) — fixed six-section structure, invariant regardless of
  * fault type. Consistency is the calming property. <10s readability discipline.
- *
- * Sections: (1) What/Situation, (2) Where, (3) Why (evidence), (4) Confidence &
- * coverage, (5) Action envelope, (6) Acknowledge.
  */
 import { PressHoldAck } from "./PressHoldAck";
+import { getSituationMeta } from "../data/demoPlant";
 import type { Situation } from "../store/useStore";
+import { Badge } from "./ui/Badge";
+import { Metric } from "./ui/Metric";
 
 export function CalmCard({ situation }: { situation: Situation }) {
+  const meta = getSituationMeta(situation.id);
+
   return (
-    <div className="space-y-4">
-      <section>
-        <div className="text-xs uppercase tracking-wide text-white/50">What</div>
-        <h2 className="text-lg font-semibold">{situation.primary_fault}</h2>
+    <div className="pl-calm-card">
+      <section className="pl-calm-card__section">
+        <span className="pl-label">What</span>
+        <h2 className="pl-calm-card__headline">{situation.primary_fault}</h2>
+        {meta && (
+          <Badge variant={meta.severity === "unknown" ? "unknown" : "warning"}>
+            {meta.severity}
+          </Badge>
+        )}
       </section>
-      <section>
-        <div className="text-xs uppercase tracking-wide text-white/50">Where</div>
-        <div className="text-sm">M-101 (motor drive skid)</div>
+
+      <section className="pl-calm-card__section">
+        <span className="pl-label">Where</span>
+        <p className="pl-calm-card__text">
+          {meta?.location ?? "Location pending"}
+          {!meta && <span className="pl-scaffold-tag">Demo fallback</span>}
+        </p>
       </section>
-      <section>
-        <div className="text-xs uppercase tracking-wide text-white/50">Why</div>
-        <ul className="text-sm text-white/80">
-          {situation.member_signals.map((s) => (
-            <li key={s}>• {s}</li>
-          ))}
-        </ul>
+
+      <section className="pl-calm-card__section">
+        <span className="pl-label">Why</span>
+        {meta ? (
+          <>
+            <ul className="pl-evidence-list pl-evidence-list--support">
+              {meta.supportingEvidence.map((e) => (
+                <li key={e}>+ {e}</li>
+              ))}
+            </ul>
+            <ul className="pl-evidence-list pl-evidence-list--missing">
+              {meta.missingEvidence.map((e) => (
+                <li key={e}>? {e}</li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <ul className="pl-evidence-list pl-evidence-list--support">
+            {situation.member_signals.map((s) => (
+              <li key={s}>+ {s}</li>
+            ))}
+          </ul>
+        )}
       </section>
-      <section className="flex gap-4">
-        <div>
-          <div className="text-xs uppercase tracking-wide text-white/50">Confidence</div>
-          <div className="text-xl font-bold">{(situation.confidence * 100).toFixed(0)}%</div>
-        </div>
-        <div>
-          <div className="text-xs uppercase tracking-wide text-white/50">Coverage</div>
-          <div className="text-xl font-bold">{(situation.coverage * 100).toFixed(0)}%</div>
-        </div>
+
+      <section className="pl-calm-card__metrics">
+        <Metric
+          label="Confidence"
+          value={`${(situation.confidence * 100).toFixed(0)}%`}
+          size="lg"
+        />
+        <Metric
+          label="Coverage"
+          value={`${(situation.coverage * 100).toFixed(0)}%`}
+          size="lg"
+        />
       </section>
-      <section>
-        <div className="text-xs uppercase tracking-wide text-white/50">Action envelope</div>
-        <div className="text-sm">Reduce motor load — AVAILABLE (no blockers)</div>
+
+      <section className="pl-calm-card__section">
+        <span className="pl-label">Action envelope</span>
+        <p className="pl-calm-card__text">
+          {meta?.actionEnvelope ?? "Action envelope pending — scaffold"}
+        </p>
+        {meta?.nextSteps && (
+          <p className="pl-calm-card__next">Next: {meta.nextSteps}</p>
+        )}
+        <Badge variant="readonly">Read-only</Badge>
       </section>
-      <section>
+
+      <section className="pl-calm-card__section">
+        <span className="pl-label">Acknowledge</span>
         <PressHoldAck situationId={situation.id} />
       </section>
     </div>

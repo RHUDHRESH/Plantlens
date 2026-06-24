@@ -9,9 +9,13 @@ interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 
 const variantClass: Record<BadgeVariant, string> = {
   default: "pl-badge--default",
+  normal: "pl-badge--normal",
   success: "pl-badge--success",
   warning: "pl-badge--warning",
+  critical: "pl-badge--critical",
   danger: "pl-badge--danger",
+  unknown: "pl-badge--unknown",
+  readonly: "pl-badge--readonly",
   info: "pl-badge--info",
 };
 

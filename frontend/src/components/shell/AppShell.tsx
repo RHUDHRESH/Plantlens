@@ -1,22 +1,23 @@
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useStore } from "../../store/useStore";
+import { breakpoints } from "../../design/layout";
 
 interface AppShellProps {
-  map: ReactNode;
-  topBar: ReactNode;
-  leftRail: ReactNode;
-  rightPanel: ReactNode;
-  bottomSheet: ReactNode;
-  mobileNav: ReactNode;
+  children: ReactNode;
+  top?: ReactNode;
+  left?: ReactNode;
+  right?: ReactNode;
+  bottom?: ReactNode;
+  mobileNav?: ReactNode;
   copilot?: ReactNode;
 }
 
 export function AppShell({
-  map,
-  topBar,
-  leftRail,
-  rightPanel,
-  bottomSheet,
+  children,
+  top,
+  left,
+  right,
+  bottom,
   mobileNav,
   copilot,
 }: AppShellProps) {
@@ -24,6 +25,24 @@ export function AppShell({
   const copilotOpen = useStore((s) => s.copilotOpen);
   const leftRailOpen = useStore((s) => s.leftRailOpen);
   const rightPanelOpen = useStore((s) => s.rightPanelOpen);
+  const setLeftRailOpen = useStore((s) => s.setLeftRailOpen);
+  const setRightPanelOpen = useStore((s) => s.setRightPanelOpen);
+
+  useEffect(() => {
+    const syncRails = () => {
+      const mobile = window.innerWidth < breakpoints.lg;
+      if (mobile) {
+        setLeftRailOpen(false);
+        setRightPanelOpen(false);
+      } else {
+        setLeftRailOpen(true);
+        setRightPanelOpen(true);
+      }
+    };
+    syncRails();
+    window.addEventListener("resize", syncRails);
+    return () => window.removeEventListener("resize", syncRails);
+  }, [setLeftRailOpen, setRightPanelOpen]);
 
   return (
     <div
@@ -31,36 +50,42 @@ export function AppShell({
       data-left-open={leftRailOpen}
       data-right-open={rightPanelOpen}
     >
-      <div className="pl-shell__map" role="main" aria-label="Plant map">
-        {map}
+      <div className="pl-shell__map pl-panel-enter" role="main" aria-label="Plant map">
+        {children}
       </div>
 
-      <div className="pl-shell__top">{topBar}</div>
+      {top && <div className="pl-shell__top">{top}</div>}
 
-      <aside
-        className="pl-shell__left"
-        aria-label="Context rail"
-        aria-hidden={!leftRailOpen}
-      >
-        {leftRail}
-      </aside>
+      {left && (
+        <aside
+          className="pl-shell__left pl-panel-enter"
+          aria-label="Context rail"
+          aria-hidden={!leftRailOpen}
+        >
+          {left}
+        </aside>
+      )}
 
-      <aside
-        className="pl-shell__right"
-        aria-label="Inspector panel"
-        aria-hidden={!rightPanelOpen}
-      >
-        {rightPanel}
-      </aside>
+      {right && (
+        <aside
+          className="pl-shell__right pl-panel-enter"
+          aria-label="Inspector panel"
+          aria-hidden={!rightPanelOpen}
+        >
+          {right}
+        </aside>
+      )}
 
-      <div className="pl-shell__bottom">{bottomSheet}</div>
+      {bottom && <div className="pl-shell__bottom pl-slide-up">{bottom}</div>}
 
-      <nav className="pl-shell__mobile-nav" aria-label="Mobile navigation">
-        {mobileNav}
-      </nav>
+      {mobileNav && (
+        <nav className="pl-shell__mobile-nav" aria-label="Mobile navigation">
+          {mobileNav}
+        </nav>
+      )}
 
       {copilotOpen && copilot && (
-        <div className="pl-shell__copilot" role="dialog" aria-label="Read-only copilot">
+        <div className="pl-shell__copilot pl-fade-in" role="dialog" aria-label="Read-only copilot">
           {copilot}
         </div>
       )}

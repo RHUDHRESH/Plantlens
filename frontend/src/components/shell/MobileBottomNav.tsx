@@ -5,7 +5,7 @@ import type { MobileTab } from "../../design/types";
 const TABS: { id: MobileTab; label: string; icon: () => ReactNode }[] = [
   { id: "map", label: "Map", icon: MapIcon },
   { id: "situations", label: "Situations", icon: SituationsIcon },
-  { id: "copilot", label: "Copilot", icon: CopilotIcon },
+  { id: "copilot", label: "AI", icon: CopilotIcon },
   { id: "role", label: "Role", icon: RoleIcon },
   { id: "more", label: "More", icon: MoreIcon },
 ];
@@ -17,10 +17,11 @@ export function MobileBottomNav() {
     toggleCopilot,
     setBottomSheetMode,
     toggleLeftRail,
-    toggleRightPanel,
+    setRightPanelOpen,
     copilotOpen,
     leftRailOpen,
     rightPanelOpen,
+    cycleRole,
   } = useStore();
 
   const handleTab = (tab: MobileTab) => {
@@ -28,7 +29,7 @@ export function MobileBottomNav() {
 
     switch (tab) {
       case "map":
-        setBottomSheetMode("collapsed");
+        setBottomSheetMode("peek");
         break;
       case "situations":
         setBottomSheetMode("expanded");
@@ -38,7 +39,8 @@ export function MobileBottomNav() {
         toggleCopilot();
         break;
       case "role":
-        if (!rightPanelOpen) toggleRightPanel();
+        cycleRole();
+        setRightPanelOpen(true);
         break;
       case "more":
         toggleLeftRail();

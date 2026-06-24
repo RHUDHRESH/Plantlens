@@ -1,4 +1,10 @@
 import { useStore } from "../../store/useStore";
+import {
+  DEMO_ALARM_COLLAPSE,
+  DEMO_AREAS,
+  DEMO_ASSETS,
+  getSituationMeta,
+} from "../../data/demoPlant";
 import { Panel } from "../ui/Panel";
 import { EmptyState } from "../ui/EmptyState";
 import { Badge } from "../ui/Badge";
@@ -10,10 +16,11 @@ export function LeftContextRail() {
     toggleLeftRail,
     situations,
     selectedSituationId,
-    setSelectedSituationId,
-    setActive,
-    setSelectedAssetId,
+    setSelectedSituation,
+    setSelectedAsset,
     selectedAssetId,
+    selectedAreaId,
+    setSelectedAreaId,
   } = useStore();
 
   if (!leftRailOpen) return null;
@@ -21,77 +28,99 @@ export function LeftContextRail() {
   return (
     <div className="pl-left-rail">
       <header className="pl-left-rail__header">
-        <h2 className="pl-left-rail__title">Context</h2>
+        <h2 className="pl-left-rail__title">Plant</h2>
         <IconButton label="Close context rail" onClick={toggleLeftRail}>
           <CloseIcon />
         </IconButton>
       </header>
 
-      <Panel title="Plant overview" scaffold>
-        <p className="pl-left-rail__overview-text">
-          Demo plant — scaffold overview. Map-first navigation with situation stack.
-        </p>
-        <div className="pl-left-rail__overview-stats">
-          <div>
-            <span className="pl-label">Situations</span>
-            <span className="pl-numeric">{situations.length}</span>
-          </div>
-          <div>
-            <span className="pl-label">Assets</span>
-            <span className="pl-numeric">—</span>
-          </div>
-        </div>
+      <Panel title="Overview" subtitle="Demo fallback">
+        <ul className="pl-left-rail__areas" role="list">
+          {DEMO_AREAS.map((area) => (
+            <li key={area.id}>
+              <button
+                type="button"
+                className={`pl-left-rail__area ${
+                  selectedAreaId === area.id ? "pl-left-rail__area--active" : ""
+                }`}
+                onClick={() => setSelectedAreaId(area.id)}
+              >
+                <span className="pl-left-rail__area-dot" aria-hidden="true" />
+                {area.name}
+              </button>
+            </li>
+          ))}
+        </ul>
       </Panel>
 
-      <Panel title="Active situations" subtitle={`${situations.length} total`}>
+      <Panel title="Situations" subtitle={`${situations.length} active`}>
         {situations.length === 0 ? (
-          <EmptyState
-            title="No active situations"
-            description="Plant operating within normal parameters."
-          />
+          <EmptyState title="No active situations" description="All parameters normal." />
         ) : (
           <ul className="pl-left-rail__list" role="list">
-            {situations.map((s) => (
-              <li key={s.id}>
-                <button
-                  type="button"
-                  className={`pl-left-rail__list-item ${
-                    selectedSituationId === s.id ? "pl-left-rail__list-item--selected" : ""
-                  }`}
-                  onClick={() => {
-                    setSelectedSituationId(s.id);
-                    setActive(s);
-                  }}
-                >
-                  <span className="pl-left-rail__list-title">{s.primary_fault}</span>
-                  <Badge variant="warning">{(s.confidence * 100).toFixed(0)}%</Badge>
-                </button>
-              </li>
-            ))}
+            {situations.map((s, idx) => {
+              const meta = getSituationMeta(s.id);
+              return (
+                <li key={s.id}>
+                  <button
+                    type="button"
+                    className={`pl-left-rail__list-item ${
+                      selectedSituationId === s.id ? "pl-left-rail__list-item--selected" : ""
+                    }`}
+                    onClick={() => setSelectedSituation(s.id)}
+                  >
+                    <span className="pl-left-rail__list-index">
+                      {String(idx + 1).padStart(2, "0")}
+                    </span>
+                    <div className="pl-left-rail__list-body">
+                      <span className="pl-left-rail__list-title">{s.primary_fault}</span>
+                      <span className="pl-left-rail__list-meta">
+                        {(s.confidence * 100).toFixed(0)}% / {(s.coverage * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                    <Badge variant={meta?.severity === "unknown" ? "unknown" : "warning"}>
+                      {meta?.severity ?? "warning"}
+                    </Badge>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
       </Panel>
 
-      <Panel title="Assets" scaffold subtitle="Placeholder">
-        <EmptyState
-          title="Asset list"
-          description="Asset navigation will populate from plant topology."
-          scaffold
-        />
-        <button
-          type="button"
-          className="pl-left-rail__asset-placeholder"
-          onClick={() => setSelectedAssetId(selectedAssetId ? null : "asset-demo-01")}
-        >
-          {selectedAssetId ? "Clear selection" : "Select demo asset (scaffold)"}
-        </button>
+      <Panel title="Assets" subtitle="Demo fallback">
+        <ul className="pl-left-rail__list" role="list">
+          {DEMO_ASSETS.map((asset) => (
+            <li key={asset.id}>
+              <button
+                type="button"
+                className={`pl-left-rail__list-item ${
+                  selectedAssetId === asset.id ? "pl-left-rail__list-item--selected" : ""
+                }`}
+                onClick={() => setSelectedAsset(asset.id)}
+              >
+                <span className="pl-left-rail__list-title">{asset.label}</span>
+                <Badge
+                  variant={
+                    asset.state === "warning"
+                      ? "warning"
+                      : asset.state === "critical"
+                        ? "critical"
+                        : "normal"
+                  }
+                >
+                  {asset.state}
+                </Badge>
+              </button>
+            </li>
+          ))}
+        </ul>
       </Panel>
 
-      <Panel title="Alarms" scaffold subtitle="Collapse indicator placeholder">
-        <div className="pl-left-rail__alarm-indicator">
-          <Badge variant="default">0 collapsed</Badge>
-          <span className="pl-scaffold-tag">Scaffold</span>
-        </div>
+      <Panel title="Alarms" scaffold subtitle="Collapse summary">
+        <p className="pl-left-rail__alarm-text">{DEMO_ALARM_COLLAPSE}</p>
+        <span className="pl-scaffold-tag">Scaffold / Demo</span>
       </Panel>
     </div>
   );

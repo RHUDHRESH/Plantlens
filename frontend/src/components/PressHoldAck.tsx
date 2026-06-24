@@ -1,14 +1,17 @@
 /**
  * PressHoldAck (Domain P) — press-and-hold acknowledge (1.5s cortisol-interrupt
  * gesture) prevents accidental ack. Duration tunable per site in roles.json.
- * Confirmation dialog shows exactly what is acknowledged.
  */
 import { useRef, useState } from "react";
-import { useStore } from "../store/useStore";
 
 const HOLD_MS = 1500;
 
-export function PressHoldAck({ situationId }: { situationId: string }) {
+interface PressHoldAckProps {
+  situationId: string;
+  compact?: boolean;
+}
+
+export function PressHoldAck({ situationId, compact = false }: PressHoldAckProps) {
   const [progress, setProgress] = useState(0);
   const raf = useRef<number | null>(null);
   const start = useRef<number>(0);
@@ -37,16 +40,15 @@ export function PressHoldAck({ situationId }: { situationId: string }) {
 
   return (
     <button
-      className="relative w-full overflow-hidden rounded bg-white/10 py-2 text-sm"
+      type="button"
+      className={`pl-hold-ack ${compact ? "pl-hold-ack--compact" : ""}`}
       onPointerDown={begin}
       onPointerUp={cancel}
       onPointerLeave={cancel}
+      aria-label="Hold to acknowledge situation"
     >
-      <div className="absolute inset-y-0 left-0 bg-emerald-600/40" style={{ width: `${progress * 100}%` }} />
-      <span className="relative">Hold to acknowledge</span>
+      <div className="pl-hold-ack__fill" style={{ width: `${progress * 100}%` }} />
+      <span className="pl-hold-ack__label">Hold Ack</span>
     </button>
   );
 }
-
-// silence unused import warning in scaffold
-void useStore;

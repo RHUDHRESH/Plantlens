@@ -5,6 +5,11 @@
  */
 import { create } from "zustand";
 import { connectWs, fetchState } from "../api/ws";
+import {
+  DEMO_ASSETS,
+  DEMO_SITUATIONS,
+  resolveSituations,
+} from "../data/demoPlant";
 import type {
   BottomSheetMode,
   ConnectionStatus,
@@ -48,6 +53,7 @@ interface State {
   connectionStatus: ConnectionStatus;
   selectedAssetId: string | null;
   selectedSituationId: string | null;
+  selectedAreaId: string;
   bottomSheetMode: BottomSheetMode;
   rightPanelOpen: boolean;
   leftRailOpen: boolean;
@@ -61,7 +67,10 @@ interface State {
   setSourceMode: (mode: SourceMode) => void;
   setConnectionStatus: (status: ConnectionStatus) => void;
   setSelectedAssetId: (id: string | null) => void;
+  setSelectedAsset: (id: string | null) => void;
   setSelectedSituationId: (id: string | null) => void;
+  setSelectedSituation: (id: string | null) => void;
+  setSelectedAreaId: (id: string) => void;
   setBottomSheetMode: (mode: BottomSheetMode) => void;
   setRightPanelOpen: (open: boolean) => void;
   setLeftRailOpen: (open: boolean) => void;
@@ -70,57 +79,68 @@ interface State {
   toggleRightPanel: () => void;
   toggleLeftRail: () => void;
   toggleCopilot: () => void;
+  cycleRole: () => void;
 }
 
 function connectionFromDegraded(degraded: boolean): ConnectionStatus {
   return degraded ? "degraded" : "online";
 }
 
+const initialSituations = DEMO_SITUATIONS;
+const initialTop = initialSituations[0] ?? null;
+
 export const useStore = create<State>((set, get) => ({
   values: [],
-  situations: [],
-  activeSituation: null,
+  situations: initialSituations,
+  activeSituation: initialTop,
   degraded: false,
   zoom: "macro",
   themeMode: "dark",
   role: "operator",
   sourceMode: "sim",
   connectionStatus: "online",
-  selectedAssetId: null,
-  selectedSituationId: null,
+  selectedAssetId: DEMO_ASSETS[0]?.id ?? null,
+  selectedSituationId: initialTop?.id ?? null,
+  selectedAreaId: "area-a",
   bottomSheetMode: "peek",
-  rightPanelOpen: false,
+  rightPanelOpen: true,
   leftRailOpen: true,
   copilotOpen: false,
   mobileTab: "map",
 
   connect: async () => {
-    const initial = await fetchState();
-    const connectionStatus = connectionFromDegraded(initial.degraded);
-    const firstSituation = initial.situations[0] ?? null;
-    set({
-      values: initial.values,
-      situations: initial.situations,
-      degraded: initial.degraded,
-      connectionStatus,
-      activeSituation: firstSituation,
-      selectedSituationId: firstSituation?.id ?? null,
-    });
-    connectWs((msg) => {
-      const top = msg.situations[0] ?? null;
-      const prevSelected = get().selectedSituationId;
-      const stillValid = prevSelected
-        ? msg.situations.some((s) => s.id === prevSelected)
-        : false;
+    try {
+      const initial = await fetchState();
+      const situations = resolveSituations(initial.situations);
+      const connectionStatus = connectionFromDegraded(initial.degraded);
+      const top = situations[0] ?? null;
       set({
-        values: msg.values,
-        situations: msg.situations,
-        degraded: msg.degraded,
-        connectionStatus: connectionFromDegraded(msg.degraded),
+        values: initial.values,
+        situations,
+        degraded: initial.degraded,
+        connectionStatus,
         activeSituation: top,
-        selectedSituationId: stillValid ? prevSelected : (top?.id ?? null),
+        selectedSituationId: top?.id ?? null,
       });
-    });
+      connectWs((msg) => {
+        const resolved = resolveSituations(msg.situations);
+        const topSit = resolved[0] ?? null;
+        const prevSelected = get().selectedSituationId;
+        const stillValid = prevSelected
+          ? resolved.some((s) => s.id === prevSelected)
+          : false;
+        set({
+          values: msg.values,
+          situations: resolved,
+          degraded: msg.degraded,
+          connectionStatus: connectionFromDegraded(msg.degraded),
+          activeSituation: topSit,
+          selectedSituationId: stillValid ? prevSelected : (topSit?.id ?? null),
+        });
+      });
+    } catch {
+      /* Demo mode — keep scaffold defaults when backend unavailable */
+    }
   },
 
   setZoom: (z) => set({ zoom: z }),
@@ -135,7 +155,17 @@ export const useStore = create<State>((set, get) => ({
       degraded: status === "degraded",
     }),
   setSelectedAssetId: (id) => set({ selectedAssetId: id }),
+  setSelectedAsset: (id) =>
+    set({ selectedAssetId: id, rightPanelOpen: id !== null }),
   setSelectedSituationId: (id) => set({ selectedSituationId: id }),
+  setSelectedSituation: (id) => {
+    const situation = get().situations.find((s) => s.id === id) ?? null;
+    set({
+      selectedSituationId: id,
+      activeSituation: situation,
+    });
+  },
+  setSelectedAreaId: (id) => set({ selectedAreaId: id }),
   setBottomSheetMode: (mode) => set({ bottomSheetMode: mode }),
   setRightPanelOpen: (open) => set({ rightPanelOpen: open }),
   setLeftRailOpen: (open) => set({ leftRailOpen: open }),
@@ -144,4 +174,9 @@ export const useStore = create<State>((set, get) => ({
   toggleRightPanel: () => set((s) => ({ rightPanelOpen: !s.rightPanelOpen })),
   toggleLeftRail: () => set((s) => ({ leftRailOpen: !s.leftRailOpen })),
   toggleCopilot: () => set((s) => ({ copilotOpen: !s.copilotOpen })),
+  cycleRole: () => {
+    const roles: Role[] = ["operator", "maintenance", "supervisor", "engineer"];
+    const idx = roles.indexOf(get().role);
+    set({ role: roles[(idx + 1) % roles.length] ?? "operator" });
+  },
 }));

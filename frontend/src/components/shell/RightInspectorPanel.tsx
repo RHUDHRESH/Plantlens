@@ -1,10 +1,21 @@
 import { useStore } from "../../store/useStore";
+import {
+  getDemoAsset,
+  getSituationMeta,
+} from "../../data/demoPlant";
 import { Panel } from "../ui/Panel";
 import { EmptyState } from "../ui/EmptyState";
-import { ProgressRing } from "../ui/ProgressRing";
+import { Metric } from "../ui/Metric";
+import { Badge } from "../ui/Badge";
 import { IconButton } from "../ui/IconButton";
-import { CalmCard } from "../CalmCard";
 import { RoleView } from "../RoleView";
+
+function severityBadge(severity?: string) {
+  if (severity === "critical") return "critical" as const;
+  if (severity === "unknown") return "unknown" as const;
+  if (severity === "warning") return "warning" as const;
+  return "normal" as const;
+}
 
 export function RightInspectorPanel() {
   const {
@@ -18,67 +29,84 @@ export function RightInspectorPanel() {
 
   if (!rightPanelOpen) return null;
 
-  const selectedSituation = situations.find((s) => s.id === selectedSituationId) ?? null;
+  const asset = selectedAssetId ? getDemoAsset(selectedAssetId) : undefined;
+  const situation = situations.find((s) => s.id === selectedSituationId) ?? null;
+  const meta = situation ? getSituationMeta(situation.id) : undefined;
+  const displayAsset = asset ?? (meta?.assetId ? getDemoAsset(meta.assetId) : undefined);
 
   return (
     <div className="pl-right-panel">
       <header className="pl-right-panel__header">
-        <h2 className="pl-right-panel__title">Inspector</h2>
+        <h2 className="pl-right-panel__title">Inspect</h2>
         <IconButton label="Close inspector panel" onClick={toggleRightPanel}>
           <CloseIcon />
         </IconButton>
       </header>
 
-      {!selectedAssetId && !selectedSituation && (
+      {!displayAsset && !situation && (
         <EmptyState
           title="Nothing selected"
-          description="Select an asset on the map or a situation from the rail."
+          description="Tap an asset on the map or pick a situation from the rail."
         />
       )}
 
-      {selectedAssetId && (
-        <Panel title="Selected asset" scaffold>
-          <p className="pl-right-panel__asset-id">{selectedAssetId}</p>
-          <span className="pl-scaffold-tag">Scaffold / Demo asset</span>
+      {(displayAsset || situation) && (
+        <Panel
+          title={displayAsset?.id ?? meta?.assetId ?? "Asset"}
+          subtitle={displayAsset?.location ?? meta?.location}
+        >
+          <div className="pl-right-panel__badges">
+            <Badge variant={severityBadge(meta?.severity)}>
+              {(meta?.severity ?? displayAsset?.state ?? "normal").toUpperCase()}
+            </Badge>
+            {!asset && meta && (
+              <span className="pl-scaffold-tag">Demo fallback</span>
+            )}
+          </div>
+
           <div className="pl-right-panel__metrics">
-            <div>
-              <span className="pl-label">Confidence</span>
-              <ProgressRing value={0.72} label="72%" size={56} />
-            </div>
-            <div>
-              <span className="pl-label">Coverage</span>
-              <ProgressRing value={0.85} label="85%" size={56} />
-            </div>
+            <Metric
+              label="Confidence"
+              value={situation ? `${(situation.confidence * 100).toFixed(0)}%` : "—"}
+              size="lg"
+            />
+            <Metric
+              label="Coverage"
+              value={situation ? `${(situation.coverage * 100).toFixed(0)}%` : "—"}
+              size="lg"
+            />
           </div>
         </Panel>
       )}
 
-      {selectedSituation && (
-        <Panel title="Selected situation">
-          <CalmCard situation={selectedSituation} />
+      {meta && (
+        <Panel title="Evidence" scaffold>
+          <ul className="pl-evidence-list pl-evidence-list--support">
+            {meta.supportingEvidence.map((e) => (
+              <li key={e}>+ {e}</li>
+            ))}
+          </ul>
+          <ul className="pl-evidence-list pl-evidence-list--missing">
+            {meta.missingEvidence.map((e) => (
+              <li key={e}>? {e}</li>
+            ))}
+          </ul>
         </Panel>
       )}
 
-      <Panel title="Evidence summary" scaffold>
-        <p className="pl-right-panel__placeholder">
-          Evidence chain preview — scaffold placeholder for signal correlation graph.
-        </p>
-        <span className="pl-scaffold-tag">Scaffold</span>
-      </Panel>
-
-      <Panel title="Action envelope" scaffold>
-        <p className="pl-right-panel__placeholder">
-          Available actions (read-only posture) — no plant control from PlantLens.
-        </p>
-        <span className="pl-scaffold-tag">Scaffold</span>
-      </Panel>
+      {meta && (
+        <Panel title="Action envelope" scaffold>
+          <p className="pl-right-panel__placeholder">{meta.actionEnvelope}</p>
+          <Badge variant="readonly">Read-only — no plant control</Badge>
+        </Panel>
+      )}
 
       <RoleView />
 
       {role === "engineer" && (
         <Panel title="DAG peek" scaffold subtitle="Engineer-only">
           <p className="pl-right-panel__placeholder">
-            Causal DAG preview — engineer role surface. Scaffold demo node graph.
+            Causal DAG preview — scaffold demo node graph.
           </p>
           <span className="pl-scaffold-tag">Scaffold / Engineer</span>
         </Panel>

@@ -1,9 +1,11 @@
 import { useStore } from "../../store/useStore";
+import { getSituationMeta } from "../../data/demoPlant";
 import { CalmCard } from "../CalmCard";
+import { PressHoldAck } from "../PressHoldAck";
 import { Button } from "../ui/Button";
 import { CommandInput } from "../ui/CommandInput";
 import { Sheet } from "../ui/Sheet";
-import { Badge } from "../ui/Badge";
+import { Metric } from "../ui/Metric";
 
 export function BottomCommandSheet() {
   const {
@@ -12,9 +14,10 @@ export function BottomCommandSheet() {
     situations,
     activeSituation,
     selectedSituationId,
-    setSelectedSituationId,
-    setActive,
-    role,
+    setSelectedSituation,
+    toggleCopilot,
+    toggleRightPanel,
+    setBottomSheetMode: setMode,
   } = useStore();
 
   const topSituation =
@@ -23,9 +26,17 @@ export function BottomCommandSheet() {
     situations[0] ??
     null;
 
-  const handleQuery = () => {
-    // Scaffold: read-only query routing — no plant control
-  };
+  const meta = topSituation ? getSituationMeta(topSituation.id) : undefined;
+  const whyLine = meta
+    ? [...meta.supportingEvidence.slice(0, 2), ...meta.missingEvidence.slice(0, 1)].join(" + ")
+    : "";
+
+  const quickActions = [
+    { label: "View evidence", action: () => setMode("expanded") },
+    { label: "Explain grouping", action: () => toggleCopilot() },
+    { label: "Open inspector", action: () => toggleRightPanel() },
+    { label: "Ask copilot", action: () => toggleCopilot() },
+  ] as const;
 
   return (
     <Sheet mode={bottomSheetMode} onModeChange={setBottomSheetMode}>
@@ -37,9 +48,6 @@ export function BottomCommandSheet() {
               className="pl-command-sheet__peek-trigger"
               onClick={() => setBottomSheetMode("peek")}
             >
-              <Badge variant="warning" dot>
-                Situation
-              </Badge>
               <span className="pl-command-sheet__peek-title">{topSituation.primary_fault}</span>
             </button>
           ) : (
@@ -50,54 +58,42 @@ export function BottomCommandSheet() {
 
       {bottomSheetMode === "peek" && topSituation && (
         <div className="pl-command-sheet__peek">
-          <div className="pl-command-sheet__peek-header">
-            <span className="pl-label">Top situation</span>
-            <Button variant="ghost" size="sm" onClick={() => setBottomSheetMode("expanded")}>
-              Expand
-            </Button>
+          <h3 className="pl-command-sheet__headline">{topSituation.primary_fault}</h3>
+          <p className="pl-command-sheet__location">{meta?.location ?? "—"}</p>
+          <div className="pl-command-sheet__peek-metrics">
+            <Metric label="Conf" value={`${(topSituation.confidence * 100).toFixed(0)}%`} size="sm" />
+            <Metric label="Cov" value={`${(topSituation.coverage * 100).toFixed(0)}%`} size="sm" />
           </div>
-          <p className="pl-command-sheet__peek-fault">{topSituation.primary_fault}</p>
-          <div className="pl-command-sheet__peek-stats">
-            <span>Confidence {(topSituation.confidence * 100).toFixed(0)}%</span>
-            <span>Coverage {(topSituation.coverage * 100).toFixed(0)}%</span>
+          {whyLine && <p className="pl-command-sheet__why">Why: {whyLine}</p>}
+          <CommandInput placeholder="Ask read-only copilot…" readOnlyHint />
+          <div className="pl-command-sheet__action-row">
+            <Button variant="secondary" size="sm" onClick={() => setBottomSheetMode("expanded")}>
+              View evidence
+            </Button>
+            {topSituation && <PressHoldAck situationId={topSituation.id} compact />}
           </div>
         </div>
       )}
 
       {bottomSheetMode === "expanded" && (
         <div className="pl-command-sheet__expanded">
+          {topSituation && <CalmCard situation={topSituation} />}
+
           <div className="pl-command-sheet__section">
             <span className="pl-label">Command</span>
-            <CommandInput
-              placeholder="Ask or search (read-only)…"
-              onSubmit={handleQuery}
-            />
+            <CommandInput placeholder="Ask read-only copilot…" />
           </div>
 
           <div className="pl-command-sheet__quick-actions">
             <span className="pl-label">Quick actions</span>
             <div className="pl-command-sheet__action-row">
-              <Button variant="secondary" size="sm" disabled title="Scaffold — no plant control">
-                View evidence
-              </Button>
-              <Button variant="secondary" size="sm" disabled title="Scaffold — no plant control">
-                Export snapshot
-              </Button>
-              {role === "engineer" && (
-                <Button variant="ghost" size="sm" disabled title="Scaffold — engineer view only">
-                  DAG preview
+              {quickActions.map((a) => (
+                <Button key={a.label} variant="secondary" size="sm" onClick={a.action}>
+                  {a.label}
                 </Button>
-              )}
+              ))}
             </div>
-            <span className="pl-scaffold-tag">Scaffold / Demo — read-only</span>
           </div>
-
-          {topSituation && (
-            <div className="pl-command-sheet__section">
-              <span className="pl-label">Active situation</span>
-              <CalmCard situation={topSituation} />
-            </div>
-          )}
 
           {situations.length > 1 && (
             <div className="pl-command-sheet__situation-list">
@@ -109,10 +105,7 @@ export function BottomCommandSheet() {
                   className={`pl-command-sheet__situation-item ${
                     s.id === topSituation?.id ? "pl-command-sheet__situation-item--active" : ""
                   }`}
-                  onClick={() => {
-                    setSelectedSituationId(s.id);
-                    setActive(s);
-                  }}
+                  onClick={() => setSelectedSituation(s.id)}
                 >
                   {s.primary_fault}
                 </button>

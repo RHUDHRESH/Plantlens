@@ -14,11 +14,20 @@ export type BottomSheetMode = "collapsed" | "peek" | "expanded";
 
 export type MobileTab = "map" | "situations" | "copilot" | "role" | "more";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "warning";
 
 export type ButtonSize = "sm" | "md" | "lg";
 
-export type BadgeVariant = "default" | "success" | "warning" | "danger" | "info";
+export type BadgeVariant =
+  | "default"
+  | "normal"
+  | "success"
+  | "warning"
+  | "critical"
+  | "danger"
+  | "unknown"
+  | "readonly"
+  | "info";
 
 export type PanelVariant = "dark" | "light" | "elevated";
 

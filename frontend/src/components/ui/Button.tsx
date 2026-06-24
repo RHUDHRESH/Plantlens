@@ -13,6 +13,7 @@ const variantClass: Record<ButtonVariant, string> = {
   secondary: "pl-btn--secondary",
   ghost: "pl-btn--ghost",
   danger: "pl-btn--danger",
+  warning: "pl-btn--warning",
 };
 
 const sizeClass: Record<ButtonSize, string> = {

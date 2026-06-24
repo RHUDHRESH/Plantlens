@@ -6,6 +6,7 @@ interface PanelProps extends HTMLAttributes<HTMLDivElement> {
   title?: string;
   subtitle?: string;
   scaffold?: boolean;
+  padding?: "none" | "sm" | "md" | "lg";
   children: ReactNode;
 }
 
@@ -15,16 +16,31 @@ const variantClass: Record<PanelVariant, string> = {
   elevated: "pl-panel--elevated",
 };
 
+const paddingClass = {
+  none: "pl-panel--pad-none",
+  sm: "pl-panel--pad-sm",
+  md: "pl-panel--pad-md",
+  lg: "pl-panel--pad-lg",
+};
+
 export function Panel({
   variant = "dark",
   title,
   subtitle,
   scaffold = false,
+  padding = "md",
   className = "",
   children,
   ...props
 }: PanelProps) {
-  const classes = ["pl-panel", variantClass[variant], className].filter(Boolean).join(" ");
+  const classes = [
+    "pl-panel",
+    variantClass[variant],
+    paddingClass[padding],
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className={classes} {...props}>

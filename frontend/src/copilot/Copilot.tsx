@@ -10,15 +10,26 @@ import { IconButton } from "../components/ui/IconButton";
 import { Badge } from "../components/ui/Badge";
 import { EmptyState } from "../components/ui/EmptyState";
 
+const SCAFFOLD_REPLY = "Copilot tools pending.";
+
+const QUICK_PROMPTS = [
+  "Explain active situation",
+  "Show last 10 audit events",
+  "Why grouped?",
+] as const;
+
 export function Copilot() {
   const [log, setLog] = useState<string[]>([]);
   const [input, setInput] = useState("");
   const toggleCopilot = useStore((s) => s.toggleCopilot);
 
+  const runPrompt = (prompt: string) => {
+    setLog((l) => [...l, `you: ${prompt}`, `copilot: ${SCAFFOLD_REPLY}`]);
+  };
+
   const send = () => {
     if (!input.trim()) return;
-    setLog((l) => [...l, `you: ${input}`]);
-    setLog((l) => [...l, "copilot: [Scaffold] Read-only response — no plant control."]);
+    runPrompt(input);
     setInput("");
   };
 
@@ -26,8 +37,8 @@ export function Copilot() {
     <div className="pl-copilot">
       <header className="pl-copilot__header">
         <div>
-          <h2 className="pl-copilot__title">Read-only copilot</h2>
-          <Badge variant="info">No plant control</Badge>
+          <h2 className="pl-copilot__title">Read-only Copilot</h2>
+          <Badge variant="readonly">No plant write access</Badge>
         </div>
         <IconButton label="Close copilot" onClick={toggleCopilot}>
           <CloseIcon />
@@ -38,6 +49,23 @@ export function Copilot() {
         Narrates plant state from read APIs only. All transcripts are audit-logged.
         <span className="pl-scaffold-tag">Scaffold / Demo</span>
       </p>
+
+      <div className="pl-copilot__chips">
+        {QUICK_PROMPTS.map((p) => (
+          <button
+            key={p}
+            type="button"
+            className="pl-copilot__chip"
+            onClick={() => runPrompt(p)}
+          >
+            {p}
+          </button>
+        ))}
+      </div>
+
+      <div className="pl-copilot__citations">
+        <span className="pl-scaffold-tag">Tool citations — scaffold</span>
+      </div>
 
       <div className="pl-copilot__log">
         {log.length === 0 ? (
@@ -61,6 +89,7 @@ export function Copilot() {
           onChange={(e) => setInput(e.target.value)}
           onSubmit={send}
           placeholder="Ask (read-only)…"
+          large
         />
         <Button variant="secondary" size="md" onClick={send}>
           Send

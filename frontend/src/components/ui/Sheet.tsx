@@ -1,5 +1,6 @@
 import type { HTMLAttributes, ReactNode } from "react";
 import type { BottomSheetMode } from "../../design/types";
+import { SheetHandle } from "./SheetHandle";
 
 interface SheetProps extends HTMLAttributes<HTMLDivElement> {
   mode: BottomSheetMode;
@@ -33,16 +34,7 @@ export function Sheet({
 
   return (
     <div className={classes} role="region" aria-label="Command sheet" {...props}>
-      {showHandle && (
-        <button
-          type="button"
-          className="pl-sheet__handle"
-          onClick={cycleMode}
-          aria-label={`Sheet ${mode}. Tap to change height.`}
-        >
-          <span className="pl-sheet__handle-bar" />
-        </button>
-      )}
+      {showHandle && <SheetHandle onClick={cycleMode} />}
       <div className="pl-sheet__content">{children}</div>
     </div>
   );
