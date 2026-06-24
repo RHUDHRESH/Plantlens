@@ -11,6 +11,7 @@ import {
   resolveSituations,
 } from "../data/demoPlant";
 import type {
+  AppScreen,
   BottomSheetMode,
   ConnectionStatus,
   MobileTab,
@@ -59,6 +60,8 @@ interface State {
   leftRailOpen: boolean;
   copilotOpen: boolean;
   mobileTab: MobileTab;
+  screen: AppScreen;
+  copilotPrefill: string | null;
   connect: () => Promise<void>;
   setZoom: (z: State["zoom"]) => void;
   setActive: (s: Situation | null) => void;
@@ -80,6 +83,11 @@ interface State {
   toggleLeftRail: () => void;
   toggleCopilot: () => void;
   cycleRole: () => void;
+  setScreen: (screen: AppScreen) => void;
+  openEvidenceRoom: (situationId: string) => void;
+  goBackToMap: () => void;
+  openCopilotWithPrompt: (prompt: string) => void;
+  clearCopilotPrefill: () => void;
 }
 
 function connectionFromDegraded(degraded: boolean): ConnectionStatus {
@@ -107,6 +115,8 @@ export const useStore = create<State>((set, get) => ({
   leftRailOpen: true,
   copilotOpen: false,
   mobileTab: "map",
+  screen: "map",
+  copilotPrefill: null,
 
   connect: async () => {
     try {
@@ -179,4 +189,25 @@ export const useStore = create<State>((set, get) => ({
     const idx = roles.indexOf(get().role);
     set({ role: roles[(idx + 1) % roles.length] ?? "operator" });
   },
+  setScreen: (screen) => set({ screen }),
+  openEvidenceRoom: (situationId) => {
+    const situation = get().situations.find((s) => s.id === situationId) ?? null;
+    set({
+      screen: "evidence",
+      selectedSituationId: situationId,
+      activeSituation: situation,
+      leftRailOpen: true,
+      rightPanelOpen: true,
+      mobileTab: "situations",
+    });
+  },
+  goBackToMap: () =>
+    set({
+      screen: "map",
+      mobileTab: "map",
+      bottomSheetMode: "peek",
+    }),
+  openCopilotWithPrompt: (prompt) =>
+    set({ copilotOpen: true, copilotPrefill: prompt }),
+  clearCopilotPrefill: () => set({ copilotPrefill: null }),
 }));

@@ -10,13 +10,19 @@ import { RightInspectorPanel } from "./components/shell/RightInspectorPanel";
 import { BottomCommandSheet } from "./components/shell/BottomCommandSheet";
 import { MobileBottomNav } from "./components/shell/MobileBottomNav";
 import { Copilot } from "./copilot/Copilot";
+import { SituationEvidenceRoom } from "./screens/SituationEvidenceRoom";
 
 export default function App() {
   const connect = useStore((s) => s.connect);
+  const screen = useStore((s) => s.screen);
 
   useEffect(() => {
     void connect();
   }, [connect]);
+
+  if (screen === "evidence") {
+    return <SituationEvidenceRoom />;
+  }
 
   return (
     <AppShell

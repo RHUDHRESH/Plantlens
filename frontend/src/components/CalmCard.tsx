@@ -5,10 +5,13 @@
 import { PressHoldAck } from "./PressHoldAck";
 import { getSituationMeta } from "../data/demoPlant";
 import type { Situation } from "../store/useStore";
+import { useStore } from "../store/useStore";
 import { Badge } from "./ui/Badge";
+import { Button } from "./ui/Button";
 import { Metric } from "./ui/Metric";
 
 export function CalmCard({ situation }: { situation: Situation }) {
+  const openEvidenceRoom = useStore((s) => s.openEvidenceRoom);
   const meta = getSituationMeta(situation.id);
 
   return (
@@ -77,6 +80,13 @@ export function CalmCard({ situation }: { situation: Situation }) {
           <p className="pl-calm-card__next">Next: {meta.nextSteps}</p>
         )}
         <Badge variant="readonly">Read-only</Badge>
+      </section>
+
+      <section className="pl-calm-card__section">
+        <span className="pl-label">Evidence</span>
+        <Button variant="secondary" size="sm" onClick={() => openEvidenceRoom(situation.id)}>
+          View Evidence
+        </Button>
       </section>
 
       <section className="pl-calm-card__section">

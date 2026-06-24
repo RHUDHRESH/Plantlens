@@ -9,6 +9,7 @@ import { Metric } from "../ui/Metric";
 import { Badge } from "../ui/Badge";
 import { IconButton } from "../ui/IconButton";
 import { RoleView } from "../RoleView";
+import { Button } from "../ui/Button";
 
 function severityBadge(severity?: string) {
   if (severity === "critical") return "critical" as const;
@@ -25,6 +26,7 @@ export function RightInspectorPanel() {
     selectedSituationId,
     situations,
     role,
+    openEvidenceRoom,
   } = useStore();
 
   if (!rightPanelOpen) return null;
@@ -91,6 +93,15 @@ export function RightInspectorPanel() {
               <li key={e}>? {e}</li>
             ))}
           </ul>
+          {situation && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => openEvidenceRoom(situation.id)}
+            >
+              View Evidence
+            </Button>
+          )}
         </Panel>
       )}
 

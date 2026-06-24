@@ -14,6 +14,8 @@ export type BottomSheetMode = "collapsed" | "peek" | "expanded";
 
 export type MobileTab = "map" | "situations" | "copilot" | "role" | "more";
 
+export type AppScreen = "map" | "evidence";
+
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "warning";
 
 export type ButtonSize = "sm" | "md" | "lg";

@@ -15,9 +15,9 @@ export function BottomCommandSheet() {
     activeSituation,
     selectedSituationId,
     setSelectedSituation,
+    openEvidenceRoom,
     toggleCopilot,
     toggleRightPanel,
-    setBottomSheetMode: setMode,
   } = useStore();
 
   const topSituation =
@@ -31,8 +31,12 @@ export function BottomCommandSheet() {
     ? [...meta.supportingEvidence.slice(0, 2), ...meta.missingEvidence.slice(0, 1)].join(" + ")
     : "";
 
+  const openEvidence = () => {
+    if (topSituation) openEvidenceRoom(topSituation.id);
+  };
+
   const quickActions = [
-    { label: "View evidence", action: () => setMode("expanded") },
+    { label: "View evidence", action: openEvidence },
     { label: "Explain grouping", action: () => toggleCopilot() },
     { label: "Open inspector", action: () => toggleRightPanel() },
     { label: "Ask copilot", action: () => toggleCopilot() },
@@ -67,7 +71,7 @@ export function BottomCommandSheet() {
           {whyLine && <p className="pl-command-sheet__why">Why: {whyLine}</p>}
           <CommandInput placeholder="Ask read-only copilot…" readOnlyHint />
           <div className="pl-command-sheet__action-row">
-            <Button variant="secondary" size="sm" onClick={() => setBottomSheetMode("expanded")}>
+            <Button variant="secondary" size="sm" onClick={openEvidence}>
               View evidence
             </Button>
             {topSituation && <PressHoldAck situationId={topSituation.id} compact />}

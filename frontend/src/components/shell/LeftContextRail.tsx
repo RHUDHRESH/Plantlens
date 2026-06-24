@@ -17,6 +17,7 @@ export function LeftContextRail() {
     situations,
     selectedSituationId,
     setSelectedSituation,
+    openEvidenceRoom,
     setSelectedAsset,
     selectedAssetId,
     selectedAreaId,
@@ -67,7 +68,10 @@ export function LeftContextRail() {
                     className={`pl-left-rail__list-item ${
                       selectedSituationId === s.id ? "pl-left-rail__list-item--selected" : ""
                     }`}
-                    onClick={() => setSelectedSituation(s.id)}
+                    onClick={() => {
+                      setSelectedSituation(s.id);
+                      openEvidenceRoom(s.id);
+                    }}
                   >
                     <span className="pl-left-rail__list-index">
                       {String(idx + 1).padStart(2, "0")}

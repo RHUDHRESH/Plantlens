@@ -2,7 +2,7 @@
  * Copilot panel (Domain Q) — read-only chat surface bound to the read API.
  * Voice in/out via Web Speech API. All transcripts written to the audit ledger.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useStore } from "../store/useStore";
 import { CommandInput } from "../components/ui/CommandInput";
 import { Button } from "../components/ui/Button";
@@ -22,10 +22,19 @@ export function Copilot() {
   const [log, setLog] = useState<string[]>([]);
   const [input, setInput] = useState("");
   const toggleCopilot = useStore((s) => s.toggleCopilot);
+  const copilotPrefill = useStore((s) => s.copilotPrefill);
+  const clearCopilotPrefill = useStore((s) => s.clearCopilotPrefill);
 
   const runPrompt = (prompt: string) => {
     setLog((l) => [...l, `you: ${prompt}`, `copilot: ${SCAFFOLD_REPLY}`]);
   };
+
+  useEffect(() => {
+    if (!copilotPrefill) return;
+    setInput(copilotPrefill);
+    setLog((l) => [...l, `you: ${copilotPrefill}`, `copilot: ${SCAFFOLD_REPLY}`]);
+    clearCopilotPrefill();
+  }, [copilotPrefill, clearCopilotPrefill]);
 
   const send = () => {
     if (!input.trim()) return;

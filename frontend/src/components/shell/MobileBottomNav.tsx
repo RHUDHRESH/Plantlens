@@ -14,6 +14,8 @@ export function MobileBottomNav() {
   const {
     mobileTab,
     setMobileTab,
+    screen,
+    situations,
     toggleCopilot,
     setBottomSheetMode,
     toggleLeftRail,
@@ -22,6 +24,8 @@ export function MobileBottomNav() {
     leftRailOpen,
     rightPanelOpen,
     cycleRole,
+    goBackToMap,
+    openEvidenceRoom,
   } = useStore();
 
   const handleTab = (tab: MobileTab) => {
@@ -29,11 +33,19 @@ export function MobileBottomNav() {
 
     switch (tab) {
       case "map":
-        setBottomSheetMode("peek");
+        if (screen === "evidence") {
+          goBackToMap();
+        } else {
+          setBottomSheetMode("peek");
+        }
         break;
       case "situations":
-        setBottomSheetMode("expanded");
-        if (!leftRailOpen) toggleLeftRail();
+        if (situations[0]) {
+          openEvidenceRoom(situations[0].id);
+        } else {
+          setBottomSheetMode("expanded");
+          if (!leftRailOpen) toggleLeftRail();
+        }
         break;
       case "copilot":
         toggleCopilot();
