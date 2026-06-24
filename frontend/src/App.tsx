@@ -11,6 +11,7 @@ import { BottomCommandSheet } from "./components/shell/BottomCommandSheet";
 import { MobileBottomNav } from "./components/shell/MobileBottomNav";
 import { Copilot } from "./copilot/Copilot";
 import { SituationEvidenceRoom } from "./screens/SituationEvidenceRoom";
+import { EngineerDagView } from "./screens/EngineerDagView";
 
 export default function App() {
   const connect = useStore((s) => s.connect);
@@ -22,6 +23,10 @@ export default function App() {
 
   if (screen === "evidence") {
     return <SituationEvidenceRoom />;
+  }
+
+  if (screen === "dag") {
+    return <EngineerDagView />;
   }
 
   return (

@@ -16,6 +16,8 @@ export function BottomCommandSheet() {
     selectedSituationId,
     setSelectedSituation,
     openEvidenceRoom,
+    openDagView,
+    role,
     toggleCopilot,
     toggleRightPanel,
   } = useStore();
@@ -40,6 +42,9 @@ export function BottomCommandSheet() {
     { label: "Explain grouping", action: () => toggleCopilot() },
     { label: "Open inspector", action: () => toggleRightPanel() },
     { label: "Ask copilot", action: () => toggleCopilot() },
+    ...(role === "engineer" && topSituation
+      ? [{ label: "Open DAG", action: () => openDagView(topSituation.id) }]
+      : []),
   ] as const;
 
   return (

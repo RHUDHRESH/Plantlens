@@ -27,6 +27,7 @@ export function RightInspectorPanel() {
     situations,
     role,
     openEvidenceRoom,
+    openDagView,
   } = useStore();
 
   if (!rightPanelOpen) return null;
@@ -114,12 +115,15 @@ export function RightInspectorPanel() {
 
       <RoleView />
 
-      {role === "engineer" && (
+      {role === "engineer" && situation && (
         <Panel title="DAG peek" scaffold subtitle="Engineer-only">
           <p className="pl-right-panel__placeholder">
-            Causal DAG preview — scaffold demo node graph.
+            Causal DAG — read-only live traversal of approved graph.
           </p>
-          <span className="pl-scaffold-tag">Scaffold / Engineer</span>
+          <Button variant="secondary" size="sm" onClick={() => openDagView(situation.id)}>
+            Open DAG
+          </Button>
+          <span className="pl-scaffold-tag">Demo fallback</span>
         </Panel>
       )}
     </div>

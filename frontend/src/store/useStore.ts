@@ -19,6 +19,11 @@ import type {
   SourceMode,
   ThemeMode,
 } from "../design/types";
+import type {
+  DagHighlightMode,
+  DagLayerName,
+  DagLayerVisibility,
+} from "../components/dag/dagTypes";
 
 export interface CanonicalValue {
   instance_id: string;
@@ -62,6 +67,11 @@ interface State {
   mobileTab: MobileTab;
   screen: AppScreen;
   copilotPrefill: string | null;
+  selectedDagNodeId: string | null;
+  selectedDagEdgeId: string | null;
+  dagLayerVisibility: DagLayerVisibility;
+  dagHighlightMode: DagHighlightMode;
+  dagSearchQuery: string;
   connect: () => Promise<void>;
   setZoom: (z: State["zoom"]) => void;
   setActive: (s: Situation | null) => void;
@@ -88,6 +98,13 @@ interface State {
   goBackToMap: () => void;
   openCopilotWithPrompt: (prompt: string) => void;
   clearCopilotPrefill: () => void;
+  openDagView: (situationId?: string) => void;
+  goBackToEvidence: () => void;
+  setSelectedDagNodeId: (id: string | null) => void;
+  setSelectedDagEdgeId: (id: string | null) => void;
+  toggleDagLayer: (layer: DagLayerName) => void;
+  setDagHighlightMode: (mode: DagHighlightMode) => void;
+  setDagSearchQuery: (query: string) => void;
 }
 
 function connectionFromDegraded(degraded: boolean): ConnectionStatus {
@@ -117,6 +134,17 @@ export const useStore = create<State>((set, get) => ({
   mobileTab: "map",
   screen: "map",
   copilotPrefill: null,
+  selectedDagNodeId: null,
+  selectedDagEdgeId: null,
+  dagLayerVisibility: {
+    faults: true,
+    signals: true,
+    alarms: true,
+    actions: true,
+    hiddenNormal: false,
+  },
+  dagHighlightMode: "path",
+  dagSearchQuery: "",
 
   connect: async () => {
     try {
@@ -210,4 +238,40 @@ export const useStore = create<State>((set, get) => ({
   openCopilotWithPrompt: (prompt) =>
     set({ copilotOpen: true, copilotPrefill: prompt }),
   clearCopilotPrefill: () => set({ copilotPrefill: null }),
+  openDagView: (situationId) => {
+    const id = situationId ?? get().selectedSituationId ?? get().situations[0]?.id;
+    if (!id) return;
+    const situation = get().situations.find((s) => s.id === id) ?? null;
+    set({
+      screen: "dag",
+      selectedSituationId: id,
+      activeSituation: situation,
+      selectedDagNodeId: null,
+      selectedDagEdgeId: null,
+      dagHighlightMode: "path",
+      leftRailOpen: true,
+      rightPanelOpen: true,
+    });
+  },
+  goBackToEvidence: () => {
+    const id = get().selectedSituationId ?? get().situations[0]?.id;
+    if (id) {
+      get().openEvidenceRoom(id);
+    } else {
+      set({ screen: "evidence" });
+    }
+  },
+  setSelectedDagNodeId: (id) =>
+    set({ selectedDagNodeId: id, selectedDagEdgeId: null }),
+  setSelectedDagEdgeId: (id) =>
+    set({ selectedDagEdgeId: id, selectedDagNodeId: null }),
+  toggleDagLayer: (layer) =>
+    set((s) => ({
+      dagLayerVisibility: {
+        ...s.dagLayerVisibility,
+        [layer]: !s.dagLayerVisibility[layer],
+      },
+    })),
+  setDagHighlightMode: (mode) => set({ dagHighlightMode: mode }),
+  setDagSearchQuery: (query) => set({ dagSearchQuery: query }),
 }));

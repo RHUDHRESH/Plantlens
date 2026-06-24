@@ -9,6 +9,7 @@ interface EvidenceCommandBarProps {
 
 export function EvidenceCommandBar({ situationId }: EvidenceCommandBarProps) {
   const goBackToMap = useStore((s) => s.goBackToMap);
+  const openDagView = useStore((s) => s.openDagView);
   const openCopilotWithPrompt = useStore((s) => s.openCopilotWithPrompt);
   const setCopilotOpen = useStore((s) => s.setCopilotOpen);
 
@@ -38,10 +39,9 @@ export function EvidenceCommandBar({ situationId }: EvidenceCommandBarProps) {
           Explain Grouping
         </Button>
         <Button
-          variant="ghost"
+          variant="secondary"
           size="md"
-          disabled
-          title="Engineer DAG view coming in Screen 03"
+          onClick={() => openDagView(situationId)}
         >
           Open DAG
         </Button>

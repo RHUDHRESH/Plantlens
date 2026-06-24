@@ -25,6 +25,7 @@ export function MobileBottomNav() {
     rightPanelOpen,
     cycleRole,
     goBackToMap,
+    goBackToEvidence,
     openEvidenceRoom,
   } = useStore();
 
@@ -33,14 +34,16 @@ export function MobileBottomNav() {
 
     switch (tab) {
       case "map":
-        if (screen === "evidence") {
+        if (screen === "dag" || screen === "evidence") {
           goBackToMap();
         } else {
           setBottomSheetMode("peek");
         }
         break;
       case "situations":
-        if (situations[0]) {
+        if (screen === "dag") {
+          goBackToEvidence();
+        } else if (situations[0]) {
           openEvidenceRoom(situations[0].id);
         } else {
           setBottomSheetMode("expanded");
