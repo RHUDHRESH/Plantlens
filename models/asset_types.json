@@ -1,0 +1,64 @@
+{
+  "asset_types": [
+    {
+      "type_id": "induction_motor_3ph",
+      "class": "motor",
+      "label": "3-Phase Induction Motor",
+      "parameters": [
+        {"key": "rated_power_kW", "label": "Rated power", "unit": "kW", "default": 5.5, "min": 0.1, "max": 1000},
+        {"key": "rated_voltage_V", "label": "Rated voltage", "unit": "V", "default": 400},
+        {"key": "rated_current_A", "label": "Rated current", "unit": "A", "default": 11.0, "min": 0.1},
+        {"key": "rated_rpm", "label": "Rated speed", "unit": "rpm", "default": 1450},
+        {"key": "pole_count", "label": "Pole count", "default": 4},
+        {"key": "frequency_Hz", "label": "Frequency", "unit": "Hz", "default": 50},
+        {"key": "insulation_class", "label": "Insulation class", "kind": "enum", "choices": ["F", "H"], "default": "F"},
+        {"key": "service_factor", "label": "Service factor", "default": 1.15, "min": 1.0, "max": 1.5},
+        {"key": "efficiency_class", "label": "Efficiency class", "kind": "enum", "choices": ["IE2", "IE3", "IE4"], "default": "IE3"},
+        {"key": "power_factor", "label": "Power factor", "default": 0.85, "min": 0, "max": 1},
+        {"key": "locked_rotor_current_ratio", "label": "LRC ratio", "default": 7.5},
+        {"key": "thermal_time_constant_s", "label": "Thermal time constant", "unit": "s", "default": 1200},
+        {"key": "bearing_DE", "label": "Drive-end bearing", "kind": "text", "default": "6205-2RS"},
+        {"key": "bearing_NDE", "label": "Non-drive-end bearing", "kind": "text", "default": "6204-2RS"},
+        {"key": "frame_size", "label": "Frame size", "kind": "text", "default": "100L"},
+        {"key": "duty", "label": "Duty", "kind": "text", "default": "S1"},
+        {"key": "temperature_rise_K", "label": "Temp rise", "unit": "K", "default": 80},
+        {"key": "moment_of_inertia_kgm2", "label": "Inertia", "unit": "kg.m2", "default": 0.02},
+        {"key": "breakdown_torque_pct", "label": "Breakdown torque", "unit": "%", "default": 250}
+      ],
+      "signals": [
+        {"key": "stator_current", "kind": "scalar", "unit": "A", "sample_rate_hz": 1.0},
+        {"key": "winding_temp", "kind": "scalar", "unit": "degC", "sample_rate_hz": 0.2},
+        {"key": "vibration", "kind": "composite", "dtype": "float32", "sample_rate_hz": 2000, "channels": ["1x", "2x", "3x", "bpfo", "bpfi", "ftf", "bsf"]},
+        {"key": "rpm", "kind": "scalar", "unit": "rpm", "sample_rate_hz": 1.0},
+        {"key": "three_phase_current", "kind": "composite", "channels": ["a", "b", "c"], "unit": "A"}
+      ],
+      "derivations": [
+        {"target": "stator_current.warning_high", "expr": "rated_current_A * service_factor"},
+        {"target": "stator_current.critical_high", "expr": "rated_current_A * locked_rotor_current_ratio * 0.6"},
+        {"target": "winding_temp.warning_high", "expr": "80 + temperature_rise_K"}
+      ],
+      "fault_modes": [
+        {
+          "id": "bearing_outer_race",
+          "label": "Bearing outer-race wear",
+          "symptoms": [
+            {"signal": "vibration", "direction": "spectral_peak", "band": "bpfo", "weight": 1.5, "required": true},
+            {"signal": "stator_current", "direction": "rising", "weight": 0.5, "required": false},
+            {"signal": "winding_temp", "direction": "rising", "weight": 0.5, "required": false}
+          ],
+          "contradictions": ["rpm"]
+        },
+        {
+          "id": "overload",
+          "label": "Motor overload",
+          "symptoms": [
+            {"signal": "stator_current", "direction": "high", "weight": 1.5, "required": true},
+            {"signal": "winding_temp", "direction": "rising", "weight": 1.0, "required": true}
+          ],
+          "contradictions": ["rpm"]
+        }
+      ],
+      "geometry_ref": "procedural:motor"
+    }
+  ]
+}

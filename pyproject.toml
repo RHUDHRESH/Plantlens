@@ -1,0 +1,37 @@
+[project]
+name = "plantlens"
+version = "0.1.0"
+description = "PlantLens — next-gen industrial HMI cognition layer (ABB Accelerator 2026)"
+requires-python = ">=3.12,<3.14"
+readme = "README.md"
+
+dependencies = [
+    "fastapi==0.138.0",
+    "uvicorn[standard]==0.34.0",
+    "pydantic==2.13.4",
+    "pymodbus==3.6.9",
+    "networkx==3.4.2",
+    "numpy>=2.1.0",
+    "scipy>=1.14.0",
+    "scikit-learn>=1.5.0",
+    "mlxtend==0.24.0",
+    "anthropic>=0.40.0",
+    "mcp>=1.0.0",
+    "python-multipart>=0.0.20",
+    "websockets>=13.0",
+]
+
+[project.optional-dependencies]
+opcua = ["asyncua>=0.9.99"]
+mining = ["filterpy==1.4.5"]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E501"]

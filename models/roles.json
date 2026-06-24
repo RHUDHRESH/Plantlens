@@ -1,0 +1,44 @@
+{
+  "roles": [
+    {
+      "role": "operator",
+      "identity_priority": ["rfid", "face", "fingerprint", "pin"],
+      "press_hold_ms": 1500,
+      "two_person_confirm_after_hour": 2,
+      "view": {
+        "widgets": ["map3d", "calm_card", "action_envelope", "status_strip", "feed"],
+        "relevance_weights": {"priority": 1.0, "spatial_proximity": 0.6, "role_match": 1.0, "work_order": 0.3, "pst_urgency": 0.8}
+      }
+    },
+    {
+      "role": "maintenance",
+      "identity_priority": ["rfid", "pin"],
+      "press_hold_ms": 1500,
+      "two_person_confirm_after_hour": 2,
+      "view": {
+        "widgets": ["map3d", "calm_card", "evidence_list"],
+        "relevance_weights": {"priority": 0.8, "spatial_proximity": 0.8, "role_match": 1.0, "work_order": 1.0, "pst_urgency": 0.5}
+      }
+    },
+    {
+      "role": "supervisor",
+      "identity_priority": ["rfid", "pin"],
+      "press_hold_ms": 2000,
+      "two_person_confirm_after_hour": 2,
+      "view": {
+        "widgets": ["map3d", "status_strip", "feed"],
+        "relevance_weights": {"priority": 1.0, "spatial_proximity": 0.2, "role_match": 1.0, "work_order": 0.5, "pst_urgency": 0.9}
+      }
+    },
+    {
+      "role": "engineer",
+      "identity_priority": ["pin"],
+      "press_hold_ms": 1000,
+      "two_person_confirm_after_hour": 99,
+      "view": {
+        "widgets": ["map3d", "evidence_list", "role_view"],
+        "relevance_weights": {"priority": 0.6, "spatial_proximity": 0.2, "role_match": 1.0, "work_order": 0.2, "pst_urgency": 0.4}
+      }
+    }
+  ]
+}

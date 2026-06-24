@@ -1,0 +1,11 @@
+{
+  "map_motor_101": {
+    "instance_id": "M-101",
+    "bindings": [
+      {"signal_key": "stator_current", "type": "input_register", "address": 0,  "count": 2, "datatype": "FLOAT32", "unit": "A"},
+      {"signal_key": "winding_temp",   "type": "input_register", "address": 2,  "count": 2, "datatype": "FLOAT32", "unit": "degC"},
+      {"signal_key": "rpm",            "type": "input_register", "address": 4,  "count": 2, "datatype": "FLOAT32", "unit": "rpm"},
+      {"signal_key": "vibration",      "type": "input_register", "address": 6,  "count": 14, "datatype": "FLOAT32", "unit": "mm_s"}
+    ]
+  }
+}

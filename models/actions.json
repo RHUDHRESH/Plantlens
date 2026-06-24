@@ -1,0 +1,21 @@
+{
+  "actions": [
+    {
+      "id": "act:reduce_load",
+      "label": "Reduce motor load",
+      "preconditions": ["motor_running"],
+      "hard_blockers": [{"condition": "breaker_open", "reason": "Motor breaker is open; cannot modulate load."}],
+      "risk_factors": ["process_flow_drop"],
+      "roles_allowed": ["operator", "supervisor"],
+      "safe_state_for_fault": "bearing_outer_race"
+    },
+    {
+      "id": "act:isolate_motor",
+      "label": "Isolate motor (PTW)",
+      "preconditions": ["motor_stopped"],
+      "hard_blockers": [{"condition": "running", "reason": "Motor still running; stop before isolation."}],
+      "risk_factors": [],
+      "roles_allowed": ["maintenance", "supervisor"]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "edges": [
+    {"cause": "vibration.bpfo", "effect": "winding_temp", "lag_min_s": 300, "lag_max_s": 3600, "source_ref": "HAZOP:MOT-012", "approved_by": "engineer@demo"},
+    {"cause": "stator_current", "effect": "winding_temp", "lag_min_s": 60, "lag_max_s": 600, "source_ref": "physics:I2R", "approved_by": "engineer@demo"}
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "faults": [
+    {
+      "id": "bearing_outer_race",
+      "label": "Bearing outer-race wear",
+      "asset_type_id": "induction_motor_3ph",
+      "safe_state_action": "act:reduce_load",
+      "symptoms": [
+        {"signal": "vibration", "direction": "spectral_peak", "band": "bpfo", "weight": 1.5, "required": true},
+        {"signal": "stator_current", "direction": "rising", "weight": 0.5, "required": false},
+        {"signal": "winding_temp", "direction": "rising", "weight": 0.5, "required": false}
+      ],
+      "contradictions": ["rpm"]
+    },
+    {
+      "id": "overload",
+      "label": "Motor overload",
+      "asset_type_id": "induction_motor_3ph",
+      "safe_state_action": "act:reduce_load",
+      "symptoms": [
+        {"signal": "stator_current", "direction": "high", "weight": 1.5, "required": true},
+        {"signal": "winding_temp", "direction": "rising", "weight": 1.0, "required": true}
+      ],
+      "contradictions": ["rpm"]
+    }
+  ]
+}

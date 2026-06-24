@@ -1,0 +1,14 @@
+{
+  "id": "bearing_cascade",
+  "label": "Bearing outer-race wear cascade",
+  "description": "A scripted fault that produces ~12 raw alarms collapsing into one Situation (bearing_outer_race).",
+  "duration_s": 120,
+  "timeline": [
+    {"t": 0,   "inject": {"instance": "M-101", "signal": "vibration.bpfo", "value": 8.5, "quality": "good"}},
+    {"t": 30,  "inject": {"instance": "M-101", "signal": "stator_current", "value": 13.0, "quality": "good"}},
+    {"t": 60,  "inject": {"instance": "M-101", "signal": "winding_temp", "value": 165, "quality": "good"}},
+    {"t": 90,  "inject": {"instance": "M-101", "signal": "vibration.bpfo", "value": 12.0, "quality": "good"}}
+  ],
+  "expected_situation": "bearing_outer_race",
+  "expected_alarm_count_before_collapse": 12
+}

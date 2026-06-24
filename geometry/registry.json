@@ -1,0 +1,11 @@
+{
+  "procedural:motor": {"kind": "procedural", "ref": "motor"},
+  "procedural:pump": {"kind": "procedural", "ref": "pump"},
+  "procedural:fan": {"kind": "procedural", "ref": "fan"},
+  "procedural:tank": {"kind": "procedural", "ref": "tank"},
+  "procedural:valve": {"kind": "procedural", "ref": "valve"},
+  "procedural:heat_exchanger": {"kind": "procedural", "ref": "heat_exchanger"},
+  "procedural:battery": {"kind": "procedural", "ref": "battery"},
+  "glb:motor": {"kind": "glb", "ref": "glb/motor.glb"},
+  "glb:pump": {"kind": "glb", "ref": "glb/pump.glb"}
+}

@@ -1,0 +1,19 @@
+{
+  "plant_id": "demo_plant",
+  "label": "PlantLens Demo Plant",
+  "systems": [
+    {"instance_id": "SYS-MOTOR-1", "label": "Motor Drive Skid", "parent": null}
+  ],
+  "instances": [
+    {
+      "instance_id": "M-101",
+      "type_id": "induction_motor_3ph",
+      "overrides": {"rated_power_kW": 5.5, "rated_current_A": 11.0, "rated_rpm": 1450, "service_factor": 1.15},
+      "position": [0, 0, 0],
+      "rotation": [0, 0, 0],
+      "address_map_ref": "map_motor_101",
+      "parent": "SYS-MOTOR-1",
+      "criticality": "high"
+    }
+  ]
+}

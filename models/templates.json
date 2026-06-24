@@ -1,0 +1,7 @@
+{
+  "templates": [
+    {"id": "macro_overview", "zoom_level": "macro", "widgets": [{"kind": "map3d", "binds_to": "plant"}, {"kind": "status_strip", "binds_to": "plant_state"}]},
+    {"id": "meso_unit", "zoom_level": "meso", "widgets": [{"kind": "map3d", "binds_to": "system"}, {"kind": "calm_card", "binds_to": "active_situation"}]},
+    {"id": "micro_asset", "zoom_level": "micro", "widgets": [{"kind": "calm_card", "binds_to": "situation"}, {"kind": "action_envelope", "binds_to": "actions"}, {"kind": "evidence_list", "binds_to": "evidence"}]}
+  ]
+}
