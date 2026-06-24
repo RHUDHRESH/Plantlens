@@ -35,6 +35,17 @@ import {
   getPaletteItem,
   validateLayoutDraft as runLayoutValidation,
 } from "../components/layoutStudio/demoLayoutData";
+import type {
+  HmiDeviceTarget,
+  HmiRoleTarget,
+  HmiValidationStatus,
+  HmiVariant,
+  CompilerValidationItem,
+} from "../components/hmiCompiler/hmiCompilerTypes";
+import {
+  DEMO_HMI_VALIDATION_ITEMS,
+  runHmiCompilerValidation,
+} from "../components/hmiCompiler/demoHmiCompilerData";
 import type { ValidationItem } from "../components/studio/studioTypes";
 import {
   buildParameterMap,
@@ -114,6 +125,12 @@ interface State {
   layoutValidationItems: LayoutValidationIssue[];
   layoutMode: LayoutMode;
   layoutPaletteSearch: string;
+  selectedGeneratedScreenId: string;
+  hmiRoleTarget: HmiRoleTarget;
+  hmiDeviceTarget: HmiDeviceTarget;
+  hmiVariant: HmiVariant;
+  hmiValidationStatus: HmiValidationStatus;
+  hmiValidationItems: CompilerValidationItem[];
   connect: () => Promise<void>;
   setZoom: (z: State["zoom"]) => void;
   setActive: (s: Situation | null) => void;
@@ -165,6 +182,14 @@ interface State {
   addBlockFromPalette: (paletteItemId: string, x?: number, y?: number) => void;
   validateLayoutDraft: () => void;
   saveLayoutDraft: () => void;
+  openHmiPreview: () => void;
+  goBackToPlantLayout: () => void;
+  setSelectedGeneratedScreenId: (id: string) => void;
+  setHmiRoleTarget: (role: HmiRoleTarget) => void;
+  setHmiDeviceTarget: (device: HmiDeviceTarget) => void;
+  setHmiVariant: (variant: HmiVariant) => void;
+  setHmiValidationStatus: (status: HmiValidationStatus) => void;
+  regenerateHmiPreview: () => void;
 }
 
 function connectionFromDegraded(degraded: boolean): ConnectionStatus {
@@ -235,6 +260,12 @@ export const useStore = create<State>((set, get) => ({
   layoutValidationItems: DEMO_VALIDATION_ISSUES,
   layoutMode: "select",
   layoutPaletteSearch: "",
+  selectedGeneratedScreenId: "l1_overview",
+  hmiRoleTarget: "operator",
+  hmiDeviceTarget: "desktop",
+  hmiVariant: "warning",
+  hmiValidationStatus: "warning",
+  hmiValidationItems: DEMO_HMI_VALIDATION_ITEMS,
 
   connect: async () => {
     try {
@@ -521,5 +552,43 @@ export const useStore = create<State>((set, get) => ({
   saveLayoutDraft: () => {
     if (!get().layoutDraftDirty) return;
     set({ layoutDraftDirty: false, layoutDraftSaved: true });
+  },
+
+  openHmiPreview: () => {
+    const validation = runHmiCompilerValidation();
+    set({
+      screen: "hmiPreview",
+      selectedGeneratedScreenId: get().selectedGeneratedScreenId || "l1_overview",
+      hmiValidationStatus: validation.status,
+      hmiValidationItems: validation.items,
+      leftRailOpen: true,
+      rightPanelOpen: true,
+      mobileTab: "studio",
+    });
+  },
+
+  goBackToPlantLayout: () => {
+    set({
+      screen: "plantLayoutStudio",
+      mobileTab: "studio",
+    });
+  },
+
+  setSelectedGeneratedScreenId: (id) => set({ selectedGeneratedScreenId: id }),
+
+  setHmiRoleTarget: (role) => set({ hmiRoleTarget: role }),
+
+  setHmiDeviceTarget: (device) => set({ hmiDeviceTarget: device }),
+
+  setHmiVariant: (variant) => set({ hmiVariant: variant }),
+
+  setHmiValidationStatus: (status) => set({ hmiValidationStatus: status }),
+
+  regenerateHmiPreview: () => {
+    const validation = runHmiCompilerValidation();
+    set({
+      hmiValidationStatus: validation.status,
+      hmiValidationItems: validation.items,
+    });
   },
 }));

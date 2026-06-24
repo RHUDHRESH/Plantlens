@@ -26,6 +26,7 @@ export function MobileBottomNav() {
     openEvidenceRoom,
     openAssetStudio,
     openPlantLayoutStudio,
+    openHmiPreview,
   } = useStore();
 
   const handleTab = (tab: MobileTab) => {
@@ -37,7 +38,8 @@ export function MobileBottomNav() {
           screen === "dag" ||
           screen === "evidence" ||
           screen === "assetStudio" ||
-          screen === "plantLayoutStudio"
+          screen === "plantLayoutStudio" ||
+          screen === "hmiPreview"
         ) {
           goBackToMap();
         } else {
@@ -48,7 +50,8 @@ export function MobileBottomNav() {
         if (
           screen === "dag" ||
           screen === "assetStudio" ||
-          screen === "plantLayoutStudio"
+          screen === "plantLayoutStudio" ||
+          screen === "hmiPreview"
         ) {
           goBackToEvidence();
         } else if (situations[0]) {
@@ -62,12 +65,14 @@ export function MobileBottomNav() {
         toggleCopilot();
         break;
       case "studio":
-        if (screen === "plantLayoutStudio") {
+        if (screen === "hmiPreview") {
+          openHmiPreview();
+        } else if (screen === "plantLayoutStudio") {
           openPlantLayoutStudio();
         } else if (screen === "assetStudio") {
           openAssetStudio();
         } else {
-          openPlantLayoutStudio();
+          openHmiPreview();
         }
         break;
       case "more":
@@ -84,7 +89,9 @@ export function MobileBottomNav() {
           (tab.id === "copilot" && copilotOpen) ||
           (tab.id === "situations" && screen === "evidence") ||
           (tab.id === "studio" &&
-            (screen === "assetStudio" || screen === "plantLayoutStudio")) ||
+            (screen === "assetStudio" ||
+              screen === "plantLayoutStudio" ||
+              screen === "hmiPreview")) ||
           (tab.id === "more" && leftRailOpen);
 
         return (

@@ -29,6 +29,7 @@ export function RightInspectorPanel() {
     openEvidenceRoom,
     openDagView,
     openAssetStudio,
+    openHmiPreview,
   } = useStore();
 
   if (!rightPanelOpen) return null;
@@ -125,6 +126,18 @@ export function RightInspectorPanel() {
             Open DAG
           </Button>
           <span className="pl-scaffold-tag">Demo fallback</span>
+        </Panel>
+      )}
+
+      {role === "engineer" && (
+        <Panel title="HMI compiler" scaffold subtitle="Generated preview">
+          <p className="pl-right-panel__placeholder">
+            Auto-screen compiler — preview HMI generated from model files.
+          </p>
+          <Button variant="secondary" size="sm" onClick={openHmiPreview}>
+            Preview HMI
+          </Button>
+          <Badge variant="readonly">Draft only — no runtime deploy</Badge>
         </Panel>
       )}
 

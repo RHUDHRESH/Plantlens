@@ -13,6 +13,7 @@ export function LayoutCommandBar() {
     saveLayoutDraft,
     goBackToAssetStudio,
     goBackToMap,
+    openHmiPreview,
     role,
   } = useStore();
 
@@ -41,7 +42,7 @@ export function LayoutCommandBar() {
         <Button variant="secondary" size="md" onClick={validateLayoutDraft}>
           Validate Layout
         </Button>
-        <Button variant="ghost" size="md" disabled title="HMI preview scaffold — not wired">
+        <Button variant="secondary" size="md" onClick={openHmiPreview}>
           Preview HMI
         </Button>
         <Button variant="ghost" size="md" disabled title="Undo scaffold — not wired">

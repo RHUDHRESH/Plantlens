@@ -14,6 +14,7 @@ import { SituationEvidenceRoom } from "./screens/SituationEvidenceRoom";
 import { EngineerDagView } from "./screens/EngineerDagView";
 import { AssetStudio } from "./screens/AssetStudio";
 import { PlantLayoutStudio } from "./screens/PlantLayoutStudio";
+import { HmiGenerationPreview } from "./screens/HmiGenerationPreview";
 
 export default function App() {
   const connect = useStore((s) => s.connect);
@@ -37,6 +38,10 @@ export default function App() {
 
   if (screen === "plantLayoutStudio") {
     return <PlantLayoutStudio />;
+  }
+
+  if (screen === "hmiPreview") {
+    return <HmiGenerationPreview />;
   }
 
   return (
