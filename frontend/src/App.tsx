@@ -13,6 +13,7 @@ import { Copilot } from "./copilot/Copilot";
 import { SituationEvidenceRoom } from "./screens/SituationEvidenceRoom";
 import { EngineerDagView } from "./screens/EngineerDagView";
 import { AssetStudio } from "./screens/AssetStudio";
+import { PlantLayoutStudio } from "./screens/PlantLayoutStudio";
 
 export default function App() {
   const connect = useStore((s) => s.connect);
@@ -32,6 +33,10 @@ export default function App() {
 
   if (screen === "assetStudio") {
     return <AssetStudio />;
+  }
+
+  if (screen === "plantLayoutStudio") {
+    return <PlantLayoutStudio />;
   }
 
   return (

@@ -14,7 +14,9 @@ export type BottomSheetMode = "collapsed" | "peek" | "expanded";
 
 export type MobileTab = "map" | "situations" | "copilot" | "studio" | "more";
 
-export type AppScreen = "map" | "evidence" | "dag" | "assetStudio";
+export type AppScreen = "map" | "evidence" | "dag" | "assetStudio" | "plantLayoutStudio";
+
+export type LayoutValidationStatus = "valid" | "warning" | "error" | "unknown";
 
 export type AssetValidationStatus = "valid" | "warning" | "error" | "unknown";
 

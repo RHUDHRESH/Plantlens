@@ -13,6 +13,7 @@ export function StudioCommandBar() {
     saveAssetDraft,
     goBackToDag,
     goBackToMap,
+    openPlantLayoutStudio,
   } = useStore();
 
   const canSubmit =
@@ -36,6 +37,9 @@ export function StudioCommandBar() {
         </Button>
         <Button variant="ghost" size="md" disabled title="HMI preview scaffold — not wired">
           Preview HMI
+        </Button>
+        <Button variant="secondary" size="md" onClick={openPlantLayoutStudio}>
+          Open Layout Studio
         </Button>
         <Button variant="secondary" size="md" onClick={goBackToDag}>
           Back DAG

@@ -15,11 +15,26 @@ import type {
   AssetValidationStatus,
   BottomSheetMode,
   ConnectionStatus,
+  LayoutValidationStatus,
   MobileTab,
   Role,
   SourceMode,
   ThemeMode,
 } from "../design/types";
+import type {
+  LayoutBlockModel,
+  LayoutConnectionModel,
+  LayoutMode,
+  LayoutValidationIssue,
+} from "../components/layoutStudio/layoutStudioTypes";
+import {
+  DEMO_LAYOUT_BLOCKS,
+  DEMO_LAYOUT_CONNECTIONS,
+  DEMO_VALIDATION_ISSUES,
+  createBlockFromPalette,
+  getPaletteItem,
+  validateLayoutDraft as runLayoutValidation,
+} from "../components/layoutStudio/demoLayoutData";
 import type { ValidationItem } from "../components/studio/studioTypes";
 import {
   buildParameterMap,
@@ -90,6 +105,15 @@ interface State {
   assetValidationItems: ValidationItem[];
   studioLibrarySearch: string;
   studioParameterSearch: string;
+  layoutBlocks: LayoutBlockModel[];
+  layoutConnections: LayoutConnectionModel[];
+  selectedLayoutBlockId: string | null;
+  layoutDraftDirty: boolean;
+  layoutDraftSaved: boolean;
+  layoutValidationStatus: LayoutValidationStatus;
+  layoutValidationItems: LayoutValidationIssue[];
+  layoutMode: LayoutMode;
+  layoutPaletteSearch: string;
   connect: () => Promise<void>;
   setZoom: (z: State["zoom"]) => void;
   setActive: (s: Situation | null) => void;
@@ -131,6 +155,16 @@ interface State {
   saveAssetDraft: () => void;
   setStudioLibrarySearch: (query: string) => void;
   setStudioParameterSearch: (query: string) => void;
+  openPlantLayoutStudio: () => void;
+  goBackToAssetStudio: () => void;
+  setSelectedLayoutBlockId: (id: string | null) => void;
+  setLayoutDraftDirty: (dirty: boolean) => void;
+  setLayoutValidationStatus: (status: LayoutValidationStatus) => void;
+  setLayoutMode: (mode: LayoutMode) => void;
+  setLayoutPaletteSearch: (query: string) => void;
+  addBlockFromPalette: (paletteItemId: string, x?: number, y?: number) => void;
+  validateLayoutDraft: () => void;
+  saveLayoutDraft: () => void;
 }
 
 function connectionFromDegraded(degraded: boolean): ConnectionStatus {
@@ -192,6 +226,15 @@ export const useStore = create<State>((set, get) => ({
   assetValidationItems: initialValidationResult.items,
   studioLibrarySearch: "",
   studioParameterSearch: "",
+  layoutBlocks: DEMO_LAYOUT_BLOCKS,
+  layoutConnections: DEMO_LAYOUT_CONNECTIONS,
+  selectedLayoutBlockId: "blk-m-101",
+  layoutDraftDirty: false,
+  layoutDraftSaved: false,
+  layoutValidationStatus: "warning",
+  layoutValidationItems: DEMO_VALIDATION_ISSUES,
+  layoutMode: "select",
+  layoutPaletteSearch: "",
 
   connect: async () => {
     try {
@@ -408,4 +451,75 @@ export const useStore = create<State>((set, get) => ({
 
   setStudioLibrarySearch: (query) => set({ studioLibrarySearch: query }),
   setStudioParameterSearch: (query) => set({ studioParameterSearch: query }),
+
+  openPlantLayoutStudio: () => {
+    const validation = runLayoutValidation(
+      get().layoutBlocks.length > 0 ? get().layoutBlocks : DEMO_LAYOUT_BLOCKS,
+      get().layoutConnections.length > 0
+        ? get().layoutConnections
+        : DEMO_LAYOUT_CONNECTIONS,
+    );
+    set({
+      screen: "plantLayoutStudio",
+      selectedLayoutBlockId: get().selectedLayoutBlockId ?? "blk-m-101",
+      layoutValidationStatus: validation.status,
+      layoutValidationItems: validation.items,
+      leftRailOpen: true,
+      rightPanelOpen: true,
+      mobileTab: "studio",
+    });
+  },
+
+  goBackToAssetStudio: () => {
+    set({
+      screen: "assetStudio",
+      mobileTab: "studio",
+    });
+  },
+
+  setSelectedLayoutBlockId: (id) => set({ selectedLayoutBlockId: id }),
+
+  setLayoutDraftDirty: (dirty) => set({ layoutDraftDirty: dirty }),
+
+  setLayoutValidationStatus: (status) => set({ layoutValidationStatus: status }),
+
+  setLayoutMode: (mode) => set({ layoutMode: mode }),
+
+  setLayoutPaletteSearch: (query) => set({ layoutPaletteSearch: query }),
+
+  addBlockFromPalette: (paletteItemId, x, y) => {
+    if (get().role !== "engineer") return;
+    const item = getPaletteItem(paletteItemId);
+    if (!item) return;
+    const blocks = get().layoutBlocks;
+    const dropX = x ?? 80 + (blocks.length % 5) * 40;
+    const dropY = y ?? 80 + Math.floor(blocks.length / 5) * 80;
+    const block = createBlockFromPalette(item, dropX, dropY, blocks);
+    const nextBlocks = [...blocks, block];
+    const validation = runLayoutValidation(nextBlocks, get().layoutConnections);
+    set({
+      layoutBlocks: nextBlocks,
+      selectedLayoutBlockId: block.id,
+      layoutDraftDirty: true,
+      layoutDraftSaved: false,
+      layoutValidationStatus: validation.status,
+      layoutValidationItems: validation.items,
+    });
+  },
+
+  validateLayoutDraft: () => {
+    const validation = runLayoutValidation(
+      get().layoutBlocks,
+      get().layoutConnections,
+    );
+    set({
+      layoutValidationStatus: validation.status,
+      layoutValidationItems: validation.items,
+    });
+  },
+
+  saveLayoutDraft: () => {
+    if (!get().layoutDraftDirty) return;
+    set({ layoutDraftDirty: false, layoutDraftSaved: true });
+  },
 }));
