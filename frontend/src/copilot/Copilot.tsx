@@ -3,37 +3,77 @@
  * Voice in/out via Web Speech API. All transcripts written to the audit ledger.
  */
 import { useState } from "react";
+import { useStore } from "../store/useStore";
+import { CommandInput } from "../components/ui/CommandInput";
+import { Button } from "../components/ui/Button";
+import { IconButton } from "../components/ui/IconButton";
+import { Badge } from "../components/ui/Badge";
+import { EmptyState } from "../components/ui/EmptyState";
 
 export function Copilot() {
   const [log, setLog] = useState<string[]>([]);
   const [input, setInput] = useState("");
+  const toggleCopilot = useStore((s) => s.toggleCopilot);
 
   const send = () => {
     if (!input.trim()) return;
     setLog((l) => [...l, `you: ${input}`]);
-    // Scaffold: wire to read-only tools (api/agent_tools). Narrate, never diagnose.
+    setLog((l) => [...l, "copilot: [Scaffold] Read-only response — no plant control."]);
     setInput("");
   };
 
   return (
-    <div className="flex h-full flex-col gap-2 p-3">
-      <div className="flex-1 overflow-auto text-sm">
-        {log.map((line, i) => (
-          <div key={i}>{line}</div>
-        ))}
+    <div className="pl-copilot">
+      <header className="pl-copilot__header">
+        <div>
+          <h2 className="pl-copilot__title">Read-only copilot</h2>
+          <Badge variant="info">No plant control</Badge>
+        </div>
+        <IconButton label="Close copilot" onClick={toggleCopilot}>
+          <CloseIcon />
+        </IconButton>
+      </header>
+
+      <p className="pl-copilot__disclaimer">
+        Narrates plant state from read APIs only. All transcripts are audit-logged.
+        <span className="pl-scaffold-tag">Scaffold / Demo</span>
+      </p>
+
+      <div className="pl-copilot__log">
+        {log.length === 0 ? (
+          <EmptyState
+            title="Ask about plant state"
+            description="Queries are read-only. Copilot narrates, never diagnoses or controls."
+            scaffold
+          />
+        ) : (
+          log.map((line, i) => (
+            <div key={i} className="pl-copilot__line">
+              {line}
+            </div>
+          ))
+        )}
       </div>
-      <div className="flex gap-2">
-        <input
-          className="flex-1 rounded bg-white/10 px-2 py-1 text-sm"
+
+      <div className="pl-copilot__input-row">
+        <CommandInput
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && send()}
+          onSubmit={send}
           placeholder="Ask (read-only)…"
         />
-        <button className="rounded bg-white/10 px-3 text-sm" onClick={send}>
+        <Button variant="secondary" size="md" onClick={send}>
           Send
-        </button>
+        </Button>
       </div>
     </div>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path d="M5.5 4.5L10 9l4.5-4.5L15 5.5 10.5 10 15 14.5l-1.5 1.5L10 11.5 5.5 16 4 14.5 8.5 10 4 5.5z" />
+    </svg>
   );
 }
