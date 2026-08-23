@@ -100,7 +100,7 @@ describe("ConnectionScreen", () => {
         power_balance_error_pct: 0.23,
       },
       thresholds: {
-        state: "CRITICAL",
+        state: "LOW_LOAD_ENVELOPE_EXCEEDED",
         provisional: true,
         current_ratio: 6.8,
         power_ratio: 6.7,
@@ -114,6 +114,12 @@ describe("ConnectionScreen", () => {
         effective_quality: 0.444,
         abstention_reasons: ["INSUFFICIENT_DATA"],
         contributors: [],
+        candidates: [
+          { fault_id: "overload", probability: 0.92, disagreement: 0.02 },
+          { fault_id: "imbalance", probability: 0.12, disagreement: 0.01 },
+          { fault_id: "bearing_wear", probability: 0.08, disagreement: 0.01 },
+        ],
+        missing_features: ["rpm_drop_z", "temperature_z", "vibration_rms_z"],
       },
       motor_fingerprint: {
         model_type: "physics_informed_rbf_one_class",
@@ -126,6 +132,12 @@ describe("ConnectionScreen", () => {
         confidence: 0.95,
         contributors: [],
         limitations: ["Three commissioning samples only"],
+      },
+      fault_summary: {
+        status: "SHADOW_CANDIDATE",
+        title: "Overload candidate — evidence incomplete",
+        interpretation: "Electrical load matches a learned operating signature.",
+        recommended_checks: ["Commission motor RPM"],
       },
       explanation: "Load candidate is 6.8x the observed low-load baseline.",
       read_only: true,
@@ -143,13 +155,13 @@ describe("ConnectionScreen", () => {
 
   it("renders the live edge shadow receipt without presenting it as diagnosis", async () => {
     wrap(<ConnectionScreen />);
-    expect(await screen.findByText("UNO Q Edge Shadow")).toBeInTheDocument();
-    expect(await screen.findByText("CRITICAL · PROVISIONAL")).toBeInTheDocument();
-    expect(screen.getByText("overload 92.0%")).toBeInTheDocument();
-    expect(screen.getByText("INSUFFICIENT_DATA")).toBeInTheDocument();
-    expect(screen.getByText("KNOWN_SIGNATURE")).toBeInTheDocument();
-    expect(screen.getByText("load_mode_2 · 98.0%")).toBeInTheDocument();
-    expect(screen.getByText(/cannot create a runtime alarm/i)).toBeInTheDocument();
+    expect(await screen.findByText("Overload candidate — evidence incomplete")).toBeInTheDocument();
+    expect(screen.getByText("Overload")).toBeInTheDocument();
+    expect(screen.getByText("92.0%")).toBeInTheDocument();
+    expect(screen.getByText(/Insufficient data · shadow only/i)).toBeInTheDocument();
+    expect(screen.getByText("Known signature")).toBeInTheDocument();
+    expect(screen.getByText("load_mode_2 · 98.0% match")).toBeInTheDocument();
+    expect(screen.getByText(/approval required/i)).toBeInTheDocument();
   });
 
   it("renders no ports found state", async () => {

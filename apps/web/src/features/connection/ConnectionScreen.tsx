@@ -12,7 +12,14 @@ import {
   verifyLiveTag,
 } from "./liveVerification";
 import { REGISTER_BIBLE_ENTRIES } from "./registerBible";
-import type { Binding, ConnectionFormState, DataQuality, ScanRequest, ScanRow } from "./types";
+import type {
+  Binding,
+  ConnectionFormState,
+  DataQuality,
+  EdgeCommissioningReceipt,
+  ScanRequest,
+  ScanRow,
+} from "./types";
 import { useConnectionPanel } from "./useConnectionPanel";
 
 export interface ConnectionScreenProps {
@@ -127,6 +134,117 @@ function modbusStatusLabel(connected: boolean | undefined): string {
   if (connected === true) return "Connected";
   if (connected === false) return "Offline";
   return "—";
+}
+
+function faultLabel(value: string): string {
+  return value.replaceAll("_", " ").toLowerCase().replace(/^./, (letter) => letter.toUpperCase());
+}
+
+function EdgeFaultHero({
+  receipt,
+  loading,
+  connected,
+}: {
+  receipt: EdgeCommissioningReceipt | undefined;
+  loading: boolean;
+  connected: boolean | undefined;
+}) {
+  if (receipt?.status !== "SHADOW_RESULT") {
+    return (
+      <section className="shrink-0 border border-line rounded-lg bg-surface px-4 py-3" aria-label="Machine signature">
+        <p className="text-[11px] uppercase tracking-[0.14em] text-ink-500">Machine signature</p>
+        <p className="mt-1 text-sm text-ink-900">
+          {loading ? "Waiting for a coherent motor frame…" : "Edge model abstained"}
+        </p>
+        <p className="text-xs text-ink-500">{receipt?.reason ?? "No coherent Modbus evidence yet."}</p>
+      </section>
+    );
+  }
+
+  const fingerprint = receipt.motor_fingerprint;
+  const ensemble = receipt.ensemble;
+  const summary = receipt.fault_summary;
+  const candidates = ensemble?.candidates?.slice(0, 3) ?? [];
+  return (
+    <section
+      className="shrink-0 border border-line rounded-lg bg-surface overflow-hidden"
+      aria-label="Machine signature"
+    >
+      <div className="grid grid-cols-[1.25fr_1fr_1.1fr_1.25fr] min-h-[142px]">
+        <div className="p-4 border-r border-line border-l-[3px] border-l-accent">
+          <p className="text-[11px] uppercase tracking-[0.14em] text-ink-500">Machine signature · S5</p>
+          <h2 className="mt-2 text-lg font-medium leading-tight text-ink-900">
+            {summary?.title ?? "Motor evidence pending"}
+          </h2>
+          <p className="mt-2 text-xs leading-relaxed text-ink-600">
+            {summary?.interpretation ?? receipt.explanation}
+          </p>
+          <p className="mt-2 text-[10px] font-mono text-ink-500">
+            {connected ? "RS485 LIVE" : "RS485 OFFLINE"} · READ-ONLY · {receipt.observed_at ?? "—"}
+          </p>
+        </div>
+
+        <div className="p-4 border-r border-line">
+          <p className="text-[11px] uppercase tracking-[0.14em] text-ink-500">Electrical fingerprint</p>
+          <p className="mt-2 text-sm font-medium text-ink-900">
+            {fingerprint ? faultLabel(fingerprint.decision) : "—"}
+          </p>
+          <p className="mt-1 text-xs font-mono tabular-nums text-ink-700">
+            {fingerprint
+              ? `${fingerprint.matched_prototype} · ${(fingerprint.similarity * 100).toFixed(1)}% match`
+              : "—"}
+          </p>
+          <div className="mt-3 h-1.5 rounded-full bg-surface-sunken overflow-hidden" aria-hidden>
+            <div
+              className="h-full bg-accent rounded-full"
+              style={{ width: `${Math.max(2, (fingerprint?.similarity ?? 0) * 100)}%` }}
+            />
+          </div>
+          <p className="mt-2 text-[10px] text-ink-500">
+            Novelty {((fingerprint?.novelty_score ?? 0) * 100).toFixed(1)}% · model {fingerprint?.model_sha256.slice(0, 8) ?? "—"}
+          </p>
+        </div>
+
+        <div className="p-4 border-r border-line">
+          <p className="text-[11px] uppercase tracking-[0.14em] text-ink-500">Fault shadow · ranked</p>
+          <div className="mt-2 space-y-2">
+            {candidates.map((candidate) => (
+              <div key={candidate.fault_id}>
+                <div className="flex items-center justify-between gap-3 text-xs">
+                  <span className="text-ink-700">{faultLabel(candidate.fault_id)}</span>
+                  <span className="font-mono tabular-nums text-ink-900">
+                    {(candidate.probability * 100).toFixed(1)}%
+                  </span>
+                </div>
+                <div className="mt-1 h-1 rounded-full bg-surface-sunken overflow-hidden" aria-hidden>
+                  <div className="h-full bg-ink-500" style={{ width: `${candidate.probability * 100}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-[10px] text-ink-500">
+            {faultLabel(ensemble?.decision ?? "INSUFFICIENT_DATA")} · shadow only
+          </p>
+        </div>
+
+        <div className="p-4">
+          <p className="text-[11px] uppercase tracking-[0.14em] text-ink-500">Evidence needed</p>
+          <ul className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs text-ink-700">
+            <li>○ Motor RPM</li>
+            <li>○ Vibration RMS</li>
+            <li>○ Axis imbalance</li>
+            <li>○ Temperature</li>
+          </ul>
+          <div className="mt-3 pt-2 border-t border-line grid grid-cols-3 gap-2 text-center">
+            <div><p className="font-mono text-xs text-ink-900">{receipt.measurements?.voltage_candidate.toFixed(2) ?? "—"}</p><p className="text-[10px] text-ink-500">V*</p></div>
+            <div><p className="font-mono text-xs text-ink-900">{receipt.measurements?.current_candidate.toFixed(2) ?? "—"}</p><p className="text-[10px] text-ink-500">I*</p></div>
+            <div><p className="font-mono text-xs text-ink-900">{receipt.measurements?.power_candidate.toFixed(1) ?? "—"}</p><p className="text-[10px] text-ink-500">P*</p></div>
+          </div>
+          <p className="mt-2 text-[10px] text-ink-500">*Inferred mapping; approval required.</p>
+        </div>
+      </div>
+    </section>
+  );
 }
 
 export function ConnectionScreen({
@@ -297,7 +415,13 @@ export function ConnectionScreen({
         </div>
       </header>
 
-      <main className="flex-1 min-h-0 grid grid-cols-[300px_minmax(0,1fr)_360px] gap-3 p-3 overflow-hidden">
+      <main className="flex-1 min-h-0 flex flex-col gap-3 p-3 overflow-hidden">
+        <EdgeFaultHero
+          receipt={panel.edgeReceipt}
+          loading={panel.edgeLoading}
+          connected={panel.status?.connected}
+        />
+        <div className="flex-1 min-h-0 grid grid-cols-[300px_minmax(0,1fr)_360px] gap-3 overflow-hidden">
         {/* Left column */}
         <div className="flex flex-col gap-3 min-h-0 overflow-y-auto">
           <Card title="Link Setup" className="shrink-0">
@@ -452,90 +576,6 @@ export function ConnectionScreen({
             />
             <StatusRow label="Errors" value={formatDisplayValue(panel.status?.errorCount)} />
             <StatusRow label="Last error" value={formatDisplayValue(panel.status?.lastError)} />
-          </Card>
-
-          <Card title="UNO Q Edge Shadow" className="shrink-0">
-            {panel.edgeReceipt?.status === "SHADOW_RESULT" ? (
-              <>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs text-ink-500">Threshold state</span>
-                  <span
-                    className={cn(
-                      "px-1.5 py-0.5 rounded text-xs font-medium",
-                      panel.edgeReceipt.thresholds?.state === "CRITICAL"
-                        ? "bg-critical-tint text-critical"
-                        : panel.edgeReceipt.thresholds?.state === "WARNING"
-                          ? "bg-advisory-tint text-advisory"
-                          : "bg-healthy-tint text-healthy",
-                    )}
-                  >
-                    {panel.edgeReceipt.thresholds?.state ?? "—"} · PROVISIONAL
-                  </span>
-                </div>
-                <StatusRow
-                  label="V / I / P*"
-                  value={panel.edgeReceipt.measurements
-                    ? `${panel.edgeReceipt.measurements.voltage_candidate.toFixed(2)} / ${panel.edgeReceipt.measurements.current_candidate.toFixed(2)} / ${panel.edgeReceipt.measurements.power_candidate.toFixed(2)}`
-                    : "—"}
-                />
-                <StatusRow
-                  label="Load ratios"
-                  value={panel.edgeReceipt.thresholds
-                    ? `I ${panel.edgeReceipt.thresholds.current_ratio.toFixed(1)}× · P ${panel.edgeReceipt.thresholds.power_ratio.toFixed(1)}×`
-                    : "—"}
-                />
-                <StatusRow
-                  label="Shadow top"
-                  value={panel.edgeReceipt.ensemble
-                    ? `${panel.edgeReceipt.ensemble.top_shadow_candidate} ${(panel.edgeReceipt.ensemble.probability * 100).toFixed(1)}%`
-                    : "—"}
-                />
-                <StatusRow
-                  label="Decision"
-                  value={panel.edgeReceipt.ensemble?.decision ?? "—"}
-                />
-                <div className="border-t border-line pt-2 mt-1">
-                  <p className="text-[11px] uppercase tracking-wide text-ink-500 mb-1">
-                    Motor fingerprint · one-class RBF
-                  </p>
-                  <StatusRow
-                    label="Signature"
-                    value={panel.edgeReceipt.motor_fingerprint?.decision ?? "—"}
-                  />
-                  <StatusRow
-                    label="Matched mode"
-                    value={panel.edgeReceipt.motor_fingerprint
-                      ? `${panel.edgeReceipt.motor_fingerprint.matched_prototype} · ${(panel.edgeReceipt.motor_fingerprint.similarity * 100).toFixed(1)}%`
-                      : "—"}
-                  />
-                  <StatusRow
-                    label="Novelty"
-                    value={panel.edgeReceipt.motor_fingerprint
-                      ? `${(panel.edgeReceipt.motor_fingerprint.novelty_score * 100).toFixed(1)}%`
-                      : "—"}
-                  />
-                  <p
-                    className="mt-1 text-[10px] font-mono text-ink-500 truncate"
-                    title={panel.edgeReceipt.motor_fingerprint?.model_sha256}
-                  >
-                    Model {panel.edgeReceipt.motor_fingerprint?.model_sha256.slice(0, 12) ?? "—"}
-                  </p>
-                </div>
-                <p className="text-xs text-ink-700 leading-relaxed">
-                  {panel.edgeReceipt.explanation}
-                </p>
-                <p className="text-[11px] text-ink-500 leading-relaxed">
-                  *Register meaning is inferred, not commissioned. Shadow output cannot create a
-                  runtime alarm or control hardware.
-                </p>
-              </>
-            ) : (
-              <p className="text-xs text-ink-500">
-                {panel.edgeLoading
-                  ? "Waiting for a coherent Modbus frame…"
-                  : `Edge model abstained: ${panel.edgeReceipt?.reason ?? "no coherent frame"}`}
-              </p>
-            )}
           </Card>
 
           <Card title="Edge Runtime · UNO Q" className="shrink-0">
@@ -996,6 +1036,7 @@ export function ConnectionScreen({
           {panel.commitError && (
             <p className="mt-2 text-xs text-critical">{panel.commitError}</p>
           )}
+        </div>
         </div>
       </main>
 

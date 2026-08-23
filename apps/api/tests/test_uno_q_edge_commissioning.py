@@ -43,10 +43,12 @@ def test_live_like_high_load_yields_explainable_shadow_receipt():
     receipt = edge.commissioning_receipt(_rows((26.99, 24.26, 654.8, 0.0)))
 
     assert receipt["status"] == "SHADOW_RESULT"
-    assert receipt["thresholds"]["state"] == "CRITICAL"
+    assert receipt["thresholds"]["state"] == "LOW_LOAD_ENVELOPE_EXCEEDED"
     assert receipt["thresholds"]["current_ratio"] > 10
     assert receipt["ensemble"]["top_shadow_candidate"] == "overload"
     assert receipt["ensemble"]["decision"] == "INSUFFICIENT_DATA"
+    assert receipt["fault_summary"]["status"] == "SHADOW_CANDIDATE"
+    assert len(receipt["ensemble"]["candidates"]) == 5
     assert receipt["runtime_diagnosis"] is False
     assert receipt["read_only"] is True
 

@@ -96,7 +96,10 @@ export interface EdgeCommissioningReceipt {
     power_balance_error_pct: number;
   };
   thresholds?: {
-    state: "NORMAL" | "WARNING" | "CRITICAL";
+    state:
+      | "WITHIN_LOW_LOAD_BASELINE"
+      | "ABOVE_LOW_LOAD_BASELINE"
+      | "LOW_LOAD_ENVELOPE_EXCEEDED";
     provisional: boolean;
     current_ratio: number;
     power_ratio: number;
@@ -110,6 +113,14 @@ export interface EdgeCommissioningReceipt {
     effective_quality: number;
     abstention_reasons: string[];
     contributors: Array<{ feature: string; contribution: number }>;
+    candidates: Array<{ fault_id: string; probability: number; disagreement: number }>;
+    missing_features: string[];
+  };
+  fault_summary?: {
+    status: "SHADOW_CANDIDATE" | "KNOWN_SIGNATURE" | "UNRECOGNIZED_SIGNATURE";
+    title: string;
+    interpretation: string;
+    recommended_checks: string[];
   };
   motor_fingerprint?: {
     model_type: string;

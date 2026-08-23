@@ -99,11 +99,11 @@ def commissioning_receipt(rows: list[dict[str, Any]]) -> dict[str, Any]:
     balance_error = abs(power - voltage * current) / max(abs(power), 1e-9)
 
     if current_ratio >= CRITICAL_MULTIPLIER or power_ratio >= CRITICAL_MULTIPLIER:
-        threshold_state = "CRITICAL"
+        threshold_state = "LOW_LOAD_ENVELOPE_EXCEEDED"
     elif current_ratio >= WARNING_MULTIPLIER or power_ratio >= WARNING_MULTIPLIER:
-        threshold_state = "WARNING"
+        threshold_state = "ABOVE_LOW_LOAD_BASELINE"
     else:
-        threshold_state = "NORMAL"
+        threshold_state = "WITHIN_LOW_LOAD_BASELINE"
 
     features = {feature: 0.0 for feature in FEATURES}
     features.update(
@@ -119,6 +119,22 @@ def commissioning_receipt(rows: list[dict[str, Any]]) -> dict[str, Any]:
     decision = CompactFaultEnsemble().infer(features, quality)
     top = decision.estimates[0]
     fingerprint = FINGERPRINT_MODEL.infer(ElectricalSample(voltage, current, power))
+    missing_features = [feature for feature in FEATURES if quality[feature] == 0.0]
+    if fingerprint.decision == "KNOWN_SIGNATURE" and decision.abstention_reasons:
+        fault_status = "SHADOW_CANDIDATE"
+        fault_title = f"{top.fault_id.replace('_', ' ').title()} candidate — evidence incomplete"
+        interpretation = (
+            "Electrical load matches a learned operating signature. The leading fault family "
+            "is shown for investigation, but missing mechanical and thermal evidence blocks confirmation."
+        )
+    elif fingerprint.decision == "KNOWN_SIGNATURE":
+        fault_status = "KNOWN_SIGNATURE"
+        fault_title = "Known motor operating signature"
+        interpretation = "The electrical fingerprint matches a learned motor operating mode."
+    else:
+        fault_status = "UNRECOGNIZED_SIGNATURE"
+        fault_title = "Unrecognized motor signature"
+        interpretation = "The live electrical fingerprint is outside the learned operating modes."
     return {
         "status": "SHADOW_RESULT",
         "observed_at": timestamps.pop(),
@@ -162,6 +178,15 @@ def commissioning_receipt(rows: list[dict[str, Any]]) -> dict[str, Any]:
                 {"feature": feature, "contribution": round(contribution, 4)}
                 for feature, contribution in top.contributors
             ],
+            "candidates": [
+                {
+                    "fault_id": estimate.fault_id,
+                    "probability": round(estimate.probability, 6),
+                    "disagreement": round(estimate.disagreement, 6),
+                }
+                for estimate in decision.estimates
+            ],
+            "missing_features": missing_features,
         },
         "motor_fingerprint": {
             "model_type": "physics_informed_rbf_one_class",
@@ -180,6 +205,17 @@ def commissioning_receipt(rows: list[dict[str, Any]]) -> dict[str, Any]:
                 "Three commissioning samples only",
                 "Electrical signature only; vibration, RPM, and temperature are not yet connected",
                 "Shadow inference; not an approved runtime diagnosis",
+            ],
+        },
+        "fault_summary": {
+            "status": fault_status,
+            "title": fault_title,
+            "interpretation": interpretation,
+            "recommended_checks": [
+                "Commission motor RPM to verify speed droop",
+                "Commission vibration RMS and axis imbalance",
+                "Commission motor temperature and temperature slope",
+                "Approve the register mapping before enabling deterministic alarm rules",
             ],
         },
         "explanation": (

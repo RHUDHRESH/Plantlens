@@ -61,9 +61,5 @@ terminals/.next-id
 /hmi_probe.py
 /modbus_scout.py
 
-# Local tool caches
-.claude/
-.claude.project.backup-*/
-
 # Local duplicate backend experiment (canonical API lives in apps/api)
 /backend/
