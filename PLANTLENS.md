@@ -16,10 +16,9 @@ DCS/PLC and *beside* the safety system. It ingests live telemetry (simulator fir
 later), evaluates **engineer-approved alarm rules**, traverses an **engineer-approved causal
 DAG** to collapse an alarm flood into ONE root-cause **Situation**, renders that Situation as
 a **Calm Card** on a live **2D/3D plant map**, and keeps a **hash-chained audit ledger** of
-every decision. AI is confined to *offline drafting* (propose rules/edges/text for a human to
-approve) — it is **never** in the live diagnosis path and **never** writes to hardware.
+every decision. The Arduino UNO Q extension adds a bounded local motor-fingerprint model before the deterministic causal layer. ML recognizes healthy, known-fault, or unknown signatures; engineer-approved rules still validate the evidence and PlantLens **never** writes motor-control outputs.
 
-The three things that win (validated by the ABB competitive research):
+The three product differentiators are:
 
 1. **The matrix compiles the interface** — you don't draw HMI screens, you model the plant
    once (forms → contracts) and PlantLens *compiles* the HMI, alarms, causal graph, and role
@@ -36,7 +35,7 @@ The three things that win (validated by the ABB competitive research):
 | # | Rule | Why |
 |---|------|-----|
 | R1 | **One canonical plant model.** Studio forms, React Flow, 2D map, 3D map, and agents are all *views* over the same contracts in `packages/contracts`. No view invents its own schema. | Stops schema drift, the #1 prototype killer. |
-| R2 | **The DAG runtime is deterministic and read-only.** It only traverses `approved: true` edges. No ML, no probabilistic inference, no graph mutation at runtime. | Safety + explainability + testability (IEC 61511 posture). |
+| R2 | **The DAG runtime is deterministic and read-only.** It only traverses `approved: true` edges. No probabilistic graph mutation at runtime. A bounded edge-ML detector may publish versioned evidence into the DAG boundary; it cannot change approved causal edges. | Safety + explainability + testability (IEC 61511 posture). |
 | R3 | **Simulator-first.** The simulator and the RS485 gateway emit the *identical* `TagFrame` contract. Nothing downstream knows or cares which is the source. | Demo never depends on hardware behaving. |
 | R4 | **Forms are the source of truth; React Flow is a projection.** Author in typed forms (correctness), review/edit relations in the graph (spatial), draft with AI (text). In that order. | Free-form graph editing creates invalid states, cycles, fake confidence. |
 | R5 | **Agents draft only.** They produce draft artifacts (configs, rules, scenarios, notes, explanations) behind a human-approval gate. They never write hardware, never mutate the live graph, never auto-approve. | One bad autonomous action ends the product. |
@@ -48,8 +47,7 @@ The three things that win (validated by the ABB competitive research):
 
 ## 3. The demo domain (the bench you build everything against)
 
-A **DC electrical microgrid** (aligns with ABB electrical distribution; better than a generic
-process loop). Seven waypoints:
+A **DC electrical microgrid** that makes electrical and mechanical cause-effect relationships easy to observe on a safe bench. Seven waypoints:
 
 ```
 PV Array → MPPT → Battery → DC Bus → Inverter → 3-Phase Motor
