@@ -210,6 +210,25 @@ async def ingest_offline_text(
     )
 
 
+@router.get("/runs", response_model=list[OfflineRunSummary])
+async def list_runs(
+    _principal: Principal = Depends(require_viewer),
+    run_store: FileRunStore = Depends(get_offline_run_store),
+) -> list[OfflineRunSummary]:
+    """List offline ingest runs (draft status overview for Studio)."""
+    summaries: list[OfflineRunSummary] = []
+    for entry in run_store.list_runs():
+        run_id = entry.get("run_id") if isinstance(entry, dict) else None
+        if not isinstance(run_id, str) or not run_id.startswith("run_"):
+            continue
+        try:
+            summaries.append(_run_summary_from_store(run_store, run_id))
+        except HTTPException:
+            continue
+    summaries.sort(key=lambda s: s.started_at_utc, reverse=True)
+    return summaries
+
+
 @router.get("/runs/{run_id}", response_model=OfflineRunSummary)
 async def get_run_summary(
     run_id: str,

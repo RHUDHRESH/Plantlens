@@ -109,6 +109,10 @@ export function AlarmRuleForm({ rule, tagOptions, issues, onPatch }: AlarmRuleFo
               <option value="!=">!=</option>
               <option value="bool_true">bool_true</option>
               <option value="bool_false">bool_false</option>
+              <option value="quality_stale">quality_stale</option>
+              <option value="quality_missing">quality_missing</option>
+              <option value="quality_bad">quality_bad</option>
+              <option value="quality_not_good">quality_not_good</option>
             </select>
           </FormField>
           {"threshold" in condition || condition.threshold !== undefined ? (

@@ -5,12 +5,17 @@ from __future__ import annotations
 from datetime import timedelta, timezone
 from typing import Any
 
+import structlog
+
 from app.runtime.config_loader import RuntimeConfig, get_runtime_config
 from app.runtime.runtime_state import RuntimeState, runtime_state
 from app.runtime.runtime_tick import evaluate_runtime_tick, on_tag_frame
 from app.runtime.simulator.scenario_runner import ScenarioRunner
 from app.runtime.websocket_hub import WebSocketHub, websocket_hub
 from app.schemas.tag_frame import TagFrame
+from app.services.observability import record_tick_error
+
+log = structlog.get_logger(__name__)
 
 
 class SimulatorGateway:
@@ -28,6 +33,8 @@ class SimulatorGateway:
         self._hub = hub
         self._runner = runner
         self._config = config
+        self.last_tick_error: str | None = None
+        self.tick_error_count: int = 0
 
     def _config_or_load(self) -> RuntimeConfig:
         return self._config or get_runtime_config()
@@ -54,8 +61,18 @@ class SimulatorGateway:
                     "state": self._state.snapshot(),
                 }
             )
-        except Exception:
-            return
+            self.last_tick_error = None
+        except Exception as exc:
+            self.tick_error_count += 1
+            self.last_tick_error = f"{type(exc).__name__}: {exc}"
+            record_tick_error()
+            log.exception(
+                "simulator_gateway_on_frame_failed",
+                tag_id=frame.tag_id,
+                tick_error_count=self.tick_error_count,
+                error=self.last_tick_error,
+            )
+            # Keep the WS / scenario loop alive; callers can inspect last_tick_error.
 
     async def _finalize_tick(self, *, after_ms: int = 1000) -> None:
         """Re-evaluate once after the last frame so debounced alarms can latch."""

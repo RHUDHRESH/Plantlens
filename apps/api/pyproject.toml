@@ -27,6 +27,8 @@ dependencies = [
   "openpyxl~=3.1",
   # Auth (Chunk 1) — pick ONE path:
   "authlib~=1.7",           # production OIDC/JWT verify
+  # Windows / zoneinfo IANA database
+  "tzdata>=2024.1",
   # "python-jose[cryptography]", "passlib[bcrypt]",  # local dev bootstrap alternative
 ]
 

@@ -38,8 +38,15 @@ working as designed.
 
 ## Observability
 - Logs: structlog JSON; filter by `trace_id` to follow one ingest cycle end-to-end.
-- Metrics: Prometheus — ingest frames/sec, WS paint latency, active alarms, compile duration.
-- Traces: OTEL span chain `ingest → normalize → persist → evaluate → publish`.
+- Metrics: Prometheus — ingest frames/sec, WS broadcasts, tick errors, situations created,
+  LLM fallback demotions (`/metrics` when `prometheus_client` is installed).
+- Traces: set `OTEL_EXPORTER_OTLP_ENDPOINT` to enable OTLP; unset is a safe no-op at API startup.
+- Traces (when enabled): OTEL span chain `ingest → normalize → persist → evaluate → publish`.
+
+## Edge compose (`deploy/docker/compose.edge.yml`)
+Required for plant NUC deploys: `API_BASE_URL`, `GATEWAY_INGEST_TOKEN` (must match API).
+Gateway health: `GET :9101/health` (Compose healthcheck hits this).
+Optional: uncomment the recordings volume to mount scenario playback captures.
 
 ## Backups
 Postgres dump + the `compiled/` bundle + the audit log to object storage / mounted volume.

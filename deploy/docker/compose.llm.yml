@@ -1,0 +1,26 @@
+# Optional local LLM (Ollama) for PlantLens AI harness drafts/explanations.
+# Runtime diagnosis stays deterministic — LLM is advisory narration only.
+#
+# From repo root:
+#   docker compose -f deploy/docker/compose.llm.yml up -d
+#   docker exec -it plantlens-ollama ollama pull llama3.2
+#
+# Then point the API at it:
+#   PLANTLENS_LLM_ENABLED=true
+#   PLANTLENS_LLM_BASE_URL=http://127.0.0.1:11434
+#   PLANTLENS_LLM_MODEL=llama3.2
+
+name: plantlens-llm
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: plantlens-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  ollama_data:

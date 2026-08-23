@@ -51,10 +51,17 @@ def derive_asset_status(
         asset_id = alarm.get("asset_id")
         if not asset_id or asset_id not in statuses:
             continue
+        # Data-quality alarms reinforce sensor_bad; they never invent process severity.
+        if alarm.get("alarm_class") == "data_quality":
+            statuses[asset_id] = _escalate(statuses[asset_id], "sensor_bad")
+            continue
         if alarm.get("severity") == "critical":
             statuses[asset_id] = _escalate(statuses[asset_id], "critical")
         elif alarm.get("severity") == "warning":
             statuses[asset_id] = _escalate(statuses[asset_id], "warning")
+        elif alarm.get("severity") == "info":
+            # Info-only process alarms do not escalate map status.
+            pass
 
     for situation in active_situations.values():
         root = situation.get("root_asset_id")

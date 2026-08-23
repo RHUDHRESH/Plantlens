@@ -16,8 +16,10 @@ class RuntimeState:
         self.active_situations: dict[str, dict] = {}
         self.latest_calm_card: dict | None = None
         self.latest_evidence_packet: dict | None = None
+        self.fault_matrix_scores: list[dict] = []
         self.asset_status: dict[str, str] = {}
         self._seen_identity_keys: set[tuple[str, str, int | None, datetime]] = set()
+        self._audited_situation_ids: set[str] = set()
 
     def update_tag(self, frame: TagFrame) -> bool:
         """Store latest frame; return False if duplicate identity key."""
@@ -58,6 +60,7 @@ class RuntimeState:
             "active_situations": list(self.active_situations.values()),
             "latest_calm_card": self.latest_calm_card,
             "latest_evidence_packet": self.latest_evidence_packet,
+            "fault_matrix_scores": list(self.fault_matrix_scores),
             "asset_status": dict(self.asset_status),
         }
 
@@ -67,8 +70,10 @@ class RuntimeState:
         self.active_situations.clear()
         self.latest_calm_card = None
         self.latest_evidence_packet = None
+        self.fault_matrix_scores = []
         self.asset_status.clear()
         self._seen_identity_keys.clear()
+        self._audited_situation_ids = set()
 
 
 runtime_state = RuntimeState()

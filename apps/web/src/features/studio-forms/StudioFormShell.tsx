@@ -5,6 +5,7 @@ import { AlarmRuleForm } from "./AlarmRuleForm";
 import { AssetForm } from "./AssetForm";
 import { CausalEdgeForm } from "./CausalEdgeForm";
 import { EntityList } from "./EntityList";
+import { FaultDefForm } from "./FaultDefForm";
 import { TagForm } from "./TagForm";
 import { ValidationPanel } from "./ValidationPanel";
 import {
@@ -121,7 +122,7 @@ export function StudioFormShell({ route }: StudioFormShellProps) {
           </div>
           <ValidationPanel issues={issues} selectedFamily="plant" />
         </div>
-        <DisabledActionsFooter />
+        <DraftOnlyNote />
       </div>
     );
   }
@@ -187,6 +188,14 @@ export function StudioFormShell({ route }: StudioFormShellProps) {
               onPatch={applyPatch}
             />
           ) : null}
+          {selectedEntity && activeFamily === "fault_matrix" ? (
+            <FaultDefForm
+              fault={selectedEntity}
+              assetOptions={assetOptions}
+              issues={targetIssues}
+              onPatch={applyPatch}
+            />
+          ) : null}
           {!selectedEntity ? (
             <p className="studio-form-field__hint">Select an entity from the list to edit the draft.</p>
           ) : null}
@@ -202,27 +211,18 @@ export function StudioFormShell({ route }: StudioFormShellProps) {
         />
       </div>
 
-      <DisabledActionsFooter />
+      <DraftOnlyNote />
     </div>
   );
 }
 
-function DisabledActionsFooter() {
+function DraftOnlyNote() {
   return (
-    <footer className="studio-disabled-actions">
-      <button type="button" disabled title="Backend save is not wired in this prompt.">
-        Save draft
-      </button>
-      <button type="button" disabled title="Approval workflow comes after draft persistence.">
-        Submit for approval
-      </button>
-      <button
-        type="button"
-        disabled
-        title="Open the Compile Preview tab to generate a local read-only preview."
-      >
-        Compile preview
-      </button>
+    <footer className="studio-disabled-actions" role="note">
+      <p className="studio-disabled-actions__note">
+        Local draft only — save and approval are not wired. Use{" "}
+        <strong>Compile Preview</strong> in the Studio nav for a read-only projection.
+      </p>
     </footer>
   );
 }

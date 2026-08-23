@@ -1,0 +1,117 @@
+{
+  "plant_id": "demo_industrial_load_001",
+  "name": "PlantLens Industrial Load Demo",
+  "version": "1.0.0",
+  "timezone": "Asia/Kolkata",
+  "topology": "dc_microgrid_industrial_load",
+  "areas": [
+    { "id": "mains", "name": "Mains Supply", "kind": "generation" },
+    { "id": "panel", "name": "Control Panel", "kind": "distribution" },
+    { "id": "loads", "name": "Load Branch", "kind": "consumption" },
+    { "id": "airpath", "name": "Airflow Path", "kind": "process" }
+  ],
+  "assets": [
+    {
+      "id": "MAINS-001",
+      "type": "source.mains",
+      "display_name": "Mains AC Supply",
+      "area_id": "mains",
+      "criticality": "high",
+      "coords_2d": { "x": 60, "y": 200 },
+      "coords_3d": { "x": 8.0, "y": 0.0, "z": 0.0, "model": "box" }
+    },
+    {
+      "id": "CHARGER-001",
+      "type": "control.charger",
+      "display_name": "DC Charger",
+      "area_id": "panel",
+      "parent_asset_id": "MAINS-001",
+      "criticality": "high",
+      "coords_2d": { "x": 220, "y": 200 },
+      "coords_3d": { "x": 6.0, "y": 0.0, "z": 0.0, "model": "box" }
+    },
+    {
+      "id": "BAT-001",
+      "type": "storage.battery",
+      "display_name": "Battery Bank",
+      "area_id": "panel",
+      "parent_asset_id": "CHARGER-001",
+      "criticality": "high",
+      "coords_2d": { "x": 380, "y": 200 },
+      "coords_3d": { "x": 4.0, "y": 0.0, "z": 0.0, "model": "battery_box" },
+      "meta": { "nominal_voltage_v": 48, "chemistry": "LiFePO4" }
+    },
+    {
+      "id": "DC-BUS-001",
+      "type": "distribution.dc_bus",
+      "display_name": "DC Bus",
+      "area_id": "panel",
+      "parent_asset_id": "BAT-001",
+      "criticality": "high",
+      "coords_2d": { "x": 540, "y": 200 },
+      "coords_3d": { "x": 2.0, "y": 0.0, "z": 0.0, "model": "busbar_box" }
+    },
+    {
+      "id": "DC-DC-001",
+      "type": "control.dc_converter",
+      "display_name": "DC-DC Converter",
+      "area_id": "panel",
+      "parent_asset_id": "DC-BUS-001",
+      "criticality": "medium",
+      "coords_2d": { "x": 700, "y": 200 },
+      "coords_3d": { "x": 0.0, "y": 0.0, "z": 0.0, "model": "box" }
+    },
+    {
+      "id": "MOTOR-001",
+      "type": "load.motor_3phase",
+      "display_name": "3-Phase Motor",
+      "area_id": "loads",
+      "parent_asset_id": "DC-DC-001",
+      "criticality": "high",
+      "coords_2d": { "x": 880, "y": 120 },
+      "coords_3d": { "x": -2.0, "y": 1.0, "z": 0.0, "model": "motor_simple" }
+    },
+    {
+      "id": "FAN-001",
+      "type": "load.fan",
+      "display_name": "Cooling Fan",
+      "area_id": "loads",
+      "parent_asset_id": "DC-DC-001",
+      "criticality": "medium",
+      "coords_2d": { "x": 880, "y": 220 },
+      "coords_3d": { "x": -2.0, "y": 0.0, "z": 0.0, "model": "box" }
+    },
+    {
+      "id": "BLOWER-001",
+      "type": "load.blower",
+      "display_name": "Process Blower",
+      "area_id": "loads",
+      "parent_asset_id": "DC-DC-001",
+      "criticality": "medium",
+      "coords_2d": { "x": 880, "y": 320 },
+      "coords_3d": { "x": -2.0, "y": -1.0, "z": 0.0, "model": "box" }
+    },
+    {
+      "id": "AIRFLOW-DUCT-001",
+      "type": "process.airflow_duct",
+      "display_name": "Airflow Duct",
+      "area_id": "airpath",
+      "parent_asset_id": "BLOWER-001",
+      "criticality": "low",
+      "coords_2d": { "x": 1060, "y": 270 },
+      "coords_3d": { "x": -4.0, "y": -0.5, "z": 0.0, "model": "box" }
+    }
+  ],
+  "connections": [
+    { "from": "MAINS-001", "to": "CHARGER-001", "kind": "power" },
+    { "from": "CHARGER-001", "to": "BAT-001", "kind": "power" },
+    { "from": "BAT-001", "to": "DC-BUS-001", "kind": "power" },
+    { "from": "DC-BUS-001", "to": "DC-DC-001", "kind": "power" },
+    { "from": "DC-DC-001", "to": "MOTOR-001", "kind": "power" },
+    { "from": "DC-DC-001", "to": "FAN-001", "kind": "power" },
+    { "from": "DC-DC-001", "to": "BLOWER-001", "kind": "power" },
+    { "from": "FAN-001", "to": "AIRFLOW-DUCT-001", "kind": "process" },
+    { "from": "BLOWER-001", "to": "AIRFLOW-DUCT-001", "kind": "process" }
+  ],
+  "roles": ["operator", "engineer", "maintenance", "supervisor", "admin"]
+}

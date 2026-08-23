@@ -75,6 +75,16 @@
     },
     "raw_alarm_count": { "type": "integer", "minimum": 0 },
     "raw_alarm_ids": { "type": "array", "items": { "type": "string" }, "description": "Every grouped alarm, individually viewable (glass-box). UI says 'N raw alarms grouped — view raw alarms', never 'suppressed'." },
-    "operator_authority": { "type": "string", "description": "Fixed disclaimer: 'PlantLens does not trip or control equipment. It provides evidence-backed decision support.'" }
+    "operator_authority": { "type": "string", "description": "Fixed disclaimer: 'PlantLens does not trip or control equipment. It provides evidence-backed decision support.'" },
+    "fault_matrix_top": {
+      "type": ["object", "null"],
+      "additionalProperties": true,
+      "description": "Top scored fault from deterministic fault-matrix overlay (not root-cause authority)."
+    },
+    "fault_matrix_scores": {
+      "type": "array",
+      "items": { "type": "object", "additionalProperties": true },
+      "description": "Top fault-matrix candidates for glass-box Monitor overlay."
+    }
   }
 }

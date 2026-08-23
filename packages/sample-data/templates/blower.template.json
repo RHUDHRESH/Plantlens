@@ -1,0 +1,64 @@
+{
+  "asset_type": "blower",
+  "display_name": "Process Blower",
+  "version": "1.0.0",
+  "description": "Standard template for process blower with vibration, temperature, current, and airflow monitoring.",
+  "required_tags": [
+    { "tag_suffix": "_I",       "signal_name": "Blower Current",           "unit": "A",    "data_type": "float" },
+    { "tag_suffix": "_RPM",     "signal_name": "Blower Speed",             "unit": "rpm",  "data_type": "float" },
+    { "tag_suffix": "_VIB",     "signal_name": "Vibration RMS",            "unit": "mm/s", "data_type": "float" },
+    { "tag_suffix": "_TEMP",    "signal_name": "Bearing Temperature",      "unit": "C",    "data_type": "float" },
+    { "tag_suffix": "_AIRFLOW", "signal_name": "Blower Airflow",           "unit": "m3/h", "data_type": "float" }
+  ],
+  "optional_tags": [],
+  "default_alarm_rules": [
+    { "alarm_suffix": "VIB_HIGH",     "tag_suffix": "_VIB",  "op": "gt", "critical_threshold": 3.0,  "severity": "critical", "deadband": 0.2, "debounce_ms": 0,   "unit": "mm/s" },
+    { "alarm_suffix": "TEMP_HIGH",    "tag_suffix": "_TEMP", "op": "gt", "critical_threshold": 65.0, "severity": "critical", "deadband": 2.0, "debounce_ms": 0,   "unit": "C" },
+    { "alarm_suffix": "CURRENT_HIGH", "tag_suffix": "_I",    "op": "gt", "critical_threshold": 3.5,  "severity": "warning",  "deadband": 0.2, "debounce_ms": 500, "unit": "A" },
+    { "alarm_suffix": "AIRFLOW_LOW",  "tag_suffix": "_AIRFLOW","op": "lt","critical_threshold": 30.0, "severity": "warning",  "deadband": 2.0, "debounce_ms": 500, "unit": "m3/h" }
+  ],
+  "quality_policy": {
+    "stale_after_ms": 2000,
+    "required_quality": "GOOD",
+    "missing_tag_action": "degrade_confidence"
+  },
+  "default_causal_edges": [
+    {
+      "role": "blower_load_effect_on_bus",
+      "from": "{asset_id}",
+      "to": "{dc_bus_asset_id}",
+      "edge_type": "structural_load_effect",
+      "approved": false,
+      "lag_ms": [0, 5000],
+      "provenance": "template"
+    }
+  ],
+  "default_situation_types": [
+    {
+      "id": "{asset_id}_BEARING_WEAR",
+      "title": "Blower Bearing Wear",
+      "root_asset_id": "{asset_id}",
+      "required_alarms": ["{asset_id_prefix}_VIB_HIGH", "{asset_id_prefix}_TEMP_HIGH"],
+      "require_all_alarms": true,
+      "why_it_matters": "Vibration-then-temperature pattern confirms bearing wear progression.",
+      "projection": { "tag_id": "{asset_id_prefix}_TEMP", "alarm_id": "{asset_id_prefix}_TEMP_HIGH", "threshold": 65.0, "label": "bearing temperature limit" }
+    }
+  ],
+  "default_action_envelope_entries": [
+    {
+      "id": "INSPECT_{asset_id}_BEARINGS",
+      "label": "Inspect blower bearings — plan shutdown for lubrication or replacement",
+      "situation_ids": ["{asset_id}_BEARING_WEAR"],
+      "allowed_roles": ["maintenance", "engineer"],
+      "risk_level": "medium",
+      "requires_isolation": true
+    }
+  ],
+  "hmi_bindings": {
+    "primary_signal": "_VIB",
+    "speed_signal": "_RPM",
+    "health_signal": "_TEMP",
+    "airflow_signal": "_AIRFLOW",
+    "default_chart": "trend"
+  }
+}

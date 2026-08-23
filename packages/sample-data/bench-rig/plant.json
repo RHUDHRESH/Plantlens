@@ -1,0 +1,479 @@
+{
+  "plant_id": "bench_rig_001",
+  "name": "PlantLens Physical Bench Rig",
+  "version": "1.0.0",
+  "timezone": "Asia/Kolkata",
+  "topology": "electrical_dc_microgrid",
+  "areas": [
+    {
+      "id": "gen",
+      "name": "PV / Source Branch",
+      "kind": "generation"
+    },
+    {
+      "id": "grid",
+      "name": "Grid Branch",
+      "kind": "distribution"
+    },
+    {
+      "id": "panel",
+      "name": "Battery / Drive Panel",
+      "kind": "distribution"
+    },
+    {
+      "id": "load",
+      "name": "Motor Load",
+      "kind": "consumption"
+    }
+  ],
+  "assets": [
+    {
+      "id": "PV-SRC",
+      "type": "source.dc",
+      "display_name": "48 V DC PV Emulator",
+      "area_id": "gen",
+      "parent_asset_id": null,
+      "criticality": "medium",
+      "coords_2d": {
+        "x": 140,
+        "y": 60
+      },
+      "coords_3d": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "model": "source"
+      },
+      "meta": {
+        "nominal_voltage_v": 48,
+        "verification_status": "USER_STATED",
+        "note": "Battery/DC source used instead of real solar panels"
+      }
+    },
+    {
+      "id": "ISO-PV",
+      "type": "protection.switch_disconnector",
+      "display_name": "NH4-125 Switch Disconnector",
+      "area_id": "gen",
+      "parent_asset_id": "PV-SRC",
+      "criticality": "medium",
+      "coords_2d": {
+        "x": 140,
+        "y": 150
+      },
+      "coords_3d": {
+        "x": 2.0,
+        "y": 0.0,
+        "z": 0.0,
+        "model": "switch"
+      },
+      "meta": {
+        "manufacturer": "CHINT?",
+        "model": "NH4-125",
+        "rated_current_a": 100,
+        "rated_voltage_v": 415,
+        "ingress": "IP20",
+        "utilization": "AC-22A",
+        "verification_status": "USER_STATED",
+        "risk": "May be a switch-disconnector/isolator, NOT a true fault-clearing MCB — confirm"
+      }
+    },
+    {
+      "id": "M1",
+      "type": "instrument.energy_meter",
+      "display_name": "M1 — Multispan MFM14DCM1E300",
+      "area_id": "gen",
+      "parent_asset_id": "ISO-PV",
+      "criticality": "low",
+      "coords_2d": {
+        "x": 140,
+        "y": 240
+      },
+      "coords_3d": {
+        "x": 4.0,
+        "y": 0.0,
+        "z": 0.0,
+        "model": "meter_box"
+      },
+      "meta": {
+        "manufacturer": "Multispan",
+        "model": "MFM14DCM1E300",
+        "rated_voltage": "270 V AC/DC",
+        "frequency": "50/60 Hz",
+        "burden_va": 5,
+        "measures": ["voltage", "current", "power"],
+        "verification_status": "DATASHEET_PENDING"
+      }
+    },
+    {
+      "id": "DCDC",
+      "type": "conversion.dc_dc",
+      "display_name": "DC-DC Converter",
+      "area_id": "panel",
+      "parent_asset_id": "M1",
+      "criticality": "high",
+      "coords_2d": {
+        "x": 700,
+        "y": 60
+      },
+      "coords_3d": {
+        "x": 6.0,
+        "y": 0.0,
+        "z": 0.0,
+        "model": "converter"
+      },
+      "meta": {
+        "verification_status": "UNKNOWN",
+        "note": "Input/output voltage, direction, power rating all UNKNOWN — nameplate pending"
+      }
+    },
+    {
+      "id": "DCBUS",
+      "type": "distribution.dc_bus",
+      "display_name": "DC Bus",
+      "area_id": "panel",
+      "parent_asset_id": "DCDC",
+      "criticality": "high",
+      "coords_2d": {
+        "x": 700,
+        "y": 150
+      },
+      "coords_3d": {
+        "x": 8.0,
+        "y": 0.0,
+        "z": 0.0,
+        "model": "bus"
+      },
+      "meta": {
+        "verification_status": "INFERRED_NEEDS_VERIFICATION"
+      }
+    },
+    {
+      "id": "GRID",
+      "type": "source.ac_grid",
+      "display_name": "230 V AC Mains",
+      "area_id": "grid",
+      "parent_asset_id": null,
+      "criticality": "medium",
+      "coords_2d": {
+        "x": 420,
+        "y": 60
+      },
+      "coords_3d": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 1.0,
+        "model": "source"
+      },
+      "meta": {
+        "nominal_voltage_v": 230,
+        "phase": "single_phase",
+        "verification_status": "USER_STATED"
+      }
+    },
+    {
+      "id": "SW-GRID",
+      "type": "protection.switch_stage",
+      "display_name": "Grid Branch Protection / Switching Stage",
+      "area_id": "grid",
+      "parent_asset_id": "GRID",
+      "criticality": "medium",
+      "coords_2d": {
+        "x": 420,
+        "y": 150
+      },
+      "coords_3d": {
+        "x": 2.0,
+        "y": 0.0,
+        "z": 1.0,
+        "model": "switch"
+      },
+      "meta": {
+        "verification_status": "INFERRED_NEEDS_VERIFICATION",
+        "risk": "User described as 'MCB which is an IGBT' — ambiguous; keep unknown until confirmed"
+      }
+    },
+    {
+      "id": "M2",
+      "type": "instrument.energy_meter",
+      "display_name": "M2 — Multispan MFM13M1E500",
+      "area_id": "grid",
+      "parent_asset_id": "SW-GRID",
+      "criticality": "low",
+      "coords_2d": {
+        "x": 420,
+        "y": 240
+      },
+      "coords_3d": {
+        "x": 4.0,
+        "y": 0.0,
+        "z": 1.0,
+        "model": "meter_box"
+      },
+      "meta": {
+        "manufacturer": "Multispan",
+        "model": "MFM13M1E500",
+        "rated_voltage": "100-300 V AC/DC",
+        "frequency": "50/60 Hz",
+        "burden_va": 4,
+        "measures": ["voltage", "current", "power", "frequency"],
+        "verification_status": "DATASHEET_PENDING"
+      }
+    },
+    {
+      "id": "BAT",
+      "type": "storage.battery",
+      "display_name": "LiFePO4 Battery Pack",
+      "area_id": "panel",
+      "parent_asset_id": null,
+      "criticality": "high",
+      "coords_2d": {
+        "x": 700,
+        "y": 240
+      },
+      "coords_3d": {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 2.0,
+        "model": "battery_box"
+      },
+      "meta": {
+        "chemistry": "LiFePO4",
+        "nominal_voltage_v": 25.6,
+        "capacity_ah": 100,
+        "energy_kwh": 2.56,
+        "verification_status": "USER_STATED"
+      }
+    },
+    {
+      "id": "ISO-BAT",
+      "type": "protection.switch_disconnector",
+      "display_name": "Battery Branch Isolator",
+      "area_id": "panel",
+      "parent_asset_id": "BAT",
+      "criticality": "medium",
+      "coords_2d": {
+        "x": 700,
+        "y": 330
+      },
+      "coords_3d": {
+        "x": 2.0,
+        "y": 0.0,
+        "z": 2.0,
+        "model": "switch"
+      },
+      "meta": {
+        "verification_status": "INFERRED_NEEDS_VERIFICATION",
+        "note": "Specs assumed similar to PV branch; exact model unconfirmed"
+      }
+    },
+    {
+      "id": "INV",
+      "type": "conversion.dc_ac",
+      "display_name": "DC-AC Inverter",
+      "area_id": "panel",
+      "parent_asset_id": "ISO-BAT",
+      "criticality": "high",
+      "coords_2d": {
+        "x": 700,
+        "y": 420
+      },
+      "coords_3d": {
+        "x": 4.0,
+        "y": 0.0,
+        "z": 2.0,
+        "model": "inverter_box"
+      },
+      "meta": {
+        "output": "single_phase_ac",
+        "verification_status": "UNKNOWN",
+        "note": "Inverter ratings UNKNOWN — nameplate pending"
+      }
+    },
+    {
+      "id": "M4",
+      "type": "instrument.energy_meter",
+      "display_name": "M4 — Elmeasure LG6435",
+      "area_id": "panel",
+      "parent_asset_id": "INV",
+      "criticality": "low",
+      "coords_2d": {
+        "x": 700,
+        "y": 510
+      },
+      "coords_3d": {
+        "x": 6.0,
+        "y": 0.0,
+        "z": 2.0,
+        "model": "meter_box"
+      },
+      "meta": {
+        "manufacturer": "Elmeasure",
+        "model": "LG6435",
+        "comms": "RS485/Modbus RTU",
+        "rated_current_a": 100,
+        "auxiliary": "80-300 V AC/DC",
+        "burden_va": 5,
+        "verification_status": "DATASHEET_PENDING"
+      }
+    },
+    {
+      "id": "VFD",
+      "type": "drive.vfd",
+      "display_name": "Inovance MD200S0.75B-INT VFD",
+      "area_id": "panel",
+      "parent_asset_id": "M4",
+      "criticality": "high",
+      "coords_2d": {
+        "x": 700,
+        "y": 600
+      },
+      "coords_3d": {
+        "x": 8.0,
+        "y": 0.0,
+        "z": 2.0,
+        "model": "drive"
+      },
+      "meta": {
+        "manufacturer": "Inovance",
+        "model": "MD200S0.75B-INT",
+        "rated_power_kw": 0.75,
+        "output": "3_phase_ac",
+        "verification_status": "DATASHEET_PENDING",
+        "risk": "Possible voltage-class mismatch: 220V-class VFD vs 415V motor — NEEDS_VERIFICATION"
+      }
+    },
+    {
+      "id": "CT-MOTOR",
+      "type": "instrument.current_transformer",
+      "display_name": "CT 5/1 A",
+      "area_id": "panel",
+      "parent_asset_id": "VFD",
+      "criticality": "low",
+      "coords_2d": {
+        "x": 700,
+        "y": 690
+      },
+      "coords_3d": {
+        "x": 10.0,
+        "y": 0.0,
+        "z": 2.0,
+        "model": "ct"
+      },
+      "meta": {
+        "ratio": "5/1 A",
+        "primary_a": 5,
+        "secondary_a": 1,
+        "verification_status": "USER_STATED",
+        "risk": "Meter CT secondary setting must be 1 A to match"
+      }
+    },
+    {
+      "id": "MOTOR",
+      "type": "load.motor_3phase",
+      "display_name": "Havells 3-Phase Induction Motor",
+      "area_id": "load",
+      "parent_asset_id": "CT-MOTOR",
+      "criticality": "high",
+      "coords_2d": {
+        "x": 700,
+        "y": 780
+      },
+      "coords_3d": {
+        "x": 12.0,
+        "y": 0.0,
+        "z": 3.0,
+        "model": "motor"
+      },
+      "meta": {
+        "manufacturer": "Havells",
+        "rated_power_kw": 0.75,
+        "rated_power_hp": 1,
+        "rated_voltage_v": 415,
+        "voltage_tolerance": "±10%",
+        "rated_current_a": 2.1,
+        "frequency_hz": 50,
+        "rpm": 1410,
+        "efficiency_pct": 79.6,
+        "power_factor": 0.68,
+        "connection": "Y",
+        "ingress": "IP55",
+        "duty": "S1",
+        "weight_kg": 16,
+        "ambient_c": 50,
+        "made_in": "India",
+        "verification_status": "PHOTO_PENDING",
+        "risk": "Confirm 230Δ/415Y vs 415Y-only for VFD compatibility"
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "PV-SRC",
+      "to": "ISO-PV",
+      "kind": "power"
+    },
+    {
+      "from": "ISO-PV",
+      "to": "M1",
+      "kind": "power"
+    },
+    {
+      "from": "M1",
+      "to": "DCDC",
+      "kind": "power"
+    },
+    {
+      "from": "DCDC",
+      "to": "DCBUS",
+      "kind": "power"
+    },
+    {
+      "from": "GRID",
+      "to": "SW-GRID",
+      "kind": "power"
+    },
+    {
+      "from": "SW-GRID",
+      "to": "M2",
+      "kind": "power"
+    },
+    {
+      "from": "BAT",
+      "to": "ISO-BAT",
+      "kind": "power"
+    },
+    {
+      "from": "ISO-BAT",
+      "to": "INV",
+      "kind": "power"
+    },
+    {
+      "from": "INV",
+      "to": "M4",
+      "kind": "power"
+    },
+    {
+      "from": "M4",
+      "to": "VFD",
+      "kind": "power"
+    },
+    {
+      "from": "VFD",
+      "to": "CT-MOTOR",
+      "kind": "power"
+    },
+    {
+      "from": "CT-MOTOR",
+      "to": "MOTOR",
+      "kind": "power"
+    }
+  ],
+  "roles": [
+    "operator",
+    "engineer",
+    "maintenance",
+    "supervisor",
+    "admin"
+  ]
+}

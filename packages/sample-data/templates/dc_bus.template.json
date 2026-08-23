@@ -1,0 +1,28 @@
+{
+  "asset_type": "dc_bus",
+  "display_name": "DC Distribution Bus",
+  "version": "1.0.0",
+  "description": "Standard template for DC bus with voltage and current monitoring.",
+  "required_tags": [
+    { "tag_suffix": "_V", "signal_name": "Bus Voltage", "unit": "V", "data_type": "float" },
+    { "tag_suffix": "_I", "signal_name": "Bus Current", "unit": "A", "data_type": "float" }
+  ],
+  "optional_tags": [],
+  "default_alarm_rules": [
+    { "alarm_suffix": "V_LOW",  "tag_suffix": "_V", "op": "lt", "critical_threshold": 42.0, "severity": "critical", "deadband": 0.5, "debounce_ms": 0, "unit": "V" },
+    { "alarm_suffix": "V_HIGH", "tag_suffix": "_V", "op": "gt", "critical_threshold": 58.0, "severity": "critical", "deadband": 0.5, "debounce_ms": 0, "unit": "V" }
+  ],
+  "quality_policy": {
+    "stale_after_ms": 1000,
+    "required_quality": "GOOD",
+    "missing_tag_action": "degrade_confidence"
+  },
+  "default_causal_edges": [],
+  "default_situation_types": [],
+  "default_action_envelope_entries": [],
+  "hmi_bindings": {
+    "primary_signal": "_V",
+    "current_signal": "_I",
+    "default_chart": "trend_with_limits"
+  }
+}

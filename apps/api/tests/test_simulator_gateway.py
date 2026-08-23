@@ -50,7 +50,12 @@ def isolated_gateway(demo_runner: ScenarioRunner) -> SimulatorGateway:
 
 
 @pytest.fixture(autouse=True)
-def reset_runtime_singletons() -> None:
+def reset_runtime_singletons(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.settings import get_settings
+
+    monkeypatch.setenv("ACTIVE_PLANT_ID", "demo_microgrid_001")
+    monkeypatch.setenv("SAMPLE_DATA_DIR", str(DEMO_DIR))
+    get_settings.cache_clear()
     reset_runtime_config_for_tests()
     reset_simulator_gateway_for_tests()
     yield
@@ -132,6 +137,30 @@ async def test_websocket_receives_ordered_frames(isolated_gateway: SimulatorGate
     await isolated_gateway.start("scn_motor_overload", realtime=False)
     assert received
     assert received.index("MOTOR_301_CURRENT") < received.index("BUS_101_V")
+    assert isolated_gateway.last_tick_error is None
+    assert isolated_gateway.tick_error_count == 0
+
+
+@pytest.mark.asyncio
+async def test_on_frame_records_last_tick_error_without_raising(
+    isolated_gateway: SimulatorGateway,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    def _boom(*_args, **_kwargs):
+        raise RuntimeError("tick boom")
+
+    monkeypatch.setattr(
+        "app.runtime.simulator.simulator_gateway.on_tag_frame",
+        _boom,
+    )
+    frames = await isolated_gateway._runner.collect_frames("scn_motor_overload")
+    frame = frames[0]
+
+    await isolated_gateway.on_frame(frame)
+
+    assert isolated_gateway.tick_error_count == 1
+    assert isolated_gateway.last_tick_error is not None
+    assert "tick boom" in isolated_gateway.last_tick_error
 
 
 def test_scenario_runner_avoids_alarm_dag_and_gateway_imports():

@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "tags": [
+    { "tag": "CHRG_001_I",      "asset_id": "CHARGER-001", "signal_name": "Charger Output Current", "unit": "A",     "data_type": "float" },
+    { "tag": "CHRG_001_V",      "asset_id": "CHARGER-001", "signal_name": "Charger Output Voltage", "unit": "V",     "data_type": "float" },
+    { "tag": "BAT_001_V",       "asset_id": "BAT-001",     "signal_name": "Battery Terminal Voltage","unit": "V",     "data_type": "float" },
+    { "tag": "BAT_001_I",       "asset_id": "BAT-001",     "signal_name": "Battery Current",         "unit": "A",     "data_type": "float" },
+    { "tag": "BAT_001_SOC",     "asset_id": "BAT-001",     "signal_name": "State of Charge",         "unit": "%",     "data_type": "float" },
+    { "tag": "BAT_001_TEMP",    "asset_id": "BAT-001",     "signal_name": "Battery Temperature",     "unit": "C",     "data_type": "float" },
+    { "tag": "BUS_001_V",       "asset_id": "DC-BUS-001",  "signal_name": "DC Bus Voltage",          "unit": "V",     "data_type": "float" },
+    { "tag": "BUS_001_I",       "asset_id": "DC-BUS-001",  "signal_name": "DC Bus Current",          "unit": "A",     "data_type": "float" },
+    { "tag": "MOTOR_001_I",     "asset_id": "MOTOR-001",   "signal_name": "Motor Phase Current",     "unit": "A",     "data_type": "float" },
+    { "tag": "MOTOR_001_RPM",   "asset_id": "MOTOR-001",   "signal_name": "Motor Speed",             "unit": "rpm",   "data_type": "float" },
+    { "tag": "MOTOR_001_TEMP",  "asset_id": "MOTOR-001",   "signal_name": "Motor Winding Temperature","unit": "C",    "data_type": "float" },
+    { "tag": "MOTOR_001_VIB",   "asset_id": "MOTOR-001",   "signal_name": "Motor Vibration RMS",    "unit": "mm/s",  "data_type": "float" },
+    { "tag": "FAN_001_I",       "asset_id": "FAN-001",     "signal_name": "Fan Current",             "unit": "A",     "data_type": "float" },
+    { "tag": "FAN_001_RPM",     "asset_id": "FAN-001",     "signal_name": "Fan Speed",               "unit": "rpm",   "data_type": "float" },
+    { "tag": "FAN_001_AIRFLOW", "asset_id": "FAN-001",     "signal_name": "Fan Airflow",             "unit": "m3/h",  "data_type": "float" },
+    { "tag": "BLOWER_001_I",    "asset_id": "BLOWER-001",  "signal_name": "Blower Current",          "unit": "A",     "data_type": "float" },
+    { "tag": "BLOWER_001_RPM",  "asset_id": "BLOWER-001",  "signal_name": "Blower Speed",            "unit": "rpm",   "data_type": "float" },
+    { "tag": "BLOWER_001_AIRFLOW","asset_id":"BLOWER-001",  "signal_name": "Blower Airflow",          "unit": "m3/h",  "data_type": "float" },
+    { "tag": "BLOWER_001_VIB",  "asset_id": "BLOWER-001",  "signal_name": "Blower Vibration RMS",   "unit": "mm/s",  "data_type": "float" },
+    { "tag": "BLOWER_001_TEMP", "asset_id": "BLOWER-001",  "signal_name": "Blower Bearing Temperature","unit": "C",  "data_type": "float" }
+  ]
+}

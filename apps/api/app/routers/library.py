@@ -3,11 +3,13 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 
-from app.auth.dependencies import require_viewer
+from app.auth.dependencies import require_engineer, require_viewer
 from app.auth.principal import Principal
 from app.library.analysis import analyze_plant_assembly, score_plant_faults
 from app.library.assembly import validate_plant_assembly
+from app.library.templates import apply_template, list_templates, load_template, validate_template
 from app.library.catalog import (
     get_component,
     group_components_by_category,
@@ -118,3 +120,54 @@ async def score_faults(
         body.observed_signals,
         body.data_quality,
     )
+
+
+# ---------------------------------------------------------------------------
+# Template routes
+# ---------------------------------------------------------------------------
+
+
+@router.get("/templates")
+async def list_asset_templates(
+    _principal: Principal = Depends(require_viewer),
+) -> dict[str, Any]:
+    """List all available asset signal templates."""
+    templates = list_templates()
+    return {"count": len(templates), "templates": templates}
+
+
+@router.get("/templates/{asset_type}")
+async def get_asset_template(
+    asset_type: str,
+    _principal: Principal = Depends(require_viewer),
+) -> dict[str, Any]:
+    """Get the full template for an asset type."""
+    tmpl = load_template(asset_type.lower())
+    if tmpl is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No template found for asset_type '{asset_type}'.",
+        )
+    errors = validate_template(tmpl)
+    return {"asset_type": asset_type, "template": tmpl, "validation_errors": errors}
+
+
+class ApplyTemplateRequest(BaseModel):
+    asset_type: str
+    asset_id: str
+    instance_hint: str = ""
+
+
+@router.post("/templates/apply")
+async def apply_asset_template(
+    body: ApplyTemplateRequest,
+    principal: Principal = Depends(require_engineer),
+) -> dict[str, Any]:
+    """Apply a template to an asset_id — returns a DraftArtifact (never mutates live config)."""
+    draft = apply_template(
+        body.asset_type.lower(),
+        asset_id=body.asset_id,
+        instance_hint=body.instance_hint,
+        proposed_by=principal.subject,
+    )
+    return {"draft": draft}

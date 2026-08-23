@@ -1,0 +1,61 @@
+{
+  "asset_type": "fan",
+  "display_name": "Cooling Fan",
+  "version": "1.0.0",
+  "description": "Standard template for DC/AC fan with airflow, speed, and current monitoring.",
+  "required_tags": [
+    { "tag_suffix": "_I",       "signal_name": "Fan Current",    "unit": "A",    "data_type": "float" },
+    { "tag_suffix": "_RPM",     "signal_name": "Fan Speed",      "unit": "rpm",  "data_type": "float" },
+    { "tag_suffix": "_AIRFLOW", "signal_name": "Fan Airflow",    "unit": "m3/h", "data_type": "float" }
+  ],
+  "optional_tags": [
+    { "tag_suffix": "_TEMP", "signal_name": "Motor Temperature", "unit": "C", "data_type": "float" }
+  ],
+  "default_alarm_rules": [
+    { "alarm_suffix": "AIRFLOW_LOW",  "tag_suffix": "_AIRFLOW", "op": "lt", "critical_threshold": 20.0, "severity": "critical", "deadband": 2.0, "debounce_ms": 500, "unit": "m3/h" },
+    { "alarm_suffix": "CURRENT_HIGH", "tag_suffix": "_I",       "op": "gt", "critical_threshold": 2.5,  "severity": "warning",  "deadband": 0.1, "debounce_ms": 500, "unit": "A" }
+  ],
+  "quality_policy": {
+    "stale_after_ms": 2000,
+    "required_quality": "GOOD",
+    "missing_tag_action": "degrade_confidence"
+  },
+  "default_causal_edges": [
+    {
+      "role": "airflow_to_duct",
+      "from": "{asset_id}",
+      "to": "{duct_asset_id}",
+      "edge_type": "signal",
+      "approved": false,
+      "lag_ms": [0, 2000],
+      "provenance": "template",
+      "note": "Replace {duct_asset_id} with the airflow duct asset id."
+    }
+  ],
+  "default_situation_types": [
+    {
+      "id": "{asset_id}_AIRFLOW_BLOCKAGE",
+      "title": "Fan Airflow Blockage",
+      "root_asset_id": "{asset_id}",
+      "required_alarms": ["{asset_id_prefix}_AIRFLOW_LOW"],
+      "require_all_alarms": true,
+      "why_it_matters": "Airflow dropped while fan speed is normal — duct obstruction reducing cooling."
+    }
+  ],
+  "default_action_envelope_entries": [
+    {
+      "id": "INSPECT_{asset_id}_DUCT",
+      "label": "Inspect duct for blockage or obstruction",
+      "situation_ids": ["{asset_id}_AIRFLOW_BLOCKAGE"],
+      "allowed_roles": ["operator", "maintenance"],
+      "risk_level": "low",
+      "requires_isolation": false
+    }
+  ],
+  "hmi_bindings": {
+    "primary_signal": "_AIRFLOW",
+    "speed_signal": "_RPM",
+    "health_signal": "_I",
+    "default_chart": "trend"
+  }
+}

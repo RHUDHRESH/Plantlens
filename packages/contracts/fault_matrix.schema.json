@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plantlens.dev/contracts/fault_matrix.schema.json",
+  "title": "FaultMatrix",
+  "description": "Authored symptom evidence matrix. Overlay only — approved DAG remains root-cause authority. Scores confidence/coverage/contradiction against live tags + trends; never mutates graph or drives hardware.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "matrix_id", "faults"],
+  "properties": {
+    "version": { "type": "string" },
+    "matrix_id": { "type": "string", "description": "Stable id for the authored matrix, e.g. demo_microgrid_faults." },
+    "faults": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Fault" }
+    }
+  },
+  "$defs": {
+    "Fault": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "asset_id", "symptoms"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Z0-9_]+$",
+          "description": "Fault id, SCREAMING_SNAKE, e.g. F_MOTOR_MECHANICAL_OVERLOAD."
+        },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "asset_id": { "type": "string", "description": "Primary asset the fault is authored against." },
+        "situation_type": {
+          "type": "string",
+          "description": "Optional link to causal_graph situation_types id (evidence overlay only)."
+        },
+        "safe_action_id": {
+          "type": "string",
+          "description": "Optional action_envelope action id recommended when this fault ranks high."
+        },
+        "symptoms": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/Symptom" }
+        }
+      }
+    },
+    "Symptom": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tag_id", "expected_direction", "weight", "required"],
+      "properties": {
+        "tag_id": {
+          "type": "string",
+          "description": "Tag id from tag_map.json, e.g. MOTOR_301_CURRENT."
+        },
+        "expected_direction": {
+          "type": "string",
+          "enum": ["HIGH", "LOW", "RISING", "FALLING", "TRUE", "FALSE"]
+        },
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Relative evidence weight in [0, 1]."
+        },
+        "required": {
+          "type": "boolean",
+          "description": "If true, GOOD-quality contradiction vetoes the whole fault (confidence → 0)."
+        }
+      }
+    }
+  }
+}

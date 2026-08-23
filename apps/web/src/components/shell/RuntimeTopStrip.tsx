@@ -1,5 +1,7 @@
 import type { WsConnectionState } from "../../api/types";
 import type { ScenarioRunStatus } from "../../app/store/runtime";
+import { ProviderBadge, type ProviderState } from "../plant";
+import { Button } from "../ui/button";
 
 export type MapRole = "operator" | "engineer" | "maintenance" | "manager";
 
@@ -14,12 +16,16 @@ export interface RuntimeTopStripProps {
   apiAvailable: boolean;
   scenarioId?: string | null;
   scenarioStatus?: ScenarioRunStatus;
+  providerState?: ProviderState;
+  providerLabel?: string;
+  onOpenCopilot?: () => void;
   onRoleChange?: (role: MapRole) => void;
   onOpenAgents?: () => void;
   onOpenScenarios?: () => void;
   onOpenSearch?: () => void;
-  onOpenStudio?: () => void;
-  showStudio?: boolean;
+  /** Map visibility toggle (Monitor secondary surface) */
+  showMap?: boolean;
+  onToggleMap?: () => void;
 }
 
 const CONN: Record<WsConnectionState, { label: string; cls: string; dot: string }> = {
@@ -47,18 +53,20 @@ export function RuntimeTopStrip({
   apiAvailable,
   scenarioId,
   scenarioStatus,
+  providerState = "degraded",
+  providerLabel = "Advisor LLM",
+  onOpenCopilot,
   onRoleChange,
   onOpenAgents,
   onOpenScenarios,
   onOpenSearch,
-  onOpenStudio,
-  showStudio = false,
+  showMap,
+  onToggleMap,
 }: RuntimeTopStripProps) {
   const conn = CONN[connection];
 
   return (
     <header className="runtime-top-strip" role="banner">
-      {/* Brand + breadcrumb */}
       <div className="runtime-top-strip__brand">
         <span className="runtime-top-strip__plant-label">PlantLens</span>
         <span className="runtime-top-strip__sep" aria-hidden>/</span>
@@ -67,9 +75,13 @@ export function RuntimeTopStrip({
           <span className={`status-dot ${conn.dot}`} aria-hidden />
           {connection === "live" ? "LIVE · READ-ONLY" : conn.label}
         </span>
+        <ProviderBadge
+          state={providerState}
+          label={providerLabel}
+          {...(onOpenCopilot ? { onClick: onOpenCopilot } : {})}
+        />
       </div>
 
-      {/* Compact meta row */}
       <div className="runtime-top-strip__meta">
         <MetaItem label="Mode" value={mode} />
         <MetaItem label="Source" value={dataSource} />
@@ -84,7 +96,6 @@ export function RuntimeTopStrip({
         )}
       </div>
 
-      {/* Role segmented control */}
       {onRoleChange && (
         <div className="runtime-top-strip__role-seg" role="group" aria-label="Active role">
           {ROLE_LABELS.map(({ id, label }) => (
@@ -101,37 +112,40 @@ export function RuntimeTopStrip({
         </div>
       )}
 
-      {/* Actions */}
       <div className="runtime-top-strip__actions">
-        {onOpenSearch && (
-          <button
+        {onToggleMap && (
+          <Button
             type="button"
-            className="pl-btn pl-btn--ghost pl-btn--compact command-palette-trigger"
+            variant="ghost"
+            size="sm"
+            aria-pressed={showMap}
+            title={showMap ? "Hide plant map" : "Show plant map"}
+            onClick={onToggleMap}
+          >
+            Map
+          </Button>
+        )}
+        {onOpenSearch && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="command-palette-trigger"
             title="Search assets, alarms, tags, commands (Ctrl K)"
             onClick={onOpenSearch}
           >
             Search <span className="command-palette-trigger__hint">Ctrl K</span>
-          </button>
-        )}
-        {showStudio && onOpenStudio && (
-          <button
-            type="button"
-            className="pl-btn pl-btn--ghost pl-btn--compact"
-            title="Open authored model Studio"
-            onClick={onOpenStudio}
-          >
-            Studio
-          </button>
+          </Button>
         )}
         {onOpenScenarios && (
-          <button type="button" className="pl-btn pl-btn--ghost pl-btn--compact" onClick={onOpenScenarios}>
+          <Button type="button" variant="ghost" size="sm" onClick={onOpenScenarios}>
             Scenarios
-          </button>
+          </Button>
         )}
         {onOpenAgents && (
-          <button type="button" className="pl-btn pl-btn--ghost pl-btn--compact" onClick={onOpenAgents}>
+          <Button type="button" variant="ghost" size="sm" onClick={onOpenAgents}>
             Agents
-          </button>
+          </Button>
         )}
       </div>
 

@@ -4,6 +4,7 @@
  */
 import { create } from "zustand";
 import type { CalmCard } from "../schemas/calmCard";
+import type { FaultMatrixScore } from "../schemas/faultMatrix";
 import type { PlantHMIState } from "../schemas/plantHmi";
 import type { Situation } from "../schemas/situation";
 import type { TagFrame } from "../schemas/tagFrame";
@@ -24,6 +25,7 @@ export interface RuntimeStore {
   activeAlarms: ActiveAlarm[];
   activeSituation: Situation | null;
   calmCard: CalmCard | null;
+  faultMatrixScores: FaultMatrixScore[];
   connection: WsConnectionState;
   lastSnapshotTs: string | null;
   hasSnapshot: boolean;
@@ -52,6 +54,7 @@ const INITIAL: Omit<
   activeAlarms: [],
   activeSituation: null,
   calmCard: null,
+  faultMatrixScores: [],
   connection: "disconnected",
   lastSnapshotTs: null,
   hasSnapshot: false,
@@ -87,6 +90,10 @@ export const useRuntimeStore = create<RuntimeStore>((set) => ({
       activeAlarms: snapshot.active_alarms ?? [],
       activeSituation: snapshot.active_situations?.[0] ?? null,
       calmCard: snapshot.latest_calm_card ?? null,
+      faultMatrixScores:
+        snapshot.fault_matrix_scores ??
+        snapshot.latest_evidence_packet?.fault_matrix_scores ??
+        [],
       lastSnapshotTs: ts ?? null,
       hasSnapshot: true,
     }),

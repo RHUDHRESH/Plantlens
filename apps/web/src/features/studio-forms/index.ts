@@ -5,6 +5,7 @@ export { TagForm } from "./TagForm";
 export { AlarmRuleForm } from "./AlarmRuleForm";
 export { CausalEdgeForm } from "./CausalEdgeForm";
 export { ActionEnvelopeForm } from "./ActionEnvelopeForm";
+export { FaultDefForm } from "./FaultDefForm";
 export { ValidationPanel } from "./ValidationPanel";
 export { useStudioDraftStore } from "./useStudioDraftStore";
 export { getInitialStudioDraftBundle } from "./demoBundleLoader";

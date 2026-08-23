@@ -11,6 +11,8 @@
     "test:web": "pnpm --filter @plantlens/web test",
     "oracle": "pnpm --filter @plantlens/cliffords test",
     "contracts:validate": "node scripts/validate-contracts.mjs",
+    "check:chunks": "node scripts/check-chunk-budgets.mjs",
+    "check:contracts-frontend": "node scripts/check-zod-contract-drift.mjs",
     "compose:config": "docker compose -f deploy/docker/compose.full.yml config",
     "typecheck": "pnpm -r --if-present typecheck"
   },

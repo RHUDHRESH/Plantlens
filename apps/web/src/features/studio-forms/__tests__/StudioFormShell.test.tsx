@@ -26,25 +26,26 @@ describe("StudioFormShell", () => {
     expect(screen.getByDisplayValue("Battery Bank")).toBeInTheDocument();
   });
 
-  it("shows disabled Save/Submit/Compile actions with reasons", () => {
+  it("shows local-draft note instead of dead Save/Submit chrome", () => {
     render(<StudioFormShell route={{ surface: "tag", targetId: null, mode: "inspect" }} />);
-    const save = screen.getByRole("button", { name: /Save draft/i });
-    const submit = screen.getByRole("button", { name: /Submit for approval/i });
-    const compile = screen.getByRole("button", { name: /Compile preview/i });
-    expect(save).toBeDisabled();
-    expect(submit).toBeDisabled();
-    expect(compile).toBeDisabled();
-    expect(save).toHaveAttribute("title", "Backend save is not wired in this prompt.");
-    expect(submit).toHaveAttribute("title", "Approval workflow comes after draft persistence.");
-    expect(compile).toHaveAttribute(
-      "title",
-      "Open the Compile Preview tab to generate a local read-only preview.",
-    );
+    expect(screen.getByRole("note")).toHaveTextContent(/Local draft only/i);
+    expect(screen.queryByRole("button", { name: /Save draft/i })).not.toBeInTheDocument();
   });
 
   it("renders validation panel", () => {
     render(<StudioFormShell route={{ surface: "asset", targetId: null, mode: "inspect" }} />);
     expect(screen.getByLabelText("Validation")).toBeInTheDocument();
+  });
+
+  it("routes fault matrix target", () => {
+    render(
+      <StudioFormShell
+        route={{ surface: "fault_matrix", targetId: "F_MOTOR_MECHANICAL_OVERLOAD", mode: "inspect" }}
+      />,
+    );
+    expect(screen.getByLabelText("Fault definition")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Motor Mechanical Overload")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("3-Phase Motor")).toBeInTheDocument();
   });
 
   it("has no fake success copy", () => {

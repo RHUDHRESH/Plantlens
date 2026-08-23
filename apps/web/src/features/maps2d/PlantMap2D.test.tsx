@@ -162,4 +162,19 @@ describe("PlantMap2D", () => {
     );
     expect(screen.getByLabelText(/Causal path overlay/i)).toBeInTheDocument();
   });
+
+  it("shows MapLegend alongside causal path for monitor/atlas reuse", () => {
+    render(
+      <PlantMap2D
+        nodes={NODES}
+        edges={EDGES}
+        assetStatus={HERO_MOTOR_OVERLOAD.asset_status}
+        causalPath={["MTR-301", "BUS-101", "INV-102"]}
+        reducedMotion
+        showLegend
+      />,
+    );
+    expect(screen.getByLabelText(/Map status legend/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Causal path overlay/i)).toBeInTheDocument();
+  });
 });

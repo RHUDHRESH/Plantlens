@@ -20,7 +20,12 @@ SCENARIOS = json.loads((DEMO_DIR / "scenarios.json").read_text(encoding="utf-8")
 
 
 @pytest.fixture(autouse=True)
-def reset_singletons() -> None:
+def reset_singletons(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.settings import get_settings
+
+    monkeypatch.setenv("ACTIVE_PLANT_ID", "demo_microgrid_001")
+    monkeypatch.setenv("SAMPLE_DATA_DIR", str(DEMO_DIR))
+    get_settings.cache_clear()
     reset_runtime_config_for_tests()
     reset_simulator_gateway_for_tests()
     yield
@@ -58,6 +63,11 @@ def test_pv_generation_loss_root_is_pv(gateway: SimulatorGateway):
 def test_gateway_dropout_no_root_cause(gateway: SimulatorGateway):
     state = asyncio.run(_run(gateway, "scn_gateway_dropout"))
     assert not state.active_situations
+    assert "DQ_MOTOR_301_CURRENT_STALE" in state.active_alarms
+    assert "DQ_BUS_101_V_STALE" in state.active_alarms
+    assert all(
+        a.get("alarm_class") == "data_quality" for a in state.active_alarms.values()
+    )
     assert state.asset_status.get("MTR-301") == "sensor_bad"
     assert state.asset_status.get("BUS-101") == "sensor_bad"
 

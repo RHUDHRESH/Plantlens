@@ -19,7 +19,7 @@ export function StatusChip({ variant, label, className }: StatusChipProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 h-6 px-2.5 rounded-pill text-[11px] font-semibold uppercase tracking-wide",
+        "inline-flex items-center gap-1.5 h-6 px-2.5 rounded-sm text-[11px] font-semibold uppercase tracking-wide",
         VARIANT_CLASS[variant],
         className,
       )}

@@ -2,6 +2,7 @@ import type { StudioDraftBundle } from "./studioDraftTypes";
 import actionEnvelopeData from "./demo-data/action_envelope.json";
 import alarmRulesData from "./demo-data/alarm_rules.json";
 import causalGraphData from "./demo-data/causal_graph.json";
+import faultMatrixData from "./demo-data/fault_matrix.json";
 import plantData from "./demo-data/plant.json";
 import tagMapData from "./demo-data/tag_map.json";
 
@@ -13,5 +14,6 @@ export function getInitialStudioDraftBundle(): StudioDraftBundle {
     alarm_rules: structuredClone(alarmRulesData),
     causal_graph: structuredClone(causalGraphData),
     action_envelope: structuredClone(actionEnvelopeData),
+    fault_matrix: structuredClone(faultMatrixData),
   };
 }

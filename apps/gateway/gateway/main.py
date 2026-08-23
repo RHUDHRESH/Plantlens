@@ -9,7 +9,12 @@ import signal
 import structlog
 
 from gateway.health import start_health_server
-from gateway.modbus_poller import ModbusPoller, PollDiagnostics, build_poll_plan
+from gateway.modbus_poller import (
+    ModbusPoller,
+    PollDiagnostics,
+    build_poll_plan,
+    coalesce_poll_plan,
+)
 from gateway.publish import FramePublisher
 from gateway.raw_serial_reader import RawSerialLineReader, build_line_tag_index
 from gateway.serial_client import create_client
@@ -56,7 +61,7 @@ async def main() -> None:
             await publisher.close()
         return
 
-    plan = build_poll_plan(tag_map)
+    plan = coalesce_poll_plan(build_poll_plan(tag_map))
     if not plan:
         log.warning("empty_poll_plan")
         await publisher.close()

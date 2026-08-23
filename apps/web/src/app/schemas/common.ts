@@ -8,7 +8,20 @@ export type Confidence = "low" | "medium" | "high";
 export type RiskLevel = "low" | "medium" | "high" | "unknown";
 
 export type EvidenceRole = "first_signal" | "evidence" | "consequence";
-export type AlarmOp = "<" | "<=" | ">" | ">=" | "==" | "!=" | "bool_true" | "bool_false";
+export type AlarmOp =
+  | "<"
+  | "<="
+  | ">"
+  | ">="
+  | "=="
+  | "!="
+  | "bool_true"
+  | "bool_false"
+  | "quality_stale"
+  | "quality_missing"
+  | "quality_bad"
+  | "quality_not_good";
+export type AlarmClass = "process" | "data_quality";
 
 export type ActorType = "user" | "agent" | "system";
 export type ActorRole = "operator" | "engineer" | "maintenance" | "supervisor" | "admin" | "agent";

@@ -65,17 +65,26 @@ def evaluate_situations(
     alarm_map = {alarm["alarm_id"]: alarm for alarm in active_alarms}
     state.active_alarms = alarm_map
 
+    # Data-quality alarms never seed process root-cause; only process alarms do.
+    process_alarms = [
+        alarm
+        for alarm in active_alarms
+        if alarm.get("alarm_class", "process") != "data_quality"
+    ]
+    if not process_alarms:
+        return [], None
+
     if _has_non_good_evidence(state):
         good_alarm_tags = [
             alarm
-            for alarm in active_alarms
+            for alarm in process_alarms
             if (tag := state.get_tag(alarm.get("tag_id", ""))) is not None and tag.quality == "GOOD"
         ]
         if not good_alarm_tags:
             return [], None
 
     symptom = sorted(
-        active_alarms,
+        process_alarms,
         key=lambda alarm: (_parse_ts(alarm["raised_at"]), alarm["alarm_id"]),
     )[0]
 
@@ -87,17 +96,18 @@ def evaluate_situations(
     root_candidate = next((c for c in trace.candidates if c.node_id == root_id), None)
     root_score = root_candidate.score if root_candidate else trace.confidence
 
-    alarm_ids = {alarm["alarm_id"] for alarm in active_alarms}
-    situation_spec = _match_situation_type(root_id, root_score, alarm_ids, graph_index, state)
+    # Situation matching uses process alarms only so DQ noise cannot invent a root.
+    process_alarm_ids = {alarm["alarm_id"] for alarm in process_alarms}
+    situation_spec = _match_situation_type(root_id, root_score, process_alarm_ids, graph_index, state)
     if situation_spec is None:
         return [], trace
 
     situation_type = situation_spec["id"]
-    evidence = _build_evidence(active_alarms, situation_spec.get("evidence_order"))
+    evidence = _build_evidence(process_alarms, situation_spec.get("evidence_order"))
     affected_assets = sorted(
-        {alarm["asset_id"] for alarm in active_alarms if alarm.get("asset_id")}
+        {alarm["asset_id"] for alarm in process_alarms if alarm.get("asset_id")}
     )
-    causal_path = _build_causal_path(root_id, graph_index, active_alarms, situation_spec)
+    causal_path = _build_causal_path(root_id, graph_index, process_alarms, situation_spec)
 
     created_at = now or datetime.now(timezone.utc)
     if created_at.tzinfo is None:
@@ -111,14 +121,14 @@ def evaluate_situations(
         "situation_id": f"SIT_{situation_type}",
         "situation_type": situation_type,
         "title": situation_spec.get("title", situation_type.replace("_", " ").title()),
-        "severity": _worst_severity(active_alarms),
+        "severity": _worst_severity(process_alarms),
         "root_asset_id": root_id,
         "root_asset_name": root_name,
         "confidence": _confidence_bucket(root_score),
         "confidence_score": root_score,
         "confidence_reason": trace.confidence_reason,
         "created_at": created_at.isoformat().replace("+00:00", "Z"),
-        "grouped_alarm_ids": sorted(alarm_ids),
+        "grouped_alarm_ids": sorted(process_alarm_ids),
         "affected_asset_ids": affected_assets,
         "causal_path": causal_path,
         "traversed_edges": list(root_candidate.traversed_edges) if root_candidate else [],

@@ -11,6 +11,7 @@ import {
   verificationPillClass,
   verifyLiveTag,
 } from "./liveVerification";
+import { REGISTER_BIBLE_ENTRIES } from "./registerBible";
 import type { Binding, ConnectionFormState, DataQuality, ScanRequest, ScanRow } from "./types";
 import { useConnectionPanel } from "./useConnectionPanel";
 
@@ -420,6 +421,34 @@ export function ConnectionScreen({
               screen. Trips and protection stay on the controller. Binding commits update PlantLens
               model files, not control hardware.
             </p>
+          </Card>
+
+          <Card title="Register Bible (21 signals)">
+            <p className="text-xs text-ink-500 leading-relaxed mb-2">
+              Static map from docs/REGISTER_BIBLE — reference when live health is unavailable.
+            </p>
+            <div className="max-h-48 overflow-auto border border-line rounded">
+              <table className="w-full text-[11px] border-collapse">
+                <thead className="sticky top-0 bg-surface-sunken">
+                  <tr className="text-left text-ink-500 border-b border-line">
+                    <th className="p-1 font-medium">#</th>
+                    <th className="p-1 font-medium">Tag</th>
+                    <th className="p-1 font-medium">Addr</th>
+                    <th className="p-1 font-medium">Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {REGISTER_BIBLE_ENTRIES.map((entry) => (
+                    <tr key={entry.tagId} className="border-b border-line">
+                      <td className="p-1 font-mono tabular-nums text-ink-500">{entry.index}</td>
+                      <td className="p-1 font-mono tabular-nums text-ink-900">{entry.tagId}</td>
+                      <td className="p-1 font-mono tabular-nums">{entry.address}</td>
+                      <td className="p-1 font-mono">{entry.dataType}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </Card>
 
           <Card title="Demo flow">

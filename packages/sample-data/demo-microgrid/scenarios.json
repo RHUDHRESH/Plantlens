@@ -41,11 +41,11 @@
     {
       "id": "scn_sensor_stale_no_root",
       "name": "Stale Sensor — No Root Cause",
-      "description": "Only stale/BAD sensor data. Runtime must mark sensor_bad and must NOT infer a process root cause.",
+      "description": "Only stale/BAD sensor data. Runtime must raise DQ alarm, mark sensor_bad, and must NOT infer a process root cause.",
       "duration_ms": 8000,
       "expected_situation": null,
       "expected_root_cause": null,
-      "expected_alarms": [],
+      "expected_alarms": ["DQ_MOTOR_301_CURRENT_STALE"],
       "events": [
         { "at_ms": 0, "action": "set", "tag": "MOTOR_301_CURRENT", "asset_id": "MTR-301", "value": 1.2, "unit": "A" },
         { "at_ms": 3000, "action": "fault", "tag": "MOTOR_301_CURRENT", "asset_id": "MTR-301", "fault": { "type": "stale" }, "quality": "STALE" }
@@ -75,11 +75,11 @@
     {
       "id": "scn_gateway_dropout",
       "name": "Gateway Dropout",
-      "description": "Multiple tags go STALE/MISSING as if the gateway stopped responding. Mark sensor_bad/offline — do not infer process root cause.",
+      "description": "Multiple tags go STALE/MISSING as if the gateway stopped responding. Raise DQ alarms, mark sensor_bad/offline — do not infer process root cause.",
       "duration_ms": 10000,
       "expected_situation": null,
       "expected_root_cause": null,
-      "expected_alarms": [],
+      "expected_alarms": ["DQ_MOTOR_301_CURRENT_STALE", "DQ_BUS_101_V_STALE"],
       "events": [
         { "at_ms": 0, "action": "set", "tag": "MOTOR_301_CURRENT", "asset_id": "MTR-301", "value": 3.4, "unit": "A" },
         { "at_ms": 0, "action": "set", "tag": "MOTOR_301_RPM", "asset_id": "MTR-301", "value": 760, "unit": "rpm" },

@@ -1,0 +1,93 @@
+{
+  "version": "1.0.0",
+  "matrix_id": "demo_microgrid_faults",
+  "faults": [
+    {
+      "id": "F_MOTOR_MECHANICAL_OVERLOAD",
+      "name": "Motor Mechanical Overload",
+      "description": "VFD/motor current high with speed drop and downstream DC bus sag — mechanical overload (jammed load, bearing drag) rather than source weakness.",
+      "asset_id": "MTR-301",
+      "situation_type": "MOTOR_MECHANICAL_OVERLOAD",
+      "safe_action_id": "REQUEST_SAFE_STOP_MOTOR",
+      "symptoms": [
+        { "tag_id": "MOTOR_301_CURRENT", "expected_direction": "HIGH", "weight": 1.0, "required": true },
+        { "tag_id": "MOTOR_301_RPM", "expected_direction": "LOW", "weight": 0.8, "required": true },
+        { "tag_id": "BUS_101_V", "expected_direction": "LOW", "weight": 0.7, "required": false },
+        { "tag_id": "INV_102_UNDERVOLTAGE", "expected_direction": "TRUE", "weight": 0.5, "required": false },
+        { "tag_id": "MOTOR_301_TEMP", "expected_direction": "RISING", "weight": 0.4, "required": false }
+      ]
+    },
+    {
+      "id": "F_MOTOR_OVERHEAT",
+      "name": "Motor Overheat",
+      "description": "Motor winding temperature above safe limit. Possible overload, blocked ventilation, or bearing fault.",
+      "asset_id": "MTR-301",
+      "safe_action_id": "REQUEST_SAFE_STOP_MOTOR",
+      "symptoms": [
+        { "tag_id": "MOTOR_301_TEMP", "expected_direction": "HIGH", "weight": 1.0, "required": true },
+        { "tag_id": "MOTOR_301_CURRENT", "expected_direction": "HIGH", "weight": 0.6, "required": false },
+        { "tag_id": "VIB_TEMP", "expected_direction": "HIGH", "weight": 0.5, "required": false }
+      ]
+    },
+    {
+      "id": "F_MOTOR_BEARING_FAULT",
+      "name": "Motor Bearing Fault",
+      "description": "Elevated multi-axis vibration indicates bearing wear or imbalance. Schedule inspection before failure.",
+      "asset_id": "MTR-301",
+      "safe_action_id": "INSPECT_SHAFT_LOAD",
+      "symptoms": [
+        { "tag_id": "VIB_X", "expected_direction": "HIGH", "weight": 0.9, "required": false },
+        { "tag_id": "VIB_Y", "expected_direction": "HIGH", "weight": 0.9, "required": false },
+        { "tag_id": "VIB_Z", "expected_direction": "HIGH", "weight": 0.9, "required": false },
+        { "tag_id": "MOTOR_301_VIB", "expected_direction": "HIGH", "weight": 1.0, "required": true },
+        { "tag_id": "VIB_TEMP", "expected_direction": "HIGH", "weight": 0.7, "required": false }
+      ]
+    },
+    {
+      "id": "F_BATTERY_DEEP_DISCHARGE",
+      "name": "Battery Deep Discharge",
+      "description": "Battery bank voltage critically low. Risk of cell damage and load shedding.",
+      "asset_id": "BAT-101",
+      "safe_action_id": "VERIFY_DC_BUS_INPUT",
+      "symptoms": [
+        { "tag_id": "BAT_101_V", "expected_direction": "LOW", "weight": 1.0, "required": true },
+        { "tag_id": "BAT_101_I", "expected_direction": "LOW", "weight": 0.7, "required": false },
+        { "tag_id": "BUS_101_V", "expected_direction": "LOW", "weight": 0.6, "required": false }
+      ]
+    },
+    {
+      "id": "F_BATTERY_OVERCHARGE",
+      "name": "Battery Overcharge Risk",
+      "description": "Battery voltage approaching upper limit. Charge path may be malfunctioning.",
+      "asset_id": "BAT-101",
+      "symptoms": [
+        { "tag_id": "BAT_101_V", "expected_direction": "HIGH", "weight": 1.0, "required": true },
+        { "tag_id": "BAT_101_I", "expected_direction": "HIGH", "weight": 0.8, "required": false },
+        { "tag_id": "PV_101_W", "expected_direction": "HIGH", "weight": 0.5, "required": false }
+      ]
+    },
+    {
+      "id": "F_GRID_UNDERVOLTAGE",
+      "name": "Grid Undervoltage / Sag",
+      "description": "Mains voltage below minimum operating threshold.",
+      "asset_id": "BUS-101",
+      "safe_action_id": "VERIFY_DC_BUS_INPUT",
+      "symptoms": [
+        { "tag_id": "MAINS_V", "expected_direction": "LOW", "weight": 1.0, "required": true },
+        { "tag_id": "MAINS_I", "expected_direction": "RISING", "weight": 0.5, "required": false },
+        { "tag_id": "BAT_101_I", "expected_direction": "LOW", "weight": 0.6, "required": false }
+      ]
+    },
+    {
+      "id": "F_INVERTER_OVERLOAD",
+      "name": "Inverter Overload",
+      "description": "Inverter output current/power exceeding rated capacity.",
+      "asset_id": "INV-102",
+      "symptoms": [
+        { "tag_id": "INV_102_W", "expected_direction": "HIGH", "weight": 1.0, "required": true },
+        { "tag_id": "INV_102_I", "expected_direction": "HIGH", "weight": 0.9, "required": false },
+        { "tag_id": "INV_102_V", "expected_direction": "LOW", "weight": 0.5, "required": false }
+      ]
+    }
+  ]
+}

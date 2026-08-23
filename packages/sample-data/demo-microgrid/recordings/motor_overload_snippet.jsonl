@@ -1,0 +1,6 @@
+{"tag_id":"MOTOR_301_CURRENT","asset_id":"MTR-301","value":1.2,"unit":"A","quality":"GOOD","timestamp":"2026-01-01T10:00:00Z","source":"simulator","seq":1,"scenario_id":"scn_motor_overload"}
+{"tag_id":"MOTOR_301_RPM","asset_id":"MTR-301","value":1450,"unit":"rpm","quality":"GOOD","timestamp":"2026-01-01T10:00:00Z","source":"simulator","seq":2,"scenario_id":"scn_motor_overload"}
+{"tag_id":"BUS_101_V","asset_id":"BUS-101","value":48.0,"unit":"V","quality":"GOOD","timestamp":"2026-01-01T10:00:00Z","source":"simulator","seq":3,"scenario_id":"scn_motor_overload"}
+{"tag_id":"MOTOR_301_CURRENT","asset_id":"MTR-301","value":3.4,"unit":"A","quality":"GOOD","timestamp":"2026-01-01T10:00:02Z","source":"simulator","seq":4,"scenario_id":"scn_motor_overload"}
+{"tag_id":"MOTOR_301_RPM","asset_id":"MTR-301","value":760,"unit":"rpm","quality":"GOOD","timestamp":"2026-01-01T10:00:04Z","source":"simulator","seq":5,"scenario_id":"scn_motor_overload"}
+{"tag_id":"BUS_101_V","asset_id":"BUS-101","value":40.5,"unit":"V","quality":"GOOD","timestamp":"2026-01-01T10:00:06Z","source":"simulator","seq":6,"scenario_id":"scn_motor_overload"}

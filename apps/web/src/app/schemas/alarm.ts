@@ -1,6 +1,6 @@
 /** Mirror of packages/contracts/alarm_rules.schema.json */
 
-import type { AlarmOp, Severity } from "./common";
+import type { AlarmClass, AlarmOp, Severity } from "./common";
 
 export interface AlarmCondition {
   op: AlarmOp;
@@ -17,6 +17,7 @@ export interface AlarmRule {
   condition: AlarmCondition;
   message: string;
   asset_id?: string;
+  alarm_class?: AlarmClass;
   priority?: number;
   deadband?: number;
   delay_ms?: number;

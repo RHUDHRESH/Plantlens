@@ -1,0 +1,339 @@
+{
+  "version": 1,
+  "graph_id": "bench_rig_graph_001",
+  "nodes": [
+    {
+      "id": "PV-SRC",
+      "kind": "asset",
+      "evidence_tags": ["M1_PV_V"],
+      "label": "48 V DC Source / PV"
+    },
+    {
+      "id": "ISO-PV",
+      "kind": "asset",
+      "evidence_tags": [],
+      "label": "PV Isolator (NH4-125)"
+    },
+    {
+      "id": "M1",
+      "kind": "asset",
+      "evidence_tags": ["M1_PV_V", "M1_PV_I", "M1_PV_P"],
+      "label": "M1 (PV input meter)"
+    },
+    {
+      "id": "DCDC",
+      "kind": "asset",
+      "evidence_tags": [],
+      "label": "DC-DC Converter"
+    },
+    {
+      "id": "DCBUS",
+      "kind": "asset",
+      "evidence_tags": ["DCBUS_V"],
+      "label": "DC Bus"
+    },
+    {
+      "id": "GRID",
+      "kind": "asset",
+      "evidence_tags": ["M2_GRID_V"],
+      "label": "230 V AC Grid"
+    },
+    {
+      "id": "SW-GRID",
+      "kind": "asset",
+      "evidence_tags": [],
+      "label": "Grid Switching Stage"
+    },
+    {
+      "id": "M2",
+      "kind": "asset",
+      "evidence_tags": ["M2_GRID_V", "M2_GRID_I", "M2_GRID_P", "M2_GRID_HZ"],
+      "label": "M2 (Grid input meter)"
+    },
+    {
+      "id": "BAT",
+      "kind": "asset",
+      "evidence_tags": ["BAT_V"],
+      "label": "Battery"
+    },
+    {
+      "id": "ISO-BAT",
+      "kind": "asset",
+      "evidence_tags": [],
+      "label": "Battery Isolator"
+    },
+    {
+      "id": "INV",
+      "kind": "asset",
+      "evidence_tags": ["M4_INV_V"],
+      "label": "DC-AC Inverter"
+    },
+    {
+      "id": "M4",
+      "kind": "asset",
+      "evidence_tags": ["M4_INV_V", "M4_INV_I", "M4_INV_P", "M4_INV_HZ"],
+      "label": "M4 (Inverter output meter)"
+    },
+    {
+      "id": "VFD",
+      "kind": "asset",
+      "evidence_tags": ["VFD_OUT_HZ"],
+      "label": "VFD (Variable Frequency Drive)"
+    },
+    {
+      "id": "CT-MOTOR",
+      "kind": "asset",
+      "evidence_tags": [],
+      "label": "Motor current transformer"
+    },
+    {
+      "id": "MOTOR",
+      "kind": "asset",
+      "evidence_tags": ["MOTOR_I", "MOTOR_RPM"],
+      "label": "3-Phase AC Motor"
+    }
+  ],
+  "edges": [
+    {
+      "id": "E1",
+      "from": "PV-SRC",
+      "to": "ISO-PV",
+      "edge_type": "structural_power",
+      "approved": true,
+      "lag_ms": [0, 1500],
+      "weight": 1.0,
+      "confidence": 1.0,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E2",
+      "from": "ISO-PV",
+      "to": "M1",
+      "edge_type": "structural_power",
+      "approved": true,
+      "lag_ms": [0, 1500],
+      "weight": 1.0,
+      "confidence": 1.0,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E3",
+      "from": "M1",
+      "to": "DCDC",
+      "edge_type": "structural_power",
+      "approved": true,
+      "lag_ms": [0, 1500],
+      "weight": 1.0,
+      "confidence": 1.0,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E4",
+      "from": "DCDC",
+      "to": "DCBUS",
+      "edge_type": "structural_power",
+      "approved": true,
+      "lag_ms": [0, 1500],
+      "weight": 1.0,
+      "confidence": 1.0,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E5",
+      "from": "GRID",
+      "to": "SW-GRID",
+      "edge_type": "structural_power",
+      "approved": true,
+      "lag_ms": [0, 1500],
+      "weight": 1.0,
+      "confidence": 1.0,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E6",
+      "from": "SW-GRID",
+      "to": "M2",
+      "edge_type": "structural_power",
+      "approved": true,
+      "lag_ms": [0, 1500],
+      "weight": 1.0,
+      "confidence": 1.0,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E7",
+      "from": "BAT",
+      "to": "ISO-BAT",
+      "edge_type": "structural_power",
+      "approved": true,
+      "lag_ms": [0, 1500],
+      "weight": 1.0,
+      "confidence": 1.0,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E8",
+      "from": "ISO-BAT",
+      "to": "INV",
+      "edge_type": "structural_power",
+      "approved": true,
+      "lag_ms": [0, 1500],
+      "weight": 1.0,
+      "confidence": 1.0,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E9",
+      "from": "INV",
+      "to": "M4",
+      "edge_type": "structural_power",
+      "approved": true,
+      "lag_ms": [0, 1500],
+      "weight": 1.0,
+      "confidence": 1.0,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E10",
+      "from": "M4",
+      "to": "VFD",
+      "edge_type": "structural_power",
+      "approved": true,
+      "lag_ms": [0, 1500],
+      "weight": 1.0,
+      "confidence": 1.0,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E11",
+      "from": "VFD",
+      "to": "CT-MOTOR",
+      "edge_type": "structural_power",
+      "approved": true,
+      "lag_ms": [0, 1500],
+      "weight": 1.0,
+      "confidence": 1.0,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E12",
+      "from": "CT-MOTOR",
+      "to": "MOTOR",
+      "edge_type": "structural_power",
+      "approved": true,
+      "lag_ms": [0, 1500],
+      "weight": 1.0,
+      "confidence": 1.0,
+      "provenance": "engineer_entered"
+    }
+  ],
+  "root_cause_rules": [
+    {
+      "target_node": "PV-SRC",
+      "logic": "pv_voltage_low",
+      "conditions": [
+        {
+          "type": "alarms_all",
+          "alarm_ids": ["PV_VOLTAGE_LOW"]
+        }
+      ],
+      "score_bonus": 0.5
+    },
+    {
+      "target_node": "DCDC",
+      "logic": "dc_bus_low",
+      "conditions": [
+        {
+          "type": "alarms_all",
+          "alarm_ids": ["DC_BUS_LOW"]
+        }
+      ],
+      "score_bonus": 0.5
+    },
+    {
+      "target_node": "GRID",
+      "logic": "grid_undervoltage",
+      "conditions": [
+        {
+          "type": "alarms_all",
+          "alarm_ids": ["GRID_UNDERVOLTAGE_ALM"]
+        }
+      ],
+      "score_bonus": 0.5
+    },
+    {
+      "target_node": "INV",
+      "logic": "inverter_output_low",
+      "conditions": [
+        {
+          "type": "alarms_all",
+          "alarm_ids": ["INV_OUTPUT_LOW"]
+        }
+      ],
+      "score_bonus": 0.5
+    },
+    {
+      "target_node": "MOTOR",
+      "logic": "motor_current_high",
+      "conditions": [
+        {
+          "type": "alarms_all",
+          "alarm_ids": ["MOTOR_CURRENT_HIGH"]
+        }
+      ],
+      "score_bonus": 0.5
+    }
+  ],
+  "situation_types": [
+    {
+      "id": "PV_SOURCE_LOW_VOLTAGE",
+      "title": "PV / Source Low Voltage",
+      "root_asset_id": "PV-SRC",
+      "required_alarms": ["PV_VOLTAGE_LOW"],
+      "require_all_alarms": true,
+      "evidence_order": ["PV_VOLTAGE_LOW", "PV_POWER_LOW", "DC_BUS_LOW"],
+      "min_root_score": 0.1,
+      "why_it_matters": "The 48 V source/PV branch is sagging. Check the DC source, the NH4-125 isolator, and M1 readings before suspecting downstream."
+    },
+    {
+      "id": "DC_DC_CONVERTER_ABNORMAL",
+      "title": "DC-DC Converter Abnormal",
+      "root_asset_id": "DCDC",
+      "required_alarms": ["DC_BUS_LOW"],
+      "require_all_alarms": true,
+      "evidence_order": ["DC_BUS_LOW", "PV_VOLTAGE_LOW"],
+      "min_root_score": 0.1,
+      "why_it_matters": "DC bus is low while PV input may be present — the DC-DC converter is the prime suspect. Converter specs are UNKNOWN and need verification."
+    },
+    {
+      "id": "GRID_UNDERVOLTAGE",
+      "title": "Grid Undervoltage",
+      "root_asset_id": "GRID",
+      "required_alarms": ["GRID_UNDERVOLTAGE_ALM"],
+      "require_all_alarms": true,
+      "evidence_order": ["GRID_UNDERVOLTAGE_ALM"],
+      "min_root_score": 0.1,
+      "why_it_matters": "230 V mains is below band. Verify the supply and the grid branch switching stage; do not blame the motor."
+    },
+    {
+      "id": "INVERTER_OUTPUT_ABNORMAL",
+      "title": "Inverter Output Abnormal",
+      "root_asset_id": "INV",
+      "required_alarms": ["INV_OUTPUT_LOW"],
+      "require_all_alarms": true,
+      "evidence_order": ["INV_OUTPUT_LOW", "BATTERY_LOW"],
+      "min_root_score": 0.1,
+      "why_it_matters": "Inverter output is low. If the battery is normal, the DC-AC inverter is suspect. Inverter ratings are UNKNOWN and need verification."
+    },
+    {
+      "id": "MOTOR_OVERLOAD",
+      "title": "Motor Overload",
+      "root_asset_id": "MOTOR",
+      "required_alarms": ["MOTOR_CURRENT_HIGH"],
+      "require_all_alarms": true,
+      "evidence_order": ["MOTOR_CURRENT_HIGH"],
+      "min_root_score": 0.1,
+      "why_it_matters": "Motor is drawing high current. Inspect mechanical load/coupling. A grid or source issue is not the first suspect when current rose at the motor."
+    }
+  ]
+}

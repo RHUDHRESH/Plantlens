@@ -3,26 +3,41 @@
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
 
 from app.auth.dependencies import require_engineer
 from app.auth.principal import Principal
+from app.runtime.simulator.recorded_playback import (
+    replay_recording,
+    resolve_recording_path,
+)
 from app.runtime.simulator.scenario_runner import (
     InvalidScenarioDataError,
     ScenarioNotFoundError,
     load_scenarios,
 )
 from app.runtime.simulator.simulator_gateway import get_simulator_gateway
-from app.settings import get_settings
+from app.settings import Settings, get_settings
 
 router = APIRouter(prefix="/api/scenarios", tags=["simulator"])
 
 
-def _scenarios_path() -> Path:
-    settings = get_settings()
-    bundle_dir = Path(settings.sample_data_dir)
+class PlaybackRequest(BaseModel):
+    recording_id: str = Field(..., min_length=1, max_length=200)
+    realtime: bool = False
+    reset: bool = True
+
+
+def _bundle_dir(settings: Settings | None = None) -> Path:
+    cfg = settings or get_settings()
+    bundle_dir = Path(cfg.sample_data_dir)
     if not bundle_dir.is_absolute():
-        bundle_dir = Path(__file__).resolve().parents[2] / settings.sample_data_dir
-    return bundle_dir / "scenarios.json"
+        bundle_dir = Path(__file__).resolve().parents[2] / cfg.sample_data_dir
+    return bundle_dir
+
+
+def _scenarios_path() -> Path:
+    return _bundle_dir() / "scenarios.json"
 
 
 @router.get("")
@@ -73,3 +88,45 @@ async def stop_scenario(
 ) -> dict[str, str]:
     await get_simulator_gateway().stop()
     return {"status": "stopped"}
+
+
+@router.post("/playback")
+async def playback_recording(
+    body: PlaybackRequest,
+    _principal: Principal = Depends(require_engineer),
+    settings: Settings = Depends(get_settings),
+) -> dict:
+    """Replay a recorded TagFrame JSONL into SimulatorGateway.on_frame."""
+    gateway = get_simulator_gateway()
+    try:
+        path = resolve_recording_path(_bundle_dir(settings), body.recording_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={"code": "RECORDING_NOT_FOUND", "message": str(exc)},
+        ) from exc
+
+    if body.reset:
+        gateway._state.reset()  # noqa: SLF001 — demo control surface
+        from app.runtime.alarm_engine import reset_alarm_engine_state
+        from app.runtime.projection import reset_projection_history
+        from app.runtime.situation_audit import reset_situation_audit_for_tests
+
+        reset_alarm_engine_state()
+        reset_projection_history()
+        reset_situation_audit_for_tests()
+
+    result = await replay_recording(
+        path,
+        gateway.on_frame,
+        realtime=body.realtime,
+    )
+    await gateway._finalize_tick()  # noqa: SLF001 — match scenario start finalize
+    snapshot = gateway._state.snapshot()  # noqa: SLF001
+    return {
+        "status": "played",
+        **result,
+        "active_situation_ids": [
+            s.get("situation_id") for s in snapshot.get("active_situations", [])
+        ],
+    }

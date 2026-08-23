@@ -1,15 +1,16 @@
-/* PlantLens design tokens — Uber-clean × ISA-101 (source: packages/ui-tokens/tokens.json) */
+/* PlantLens design tokens — Control Room Craft × ISA-101 (source: packages/ui-tokens/tokens.json) */
 :root {
-  /* 2.1 Neutrals — the 90% */
-  --ink-900: #16191C;
+  /* 2.1 Neutrals — cool graphite field (90%) */
+  --ink-900: #14171A;
   --ink-700: #3C4248;
-  --ink-500: #687077;
+  --ink-500: #5A6168;
   --ink-300: #A6ADB4;
-  --line: #E4E7EA;
-  --line-strong: #CDD2D7;
-  --surface: #FFFFFF;
-  --surface-sunken: #F0F2F4;
-  --canvas: #F6F7F8;
+  --line: #D5D9DE;
+  --line-strong: #C0C5CC;
+  --surface: #FAFBFC;
+  --surface-raised: #F4F5F7;
+  --surface-sunken: #DEE1E5;
+  --canvas: #E8EAED;
   --inverse: #FFFFFF;
 
   /* 2.2 Accent — interactive ONLY */
@@ -27,6 +28,16 @@
   --critical-tint: #FBE9E7;
   --healthy: #1F8A4C;
 
+  /* shadcn Sidebar — PlantLens mapped */
+  --sidebar: #F4F5F7;
+  --sidebar-foreground: #14171A;
+  --sidebar-primary: #2563EB;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #EAF1FE;
+  --sidebar-accent-foreground: #1D4FD7;
+  --sidebar-border: #D5D9DE;
+  --sidebar-ring: #2563EB;
+
   /* Legacy aliases — keep existing CSS working during migration */
   --bg: var(--canvas);
   --text: var(--ink-900);
@@ -36,7 +47,6 @@
   --border-subtle: var(--line);
   --surface-muted: var(--surface-sunken);
   --surface-elevated: var(--surface);
-  --surface-raised: var(--surface);
   --grid: var(--line-strong);
   --accent-dim: var(--accent-tint);
   --accent-hover: var(--accent-press);
@@ -68,12 +78,12 @@
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-pill: 999px;
-  --radius: var(--radius-lg);
+  --radius: var(--radius-md);
   --radius-dialog: var(--radius-lg);
 
-  --shadow-e1: 0 1px 2px rgba(22, 25, 28, 0.06), 0 2px 6px rgba(22, 25, 28, 0.06);
-  --shadow-e2: 0 8px 24px rgba(22, 25, 28, 0.12);
-  --shadow-e3: 0 16px 48px rgba(22, 25, 28, 0.18);
+  --shadow-e1: 0 1px 2px rgba(20, 23, 26, 0.06), 0 2px 6px rgba(20, 23, 26, 0.06);
+  --shadow-e2: 0 8px 24px rgba(20, 23, 26, 0.12);
+  --shadow-e3: 0 16px 48px rgba(20, 23, 26, 0.18);
   --shadow-sm: var(--shadow-e1);
   --shadow-md: var(--shadow-e2);
 
@@ -90,11 +100,15 @@
   --z-toolbar: var(--z-sidebar);
   --z-overlay: var(--z-modal);
 
-  /* 3. Typography */
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  /* 3. Typography — industrial HMI (IBM Plex); tabular data face */
+  --font-sans: "IBM Plex Sans", "Source Sans 3", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace, monospace;
   --font-ui: var(--font-sans);
   --font-data: var(--font-mono);
+
+  /* Density (set data-density on .runtime-hmi) */
+  --density-pad: 12px;
+  --density-gap: 12px;
 
   --type-display-size: 28px;
   --type-display-lh: 34px;
@@ -127,7 +141,9 @@
   /* 7. Layout shell */
   --sidebar-rail: 64px;
   --sidebar-expanded: 240px;
-  --top-bar: 56px;
+  --sidebar-width: 16rem;
+  --sidebar-width-icon: 64px;
+  --top-bar: 48px;
   --context-panel: 360px;
   --status-strip: 48px;
   --content-gutter: 24px;
@@ -141,16 +157,23 @@
   --map-edge-highlight: var(--accent);
   --map-label-bg: var(--surface);
   --map-label-text: var(--ink-700);
-  --map-scrim: rgba(22, 25, 28, 0.45);
+  --map-scrim: rgba(20, 23, 26, 0.45);
 }
 
-/* Operator runtime — same light tokens; map is full-bleed hero */
+/* Operator runtime — matrix-hero Monitor; map secondary */
 .runtime-hmi,
 .operator-shell {
   --bg: var(--canvas);
   --surface: var(--surface);
   --surface-elevated: var(--surface);
   --border: var(--line);
+}
+
+.runtime-hmi[data-density="compact"] {
+  --density-pad: 8px;
+  --density-gap: 8px;
+  --type-body-size: 13px;
+  --type-body-lh: 18px;
 }
 
 @media (prefers-reduced-motion: reduce) {

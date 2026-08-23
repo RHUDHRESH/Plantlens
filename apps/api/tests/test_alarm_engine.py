@@ -69,7 +69,30 @@ def test_stale_tag_does_not_raise_process_alarm(rules: list[AlarmRule]):
     state = RuntimeState()
     state.update_tag(_frame("MOTOR_301_CURRENT", 99.0, quality="STALE"))
     alarms = evaluate_alarms(state, rules, TS)
-    assert "MOTOR_CURRENT_HIGH" not in {alarm["alarm_id"] for alarm in alarms}
+    alarm_ids = {alarm["alarm_id"] for alarm in alarms}
+    assert "MOTOR_CURRENT_HIGH" not in alarm_ids
+    assert "DQ_MOTOR_301_CURRENT_STALE" in alarm_ids
+    dq = next(a for a in alarms if a["alarm_id"] == "DQ_MOTOR_301_CURRENT_STALE")
+    assert dq["alarm_class"] == "data_quality"
+    assert dq["severity"] == "info"
+
+
+def test_missing_tag_raises_data_quality_alarm_only(rules: list[AlarmRule]):
+    state = RuntimeState()
+    state.update_tag(_frame("BUS_101_V", None, quality="MISSING"))
+    alarms = evaluate_alarms(state, rules, TS)
+    alarm_ids = {alarm["alarm_id"] for alarm in alarms}
+    assert "DC_BUS_LOW" not in alarm_ids
+    assert "DQ_BUS_101_V_MISSING" in alarm_ids
+    assert all(a.get("alarm_class") == "data_quality" for a in alarms)
+
+
+def test_good_quality_does_not_raise_dq_alarms(rules: list[AlarmRule]):
+    state = RuntimeState()
+    state.update_tag(_frame("MOTOR_301_CURRENT", 1.2, quality="GOOD"))
+    state.update_tag(_frame("BUS_101_V", 48.0, quality="GOOD"))
+    alarms = evaluate_alarms(state, rules, TS)
+    assert not any(a["alarm_id"].startswith("DQ_") for a in alarms)
 
 
 def test_debounce_blocks_one_frame_spike(rules: list[AlarmRule]):

@@ -101,9 +101,14 @@ def test_demo_alarm_rules_validate():
     data = json.loads(DEMO_ALARM_RULES.read_text(encoding="utf-8"))
     bundle = AlarmRules.model_validate(data)
     assert bundle.version == "1.0.0"
-    assert len(bundle.rules) == 6
-    severities = {rule.severity for rule in bundle.rules}
-    assert severities == {"warning", "critical"}
+    assert len(bundle.rules) == 10
+    process = [r for r in bundle.rules if r.alarm_class == "process"]
+    dq = [r for r in bundle.rules if r.alarm_class == "data_quality"]
+    assert len(process) == 6
+    assert len(dq) == 4
+    assert {r.severity for r in process} == {"warning", "critical"}
+    assert {r.severity for r in dq} == {"info"}
+    assert {r.condition.op for r in dq} <= {"quality_stale", "quality_missing", "quality_bad", "quality_not_good"}
     for rule in bundle.rules:
         AlarmRule.model_validate(rule.model_dump())
 

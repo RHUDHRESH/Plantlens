@@ -1,4 +1,11 @@
 import { useEffect, type ReactNode } from "react";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "../ui/sheet";
 
 interface DrawerProps {
   title: string;
@@ -9,6 +16,7 @@ interface DrawerProps {
   ariaLabel?: string;
 }
 
+/** Asset/context drawer — Sheet with focus trap + Escape (Radix). */
 export function Drawer({ title, subtitle, open, onClose, children, ariaLabel }: DrawerProps) {
   useEffect(() => {
     if (!open) return;
@@ -19,23 +27,24 @@ export function Drawer({ title, subtitle, open, onClose, children, ariaLabel }: 
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  if (!open) return null;
-
   return (
-    <>
-      <div className="pl-drawer__backdrop" onClick={onClose} aria-hidden />
-      <aside className="pl-drawer" role="dialog" aria-label={ariaLabel ?? title}>
-        <div className="pl-drawer__header">
-          <div>
-            <h2 style={{ margin: 0, fontSize: 16 }}>{title}</h2>
-            {subtitle && <p style={{ margin: "4px 0 0", fontSize: 12, color: "var(--text-muted)" }}>{subtitle}</p>}
-          </div>
-          <button type="button" className="pl-btn pl-btn--ghost pl-btn--compact" onClick={onClose} aria-label="Close drawer">
-            Close
-          </button>
-        </div>
-        <div className="pl-drawer__body">{children}</div>
-      </aside>
-    </>
+    <Sheet
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+    >
+      <SheetContent
+        side="right"
+        className="w-full sm:max-w-[var(--context-panel)] overflow-y-auto"
+        aria-label={ariaLabel ?? title}
+      >
+        <SheetHeader>
+          <SheetTitle>{title}</SheetTitle>
+          {subtitle ? <SheetDescription>{subtitle}</SheetDescription> : null}
+        </SheetHeader>
+        <div className="mt-4 flex flex-col gap-3">{children}</div>
+      </SheetContent>
+    </Sheet>
   );
 }

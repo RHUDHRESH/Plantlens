@@ -140,8 +140,8 @@ describe("ConnectionScreen", () => {
     await screen.findByText("Connection / Commissioning");
     fireEvent.click(screen.getAllByRole("button", { name: "Scan" })[0]!);
     await waitFor(() => {
-      const table = screen.getByRole("table");
-      const row = within(table).getByText("modbus:slave1:ireg:4").closest("tr")!;
+      const addr = screen.getByText("modbus:slave1:ireg:4");
+      const row = addr.closest("tr")!;
       expect(within(row).getAllByText("—").length).toBeGreaterThan(0);
       expect(within(row).queryByText(/^0$/)).not.toBeInTheDocument();
     });

@@ -1,4 +1,12 @@
-"""OTEL spans and Prometheus metrics — optional observability extras."""
+"""OTEL spans and Prometheus metrics — optional observability extras.
+
+Hooks (safe no-ops when prometheus_client is missing):
+  record_ingest_frame / record_ws_broadcast
+  record_tick_error / record_situation_created / record_llm_fallback
+
+init_observability(otlp_endpoint="") is a no-op when the endpoint is unset
+or OpenTelemetry packages are unavailable — lifespan must never crash on that.
+"""
 
 from __future__ import annotations
 
@@ -12,19 +20,33 @@ try:
     INGEST_FRAMES = Counter("plantlens_ingest_frames_total", "TagFrames accepted via ingest")
     WS_BROADCASTS = Counter("plantlens_ws_broadcasts_total", "WebSocket broadcast messages")
     INGEST_LATENCY = Histogram("plantlens_ingest_latency_seconds", "Ingest frame processing latency")
+    TICK_ERRORS = Counter("plantlens_tick_errors_total", "Runtime / simulator tick failures")
+    SITUATIONS_CREATED = Counter(
+        "plantlens_situations_created_total",
+        "New Situation records created by runtime_tick",
+    )
+    LLM_FALLBACK = Counter(
+        "plantlens_llm_fallback_total",
+        "AI harness demotions to deterministic answer (guard fail or LLM error)",
+    )
     _PROMETHEUS = True
 except ImportError:
     _PROMETHEUS = False
     INGEST_FRAMES = None
     WS_BROADCASTS = None
     INGEST_LATENCY = None
+    TICK_ERRORS = None
+    SITUATIONS_CREATED = None
+    LLM_FALLBACK = None
 
 _tracer: Any = None
 
 
 def init_observability(*, otlp_endpoint: str = "") -> None:
+    """Configure OTLP tracing when an endpoint is set; otherwise leave tracer unset."""
     global _tracer
     if not otlp_endpoint:
+        _tracer = None
         return
     try:
         from opentelemetry import trace
@@ -61,6 +83,21 @@ def record_ingest_frame() -> None:
 def record_ws_broadcast() -> None:
     if _PROMETHEUS and WS_BROADCASTS is not None:
         WS_BROADCASTS.inc()
+
+
+def record_tick_error() -> None:
+    if _PROMETHEUS and TICK_ERRORS is not None:
+        TICK_ERRORS.inc()
+
+
+def record_situation_created() -> None:
+    if _PROMETHEUS and SITUATIONS_CREATED is not None:
+        SITUATIONS_CREATED.inc()
+
+
+def record_llm_fallback() -> None:
+    if _PROMETHEUS and LLM_FALLBACK is not None:
+        LLM_FALLBACK.inc()
 
 
 def metrics_payload() -> bytes | None:

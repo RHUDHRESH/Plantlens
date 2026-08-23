@@ -25,15 +25,18 @@ const bundle = join(root, "packages", "sample-data", "demo-microgrid");
 // [schema file, sample file] pairs. Compiled outputs (hmi_view_model) and runtime-only contracts
 // (tag_frame, situation, calm_card, incident, audit) are validated by backend tests, not here.
 const componentLibrary = join(root, "packages", "sample-data", "component-library");
+const easy302Bundle = join(root, "packages", "sample-data", "easy302-uno-q");
 
 const PAIRS = [
   ["plant.schema.json", "plant.json"],
   ["tag_map.schema.json", "tag_map.json"],
   ["alarm_rules.schema.json", "alarm_rules.json"],
   ["causal_graph.schema.json", "causal_graph.json"],
+  ["fault_matrix.schema.json", "fault_matrix.json"],
   ["scenarios.schema.json", "scenarios.json"],
   ["component_library.schema.json", "standard_components.json", componentLibrary],
-  ["plant_assembly.schema.json", "demo_motor_fan_blower_assembly.json", componentLibrary]
+  ["plant_assembly.schema.json", "demo_motor_fan_blower_assembly.json", componentLibrary],
+  ["tag_map.schema.json", "tag_map.json", easy302Bundle]
 ];
 
 const ajv = new Ajv2020({ allErrors: true, strict: false });
@@ -44,7 +47,7 @@ for (const [schemaFile, dataFile, dataDir] of PAIRS) {
   const schema = JSON.parse(readFileSync(join(contracts, schemaFile), "utf8"));
   const sampleDir = dataDir ?? bundle;
   const data = JSON.parse(readFileSync(join(sampleDir, dataFile), "utf8"));
-  const validate = ajv.compile(schema);
+  const validate = ajv.getSchema(schema.$id) ?? ajv.compile(schema);
   if (validate(data)) {
     console.log(`  ok   ${dataFile}  ✓  ${schemaFile}`);
   } else {

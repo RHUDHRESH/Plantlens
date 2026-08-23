@@ -8,10 +8,8 @@ from typing import Any
 from app.runtime.alarm_engine import evaluate_alarms
 from app.runtime.asset_status import derive_asset_status
 from app.runtime.quality import (
-    DEFAULT_MISSING_AFTER_MS,
-    DEFAULT_STALE_AFTER_MS,
     QualityClass,
-    classify_tag,
+    normalize_quality_reading,
 )
 from app.runtime.calm_card_engine import (
     build_calm_card,
@@ -21,11 +19,37 @@ from app.runtime.calm_card_engine import (
 )
 from app.runtime.config_loader import RuntimeConfig
 from app.runtime.evidence import build_runtime_evidence_packet, packet_to_dict
-from app.runtime.projection import update_projection
+from app.runtime.fault_matrix_engine import observations_from_tags, score_fault_matrix
+from app.runtime.projection import get_ema_slopes, record_tag_sample, update_projection
 from app.runtime.runtime_state import RuntimeState
 from app.runtime.situation_engine import evaluate_situations
+from app.runtime.situation_audit import situation_audit_buffer
 from app.schemas.common import TagQuality
 from app.schemas.tag_frame import TagFrame
+from app.services.observability import record_situation_created
+
+
+def _score_fault_matrix(
+    state: RuntimeState,
+    config: RuntimeConfig,
+    active_alarms: list[dict[str, Any]],
+) -> list[Any]:
+    if not config.fault_matrix:
+        return []
+    # Feed EMA slopes so RISING/FALLING symptoms can match before alarms latch.
+    for tag_id, frame in state.tags.items():
+        if frame is None or not isinstance(frame.value, (int, float)):
+            continue
+        if frame.quality != "GOOD":
+            continue
+        record_tag_sample(tag_id, float(frame.value), frame.timestamp, quality=frame.quality)
+    obs = observations_from_tags(
+        state.tags,
+        trends=get_ema_slopes(),
+        active_alarms=active_alarms,
+        alarm_rules=config.alarm_rules,
+    )
+    return score_fault_matrix(config.fault_matrix, obs)
 
 
 def _to_tag_quality(quality: QualityClass) -> TagQuality:
@@ -57,16 +81,12 @@ def normalize_tag_quality(
     if frame.source == "simulator":
         received_at = now
 
-    result = classify_tag(
+    result = normalize_quality_reading(
         value=frame.value,
         raw_quality=frame.quality,
         timestamp=received_at,
         now=now,
-        stale_after_ms=int(policy.get("stale_after_ms", DEFAULT_STALE_AFTER_MS)),
-        missing_after_ms=int(policy.get("missing_after_ms", DEFAULT_MISSING_AFTER_MS)),
-        min_value=policy.get("min_value"),
-        max_value=policy.get("max_value"),
-        max_rate_per_s=policy.get("max_rate_per_s"),
+        quality_policy=policy,
         previous_value=prev_value,
         previous_ts=prev_ts,
     )
@@ -158,12 +178,40 @@ def evaluate_runtime_tick(
         now=tick_now,
         asset_index=config.asset_index,
     )
+
+    previous_ids = set(getattr(state, "_audited_situation_ids", set()) or set())
+    new_ids = {situation["situation_id"] for situation in situations if situation.get("situation_id")}
+    created_ids = new_ids - previous_ids
+    for situation in situations:
+        sid = situation.get("situation_id")
+        if sid not in created_ids:
+            continue
+        situation_audit_buffer.record(
+            action="runtime.situation.create",
+            situation_id=sid,
+            plant_id=config.plant_id,
+            after={
+                "situation_type": situation.get("situation_type"),
+                "root_asset_id": situation.get("root_asset_id"),
+                "severity": situation.get("severity"),
+            },
+            ts=tick_now,
+        )
+        record_situation_created()
+    state._audited_situation_ids = new_ids  # noqa: SLF001 — tick-local tracking
+
     state.active_situations = {
         situation["situation_id"]: situation for situation in situations
     }
 
     situation = situations[0] if situations else None
     projection = _resolve_projection(config, state, situation, tick_now)
+
+    # Always-on matrix overlay (Monitor hero) — even with no Situation yet.
+    fault_scores = _score_fault_matrix(state, config, active_alarms)
+    fault_score_dicts = [
+        s.model_dump() if hasattr(s, "model_dump") else s for s in fault_scores
+    ]
 
     evidence_packet = None
     calm_card = None
@@ -190,6 +238,7 @@ def evaluate_runtime_tick(
             blocked_actions=blocked,
             recommended_checks=recommended,
             projection=projection,
+            fault_matrix_scores=fault_scores,
         )
         state.latest_evidence_packet = packet_to_dict(evidence_packet)
         calm_card = build_calm_card_from_evidence(
@@ -202,8 +251,12 @@ def evaluate_runtime_tick(
             calm_card["root_asset_name"] = situation["root_asset_name"]
         state.latest_calm_card = calm_card
     else:
+        # No Situation: keep evidence/calm empty (fail-closed for process root).
+        # Matrix scores still live on state.fault_matrix_scores for Monitor.
         state.latest_evidence_packet = None
         state.latest_calm_card = None
+
+    state.fault_matrix_scores = fault_score_dicts
 
     state.asset_status = derive_asset_status(
         config.asset_index,
@@ -220,6 +273,7 @@ def evaluate_runtime_tick(
         "evidence_packet": evidence_packet,
         "calm_card": calm_card,
         "projection": projection,
+        "fault_matrix_scores": fault_score_dicts,
     }
 
 

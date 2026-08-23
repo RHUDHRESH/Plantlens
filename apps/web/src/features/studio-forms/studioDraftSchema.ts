@@ -6,6 +6,7 @@ const FAMILY_ORDER: StudioDraftFamily[] = [
   "alarm_rules",
   "causal_graph",
   "action_envelope",
+  "fault_matrix",
 ];
 
 const SEVERITY_ORDER = { error: 0, warning: 1, info: 2 } as const;
@@ -64,6 +65,7 @@ export function validateStudioDraftBundle(bundle: StudioDraftBundle): StudioDraf
   const alarmRules = asRecord(bundle.alarm_rules);
   const causalGraph = asRecord(bundle.causal_graph);
   const actionEnvelope = asRecord(bundle.action_envelope);
+  const faultMatrix = asRecord(bundle.fault_matrix);
 
   if (!plant) {
     issues.push(
@@ -294,6 +296,65 @@ export function validateStudioDraftBundle(bundle: StudioDraftBundle): StudioDraf
     }
   }
 
+  if (!faultMatrix) {
+    issues.push(
+      issue(
+        "fault_matrix",
+        null,
+        "warning",
+        "MISSING_FAULT_MATRIX",
+        "Fault matrix contract not loaded.",
+        "Load fault_matrix in the draft bundle.",
+      ),
+    );
+  } else {
+    for (const raw of asArray(faultMatrix.faults)) {
+      const fault = asRecord(raw);
+      if (!fault) continue;
+      const faultId = readString(fault, "id").trim();
+      if (!faultId) continue;
+      const name = readString(fault, "name").trim();
+      const assetId = readString(fault, "asset_id").trim();
+      if (!name) {
+        issues.push(
+          issue(
+            "fault_matrix",
+            faultId,
+            "error",
+            "MISSING_FAULT_NAME",
+            `Fault ${faultId} has no name.`,
+            "Add an operator-facing fault name.",
+          ),
+        );
+      }
+      if (assetId && !assetIds.has(assetId)) {
+        issues.push(
+          issue(
+            "fault_matrix",
+            faultId,
+            "error",
+            "UNKNOWN_FAULT_ASSET",
+            `Fault ${faultId} references missing asset ${assetId}.`,
+            "Pick an existing asset id.",
+          ),
+        );
+      }
+      const symptoms = asArray(fault.symptoms);
+      if (symptoms.length === 0) {
+        issues.push(
+          issue(
+            "fault_matrix",
+            faultId,
+            "warning",
+            "MISSING_FAULT_SYMPTOMS",
+            `Fault ${faultId} has no symptoms.`,
+            "Add at least one symptom tag with expected direction.",
+          ),
+        );
+      }
+    }
+  }
+
   issues.push(
     issue(
       "plant",
@@ -310,9 +371,15 @@ export function validateStudioDraftBundle(bundle: StudioDraftBundle): StudioDraf
 
 export function validateCrossReferences(bundle: StudioDraftBundle): StudioDraftIssue[] {
   return validateStudioDraftBundle(bundle).filter((i) =>
-    ["UNKNOWN_ASSET_REF", "UNKNOWN_TAG_REF", "UNKNOWN_NODE_REF", "UNKNOWN_ACTION_TARGET", "DUPLICATE_ASSET_ID", "DUPLICATE_TAG_ID"].includes(
-      i.code,
-    ),
+    [
+      "UNKNOWN_ASSET_REF",
+      "UNKNOWN_TAG_REF",
+      "UNKNOWN_NODE_REF",
+      "UNKNOWN_ACTION_TARGET",
+      "UNKNOWN_FAULT_ASSET",
+      "DUPLICATE_ASSET_ID",
+      "DUPLICATE_TAG_ID",
+    ].includes(i.code),
   );
 }
 

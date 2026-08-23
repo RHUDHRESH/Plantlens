@@ -13,6 +13,7 @@ from app.schemas.calm_card import (
 from app.schemas.common import (
     ActorRole,
     ActorType,
+    AlarmClass,
     AlarmOp,
     Confidence,
     EvidenceRole,
@@ -29,6 +30,7 @@ from app.schemas.tag_frame import TagFrame
 __all__ = [
     "ActorRole",
     "ActorType",
+    "AlarmClass",
     "AlarmCondition",
     "AlarmOp",
     "AlarmRule",

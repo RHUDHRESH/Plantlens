@@ -8,6 +8,7 @@ from typing import Any
 
 from app.runtime.dag_runtime import RootCauseTrace
 from app.runtime.quality import collect_data_quality_notes
+from app.schemas.fault_matrix import FaultMatrixScore
 from app.schemas.runtime_evidence import (
     CausalPathEdge,
     EvidenceChainItem,
@@ -142,6 +143,7 @@ def build_runtime_evidence_packet(
     recommended_checks: list[dict[str, Any]],
     projection: dict[str, Any] | None = None,
     audit_receipt_id: str | None = None,
+    fault_matrix_scores: list[FaultMatrixScore] | None = None,
 ) -> RuntimeEvidencePacket:
     if ts.tzinfo is None:
         ts = ts.replace(tzinfo=timezone.utc)
@@ -206,6 +208,7 @@ def build_runtime_evidence_packet(
         time_to_consequence=projection,
         audit_receipt_id=audit_receipt_id,
         deterministic_trace_id=trace.trace_id,
+        fault_matrix_scores=list(fault_matrix_scores or []),
     )
 
 

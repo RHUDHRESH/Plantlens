@@ -1,0 +1,69 @@
+# Action envelope for the industrial load demo plant.
+# PlantLens RECOMMENDS these actions; it never controls hardware.
+# Validated against packages/contracts/action_envelope.schema.json.
+actions:
+  - id: INSPECT_MOTOR_SHAFT
+    action_code: 701
+    label: Inspect shaft load, coupling, and bearing drag
+    situation_ids:
+      - MOTOR_MECHANICAL_OVERLOAD
+    allowed_roles: [operator, maintenance]
+    risk_level: medium
+    requires_isolation: true
+    safety_note: Follow site isolation procedure before touching rotating equipment.
+    target_asset_id: MOTOR-001
+
+  - id: SAFE_STOP_MOTOR
+    action_code: 702
+    label: Request PLC safe stop for motor
+    situation_ids:
+      - MOTOR_MECHANICAL_OVERLOAD
+    allowed_roles: [operator, maintenance]
+    risk_level: high
+    requires_operator_confirm: true
+    plc_permission_required: true
+    target_asset_id: MOTOR-001
+    blocked_if:
+      - MOTOR_001_VIB_HIGH
+    blocked_message: Safe-stop blocked while motor vibration alarm is active — clear vibration first.
+
+  - id: INSPECT_FAN_DUCT
+    action_code: 703
+    label: Inspect fan duct for blockage or obstruction
+    situation_ids:
+      - FAN_AIRFLOW_BLOCKAGE
+    allowed_roles: [operator, maintenance]
+    risk_level: low
+    requires_isolation: false
+    target_asset_id: FAN-001
+
+  - id: INSPECT_BLOWER_BEARINGS
+    action_code: 704
+    label: Inspect blower bearings — plan shutdown for lubrication or replacement
+    situation_ids:
+      - BLOWER_BEARING_WEAR
+    allowed_roles: [maintenance, engineer]
+    risk_level: medium
+    requires_isolation: true
+    safety_note: Allow blower to cool before touching bearing housings.
+    target_asset_id: BLOWER-001
+
+  - id: CHECK_BATTERY_CHARGE
+    action_code: 705
+    label: Check battery charge state and charger output
+    situation_ids:
+      - BATTERY_SUPPLY_WEAKNESS
+    allowed_roles: [operator, maintenance]
+    risk_level: low
+    requires_isolation: false
+    target_asset_id: BAT-001
+
+  - id: INSPECT_CHARGER_OUTPUT
+    action_code: 706
+    label: Inspect charger output — verify mains supply and fuse integrity
+    situation_ids:
+      - CHARGER_FAILURE
+    allowed_roles: [maintenance, engineer]
+    risk_level: medium
+    requires_isolation: true
+    target_asset_id: CHARGER-001

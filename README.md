@@ -10,12 +10,13 @@ PlantLens turns raw plant telemetry into one evidence-backed Situation, renders 
 
 ## Source of truth (read in order)
 
-1. [`PLANTLENS.md`](PLANTLENS.md) — system rules, demo domain, architecture map
-2. [`FINAL_READY_STATE.md`](FINAL_READY_STATE.md) — demo-ready status and verification
-3. [`docs/BUILD_ORDER.md`](docs/BUILD_ORDER.md) — build sequence (chunks 0–13)
-4. [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) — tokens, status rules, motion, copy
-5. [`docs/ALGORITHMS.md`](docs/ALGORITHMS.md) — quality, alarms, DAG, Situation, Calm Card
-6. [`docs/DEMO_SCENARIO.md`](docs/DEMO_SCENARIO.md) — hero scenario and regression matrix
+1. [`PRODUCT_VISION.md`](PRODUCT_VISION.md) — product north star, screens, acceptance demos
+2. [`PLANTLENS.md`](PLANTLENS.md) — system rules, demo domain, architecture map
+3. [`FINAL_READY_STATE.md`](FINAL_READY_STATE.md) — demo-ready status and verification
+4. [`docs/BUILD_ORDER.md`](docs/BUILD_ORDER.md) — build sequence (chunks 0–13)
+5. [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) — tokens, status rules, motion, copy
+6. [`docs/ALGORITHMS.md`](docs/ALGORITHMS.md) — quality, alarms, DAG, Situation, Calm Card
+7. [`docs/DEMO_SCENARIO.md`](docs/DEMO_SCENARIO.md) — hero scenario and regression matrix
 
 Agent instructions: [`AGENTS.md`](AGENTS.md)
 

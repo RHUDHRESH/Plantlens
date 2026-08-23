@@ -27,8 +27,13 @@ body {
 }
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: var(--radius-pill); }
-::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: var(--radius-sm);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-track { background: var(--canvas); }
 
 button,
 input,
@@ -120,7 +125,7 @@ a:focus-visible,
   gap: 6px;
   height: 24px;
   padding: 0 10px;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
   font-size: var(--type-micro-size);
   font-weight: 600;
   letter-spacing: var(--type-micro-tracking);
@@ -137,7 +142,7 @@ a:focus-visible,
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
   border: 1px solid var(--line);
   font-size: var(--type-micro-size);
   font-weight: 600;

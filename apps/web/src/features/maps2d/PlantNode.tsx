@@ -99,7 +99,8 @@ export function PlantNode({
   const abnormal = isAbnormalStatus(status) || isRoot || isAffected;
   const showAbnormalRing =
     visual.pulse && (status === "warning" || status === "critical" || isAffected);
-  const ringSteady = reducedMotion;
+  /* ISA-101: critical stays steady — never blink/pulse; warning may slow-pulse */
+  const ringSteady = reducedMotion || status === "critical";
 
   const showStatusText =
     detailPolicy.showStatusText ||

@@ -3,22 +3,40 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { resetStudioDraftStoreForTests, useStudioDraftStore } from "../../studio-forms";
 import { StudioLaunchpad } from "../StudioLaunchpad";
 
+const onNavigate = vi.fn();
+
 describe("StudioLaunchpad", () => {
   beforeEach(() => {
     resetStudioDraftStoreForTests();
+    onNavigate.mockReset();
   });
 
-  it("renders warning banner and nav when open", () => {
+  it("renders authoring chrome and nav when open", () => {
     render(
       <StudioLaunchpad
         open
         route={{ surface: "overview", targetId: null, mode: "inspect" }}
         onClose={vi.fn()}
+        onNavigate={onNavigate}
       />,
     );
-    expect(screen.getByText(/Draft authoring surface/i)).toBeInTheDocument();
-    expect(screen.getByText(/Overview/i)).toBeInTheDocument();
-    expect(screen.getByText(/Compile Preview/i)).toBeInTheDocument();
+    expect(screen.getByText(/Authoring · local draft/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Overview/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Compile Preview/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Fault Matrix/i })).toBeInTheDocument();
+  });
+
+  it("navigates when a surface button is clicked", () => {
+    render(
+      <StudioLaunchpad
+        open
+        route={{ surface: "overview", targetId: null, mode: "inspect" }}
+        onClose={vi.fn()}
+        onNavigate={onNavigate}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Assets/i }));
+    expect(onNavigate).toHaveBeenCalledWith("asset", null);
   });
 
   it("asset route renders StudioFormShell", () => {
@@ -27,6 +45,7 @@ describe("StudioLaunchpad", () => {
         open
         route={{ surface: "asset", targetId: "PV-101", mode: "edit_intent" }}
         onClose={vi.fn()}
+        onNavigate={onNavigate}
       />,
     );
     expect(screen.getByText(/Draft status:/i)).toBeInTheDocument();
@@ -40,10 +59,11 @@ describe("StudioLaunchpad", () => {
         open
         route={{ surface: "asset", targetId: null, mode: "inspect" }}
         onClose={vi.fn()}
+        onNavigate={onNavigate}
       />,
     );
-    const save = screen.getByRole("button", { name: /Save draft/i });
-    expect(save).toBeDisabled();
+    expect(screen.getByRole("note")).toHaveTextContent(/Local draft only/i);
+    expect(screen.queryByRole("button", { name: /Save draft/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /^apply/i })).not.toBeInTheDocument();
   });
 
@@ -54,6 +74,7 @@ describe("StudioLaunchpad", () => {
         open
         route={{ surface: "compile_preview", targetId: null, mode: "inspect" }}
         onClose={vi.fn()}
+        onNavigate={onNavigate}
       />,
     );
     expect(screen.getByText(/Local compile preview/i)).toBeInTheDocument();
@@ -62,14 +83,29 @@ describe("StudioLaunchpad", () => {
     expect(screen.getByText("Compiled")).toBeInTheDocument();
   });
 
-  it("warning banner still says no live runtime mutation", () => {
+  it("header states local draft authoring (no live mutation)", () => {
     render(
       <StudioLaunchpad
         open
         route={{ surface: "compile_preview", targetId: null, mode: "inspect" }}
         onClose={vi.fn()}
+        onNavigate={onNavigate}
       />,
     );
-    expect(screen.getByText(/no live runtime mutation/i)).toBeInTheDocument();
+    expect(screen.getByText(/Authoring · local draft · Esc to close/i)).toBeInTheDocument();
+  });
+
+  it("closes on Escape", () => {
+    const onClose = vi.fn();
+    render(
+      <StudioLaunchpad
+        open
+        route={{ surface: "overview", targetId: null, mode: "inspect" }}
+        onClose={onClose}
+        onNavigate={onNavigate}
+      />,
+    );
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(onClose).toHaveBeenCalledOnce();
   });
 });

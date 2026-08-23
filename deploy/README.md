@@ -10,8 +10,9 @@ Phase 1 is **Docker Compose on one host** (demo/pilot). Kubernetes only when the
 | `docker/web.Dockerfile` | build the Vite app, serve via nginx |
 | `docker/gateway.Dockerfile` | Modbus gateway image |
 | `docker/agents.Dockerfile` | draft-only agents image (optional) |
-| `docker/compose.full.yml` | full local stack: api + web + gateway + postgres (+ agents, otel) |
-| `docker/compose.edge.yml` | edge deployment: gateway on-site, API/web/audit central |
+| `docker/compose.full.yml` | full local stack: api + web + gateway + postgres (+ agents) |
+| `docker/compose.edge.yml` | edge: gateway on-site (+ optional ollama profile) |
+| `docker/compose.llm.yml` | Ollama-only for local OSS LLM harness |
 | `k8s/` | manifests for the fleet phase (later) |
 
 ## CI (.github/workflows/ci.yml)

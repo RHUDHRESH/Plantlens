@@ -3,6 +3,7 @@
 export type {
   ActorRole,
   ActorType,
+  AlarmClass,
   AlarmOp,
   Confidence,
   EvidenceRole,

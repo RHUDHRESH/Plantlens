@@ -11,8 +11,20 @@ interface AgentConsoleProps {
   onClose: () => void;
 }
 
+const AGENT_ROSTER = [
+  { id: "graph_draft", label: "Graph draft" },
+  { id: "alarm_explainer", label: "Alarm explainer" },
+  { id: "maintenance_planner", label: "Maintenance planner" },
+  { id: "scenario_author", label: "Scenario author" },
+  { id: "data_quality", label: "Data quality" },
+  { id: "change_review", label: "Change review" },
+  { id: "tag_mapper", label: "Tag mapper" },
+  { id: "hmi_narrator", label: "HMI narrator" },
+] as const;
+
 export function AgentConsole({ onClose }: AgentConsoleProps) {
   const [prompt, setPrompt] = useState("");
+  const [selectedAgent, setSelectedAgent] = useState<string>("graph_draft");
   const [selectedDraftId, setSelectedDraftId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
@@ -23,7 +35,12 @@ export function AgentConsole({ onClose }: AgentConsoleProps) {
   });
 
   const draftMutation = useMutation({
-    mutationFn: () => requestGraphDraft(prompt),
+    mutationFn: () =>
+      requestGraphDraft(
+        selectedAgent === "graph_draft"
+          ? prompt
+          : `[agent:${selectedAgent}] ${prompt}`,
+      ),
     onSuccess: () => {
       setPrompt("");
       void queryClient.invalidateQueries({ queryKey: ["agent-drafts-pending"] });
@@ -50,30 +67,51 @@ export function AgentConsole({ onClose }: AgentConsoleProps) {
   const selected = drafts.find((d) => d.draft_id === selectedDraftId) ?? drafts[0];
 
   return (
-    <div className="agent-console" role="dialog" aria-labelledby="agent-console-title">
+    <div
+      className="agent-console"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="agent-console-title"
+    >
       <header className="agent-console__header">
         <div>
           <h2 id="agent-console-title">Agent Console</h2>
           <p className="agent-console__subtitle">Draft-only — human approval required before any write</p>
           <span className="agent-console__draft-badge">Not approved for runtime</span>
         </div>
-        <button type="button" onClick={onClose}>
+        <button type="button" className="pl-btn pl-btn--ghost pl-btn--compact" onClick={onClose}>
           Close
         </button>
       </header>
 
       <section className="agent-console__draft-request">
-        <label htmlFor="agent-prompt">Request graph draft</label>
+        <label htmlFor="agent-roster">Agent roster</label>
+        <select
+          id="agent-roster"
+          value={selectedAgent}
+          onChange={(e) => setSelectedAgent(e.target.value)}
+          aria-label="Select agent"
+        >
+          {AGENT_ROSTER.map((agent) => (
+            <option key={agent.id} value={agent.id}>
+              {agent.label}
+            </option>
+          ))}
+        </select>
+        <label htmlFor="agent-prompt">Request draft</label>
         <textarea
           id="agent-prompt"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Describe the causal edge or rule to propose…"
+          placeholder="Describe the draft to propose… (all drafts need human approval)"
           rows={3}
         />
         <button type="button" onClick={() => draftMutation.mutate()} disabled={!prompt.trim()}>
           Submit draft request
         </button>
+        <p className="agent-console__subtitle">
+          Approval hook: review pending drafts below, then Approve (human only) or Reject.
+        </p>
       </section>
 
       <section className="agent-console__queue" aria-label="Approval queue">

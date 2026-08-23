@@ -1,0 +1,58 @@
+{
+  "asset_type": "charger",
+  "display_name": "DC Charger",
+  "version": "1.0.0",
+  "description": "Standard template for AC/DC battery charger with output voltage and current monitoring.",
+  "required_tags": [
+    { "tag_suffix": "_V", "signal_name": "Output Voltage", "unit": "V", "data_type": "float" },
+    { "tag_suffix": "_I", "signal_name": "Output Current", "unit": "A", "data_type": "float" }
+  ],
+  "optional_tags": [
+    { "tag_suffix": "_TEMP", "signal_name": "Charger Temperature", "unit": "C", "data_type": "float" }
+  ],
+  "default_alarm_rules": [
+    { "alarm_suffix": "CURRENT_LOW", "tag_suffix": "_I", "op": "lt", "critical_threshold": 0.5, "severity": "warning", "deadband": 0.1, "debounce_ms": 500, "unit": "A" },
+    { "alarm_suffix": "V_LOW",       "tag_suffix": "_V", "op": "lt", "critical_threshold": 48.0,"severity": "warning",  "deadband": 1.0, "debounce_ms": 500, "unit": "V" }
+  ],
+  "quality_policy": {
+    "stale_after_ms": 3000,
+    "required_quality": "GOOD",
+    "missing_tag_action": "degrade_confidence"
+  },
+  "default_causal_edges": [
+    {
+      "role": "charger_supplies_battery",
+      "from": "{asset_id}",
+      "to": "{battery_asset_id}",
+      "edge_type": "structural_power",
+      "approved": false,
+      "lag_ms": [0, 5000],
+      "provenance": "template"
+    }
+  ],
+  "default_situation_types": [
+    {
+      "id": "{asset_id}_FAILURE",
+      "title": "Charger Failure",
+      "root_asset_id": "{asset_id}",
+      "required_alarms": ["{asset_id_prefix}_CURRENT_LOW", "{battery_asset_id_prefix}_SOC_LOW"],
+      "require_all_alarms": true,
+      "why_it_matters": "Charger stopped supplying current — battery discharging without replenishment."
+    }
+  ],
+  "default_action_envelope_entries": [
+    {
+      "id": "INSPECT_{asset_id}_OUTPUT",
+      "label": "Inspect charger output — verify mains supply and fuse integrity",
+      "situation_ids": ["{asset_id}_FAILURE"],
+      "allowed_roles": ["maintenance", "engineer"],
+      "risk_level": "medium",
+      "requires_isolation": true
+    }
+  ],
+  "hmi_bindings": {
+    "primary_signal": "_I",
+    "voltage_signal": "_V",
+    "default_chart": "trend"
+  }
+}

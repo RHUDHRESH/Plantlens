@@ -28,6 +28,49 @@ def reset_projection_history() -> None:
     _history.clear()
 
 
+def get_ema_slopes() -> dict[str, float]:
+    """Return per-tag EMA slopes for fault-matrix RISING/FALLING matching."""
+    out: dict[str, float] = {}
+    for tag_id, hist in _history.items():
+        if hist.ema_slope is not None:
+            out[tag_id] = float(hist.ema_slope)
+    return out
+
+
+def record_tag_sample(
+    tag_id: str,
+    value: float,
+    ts: datetime,
+    *,
+    quality: str = "GOOD",
+    window: int = 8,
+) -> None:
+    """Update EMA history for a tag without computing TTC (matrix trend feed)."""
+    if quality not in USABLE_QUALITIES:
+        return
+    history = _history.setdefault(tag_id, _TagHistory())
+    numeric = float(value)
+    if history.last_ts is not None and ts <= history.last_ts:
+        return
+    prev_ts = history.last_ts
+    prev_val = history.ema_value
+    history.last_ts = ts
+    history.samples.append((ts, numeric))
+    history.samples = history.samples[-window:]
+    if history.ema_value is None:
+        history.ema_value = numeric
+    else:
+        history.ema_value = EMA_ALPHA * numeric + (1.0 - EMA_ALPHA) * history.ema_value
+    if prev_ts is not None and prev_val is not None:
+        dt = (ts - prev_ts).total_seconds()
+        if dt > 0:
+            instant_slope = (numeric - float(prev_val)) / dt
+            if history.ema_slope is None:
+                history.ema_slope = instant_slope
+            else:
+                history.ema_slope = EMA_ALPHA * instant_slope + (1.0 - EMA_ALPHA) * history.ema_slope
+
+
 def _result(
     tag_id: str,
     target_label: str,

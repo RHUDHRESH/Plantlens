@@ -1,0 +1,68 @@
+# Action envelope for the bench-rig hardware.
+# PlantLens RECOMMENDS these; it never controls hardware. For the PLC bridge they become
+# REQUESTS the PLC accepts/denies via its own interlocks. Validated against
+# packages/contracts/action_envelope.schema.json.
+actions:
+  - id: VERIFY_PV_SOURCE
+    action_code: 701
+    label: Verify 48 V DC source and NH4-125 isolator
+    situation_ids:
+      - PV_SOURCE_LOW_VOLTAGE
+    allowed_roles:
+      - operator
+      - maintenance
+    risk_level: medium
+    requires_isolation: true
+    target_asset_id: PV-SRC
+    safety_note: Follow site isolation before touching DC terminals.
+
+  - id: INSPECT_DCDC_CONVERTER
+    action_code: 702
+    label: Inspect DC-DC converter input/output and enable
+    situation_ids:
+      - DC_DC_CONVERTER_ABNORMAL
+    allowed_roles:
+      - maintenance
+      - engineer
+    risk_level: medium
+    requires_isolation: true
+    target_asset_id: DCDC
+    safety_note: Converter nameplate UNKNOWN — verify ratings before energizing.
+
+  - id: VERIFY_GRID_SUPPLY
+    action_code: 703
+    label: Verify 230 V mains and grid switching stage
+    situation_ids:
+      - GRID_UNDERVOLTAGE
+    allowed_roles:
+      - operator
+      - maintenance
+    risk_level: medium
+    requires_isolation: false
+    target_asset_id: GRID
+
+  - id: INSPECT_INVERTER
+    action_code: 704
+    label: Inspect DC-AC inverter output and battery isolator
+    situation_ids:
+      - INVERTER_OUTPUT_ABNORMAL
+    allowed_roles:
+      - maintenance
+      - engineer
+    risk_level: medium
+    requires_isolation: true
+    target_asset_id: INV
+    safety_note: Inverter nameplate UNKNOWN — verify ratings.
+
+  - id: INSPECT_MOTOR_LOAD
+    action_code: 705
+    label: Inspect motor mechanical load, coupling, bearings
+    situation_ids:
+      - MOTOR_OVERLOAD
+    allowed_roles:
+      - operator
+      - maintenance
+    risk_level: medium
+    requires_isolation: true
+    target_asset_id: MOTOR
+    safety_note: Follow isolation procedure before touching rotating equipment.

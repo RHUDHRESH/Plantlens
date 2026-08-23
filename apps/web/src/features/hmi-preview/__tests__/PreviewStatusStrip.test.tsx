@@ -28,10 +28,19 @@ const INVALID: PreviewCompileResult = {
   model: null,
 };
 
+const CLEAN_DIRTY = {
+  plant: false,
+  tag_map: false,
+  alarm_rules: false,
+  causal_graph: false,
+  action_envelope: false,
+  fault_matrix: false,
+} as const;
+
 describe("PreviewStatusStrip", () => {
   it("renders compiled status", () => {
     render(
-      <PreviewStatusStrip result={COMPILED} draftStatus="clean" dirtyFamilies={{ plant: false, tag_map: false, alarm_rules: false, causal_graph: false, action_envelope: false }} />,
+      <PreviewStatusStrip result={COMPILED} draftStatus="clean" dirtyFamilies={{ ...CLEAN_DIRTY }} />,
     );
     expect(screen.getByText("Compiled")).toBeInTheDocument();
     expect(screen.getByText(/3 assets/i)).toBeInTheDocument();
@@ -39,7 +48,7 @@ describe("PreviewStatusStrip", () => {
 
   it("renders invalid status", () => {
     render(
-      <PreviewStatusStrip result={INVALID} draftStatus="invalid" dirtyFamilies={{ plant: false, tag_map: false, alarm_rules: false, causal_graph: false, action_envelope: false }} />,
+      <PreviewStatusStrip result={INVALID} draftStatus="invalid" dirtyFamilies={{ ...CLEAN_DIRTY }} />,
     );
     expect(screen.getByText("Invalid")).toBeInTheDocument();
     expect(screen.getByText(/1 errors/i)).toBeInTheDocument();
@@ -47,14 +56,18 @@ describe("PreviewStatusStrip", () => {
 
   it("shows local preview copy", () => {
     render(
-      <PreviewStatusStrip result={COMPILED} draftStatus="clean" dirtyFamilies={{ plant: false, tag_map: false, alarm_rules: false, causal_graph: false, action_envelope: false }} />,
+      <PreviewStatusStrip result={COMPILED} draftStatus="clean" dirtyFamilies={{ ...CLEAN_DIRTY }} />,
     );
     expect(screen.getByText(/Preview is local and read-only/i)).toBeInTheDocument();
   });
 
   it("shows counts", () => {
     render(
-      <PreviewStatusStrip result={COMPILED} draftStatus="dirty" dirtyFamilies={{ plant: true, tag_map: false, alarm_rules: false, causal_graph: false, action_envelope: false }} />,
+      <PreviewStatusStrip
+        result={COMPILED}
+        draftStatus="dirty"
+        dirtyFamilies={{ ...CLEAN_DIRTY, plant: true }}
+      />,
     );
     expect(screen.getByText(/2 tags/i)).toBeInTheDocument();
     expect(screen.getByText(/Dirty: plant/i)).toBeInTheDocument();

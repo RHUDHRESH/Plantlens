@@ -1,0 +1,321 @@
+{
+  "version": "1.0.0",
+  "graph_id": "demo_industrial_load_rca",
+  "nodes": [
+    {
+      "id": "CHARGER-001",
+      "kind": "asset",
+      "label": "DC Charger",
+      "evidence_tags": ["CHRG_001_I", "CHRG_001_V"],
+      "fingerprint_rules": [
+        {
+          "conditions": [
+            { "type": "alarms_any", "alarm_ids": ["CHRG_001_CURRENT_LOW"] },
+            { "type": "alarms_any", "alarm_ids": ["BAT_001_SOC_LOW"] }
+          ],
+          "score_bonus": 0.45,
+          "reason": "Charger current collapsed before battery SOC dropped"
+        }
+      ]
+    },
+    {
+      "id": "BAT-001",
+      "kind": "asset",
+      "label": "Battery Bank",
+      "evidence_tags": ["BAT_001_V", "BAT_001_SOC"],
+      "fingerprint_rules": [
+        {
+          "conditions": [
+            { "type": "tag_threshold", "tag_id": "BAT_001_V", "op": "lt", "value": 43.0 },
+            { "type": "alarms_any", "alarm_ids": ["BUS_001_V_LOW"] }
+          ],
+          "score_bonus": 0.4,
+          "reason": "Battery voltage dropped before bus sag"
+        }
+      ],
+      "score_adjustments": [
+        {
+          "when": [
+            { "type": "tag_threshold", "tag_id": "MOTOR_001_I", "op": "gt", "value": 4.0 }
+          ],
+          "multiply": 0.4,
+          "reason": "Bus sag is more likely motor overload if motor current is high"
+        }
+      ]
+    },
+    {
+      "id": "DC-BUS-001",
+      "kind": "asset",
+      "label": "DC Bus",
+      "evidence_tags": ["BUS_001_V"],
+      "score_adjustments": [
+        {
+          "when": [
+            { "type": "tag_threshold", "tag_id": "MOTOR_001_I", "op": "lt", "value": 3.0 },
+            { "type": "tag_threshold", "tag_id": "BAT_001_V", "op": "lt", "value": 43.0 }
+          ],
+          "multiply": 0.5,
+          "reason": "Bus sag likely upstream (battery) if motor load is normal"
+        }
+      ]
+    },
+    { "id": "DC-DC-001", "kind": "asset", "label": "DC-DC Converter", "evidence_tags": [] },
+    {
+      "id": "MOTOR-001",
+      "kind": "asset",
+      "label": "3-Phase Motor",
+      "evidence_tags": ["MOTOR_001_I", "MOTOR_001_RPM", "MOTOR_001_TEMP", "MOTOR_001_VIB"],
+      "fingerprint_rules": [
+        {
+          "conditions": [
+            { "type": "tag_threshold", "tag_id": "MOTOR_001_I", "op": "gt", "value": 4.0 },
+            { "type": "alarms_any", "alarm_ids": ["BUS_001_V_LOW"] }
+          ],
+          "score_bonus": 0.45,
+          "reason": "Motor current high before bus sag — mechanical overload"
+        },
+        {
+          "conditions": [
+            { "type": "alarms_any", "alarm_ids": ["MOTOR_001_CURRENT_HIGH"] },
+            { "type": "alarms_any", "alarm_ids": ["MOTOR_001_RPM_LOW"] }
+          ],
+          "score_bonus": 0.3,
+          "reason": "Current high and speed low simultaneously confirm overload"
+        }
+      ]
+    },
+    {
+      "id": "FAN-001",
+      "kind": "asset",
+      "label": "Cooling Fan",
+      "evidence_tags": ["FAN_001_I", "FAN_001_RPM", "FAN_001_AIRFLOW"],
+      "fingerprint_rules": [
+        {
+          "conditions": [
+            { "type": "alarms_any", "alarm_ids": ["FAN_001_AIRFLOW_LOW"] },
+            { "type": "tag_threshold", "tag_id": "FAN_001_RPM", "op": "gt", "value": 800 }
+          ],
+          "score_bonus": 0.5,
+          "reason": "Airflow low while fan speed is normal — duct blockage"
+        }
+      ]
+    },
+    {
+      "id": "BLOWER-001",
+      "kind": "asset",
+      "label": "Process Blower",
+      "evidence_tags": ["BLOWER_001_VIB", "BLOWER_001_TEMP", "BLOWER_001_I"],
+      "fingerprint_rules": [
+        {
+          "conditions": [
+            { "type": "alarms_any", "alarm_ids": ["BLOWER_001_VIB_HIGH"] },
+            { "type": "alarms_any", "alarm_ids": ["BLOWER_001_TEMP_HIGH"] }
+          ],
+          "score_bonus": 0.5,
+          "reason": "Vibration rose first then temperature — bearing wear progression"
+        }
+      ]
+    },
+    { "id": "AIRFLOW-DUCT-001", "kind": "asset", "label": "Airflow Duct", "evidence_tags": [] }
+  ],
+  "edges": [
+    {
+      "id": "E_CHRG_BAT",
+      "from": "CHARGER-001", "to": "BAT-001",
+      "edge_type": "structural_power",
+      "approved": true, "lag_ms": [0, 5000],
+      "weight": 1.0, "confidence": 1.0,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E_BAT_BUS",
+      "from": "BAT-001", "to": "DC-BUS-001",
+      "edge_type": "structural_power",
+      "approved": true, "lag_ms": [0, 3000],
+      "weight": 1.0, "confidence": 1.0,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E_BUS_DCDC",
+      "from": "DC-BUS-001", "to": "DC-DC-001",
+      "edge_type": "structural_power",
+      "approved": true, "lag_ms": [0, 1000],
+      "weight": 1.0, "confidence": 1.0,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E_DCDC_MOTOR",
+      "from": "DC-DC-001", "to": "MOTOR-001",
+      "edge_type": "structural_power",
+      "approved": true, "lag_ms": [0, 500],
+      "weight": 1.0, "confidence": 1.0,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E_DCDC_FAN",
+      "from": "DC-DC-001", "to": "FAN-001",
+      "edge_type": "structural_power",
+      "approved": true, "lag_ms": [0, 500],
+      "weight": 1.0, "confidence": 1.0,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E_DCDC_BLOWER",
+      "from": "DC-DC-001", "to": "BLOWER-001",
+      "edge_type": "structural_power",
+      "approved": true, "lag_ms": [0, 500],
+      "weight": 1.0, "confidence": 1.0,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E_MOTOR_BUS",
+      "from": "MOTOR-001", "to": "DC-BUS-001",
+      "edge_type": "structural_load_effect",
+      "approved": true, "lag_ms": [0, 5000],
+      "weight": 0.85, "confidence": 0.9,
+      "provenance": "cause_effect_matrix"
+    },
+    {
+      "id": "E_FAN_DUCT",
+      "from": "FAN-001", "to": "AIRFLOW-DUCT-001",
+      "edge_type": "signal",
+      "approved": true, "lag_ms": [0, 2000],
+      "weight": 0.8, "confidence": 0.9,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E_BLOWER_DUCT",
+      "from": "BLOWER-001", "to": "AIRFLOW-DUCT-001",
+      "edge_type": "signal",
+      "approved": true, "lag_ms": [0, 2000],
+      "weight": 0.8, "confidence": 0.9,
+      "provenance": "engineer_entered"
+    },
+    {
+      "id": "E_BLOWER_BUS",
+      "from": "BLOWER-001", "to": "DC-BUS-001",
+      "edge_type": "structural_load_effect",
+      "approved": true, "lag_ms": [0, 5000],
+      "weight": 0.6, "confidence": 0.8,
+      "provenance": "cause_effect_matrix"
+    }
+  ],
+  "root_cause_rules": [
+    {
+      "target_node": "MOTOR-001",
+      "logic": "motor_current_high AND motor_speed_low AND bus_sag_followed",
+      "conditions": [
+        { "type": "alarms_all", "alarm_ids": ["MOTOR_001_CURRENT_HIGH", "MOTOR_001_RPM_LOW"] },
+        { "type": "alarm_before", "first": "MOTOR_001_CURRENT_HIGH", "second": "BUS_001_V_LOW" }
+      ],
+      "score_bonus": 0.5
+    },
+    {
+      "target_node": "BAT-001",
+      "logic": "battery_voltage_low_before_bus_sag AND motor_normal",
+      "conditions": [
+        { "type": "alarms_any", "alarm_ids": ["BAT_001_V_LOW", "BAT_001_SOC_LOW"] },
+        { "type": "alarm_before", "first": "BAT_001_V_LOW", "second": "BUS_001_V_LOW" }
+      ],
+      "score_bonus": 0.45
+    },
+    {
+      "target_node": "CHARGER-001",
+      "logic": "charger_current_dropped_before_battery_depleted",
+      "conditions": [
+        { "type": "alarms_any", "alarm_ids": ["CHRG_001_CURRENT_LOW"] },
+        { "type": "alarm_before", "first": "CHRG_001_CURRENT_LOW", "second": "BAT_001_SOC_LOW" }
+      ],
+      "score_bonus": 0.5
+    },
+    {
+      "target_node": "FAN-001",
+      "logic": "airflow_low_while_fan_running",
+      "conditions": [
+        { "type": "alarms_any", "alarm_ids": ["FAN_001_AIRFLOW_LOW"] }
+      ],
+      "score_bonus": 0.6
+    },
+    {
+      "target_node": "BLOWER-001",
+      "logic": "vibration_high_before_temperature_high",
+      "conditions": [
+        { "type": "alarms_all", "alarm_ids": ["BLOWER_001_VIB_HIGH", "BLOWER_001_TEMP_HIGH"] },
+        { "type": "alarm_before", "first": "BLOWER_001_VIB_HIGH", "second": "BLOWER_001_TEMP_HIGH" }
+      ],
+      "score_bonus": 0.5
+    }
+  ],
+  "situation_types": [
+    {
+      "id": "MOTOR_MECHANICAL_OVERLOAD",
+      "title": "Motor Mechanical Overload",
+      "root_asset_id": "MOTOR-001",
+      "required_alarms": ["MOTOR_001_CURRENT_HIGH", "MOTOR_001_RPM_LOW"],
+      "require_all_alarms": true,
+      "evidence_order": ["MOTOR_001_CURRENT_HIGH", "MOTOR_001_RPM_LOW", "BUS_001_V_LOW"],
+      "min_root_score": 0.1,
+      "why_it_matters": "Motor overload draws excess current, speeds drops, bus voltage sags. Downstream inverters and loads are at risk.",
+      "projection": {
+        "tag_id": "MOTOR_001_TEMP",
+        "alarm_id": "MOTOR_001_TEMP_HIGH",
+        "threshold": 80.0,
+        "label": "thermal limit"
+      }
+    },
+    {
+      "id": "FAN_AIRFLOW_BLOCKAGE",
+      "title": "Fan Airflow Blockage",
+      "root_asset_id": "FAN-001",
+      "required_alarms": ["FAN_001_AIRFLOW_LOW"],
+      "require_all_alarms": true,
+      "evidence_order": ["FAN_001_AIRFLOW_LOW"],
+      "min_root_score": 0.1,
+      "why_it_matters": "Airflow dropped while fan speed is normal — duct obstruction reducing cooling effectiveness.",
+      "projection": null
+    },
+    {
+      "id": "BLOWER_BEARING_WEAR",
+      "title": "Blower Bearing Wear",
+      "root_asset_id": "BLOWER-001",
+      "required_alarms": ["BLOWER_001_VIB_HIGH", "BLOWER_001_TEMP_HIGH"],
+      "require_all_alarms": true,
+      "evidence_order": ["BLOWER_001_VIB_HIGH", "BLOWER_001_TEMP_HIGH", "BLOWER_001_CURRENT_HIGH"],
+      "min_root_score": 0.1,
+      "why_it_matters": "Progressive bearing failure: vibration rises first, then thermal. Without intervention, bearing seizure and current spike will follow.",
+      "projection": {
+        "tag_id": "BLOWER_001_TEMP",
+        "alarm_id": "BLOWER_001_TEMP_HIGH",
+        "threshold": 65.0,
+        "label": "bearing temperature limit"
+      }
+    },
+    {
+      "id": "BATTERY_SUPPLY_WEAKNESS",
+      "title": "Battery Supply Weakness",
+      "root_asset_id": "BAT-001",
+      "required_alarms": ["BAT_001_V_LOW", "BUS_001_V_LOW"],
+      "require_all_alarms": true,
+      "evidence_order": ["BAT_001_V_LOW", "BUS_001_V_LOW"],
+      "min_root_score": 0.1,
+      "why_it_matters": "Battery unable to hold voltage — bus is sagging from the source side, not load side. All loads at risk of undervoltage.",
+      "projection": {
+        "tag_id": "BAT_001_V",
+        "alarm_id": "BAT_001_V_LOW",
+        "threshold": 43.0,
+        "label": "battery cutoff voltage"
+      }
+    },
+    {
+      "id": "CHARGER_FAILURE",
+      "title": "Charger Failure",
+      "root_asset_id": "CHARGER-001",
+      "required_alarms": ["CHRG_001_CURRENT_LOW", "BAT_001_SOC_LOW"],
+      "require_all_alarms": true,
+      "evidence_order": ["CHRG_001_CURRENT_LOW", "BAT_001_SOC_LOW"],
+      "min_root_score": 0.1,
+      "why_it_matters": "Charger has stopped supplying current. Battery is discharging without replenishment. Bus voltage will follow as SOC depletes.",
+      "projection": null
+    }
+  ]
+}

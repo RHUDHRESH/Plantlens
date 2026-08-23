@@ -35,6 +35,16 @@ vi.mock("../../api/client", () => ({
     latest_calm_card: null,
     asset_status: {},
   }),
+  getAiProviderHealth: vi.fn().mockResolvedValue({
+    enabled: false,
+    healthy: false,
+    state: "offline",
+    base_url: "http://127.0.0.1:11434",
+    model: "llama3",
+    detail: "disabled",
+    advisory_only: true,
+  }),
+  postAiMessage: vi.fn(),
   escalateIncident: vi.fn(),
 }));
 
@@ -115,6 +125,15 @@ function wrap(ui: ReactElement) {
   return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
 }
 
+async function openAtlasScreen() {
+  fireEvent.click(await screen.findByRole("button", { name: /^Atlas$/i }));
+  expect(await screen.findByText("Plant hierarchy")).toBeInTheDocument();
+}
+
+async function openTwinScreen() {
+  fireEvent.click(await screen.findByRole("button", { name: /^Twin$/i }));
+}
+
 describe("RuntimeHMI", () => {
   beforeEach(() => {
     useRuntimeStore.getState().reset();
@@ -155,14 +174,15 @@ describe("RuntimeHMI", () => {
     });
   });
 
-  it("renders atlas shell with plant hierarchy and offline strip when HMI runtime fails", async () => {
+  it("defaults to Monitor and can open atlas shell when HMI runtime fails", async () => {
     useRuntimeStore.getState().setConnection("disconnected");
     wrap(<RuntimeHMI />);
-    expect(await screen.findByText("Plant hierarchy")).toBeInTheDocument();
-    expect(screen.getByText(/All nominal/i)).toBeInTheDocument();
-    expect(screen.getByText(/OFFLINE/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/Raw alarms/i)).toBeInTheDocument();
+    expect(await screen.findByTestId("monitor-screen")).toBeInTheDocument();
     expect(screen.getByRole("banner")).toHaveClass("runtime-top-strip");
+    expect(screen.getByText(/OFFLINE/i)).toBeInTheDocument();
+    await openAtlasScreen();
+    expect(screen.getByText(/All nominal/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Raw alarms/i)).toBeInTheDocument();
     expect(screen.getByRole("contentinfo", { name: /Plant status/i })).toBeInTheDocument();
   });
 
@@ -176,14 +196,14 @@ describe("RuntimeHMI", () => {
   it("renders HMI root cause panel when runtime HMI resolves", async () => {
     vi.mocked(getRuntimeHmiState).mockResolvedValue(motorObstructionHmiState);
     wrap(<RuntimeHMI />);
-    fireEvent.click(await screen.findByRole("button", { name: /EVENT/i }));
+    fireEvent.click(await screen.findByRole("button", { name: /DIAGNOSE/i }));
     expect(
       await screen.findByRole("heading", { name: /Motor-side mechanical obstruction/i }),
     ).toBeInTheDocument();
     expect(screen.getByText("MOTOR_MECHANICAL_OBSTRUCTION")).toBeInTheDocument();
   });
 
-  it("shows CalmCard on atlas when HMI runtime fails but snapshot has calm card", async () => {
+  it("shows CalmCard on monitor when HMI runtime fails but snapshot has calm card", async () => {
     vi.mocked(getRuntimeSnapshot).mockResolvedValue(HERO_MOTOR_OVERLOAD);
     wrap(<RuntimeHMI />);
     await waitFor(
@@ -221,8 +241,8 @@ describe("RuntimeHMI", () => {
 
   it("passes map_3d data to LazyPlantMap3D when twin screen is selected", async () => {
     wrap(<RuntimeHMI />);
-    await screen.findByText("Plant hierarchy");
-    fireEvent.click(screen.getByRole("button", { name: /TWIN/i }));
+    await screen.findByTestId("monitor-screen");
+    await openTwinScreen();
     await screen.findByTestId("plant-map-3d");
     expect(latestMap3dProps?.nodes[0]?.position).toEqual({ x: -4, y: -1, z: 0 });
     expect(latestMap3dProps?.edges).toEqual(COMPILED_FIXTURE.hmi_view_model.map_3d.edges);
@@ -233,8 +253,8 @@ describe("RuntimeHMI", () => {
 
   it("passes operational 3D viewport props to LazyPlantMap3D", async () => {
     wrap(<RuntimeHMI />);
-    await screen.findByText("Plant hierarchy");
-    fireEvent.click(screen.getByRole("button", { name: /TWIN/i }));
+    await screen.findByTestId("monitor-screen");
+    await openTwinScreen();
     await screen.findByTestId("plant-map-3d");
     expect(latestMap3dProps?.onViewportReady).toBeTypeOf("function");
     expect(latestMap3dProps?.onZoomBandChange).toBeTypeOf("function");
@@ -245,7 +265,7 @@ describe("RuntimeHMI", () => {
   it("slides situation panel in when active situation exists", async () => {
     vi.mocked(getRuntimeSnapshot).mockResolvedValue(HERO_MOTOR_OVERLOAD);
     wrap(<RuntimeHMI />);
-    await screen.findByText("Plant hierarchy");
+    await openAtlasScreen();
     await waitFor(() => {
       expect(screen.getAllByText(/alarms grouped/i).length).toBeGreaterThan(0);
       expect(
@@ -256,7 +276,7 @@ describe("RuntimeHMI", () => {
 
   it("clicking a tree node selects and focuses the asset", async () => {
     wrap(<RuntimeHMI />);
-    await screen.findByText("Plant hierarchy");
+    await openAtlasScreen();
     fireEvent.click(screen.getAllByText("Motor M-301")[0]!);
     expect(useOperationalMapStore.getState().selectedAssetId).toBe("MTR-301");
     expect(useOperationalMapStore.getState().focusedAssetId).toBe("MTR-301");
@@ -266,16 +286,45 @@ describe("RuntimeHMI", () => {
 
   it("renders atlas map controls for orientation and zoom", async () => {
     wrap(<RuntimeHMI />);
-    await screen.findByText("Plant hierarchy");
+    await openAtlasScreen();
     expect(screen.getByRole("button", { name: /Vertical/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Horizontal/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Zoom in/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Zoom out/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: /Zoom in/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole("button", { name: /Zoom out/i }).length).toBeGreaterThan(0);
+    expect(screen.getByRole("toolbar", { name: /Map controls/i })).toBeInTheDocument();
+  });
+
+  it("opens raw alarms sheet from Calm Card without leaving Monitor", async () => {
+    vi.mocked(getRuntimeSnapshot).mockResolvedValue(HERO_MOTOR_OVERLOAD);
+    wrap(<RuntimeHMI />);
+    await waitFor(() => {
+      expect(screen.getByTestId("monitor-screen")).toBeInTheDocument();
+      expect(screen.getAllByText(/view raw alarms/i).length).toBeGreaterThan(0);
+    });
+    fireEvent.click(screen.getAllByText(/view raw alarms/i)[0]!);
+    expect(await screen.findByTestId("monitor-raw-alarms-sheet")).toBeInTheDocument();
+    expect(screen.getByTestId("monitor-screen")).toBeInTheDocument();
+  });
+
+  it("shows MapToolbar when monitor map is open", async () => {
+    wrap(<RuntimeHMI />);
+    await screen.findByTestId("monitor-screen");
+    expect(screen.queryByRole("toolbar", { name: /Map controls/i })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /^Map$/i }));
+    expect(await screen.findByRole("toolbar", { name: /Map controls/i })).toBeInTheDocument();
+    expect(screen.getByTestId("monitor-map-slot")).toBeInTheDocument();
+  });
+
+  it("opens Copilot from provider badge", async () => {
+    wrap(<RuntimeHMI />);
+    await screen.findByTestId("monitor-screen");
+    fireEvent.click(screen.getByRole("button", { name: /open Copilot/i }));
+    expect(await screen.findByTestId("copilot-panel")).toBeInTheDocument();
   });
 
   it("navigates to COMMS connection screen", async () => {
     wrap(<RuntimeHMI />);
-    await screen.findByText("Plant hierarchy");
+    await openAtlasScreen();
     fireEvent.click(screen.getByRole("button", { name: "Connection" }));
     expect(await screen.findByText("Connection / Commissioning")).toBeInTheDocument();
     expect(screen.getByText(/No control writes/i)).toBeInTheDocument();

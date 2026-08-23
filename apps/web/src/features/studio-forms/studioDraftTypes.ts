@@ -3,7 +3,8 @@ export type StudioDraftFamily =
   | "tag_map"
   | "alarm_rules"
   | "causal_graph"
-  | "action_envelope";
+  | "action_envelope"
+  | "fault_matrix";
 
 export type StudioDraftStatus = "clean" | "dirty" | "invalid";
 
@@ -23,6 +24,7 @@ export interface StudioDraftBundle {
   alarm_rules: unknown;
   causal_graph: unknown;
   action_envelope: unknown;
+  fault_matrix: unknown;
 }
 
 export interface StudioDraftState {

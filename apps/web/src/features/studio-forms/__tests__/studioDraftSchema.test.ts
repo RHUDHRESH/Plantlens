@@ -64,6 +64,20 @@ describe("studioDraftSchema", () => {
     expect(issues.some((i) => i.code === "DRAFT_VALIDATION_SCOPE")).toBe(true);
   });
 
+  it("fault referencing missing asset produces error", () => {
+    const bundle = clone(getInitialStudioDraftBundle());
+    const matrix = bundle.fault_matrix as Record<string, unknown>;
+    const faults = (matrix.faults as Array<Record<string, unknown>>).map((f) =>
+      f.id === "F_MOTOR_MECHANICAL_OVERLOAD" ? { ...f, asset_id: "MISSING-ASSET" } : f,
+    );
+    matrix.faults = faults;
+
+    const issues = validateStudioDraftBundle(bundle);
+    expect(
+      issues.some((i) => i.code === "UNKNOWN_FAULT_ASSET" && i.targetId === "F_MOTOR_MECHANICAL_OVERLOAD"),
+    ).toBe(true);
+  });
+
   it("issue ordering is deterministic", () => {
     const bundle = clone(getInitialStudioDraftBundle());
     const tagMap = bundle.tag_map as Record<string, unknown>;
@@ -90,9 +104,15 @@ describe("studioDraftSchema", () => {
     tagMap.tags = (tagMap.tags as unknown[]).slice(0, 1);
     const cross = validateCrossReferences(bundle);
     expect(cross.every((i) =>
-      ["UNKNOWN_ASSET_REF", "UNKNOWN_TAG_REF", "UNKNOWN_NODE_REF", "UNKNOWN_ACTION_TARGET", "DUPLICATE_ASSET_ID", "DUPLICATE_TAG_ID"].includes(
-        i.code,
-      ),
+      [
+        "UNKNOWN_ASSET_REF",
+        "UNKNOWN_TAG_REF",
+        "UNKNOWN_NODE_REF",
+        "UNKNOWN_ACTION_TARGET",
+        "UNKNOWN_FAULT_ASSET",
+        "DUPLICATE_ASSET_ID",
+        "DUPLICATE_TAG_ID",
+      ].includes(i.code),
     )).toBe(true);
     expect(cross.some((i) => i.code === "DRAFT_VALIDATION_SCOPE")).toBe(false);
   });

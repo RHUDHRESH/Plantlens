@@ -81,6 +81,37 @@ def classify_tag(
     return QualityResult("GOOD", "Fresh value within expected bounds")
 
 
+def normalize_quality_reading(
+    *,
+    value: Any,
+    raw_quality: str,
+    timestamp: datetime,
+    now: datetime,
+    quality_policy: dict[str, Any] | None = None,
+    previous_value: float | None = None,
+    previous_ts: datetime | None = None,
+) -> QualityResult:
+    """Shared quality normalizer for simulator + gateway emitters.
+
+    Both emitters must pass the same quality_policy (stale_after_ms /
+    missing_after_ms / bounds) so dropout and staleness classify identically.
+    """
+    policy = quality_policy or {}
+    return classify_tag(
+        value=value,
+        raw_quality=raw_quality,
+        timestamp=timestamp,
+        now=now,
+        stale_after_ms=int(policy.get("stale_after_ms", DEFAULT_STALE_AFTER_MS)),
+        missing_after_ms=int(policy.get("missing_after_ms", DEFAULT_MISSING_AFTER_MS)),
+        min_value=policy.get("min_value"),
+        max_value=policy.get("max_value"),
+        max_rate_per_s=policy.get("max_rate_per_s"),
+        previous_value=previous_value,
+        previous_ts=previous_ts,
+    )
+
+
 def is_process_evidence_usable(quality: str) -> bool:
     """BAD/STALE/MISSING/OUT_OF_RANGE cannot support process root-cause claims."""
     return quality == "GOOD"

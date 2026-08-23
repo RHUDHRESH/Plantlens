@@ -1,5 +1,7 @@
 """Mirror of packages/contracts/calm_card.schema.json."""
 
+from typing import Any
+
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
 from app.schemas.common import Confidence, RiskLevel, Severity, TimeToConsequenceState
@@ -92,3 +94,5 @@ class CalmCard(BaseModel):
     blocked_actions: list[CalmCardBlockedAction] | None = None
     time_to_consequence: CalmCardTimeToConsequence | None = None
     raw_alarm_ids: list[str] | None = None
+    fault_matrix_top: dict[str, Any] | None = None
+    fault_matrix_scores: list[dict[str, Any]] | None = None

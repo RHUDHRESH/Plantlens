@@ -10,6 +10,7 @@ from typing import Any, Callable, Awaitable
 import structlog
 from pymodbus.client import AsyncModbusSerialClient, AsyncModbusTcpClient
 
+from gateway.quality import DEFAULT_MISSING_AFTER_MS, quality_for_poll_age
 from gateway.register_codec import CodecError, decode
 from gateway.tag_frame import TagFrame
 
@@ -124,6 +125,62 @@ def build_poll_plan(tag_map: dict[str, Any]) -> list[PollGroup]:
     return plan
 
 
+def coalesce_poll_plan(
+    plan: list[PollGroup],
+    *,
+    max_registers: int = 125,
+) -> list[PollGroup]:
+    """Combine adjacent reads without crossing a register gap.
+
+    Modbus RTU pays most of its cost per request.  The Easy302 register bible lays
+    out its float values consecutively, so one bounded FC03 read is materially
+    cheaper than one request per tag.  We deliberately do not span gaps: an
+    undocumented address inside a wide read can make a PLC reject the whole block.
+    """
+    if max_registers < 1:
+        raise ValueError("max_registers must be positive")
+
+    ordered = sorted(
+        plan,
+        key=lambda group: (
+            group.source_id,
+            group.slave_id,
+            group.table,
+            group.poll_ms,
+            group.start_address,
+        ),
+    )
+    merged: list[PollGroup] = []
+    for group in ordered:
+        if not merged:
+            merged.append(group)
+            continue
+        previous = merged[-1]
+        previous_end = previous.start_address + previous.count
+        group_end = group.start_address + group.count
+        compatible = (
+            previous.source_id == group.source_id
+            and previous.slave_id == group.slave_id
+            and previous.table == group.table
+            and previous.poll_ms == group.poll_ms
+            and group.start_address <= previous_end
+            and group_end - previous.start_address <= max_registers
+        )
+        if not compatible:
+            merged.append(group)
+            continue
+        merged[-1] = PollGroup(
+            source_id=previous.source_id,
+            slave_id=previous.slave_id,
+            poll_ms=previous.poll_ms,
+            table=previous.table,
+            start_address=previous.start_address,
+            count=max(previous_end, group_end) - previous.start_address,
+            tags=tuple(sorted((*previous.tags, *group.tags), key=lambda tag: tag.address)),
+        )
+    return merged
+
+
 class ModbusPoller:
     def __init__(
         self,
@@ -227,7 +284,16 @@ class ModbusPoller:
     async def _publish_stale(self, group: PollGroup, now: datetime) -> None:
         self._diag.stale_tag_count += len(group.tags)
         for tag in group.tags:
-            await self._publish_tag(tag, [], quality="STALE", now=now, value=None)
+            last = self._last_success.get(tag.tag_id)
+            quality = quality_for_poll_age(
+                last_success=last,
+                now=now,
+                stale_after_ms=tag.stale_after_ms,
+                missing_after_ms=max(tag.stale_after_ms * 3, DEFAULT_MISSING_AFTER_MS),
+            )
+            if quality == "GOOD":
+                quality = "STALE"
+            await self._publish_tag(tag, [], quality=quality, now=now, value=None)
 
     async def poll_loop(self, plan: list[PollGroup]) -> None:
         tasks = [asyncio.create_task(self._group_loop(group)) for group in plan]

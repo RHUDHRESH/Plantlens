@@ -9,6 +9,9 @@ from typing import Any
 from app.runtime.runtime_state import RuntimeState
 from app.schemas.alarm import AlarmRule
 
+QUALITY_OPS = frozenset({"quality_stale", "quality_missing", "quality_bad", "quality_not_good"})
+NON_GOOD = frozenset({"STALE", "MISSING", "BAD"})
+
 
 @dataclass
 class AlarmEngineState:
@@ -30,6 +33,10 @@ def reset_alarm_engine_state() -> None:
     _alarm_engine_state = AlarmEngineState()
 
 
+def is_data_quality_rule(rule: AlarmRule) -> bool:
+    return rule.alarm_class == "data_quality" or rule.condition.op in QUALITY_OPS
+
+
 def _compare(op: str, value: Any, threshold: float) -> bool:
     if value is None:
         return False
@@ -49,6 +56,21 @@ def _compare(op: str, value: Any, threshold: float) -> bool:
         return value is True
     if op == "bool_false":
         return value is False
+    return False
+
+
+def _evaluate_quality_condition(rule: AlarmRule, tag: Any | None) -> bool:
+    """Evaluate STALE/MISSING/BAD quality operators — never invent process root."""
+    quality = None if tag is None else getattr(tag, "quality", None)
+    op = rule.condition.op
+    if op == "quality_stale":
+        return quality == "STALE"
+    if op == "quality_missing":
+        return tag is None or quality == "MISSING"
+    if op == "quality_bad":
+        return quality == "BAD"
+    if op == "quality_not_good":
+        return tag is None or quality in NON_GOOD
     return False
 
 
@@ -92,7 +114,11 @@ def evaluate_alarms(
     *,
     engine_state: AlarmEngineState | None = None,
 ) -> list[dict[str, Any]]:
-    """Evaluate all rules; non-GOOD quality tags do not raise process alarms."""
+    """Evaluate all rules.
+
+    Process rules: non-GOOD quality tags do not raise process alarms (fail-closed).
+    Data-quality rules: raise on STALE/MISSING/BAD so operators see sensor_bad, never a process root.
+    """
     if now.tzinfo is None:
         now = now.replace(tzinfo=timezone.utc)
     local_state = engine_state or _alarm_engine_state
@@ -104,14 +130,20 @@ def evaluate_alarms(
 
         tag = state.get_tag(rule.tag)
         was_active = rule.id in state.active_alarms
+        dq_rule = is_data_quality_rule(rule)
 
-        if tag is None or tag.quality != "GOOD":
-            local_state.condition_true_since.pop(rule.id, None)
-            if was_active and rule.latching and rule.id not in local_state.acked:
-                active_records.append(state.active_alarms[rule.id])
-            continue
+        if dq_rule:
+            breached = _evaluate_quality_condition(rule, tag)
+            severity = rule.severity
+        else:
+            # Fail-closed: process alarms require GOOD quality evidence.
+            if tag is None or tag.quality != "GOOD":
+                local_state.condition_true_since.pop(rule.id, None)
+                if was_active and rule.latching and rule.id not in local_state.acked:
+                    active_records.append(state.active_alarms[rule.id])
+                continue
+            breached, severity = _evaluate_condition(rule, tag.value, currently_active=was_active)
 
-        breached, severity = _evaluate_condition(rule, tag.value, currently_active=was_active)
         delay_ms = rule.delay_ms + rule.condition.for_ms
 
         if breached:
@@ -125,23 +157,30 @@ def evaluate_alarms(
                     active_records.append(state.active_alarms[rule.id])
                 continue
 
+            tag_quality = getattr(tag, "quality", "MISSING") if tag is not None else "MISSING"
+            tag_value = getattr(tag, "value", None) if tag is not None else None
+            tag_asset = getattr(tag, "asset_id", None) if tag is not None else None
+            tag_ts = getattr(tag, "timestamp", now) if tag is not None else now
+            raised_at = tag_ts.isoformat().replace("+00:00", "Z")
+
             record = {
                 "alarm_id": rule.id,
-                "asset_id": rule.asset_id or tag.asset_id,
+                "asset_id": rule.asset_id or tag_asset,
                 "tag_id": rule.tag,
                 "severity": severity,
                 "message": rule.message,
-                "raised_at": tag.timestamp.isoformat().replace("+00:00", "Z"),
-                "value": tag.value,
+                "raised_at": raised_at,
+                "value": tag_value,
                 "acked": rule.id in local_state.acked,
                 "priority": rule.priority,
-                "quality": tag.quality,
+                "quality": tag_quality,
+                "alarm_class": "data_quality" if dq_rule else "process",
                 "evidence": {
                     "tag_id": rule.tag,
-                    "observed_value": tag.value,
+                    "observed_value": tag_value,
                     "comparator": rule.condition.op,
                     "threshold": rule.condition.threshold or rule.condition.critical or rule.condition.warning,
-                    "quality": tag.quality,
+                    "quality": tag_quality,
                 },
             }
             active_records.append(record)

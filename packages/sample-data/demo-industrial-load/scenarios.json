@@ -1,0 +1,133 @@
+{
+  "version": "1.0.0",
+  "scenarios": [
+    {
+      "id": "scn_il_motor_overload",
+      "name": "Motor Mechanical Overload",
+      "description": "Motor mechanical load rises → current spikes → speed drops → vibration rises → DC bus sags. Root must be MOTOR-001.",
+      "duration_ms": 14000,
+      "expected_situation": "MOTOR_MECHANICAL_OVERLOAD",
+      "expected_root_cause": "MOTOR-001",
+      "expected_first_signal": "MOTOR_001_CURRENT_HIGH",
+      "expected_alarms": ["MOTOR_001_CURRENT_HIGH", "MOTOR_001_RPM_LOW", "BUS_001_V_LOW"],
+      "expected_rejected_candidates": ["BAT-001", "DC-BUS-001"],
+      "expected_calm_card_action": "Inspect shaft load, coupling, and bearing drag",
+      "events": [
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_001_I",    "asset_id": "MOTOR-001",  "value": 2.0,   "unit": "A" },
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_001_RPM",  "asset_id": "MOTOR-001",  "value": 1450,  "unit": "rpm" },
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_001_VIB",  "asset_id": "MOTOR-001",  "value": 1.5,   "unit": "mm/s" },
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_001_TEMP", "asset_id": "MOTOR-001",  "value": 45.0,  "unit": "C" },
+        { "at_ms": 0, "action": "set", "tag": "BUS_001_V",      "asset_id": "DC-BUS-001", "value": 48.0,  "unit": "V" },
+        { "at_ms": 0, "action": "set", "tag": "BAT_001_V",      "asset_id": "BAT-001",    "value": 49.5,  "unit": "V" },
+        { "at_ms": 2000, "action": "set", "tag": "MOTOR_001_I",   "asset_id": "MOTOR-001",  "value": 4.5,  "unit": "A" },
+        { "at_ms": 4000, "action": "set", "tag": "MOTOR_001_RPM", "asset_id": "MOTOR-001",  "value": 650,  "unit": "rpm" },
+        { "at_ms": 5000, "action": "set", "tag": "MOTOR_001_VIB", "asset_id": "MOTOR-001",  "value": 4.5,  "unit": "mm/s" },
+        { "at_ms": 6000, "action": "set", "tag": "BUS_001_V",     "asset_id": "DC-BUS-001", "value": 40.5, "unit": "V" },
+        { "at_ms": 10000, "action": "ramp", "tag": "MOTOR_001_TEMP", "asset_id": "MOTOR-001", "from": 45.0, "to": 82.0, "over_ms": 3000, "unit": "C" }
+      ]
+    },
+    {
+      "id": "scn_il_fan_airflow_blockage",
+      "name": "Fan Airflow Blockage",
+      "description": "Fan RPM stays normal but airflow collapses — obstruction in duct. Root must be FAN-001.",
+      "duration_ms": 10000,
+      "expected_situation": "FAN_AIRFLOW_BLOCKAGE",
+      "expected_root_cause": "FAN-001",
+      "expected_first_signal": "FAN_001_AIRFLOW_LOW",
+      "expected_alarms": ["FAN_001_AIRFLOW_LOW"],
+      "expected_rejected_candidates": [],
+      "expected_calm_card_action": "Inspect fan duct for blockage or obstruction",
+      "events": [
+        { "at_ms": 0, "action": "set", "tag": "FAN_001_RPM",     "asset_id": "FAN-001", "value": 1200, "unit": "rpm" },
+        { "at_ms": 0, "action": "set", "tag": "FAN_001_I",       "asset_id": "FAN-001", "value": 1.0,  "unit": "A" },
+        { "at_ms": 0, "action": "set", "tag": "FAN_001_AIRFLOW", "asset_id": "FAN-001", "value": 60.0, "unit": "m3/h" },
+        { "at_ms": 0, "action": "set", "tag": "BUS_001_V",       "asset_id": "DC-BUS-001", "value": 48.0, "unit": "V" },
+        { "at_ms": 3000, "action": "set", "tag": "FAN_001_AIRFLOW", "asset_id": "FAN-001", "value": 12.0, "unit": "m3/h" },
+        { "at_ms": 4500, "action": "set", "tag": "FAN_001_I",       "asset_id": "FAN-001", "value": 1.8,  "unit": "A" }
+      ]
+    },
+    {
+      "id": "scn_il_blower_bearing_wear",
+      "name": "Blower Bearing Wear",
+      "description": "Vibration rises first, then temperature follows, then current increases — classic bearing wear progression. Root must be BLOWER-001.",
+      "duration_ms": 14000,
+      "expected_situation": "BLOWER_BEARING_WEAR",
+      "expected_root_cause": "BLOWER-001",
+      "expected_first_signal": "BLOWER_001_VIB_HIGH",
+      "expected_alarms": ["BLOWER_001_VIB_HIGH", "BLOWER_001_TEMP_HIGH"],
+      "expected_rejected_candidates": ["DC-BUS-001"],
+      "expected_calm_card_action": "Inspect blower bearings — plan shutdown for lubrication or replacement",
+      "events": [
+        { "at_ms": 0, "action": "set", "tag": "BLOWER_001_I",       "asset_id": "BLOWER-001",  "value": 1.5,  "unit": "A" },
+        { "at_ms": 0, "action": "set", "tag": "BLOWER_001_RPM",     "asset_id": "BLOWER-001",  "value": 2800, "unit": "rpm" },
+        { "at_ms": 0, "action": "set", "tag": "BLOWER_001_VIB",     "asset_id": "BLOWER-001",  "value": 1.2,  "unit": "mm/s" },
+        { "at_ms": 0, "action": "set", "tag": "BLOWER_001_TEMP",    "asset_id": "BLOWER-001",  "value": 38.0, "unit": "C" },
+        { "at_ms": 0, "action": "set", "tag": "BLOWER_001_AIRFLOW", "asset_id": "BLOWER-001",  "value": 90.0, "unit": "m3/h" },
+        { "at_ms": 0, "action": "set", "tag": "BUS_001_V",          "asset_id": "DC-BUS-001",  "value": 48.0, "unit": "V" },
+        { "at_ms": 2000, "action": "set", "tag": "BLOWER_001_VIB",  "asset_id": "BLOWER-001",  "value": 3.5,  "unit": "mm/s" },
+        { "at_ms": 5000, "action": "ramp", "tag": "BLOWER_001_TEMP", "asset_id": "BLOWER-001", "from": 38.0, "to": 68.0, "over_ms": 3000, "unit": "C" },
+        { "at_ms": 9000, "action": "set", "tag": "BLOWER_001_I",    "asset_id": "BLOWER-001",  "value": 3.8,  "unit": "A" }
+      ]
+    },
+    {
+      "id": "scn_il_battery_supply_weakness",
+      "name": "Battery Supply Weakness",
+      "description": "Battery voltage drops first, then bus sags downstream — motor current is normal, ruling out load-side cause. Root must be BAT-001.",
+      "duration_ms": 12000,
+      "expected_situation": "BATTERY_SUPPLY_WEAKNESS",
+      "expected_root_cause": "BAT-001",
+      "expected_first_signal": "BAT_001_V_LOW",
+      "expected_alarms": ["BAT_001_V_LOW", "BUS_001_V_LOW"],
+      "expected_rejected_candidates": ["MOTOR-001", "DC-BUS-001"],
+      "expected_calm_card_action": "Check battery charge state and charger output",
+      "events": [
+        { "at_ms": 0, "action": "set", "tag": "BAT_001_V",      "asset_id": "BAT-001",    "value": 48.5, "unit": "V" },
+        { "at_ms": 0, "action": "set", "tag": "BAT_001_SOC",    "asset_id": "BAT-001",    "value": 75.0, "unit": "%" },
+        { "at_ms": 0, "action": "set", "tag": "BUS_001_V",      "asset_id": "DC-BUS-001", "value": 48.0, "unit": "V" },
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_001_I",    "asset_id": "MOTOR-001",  "value": 2.0,  "unit": "A" },
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_001_RPM",  "asset_id": "MOTOR-001",  "value": 1450, "unit": "rpm" },
+        { "at_ms": 3000, "action": "ramp", "tag": "BAT_001_V",  "asset_id": "BAT-001",    "from": 48.5, "to": 41.0, "over_ms": 2000, "unit": "V" },
+        { "at_ms": 5500, "action": "set", "tag": "BUS_001_V",   "asset_id": "DC-BUS-001", "value": 40.0, "unit": "V" }
+      ]
+    },
+    {
+      "id": "scn_il_charger_failure",
+      "name": "Charger Failure While On Mains",
+      "description": "Charger output current drops to zero — battery discharges without replenishment, SOC falls. Root must be CHARGER-001.",
+      "duration_ms": 14000,
+      "expected_situation": "CHARGER_FAILURE",
+      "expected_root_cause": "CHARGER-001",
+      "expected_first_signal": "CHRG_001_CURRENT_LOW",
+      "expected_alarms": ["CHRG_001_CURRENT_LOW", "BAT_001_SOC_LOW"],
+      "expected_rejected_candidates": ["BAT-001"],
+      "expected_calm_card_action": "Inspect charger output — verify mains supply and fuse integrity",
+      "events": [
+        { "at_ms": 0, "action": "set", "tag": "CHRG_001_I",  "asset_id": "CHARGER-001", "value": 5.0,  "unit": "A" },
+        { "at_ms": 0, "action": "set", "tag": "CHRG_001_V",  "asset_id": "CHARGER-001", "value": 54.0, "unit": "V" },
+        { "at_ms": 0, "action": "set", "tag": "BAT_001_SOC", "asset_id": "BAT-001",     "value": 55.0, "unit": "%" },
+        { "at_ms": 0, "action": "set", "tag": "BAT_001_V",   "asset_id": "BAT-001",     "value": 48.5, "unit": "V" },
+        { "at_ms": 0, "action": "set", "tag": "BUS_001_V",   "asset_id": "DC-BUS-001",  "value": 48.0, "unit": "V" },
+        { "at_ms": 3000, "action": "set", "tag": "CHRG_001_I",  "asset_id": "CHARGER-001", "value": 0.0,  "unit": "A" },
+        { "at_ms": 3100, "action": "set", "tag": "CHRG_001_V",  "asset_id": "CHARGER-001", "value": 0.0,  "unit": "V" },
+        { "at_ms": 7000, "action": "ramp", "tag": "BAT_001_SOC", "asset_id": "BAT-001",    "from": 55.0, "to": 22.0, "over_ms": 4000, "unit": "%" }
+      ]
+    },
+    {
+      "id": "scn_il_sensor_fault_false_alarm",
+      "name": "Sensor Fault — No Confident Root Cause",
+      "description": "Motor current tag goes STALE. System must mark sensor_bad and must NOT infer a process root cause.",
+      "duration_ms": 8000,
+      "expected_situation": null,
+      "expected_root_cause": null,
+      "expected_first_signal": null,
+      "expected_alarms": [],
+      "expected_rejected_candidates": [],
+      "expected_calm_card_action": null,
+      "events": [
+        { "at_ms": 0, "action": "set", "tag": "MOTOR_001_I",   "asset_id": "MOTOR-001",  "value": 2.0, "unit": "A" },
+        { "at_ms": 0, "action": "set", "tag": "BUS_001_V",     "asset_id": "DC-BUS-001", "value": 48.0,"unit": "V" },
+        { "at_ms": 3000, "action": "fault", "tag": "MOTOR_001_I", "asset_id": "MOTOR-001", "fault": { "type": "stale" }, "quality": "STALE" }
+      ]
+    }
+  ]
+}

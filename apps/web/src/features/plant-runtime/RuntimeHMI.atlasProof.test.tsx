@@ -37,6 +37,16 @@ vi.mock("../../api/client", () => ({
     latest_calm_card: null,
     asset_status: {},
   }),
+  getAiProviderHealth: vi.fn().mockResolvedValue({
+    enabled: false,
+    healthy: false,
+    state: "offline",
+    base_url: "http://127.0.0.1:11434",
+    model: "llama3",
+    detail: "disabled",
+    advisory_only: true,
+  }),
+  postAiMessage: vi.fn(),
   escalateIncident: vi.fn(),
 }));
 
@@ -73,7 +83,7 @@ describe("RuntimeHMI connection atlas proof", () => {
 
   it("returns to atlas and focuses asset when connection screen opens atlas", async () => {
     wrap(<RuntimeHMI />);
-    await screen.findByText("Plant hierarchy");
+    expect(await screen.findByTestId("monitor-screen")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Connection" }));
     await screen.findByText("Connection / Commissioning");
     fireEvent.click(screen.getByRole("button", { name: "Open in Atlas" }));

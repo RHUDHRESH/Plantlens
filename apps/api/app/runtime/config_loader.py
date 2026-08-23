@@ -31,6 +31,7 @@ class RuntimeConfig:
     asset_index: dict[str, dict[str, Any]]
     tag_index: dict[str, dict[str, Any]]
     graph_index: dict[str, Any] = field(default_factory=dict)
+    fault_matrix: dict[str, Any] | None = None
 
 
 _config: RuntimeConfig | None = None
@@ -84,6 +85,8 @@ def load_runtime_config(plant_id: str, *, sample_data_dir: Path) -> RuntimeConfi
     alarm_rules_doc = AlarmRules.model_validate(_load_json(bundle_dir / "alarm_rules.json"))
     causal_graph = _load_json(bundle_dir / "causal_graph.json")
     action_envelope = yaml.safe_load((bundle_dir / "action_envelope.yaml").read_text(encoding="utf-8"))
+    fault_matrix_path = bundle_dir / "fault_matrix.json"
+    fault_matrix = _load_json(fault_matrix_path) if fault_matrix_path.exists() else None
 
     return RuntimeConfig(
         plant_id=plant_id,
@@ -92,6 +95,7 @@ def load_runtime_config(plant_id: str, *, sample_data_dir: Path) -> RuntimeConfi
         asset_index=_build_asset_index(plant),
         tag_index=_build_tag_index(tag_map),
         graph_index=_build_graph_index(causal_graph),
+        fault_matrix=fault_matrix,
     )
 
 

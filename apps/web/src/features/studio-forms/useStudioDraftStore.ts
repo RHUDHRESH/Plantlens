@@ -15,6 +15,7 @@ const EMPTY_DIRTY: Record<StudioDraftFamily, boolean> = {
   alarm_rules: false,
   causal_graph: false,
   action_envelope: false,
+  fault_matrix: false,
 };
 
 function cloneBundle(bundle: StudioDraftBundle): StudioDraftBundle {

@@ -1,0 +1,247 @@
+{
+  "version": "1.0.0",
+  "sources": [
+    {
+      "source_id": "gateway-rtu",
+      "protocol": "modbus_rtu",
+      "poll_ms": 500,
+      "description": "Live RS-485 Modbus RTU gateway — real meters/VFD (CH343 USB-RS485 on COM3)",
+      "serial": {
+        "port": "COM3",
+        "baudrate": 38400,
+        "parity": "N",
+        "stopbits": 1,
+        "bytesize": 8,
+        "slave_id": 1,
+        "address_base": 0
+      }
+    }
+  ],
+  "tags": [
+    {
+      "tag": "M1_PV_V",
+      "asset_id": "M1",
+      "source_id": "gateway-rtu",
+      "signal_type": "electrical.voltage.dc",
+      "unit": "V",
+      "register_status": "DISCOVERED_BY_SCAN_PENDING_DATASHEET",
+      "register": {
+        "table": "holding",
+        "address": 16,
+        "width": 2,
+        "codec": "float32_cdab",
+        "scale": 1.0,
+        "offset": 0.0
+      },
+      "quality_policy": {
+        "stale_after_ms": 2000,
+        "min_value": 0,
+        "max_value": 70
+      }
+    },
+    {
+      "tag": "M1_PV_I",
+      "asset_id": "M1",
+      "source_id": "gateway-rtu",
+      "signal_type": "electrical.current",
+      "unit": "A",
+      "register_status": "DATASHEET_PENDING",
+      "quality_policy": {
+        "stale_after_ms": 2000,
+        "min_value": 0,
+        "max_value": 150
+      }
+    },
+    {
+      "tag": "M1_PV_P",
+      "asset_id": "M1",
+      "source_id": "gateway-rtu",
+      "signal_type": "electrical.power",
+      "unit": "W",
+      "register_status": "DATASHEET_PENDING",
+      "quality_policy": {
+        "stale_after_ms": 2000,
+        "min_value": 0
+      }
+    },
+    {
+      "tag": "DCBUS_V",
+      "asset_id": "DCBUS",
+      "source_id": "gateway-rtu",
+      "signal_type": "electrical.voltage.dc",
+      "unit": "V",
+      "register_status": "DATASHEET_PENDING",
+      "quality_policy": {
+        "stale_after_ms": 2000,
+        "min_value": 0,
+        "max_value": 70
+      }
+    },
+    {
+      "tag": "M2_GRID_V",
+      "asset_id": "M2",
+      "source_id": "gateway-rtu",
+      "signal_type": "electrical.voltage.ac",
+      "unit": "V",
+      "register_status": "DATASHEET_PENDING",
+      "quality_policy": {
+        "stale_after_ms": 2000,
+        "min_value": 0,
+        "max_value": 300
+      }
+    },
+    {
+      "tag": "M2_GRID_I",
+      "asset_id": "M2",
+      "source_id": "gateway-rtu",
+      "signal_type": "electrical.current",
+      "unit": "A",
+      "register_status": "DATASHEET_PENDING",
+      "quality_policy": {
+        "stale_after_ms": 2000,
+        "min_value": 0
+      }
+    },
+    {
+      "tag": "M2_GRID_P",
+      "asset_id": "M2",
+      "source_id": "gateway-rtu",
+      "signal_type": "electrical.power",
+      "unit": "W",
+      "register_status": "DATASHEET_PENDING",
+      "quality_policy": {
+        "stale_after_ms": 2000
+      }
+    },
+    {
+      "tag": "M2_GRID_HZ",
+      "asset_id": "M2",
+      "source_id": "gateway-rtu",
+      "signal_type": "electrical.frequency",
+      "unit": "Hz",
+      "register_status": "DATASHEET_PENDING",
+      "quality_policy": {
+        "stale_after_ms": 2000,
+        "min_value": 40,
+        "max_value": 65
+      }
+    },
+    {
+      "tag": "BAT_V",
+      "asset_id": "BAT",
+      "source_id": "gateway-rtu",
+      "signal_type": "electrical.voltage.dc",
+      "unit": "V",
+      "register_status": "DISCOVERED_BY_SCAN_PENDING_DATASHEET",
+      "register": {
+        "table": "holding",
+        "address": 12,
+        "width": 2,
+        "codec": "float32_cdab",
+        "scale": 1.0,
+        "offset": 0.0
+      },
+      "quality_policy": {
+        "stale_after_ms": 2000,
+        "min_value": 0,
+        "max_value": 32
+      }
+    },
+    {
+      "tag": "M4_INV_V",
+      "asset_id": "M4",
+      "source_id": "gateway-rtu",
+      "signal_type": "electrical.voltage.ac",
+      "unit": "V",
+      "register_status": "DATASHEET_PENDING",
+      "quality_policy": {
+        "stale_after_ms": 2000,
+        "min_value": 0,
+        "max_value": 300
+      }
+    },
+    {
+      "tag": "M4_INV_I",
+      "asset_id": "M4",
+      "source_id": "gateway-rtu",
+      "signal_type": "electrical.current",
+      "unit": "A",
+      "register_status": "DATASHEET_PENDING",
+      "quality_policy": {
+        "stale_after_ms": 2000,
+        "min_value": 0
+      }
+    },
+    {
+      "tag": "M4_INV_P",
+      "asset_id": "M4",
+      "source_id": "gateway-rtu",
+      "signal_type": "electrical.power",
+      "unit": "W",
+      "register_status": "DATASHEET_PENDING",
+      "quality_policy": {
+        "stale_after_ms": 2000
+      }
+    },
+    {
+      "tag": "M4_INV_HZ",
+      "asset_id": "M4",
+      "source_id": "gateway-rtu",
+      "signal_type": "electrical.frequency",
+      "unit": "Hz",
+      "register_status": "DATASHEET_PENDING",
+      "quality_policy": {
+        "stale_after_ms": 2000,
+        "min_value": 40,
+        "max_value": 65
+      }
+    },
+    {
+      "tag": "VFD_OUT_HZ",
+      "asset_id": "VFD",
+      "source_id": "gateway-rtu",
+      "signal_type": "electrical.frequency",
+      "unit": "Hz",
+      "register_status": "DATASHEET_PENDING",
+      "quality_policy": {
+        "stale_after_ms": 2000,
+        "min_value": 0,
+        "max_value": 120
+      }
+    },
+    {
+      "tag": "MOTOR_I",
+      "asset_id": "MOTOR",
+      "source_id": "gateway-rtu",
+      "signal_type": "electrical.current",
+      "unit": "A",
+      "register_status": "DISCOVERED_BY_SCAN_PENDING_DATASHEET",
+      "register": {
+        "table": "holding",
+        "address": 14,
+        "width": 2,
+        "codec": "float32_cdab",
+        "scale": 1.0,
+        "offset": 0.0
+      },
+      "quality_policy": {
+        "stale_after_ms": 2000,
+        "min_value": 0,
+        "max_value": 10
+      }
+    },
+    {
+      "tag": "MOTOR_RPM",
+      "asset_id": "MOTOR",
+      "source_id": "gateway-rtu",
+      "signal_type": "mechanical.speed.rpm",
+      "unit": "rpm",
+      "register_status": "DATASHEET_PENDING",
+      "quality_policy": {
+        "stale_after_ms": 2000,
+        "min_value": 0,
+        "max_value": 3000
+      }
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.schemas.common import AlarmOp, Severity
+from app.schemas.common import AlarmClass, AlarmOp, Severity
 
 
 class AlarmCondition(BaseModel):
@@ -28,6 +28,7 @@ class AlarmRule(BaseModel):
     condition: AlarmCondition
     message: str
     asset_id: str | None = None
+    alarm_class: AlarmClass = "process"
     priority: int | None = Field(default=None, ge=1, le=4)
     deadband: float = Field(default=0, ge=0)
     delay_ms: int = Field(default=0, ge=0)

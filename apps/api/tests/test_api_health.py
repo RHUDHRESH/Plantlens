@@ -41,6 +41,7 @@ ALLOWED_API_PREFIXES = (
     "/api/incidents",
     "/api/incidents/",
     "/api/agents/",
+    "/api/ai/",
     "/api/plc/",
     "/api/library/",
 )
@@ -91,7 +92,7 @@ def test_readyz_returns_active_plant_id(client: TestClient):
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "ready"
-    assert body["active_plant_id"] == "demo_microgrid_001"
+    assert body["active_plant_id"] == "bench_rig_001"
 
 
 def test_request_id_header_generated(client: TestClient):
@@ -289,7 +290,17 @@ def test_only_expected_shell_and_chunk_routes_mounted(client: TestClient):
 
 def test_lifespan_binds_settings(client: TestClient):
     assert client.app.state.settings is not None
-    assert client.app.state.settings.active_plant_id == "demo_microgrid_001"
+    assert client.app.state.settings.active_plant_id == "bench_rig_001"
+
+
+def test_lifespan_init_observability_without_otel_endpoint():
+    """OTEL unset must not crash startup (init_observability is a no-op)."""
+    get_settings.cache_clear()
+    with TestClient(create_app()) as test_client:
+        settings = test_client.app.state.settings
+        assert settings.otel_exporter_otlp_endpoint == ""
+        response = test_client.get("/healthz")
+        assert response.status_code == 200
 
 
 def test_lifespan_shutdown_completes_without_error():

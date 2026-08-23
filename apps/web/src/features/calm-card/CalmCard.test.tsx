@@ -13,9 +13,18 @@ describe("CalmCard", () => {
     expect(screen.getByLabelText(/First signal/i)).toHaveTextContent(/Motor current rose first/i);
     expect(screen.getByText(/5 raw alarms grouped/i)).toBeInTheDocument();
     expect(screen.getByText(/Inspect shaft load/i)).toBeInTheDocument();
-    fireEvent.click(screen.getByText(/Show evidence & details/i));
+    // warning/critical open evidence by default
+    expect(screen.getByText(/Hide evidence & details/i)).toBeInTheDocument();
     expect(screen.getByText(/Restart inverter/i)).toBeInTheDocument();
     expect(screen.getByText(/Blocked while motor thermal/i)).toBeInTheDocument();
+  });
+
+  it("keeps evidence collapsed for info severity", () => {
+    render(<CalmCard card={{ ...card, severity: "info" }} />);
+    expect(screen.getByText(/Show evidence & details/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Restart inverter/i)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText(/Show evidence & details/i));
+    expect(screen.getByText(/Restart inverter/i)).toBeInTheDocument();
   });
 
   it("raw alarm disclosure is clickable", () => {

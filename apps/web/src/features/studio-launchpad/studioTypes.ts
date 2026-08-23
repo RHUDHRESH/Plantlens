@@ -5,6 +5,7 @@ export type StudioSurface =
   | "alarm_rule"
   | "causal_edge"
   | "action"
+  | "fault_matrix"
   | "role_view"
   | "compile_preview";
 

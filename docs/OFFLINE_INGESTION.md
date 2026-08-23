@@ -23,10 +23,29 @@ Offline ingestion turns engineer-authored files (signal lists, register maps, an
 |--------|------|------|---------|
 | POST | `/api/offline-ingest/uploads` | engineer | Upload CSV/XLSX file |
 | POST | `/api/offline-ingest/text` | engineer | Paste CSV-like text |
+| GET | `/api/offline-ingest/runs` | viewer | List run summaries (draft status overview) |
 | GET | `/api/offline-ingest/runs/{run_id}` | viewer | Lightweight run summary |
 | GET | `/api/offline-ingest/runs/{run_id}/report` | viewer | Full `IngestionRunReport` |
 | GET | `/api/offline-ingest/runs/{run_id}/drafts` | viewer | Draft contracts |
 | GET | `/api/offline-ingest/runs/{run_id}/quarantine` | viewer | Quarantined rows |
+
+### Studio "Ingest drafts" stub
+
+PlantLens Studio overview includes an **Ingest drafts** button that calls `GET /api/offline-ingest/runs`
+and lists run status (pending drafts). Upload remains via the API endpoints above — Studio does not
+auto-approve or apply drafts.
+
+Example:
+
+```bash
+# Engineer token
+TOKEN=$(curl -s -X POST http://localhost:8000/internal/auth-test/dev-token \
+  -H 'Content-Type: application/json' \
+  -d '{"role":"engineer","subject":"docs"}' | jq -r .access_token)
+
+curl -s -H "Authorization: Bearer $TOKEN" \
+  http://localhost:8000/api/offline-ingest/runs | jq .
+```
 
 Deferred: `resolve-quarantine`, `rerun`.
 

@@ -40,7 +40,10 @@ export interface CalmCardTimeToConsequence {
   target_label: string;
   state: TimeToConsequenceState;
   seconds_low?: number | null;
+  seconds_mid?: number | null;
   seconds_high?: number | null;
+  confidence?: number | null;
+  reason?: string | null;
 }
 
 export interface CalmCard {
@@ -62,4 +65,6 @@ export interface CalmCard {
   blocked_actions?: CalmCardBlockedAction[];
   time_to_consequence?: CalmCardTimeToConsequence | null;
   raw_alarm_ids?: string[];
+  fault_matrix_top?: Record<string, unknown> | null;
+  fault_matrix_scores?: Array<Record<string, unknown>>;
 }

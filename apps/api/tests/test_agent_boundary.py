@@ -20,7 +20,12 @@ AGENTS_ROOT = REPO_ROOT / "apps" / "agents"
 
 
 @pytest.fixture(autouse=True)
-def reset_singletons() -> None:
+def reset_singletons(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.settings import get_settings
+
+    monkeypatch.setenv("ACTIVE_PLANT_ID", "demo_microgrid_001")
+    monkeypatch.setenv("SAMPLE_DATA_DIR", str(DEMO_DIR))
+    get_settings.cache_clear()
     reset_runtime_config_for_tests()
     reset_simulator_gateway_for_tests()
     yield

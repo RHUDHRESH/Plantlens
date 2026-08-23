@@ -1,4 +1,5 @@
 import type { CalmCard } from "../app/schemas/calmCard";
+import type { FaultMatrix, FaultMatrixScore } from "../app/schemas/faultMatrix";
 import type { Situation } from "../app/schemas/situation";
 import type { TagFrame } from "../app/schemas/tagFrame";
 import type { AssetStatus, MapEdge, MapNode } from "../features/maps2d/mapTypes";
@@ -35,11 +36,17 @@ export interface ActiveAlarm {
   priority?: number;
 }
 
+export interface RuntimeEvidencePacketLite {
+  fault_matrix_scores?: FaultMatrixScore[];
+}
+
 export interface RuntimeSnapshot {
   tags: Record<string, TagFrame>;
   active_alarms: ActiveAlarm[];
   active_situations: Situation[];
   latest_calm_card: CalmCard | null;
+  latest_evidence_packet?: RuntimeEvidencePacketLite | null;
+  fault_matrix_scores?: FaultMatrixScore[];
   asset_status: Record<string, AssetStatus>;
 }
 
@@ -128,6 +135,8 @@ export interface CompiledBundle {
   content_hash: string;
   version: string;
   hmi_view_model: HmiViewModel;
+  /** Optional authored fault matrix when present on the compiled / plant bundle. */
+  fault_matrix?: FaultMatrix;
 }
 
 export type WsConnectionState = "connecting" | "live" | "stale" | "disconnected";

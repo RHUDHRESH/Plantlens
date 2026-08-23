@@ -1,0 +1,138 @@
+{
+  "version": "1.0.0",
+  "rules": [
+    {
+      "id": "CHRG_001_CURRENT_LOW",
+      "tag": "CHRG_001_I",
+      "asset_id": "CHARGER-001",
+      "severity": "warning",
+      "priority": 2,
+      "condition": { "op": "<", "threshold": 0.5, "for_ms": 500 },
+      "deadband": 0.1,
+      "message": "Charger output current low — charger may have failed"
+    },
+    {
+      "id": "BAT_001_V_LOW",
+      "tag": "BAT_001_V",
+      "asset_id": "BAT-001",
+      "severity": "critical",
+      "priority": 1,
+      "condition": { "op": "<", "threshold": 43.0, "for_ms": 500 },
+      "deadband": 0.5,
+      "message": "Battery terminal voltage low",
+      "requires_ack": true
+    },
+    {
+      "id": "BAT_001_SOC_LOW",
+      "tag": "BAT_001_SOC",
+      "asset_id": "BAT-001",
+      "severity": "warning",
+      "priority": 2,
+      "condition": { "op": "<", "threshold": 25.0, "for_ms": 0 },
+      "deadband": 2.0,
+      "message": "Battery state of charge low"
+    },
+    {
+      "id": "BUS_001_V_LOW",
+      "tag": "BUS_001_V",
+      "asset_id": "DC-BUS-001",
+      "severity": "critical",
+      "priority": 1,
+      "condition": { "op": "<", "threshold": 42.0, "for_ms": 0 },
+      "deadband": 0.5,
+      "message": "DC bus voltage low — loads at risk",
+      "requires_ack": true
+    },
+    {
+      "id": "MOTOR_001_CURRENT_HIGH",
+      "tag": "MOTOR_001_I",
+      "asset_id": "MOTOR-001",
+      "severity": "critical",
+      "priority": 1,
+      "condition": { "op": ">", "threshold": 4.0, "for_ms": 0 },
+      "deadband": 0.2,
+      "message": "Motor phase current above rated — mechanical overload suspected"
+    },
+    {
+      "id": "MOTOR_001_RPM_LOW",
+      "tag": "MOTOR_001_RPM",
+      "asset_id": "MOTOR-001",
+      "severity": "warning",
+      "priority": 2,
+      "condition": { "op": "<", "threshold": 800, "for_ms": 500 },
+      "deadband": 50,
+      "message": "Motor speed below minimum — torque demand exceeds supply"
+    },
+    {
+      "id": "MOTOR_001_TEMP_HIGH",
+      "tag": "MOTOR_001_TEMP",
+      "asset_id": "MOTOR-001",
+      "severity": "critical",
+      "priority": 1,
+      "condition": { "op": ">=", "threshold": 80.0, "for_ms": 0 },
+      "deadband": 2.0,
+      "message": "Motor winding temperature critical",
+      "requires_ack": true
+    },
+    {
+      "id": "MOTOR_001_VIB_HIGH",
+      "tag": "MOTOR_001_VIB",
+      "asset_id": "MOTOR-001",
+      "severity": "warning",
+      "priority": 3,
+      "condition": { "op": ">", "threshold": 4.0, "for_ms": 500 },
+      "deadband": 0.3,
+      "message": "Motor vibration above ISO threshold"
+    },
+    {
+      "id": "FAN_001_AIRFLOW_LOW",
+      "tag": "FAN_001_AIRFLOW",
+      "asset_id": "FAN-001",
+      "severity": "critical",
+      "priority": 1,
+      "condition": { "op": "<", "threshold": 20.0, "for_ms": 500 },
+      "deadband": 2.0,
+      "message": "Fan airflow critically low — possible duct blockage"
+    },
+    {
+      "id": "FAN_001_CURRENT_HIGH",
+      "tag": "FAN_001_I",
+      "asset_id": "FAN-001",
+      "severity": "warning",
+      "priority": 3,
+      "condition": { "op": ">", "threshold": 2.5, "for_ms": 500 },
+      "deadband": 0.1,
+      "message": "Fan current elevated"
+    },
+    {
+      "id": "BLOWER_001_VIB_HIGH",
+      "tag": "BLOWER_001_VIB",
+      "asset_id": "BLOWER-001",
+      "severity": "critical",
+      "priority": 1,
+      "condition": { "op": ">", "threshold": 3.0, "for_ms": 0 },
+      "deadband": 0.2,
+      "message": "Blower vibration high — bearing wear or imbalance"
+    },
+    {
+      "id": "BLOWER_001_TEMP_HIGH",
+      "tag": "BLOWER_001_TEMP",
+      "asset_id": "BLOWER-001",
+      "severity": "critical",
+      "priority": 1,
+      "condition": { "op": ">", "threshold": 65.0, "for_ms": 0 },
+      "deadband": 2.0,
+      "message": "Blower bearing temperature high — lubricant breakdown risk"
+    },
+    {
+      "id": "BLOWER_001_CURRENT_HIGH",
+      "tag": "BLOWER_001_I",
+      "asset_id": "BLOWER-001",
+      "severity": "warning",
+      "priority": 3,
+      "condition": { "op": ">", "threshold": 3.5, "for_ms": 500 },
+      "deadband": 0.2,
+      "message": "Blower current high — friction or bearing drag"
+    }
+  ]
+}

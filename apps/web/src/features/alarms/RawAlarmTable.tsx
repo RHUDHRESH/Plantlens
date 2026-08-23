@@ -3,6 +3,16 @@ import { useMutation } from "@tanstack/react-query";
 import { ackAlarm } from "../../api/client";
 import { ApiError } from "../../api/types";
 import type { ActiveAlarm } from "../../api/types";
+import { Badge } from "../../components/ui/badge";
+import { Button } from "../../components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../components/ui/table";
 
 interface RawAlarmTableProps {
   alarms: ActiveAlarm[];
@@ -17,11 +27,13 @@ const SEVERITY_LABEL: Record<ActiveAlarm["severity"], string> = {
   critical: "CRITICAL",
 };
 
-const SEVERITY_ICON: Record<ActiveAlarm["severity"], string> = {
-  info: "ℹ",
-  warning: "⚠",
-  critical: "✕",
-};
+function severityVariant(
+  severity: ActiveAlarm["severity"],
+): "secondary" | "warning" | "critical" {
+  if (severity === "critical") return "critical";
+  if (severity === "warning") return "warning";
+  return "secondary";
+}
 
 function AckButton({ alarmId, acked, severity }: { alarmId: string; acked: boolean; severity: ActiveAlarm["severity"] }) {
   const [confirm, setConfirm] = useState(false);
@@ -51,27 +63,30 @@ function AckButton({ alarmId, acked, severity }: { alarmId: string; acked: boole
     <span className="alarm-ack-cell">
       {needsConfirm && confirm ? (
         <>
-          <button
+          <Button
             type="button"
+            size="sm"
             disabled={mutation.isPending}
             onClick={() => mutation.mutate()}
             aria-label={`Confirm acknowledge critical alarm ${alarmId}`}
           >
             {mutation.isPending ? "Ack…" : "Confirm ack"}
-          </button>
-          <button type="button" className="pl-btn pl-btn--ghost pl-btn--compact" onClick={() => setConfirm(false)}>
+          </Button>
+          <Button type="button" variant="ghost" size="sm" onClick={() => setConfirm(false)}>
             Cancel
-          </button>
+          </Button>
         </>
       ) : (
-        <button
+        <Button
           type="button"
+          size="sm"
+          variant="outline"
           disabled={mutation.isPending}
           onClick={() => (needsConfirm ? setConfirm(true) : mutation.mutate())}
           aria-label={`Acknowledge alarm ${alarmId}`}
         >
           {mutation.isPending ? "Ack…" : "Ack"}
-        </button>
+        </Button>
       )}
       {error && <span className="alarm-ack-error" role="alert">{error}</span>}
       {mutation.isSuccess && <span className="alarm-ack-ok">Recorded</span>}
@@ -97,6 +112,7 @@ export function RawAlarmTable({
     onExpandedChange?.(next);
   };
 
+  // Glass-box copy: always "grouped", never "suppressed" / "hidden".
   const collapsedLabel =
     alarms.length === 0
       ? "No raw alarms — view raw alarms"
@@ -124,43 +140,40 @@ export function RawAlarmTable({
               Grouping receipt: Situation “{situationTitle}” grouped these alarms.
             </p>
           )}
-          <table className="raw-alarm-table">
-            <thead>
-              <tr>
-                <th scope="col">Severity</th>
-                <th scope="col">Asset</th>
-                <th scope="col">Message</th>
-                <th scope="col">Time</th>
-                <th scope="col">Ack</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table className="raw-alarm-table">
+            <TableHeader>
+              <TableRow>
+                <TableHead scope="col">Severity</TableHead>
+                <TableHead scope="col">Asset</TableHead>
+                <TableHead scope="col">Message</TableHead>
+                <TableHead scope="col">Time</TableHead>
+                <TableHead scope="col">Ack</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {alarms.length === 0 ? (
-                <tr>
-                  <td colSpan={5}>No active raw alarms.</td>
-                </tr>
+                <TableRow>
+                  <TableCell colSpan={5}>No active raw alarms.</TableCell>
+                </TableRow>
               ) : (
                 alarms.map((alarm) => (
-                  <tr key={alarm.alarm_id}>
-                    <td>
-                      <span
-                        className={`alarm-sev alarm-sev--${alarm.severity}`}
-                        title={SEVERITY_LABEL[alarm.severity]}
-                      >
-                        {SEVERITY_ICON[alarm.severity]} {SEVERITY_LABEL[alarm.severity]}
-                      </span>
-                    </td>
-                    <td className="data-number">{alarm.asset_id}</td>
-                    <td>{alarm.message}</td>
-                    <td className="data-number">{alarm.raised_at}</td>
-                    <td>
+                  <TableRow key={alarm.alarm_id}>
+                    <TableCell>
+                      <Badge variant={severityVariant(alarm.severity)} className={`alarm-sev alarm-sev--${alarm.severity}`}>
+                        {SEVERITY_LABEL[alarm.severity]}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="data-number">{alarm.asset_id}</TableCell>
+                    <TableCell>{alarm.message}</TableCell>
+                    <TableCell className="data-number">{alarm.raised_at}</TableCell>
+                    <TableCell>
                       <AckButton alarmId={alarm.alarm_id} acked={alarm.acked} severity={alarm.severity} />
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       )}
     </section>

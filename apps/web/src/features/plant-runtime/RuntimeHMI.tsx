@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   escalateIncident,
+  getAiProviderHealth,
   getCompiledBundle,
   getRuntimeSnapshot,
   issueDevToken,
@@ -14,8 +15,18 @@ import { useReducedMotion } from "../../app/hooks/useReducedMotion";
 import { useWebGLAvailable } from "../../app/hooks/useWebGL";
 import { useRuntimeStore } from "../../app/store/runtime";
 import { RuntimeTopStrip } from "../../components/shell/RuntimeTopStrip";
+import { AppSidebar, type AppScreen } from "../../components/shell/AppSidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "../../components/ui/sidebar";
+import { TooltipProvider } from "../../components/ui/tooltip";
+import type { ProviderState } from "../../components/plant";
 import { AgentConsole } from "../agents/AgentConsole";
 import { CalmCard, NoActiveSituation } from "../calm-card/CalmCard";
+import { CopilotPanel } from "../copilot/CopilotPanel";
+import { MonitorScreen } from "../fault-matrix";
 import { HmiStatePanel } from "../hmi-state/HmiStatePanel";
 import {
   buildHmiAssetStatusMap,
@@ -26,6 +37,8 @@ import {
 import { RawAlarmTable } from "../alarms/RawAlarmTable";
 import { IncidentRoom } from "../incidents/IncidentRoom";
 import { AssetDetailDrawer } from "../maps2d/AssetDetailDrawer";
+import { MapToolbar } from "../maps2d/MapToolbar";
+import { PlantMap2D } from "../maps2d/PlantMap2D";
 import type { MapNode } from "../maps2d/mapTypes";
 import { LazyPlantMap3D } from "../maps3d/LazyPlantMap3D";
 import type { PlantMap3DViewportControls } from "../maps3d/PlantMap3D";
@@ -33,6 +46,9 @@ import { adaptMap3DViewModel } from "../ops3d/adapters";
 import { ScenarioLauncher } from "../scenarios/ScenarioLauncher";
 import { buildCausalPathViewModel } from "../causal-path";
 import {
+  getLockedLayers,
+  getNextZoomBand,
+  getPreviousZoomBand,
   selectCausalPathVisible,
   useOperationalMapStore,
   type MapZoomBand,
@@ -48,7 +64,7 @@ import {
 import { buildAssetSourceLineage } from "../source-lineage";
 import { selectAuthoredBundleInput, useStudioDraftStore } from "../studio-forms";
 import { StudioLaunchpad, useStudioRoute } from "../studio-launchpad";
-import { AppIconRail, type AppScreen } from "../../components/shell/AppIconRail";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../../components/ui/sheet";
 import { AtlasScreen } from "../atlas";
 import { ConnectionScreen } from "../connection";
 import { useAtlasStore } from "../../app/store/atlas";
@@ -67,8 +83,9 @@ export function RuntimeHMI() {
   const webglAvailable = useWebGLAvailable();
   const socketRef = useRef<ReturnType<typeof connectRuntimeSocket> | null>(null);
 
-  const [screen, setScreen] = useState<AppScreen>("atlas");
+  const [screen, setScreen] = useState<AppScreen>("monitor");
   const [rawExpanded, setRawExpanded] = useState(false);
+  const [copilotOpen, setCopilotOpen] = useState(false);
   const [authReady, setAuthReady] = useState(false);
   const [incidentId, setIncidentId] = useState<string | null>(null);
   const [agentOpen, setAgentOpen] = useState(false);
@@ -76,6 +93,8 @@ export function RuntimeHMI() {
   const [showLegend, setShowLegend] = useState(true);
   const [density, setDensity] = useState<"comfortable" | "compact">("comfortable");
   const [map3dControls, setMap3dControls] = useState<PlantMap3DViewportControls | null>(null);
+  const [selectedFaultId, setSelectedFaultId] = useState<string | null>(null);
+  const [showMonitorMap, setShowMonitorMap] = useState(false);
 
   const mapMode = useOperationalMapStore((s) => s.mode);
   const zoomBand = useOperationalMapStore((s) => s.zoomBand);
@@ -83,6 +102,7 @@ export function RuntimeHMI() {
   const selectedAssetId = useOperationalMapStore((s) => s.selectedAssetId);
   const focusAssetId = useOperationalMapStore((s) => s.focusedAssetId);
   const visibleLayers = useOperationalMapStore((s) => s.visibleLayers);
+  const activeSituationLocked = useOperationalMapStore((s) => s.activeSituationLocked);
   const setMapMode = useOperationalMapStore((s) => s.setMode);
   const setMapRole = useOperationalMapStore((s) => s.setRole);
   const selectAsset = useOperationalMapStore((s) => s.selectAsset);
@@ -91,10 +111,12 @@ export function RuntimeHMI() {
   const setActiveSituationLocked = useOperationalMapStore((s) => s.setActiveSituationLocked);
   const dispatchMapCommand = useOperationalMapStore((s) => s.dispatchMapCommand);
   const setZoomBand = useOperationalMapStore((s) => s.setZoomBand);
+  const toggleLayer = useOperationalMapStore((s) => s.toggleLayer);
   const showCausalPath = useOperationalMapStore(selectCausalPathVisible);
   const connection = useRuntimeStore((s) => s.connection);
   const assetStatus = useRuntimeStore((s) => s.assetStatus);
   const calmCard = useRuntimeStore((s) => s.calmCard);
+  const faultMatrixScores = useRuntimeStore((s) => s.faultMatrixScores);
   const activeSituation = useRuntimeStore((s) => s.activeSituation);
   const activeAlarms = useRuntimeStore((s) => s.activeAlarms);
   const tags = useRuntimeStore((s) => s.tags);
@@ -126,6 +148,20 @@ export function RuntimeHMI() {
     retry: 1,
   });
 
+  const providerHealthQuery = useQuery({
+    queryKey: ["ai-provider-health"],
+    queryFn: ({ signal }) => getAiProviderHealth(signal),
+    enabled: authReady,
+    refetchInterval: 15_000,
+    retry: 0,
+  });
+
+  const providerState: ProviderState =
+    providerHealthQuery.data?.state ?? (providerHealthQuery.isError ? "offline" : "degraded");
+  const providerLabel = providerHealthQuery.data?.enabled
+    ? `Advisor · ${providerHealthQuery.data.model}`
+    : "Advisor LLM";
+
   const escalateMutation = useMutation({
     mutationFn: () => {
       if (!calmCard || !activeSituation) {
@@ -137,7 +173,10 @@ export function RuntimeHMI() {
         raw_alarms: activeAlarms,
       });
     },
-    onSuccess: (data) => setIncidentId(data.incident.incident_id),
+    onSuccess: (data) => {
+      setIncidentId(data.incident.incident_id);
+      setScreen("incidents");
+    },
   });
 
   useEffect(() => {
@@ -198,6 +237,7 @@ export function RuntimeHMI() {
 
   const hmi = compiledQuery.data?.hmi_view_model;
   const nodes2d = hmi?.map_2d?.nodes ?? [];
+  const edges2d = hmi?.map_2d?.edges ?? [];
   const map3d = useMemo(() => adaptMap3DViewModel(hmi?.map_3d), [hmi?.map_3d]);
   const nodes3d = map3d.nodes;
   const edges3d = map3d.edges;
@@ -296,7 +336,8 @@ export function RuntimeHMI() {
     studioAuthoredBundle,
   ]);
 
-  const showStudio = mapRole === "engineer" || mapRole === "maintenance";
+  const showScenarios = mapRole === "engineer";
+  const faultMatrix = compiledQuery.data?.fault_matrix ?? null;
 
   const handleSelectAsset = useCallback(
     (id: string) => {
@@ -337,6 +378,70 @@ export function RuntimeHMI() {
       setZoomBand(band);
     },
     [setZoomBand],
+  );
+
+  const openRawAlarms = useCallback(() => {
+    setRawExpanded(true);
+  }, []);
+
+  const openCopilot = useCallback(() => {
+    setCopilotOpen(true);
+  }, []);
+
+  const handleMapModeChange = useCallback(
+    (mode: "2d" | "3d") => {
+      setMapMode(mode);
+      if (mode === "3d") setScreen("twin");
+    },
+    [setMapMode],
+  );
+
+  const handleToggleCausalPath = useCallback(() => {
+    dispatchMapCommand({ type: "show_causal_path", visible: !showCausalPath });
+  }, [dispatchMapCommand, showCausalPath]);
+
+  const handleZoomIn = useCallback(() => {
+    const next = getNextZoomBand(zoomBand);
+    if (next) setZoomBand(next);
+    if (mapMode === "3d") map3dControls?.zoomIn?.();
+  }, [zoomBand, setZoomBand, mapMode, map3dControls]);
+
+  const handleZoomOut = useCallback(() => {
+    const prev = getPreviousZoomBand(zoomBand);
+    if (prev) setZoomBand(prev);
+    if (mapMode === "3d") map3dControls?.zoomOut?.();
+  }, [zoomBand, setZoomBand, mapMode, map3dControls]);
+
+  const lockedLayers = useMemo(
+    () => getLockedLayers(activeSituationLocked),
+    [activeSituationLocked],
+  );
+
+  const mapToolbar = (
+    <MapToolbar
+      mapMode={mapMode}
+      onMapModeChange={handleMapModeChange}
+      role={mapRole}
+      onRoleChange={setMapRole}
+      visibleLayers={visibleLayers}
+      lockedLayers={lockedLayers}
+      onToggleLayer={toggleLayer}
+      showLegend={showLegend}
+      onToggleLegend={() => setShowLegend((v) => !v)}
+      showCausalPath={showCausalPath}
+      onToggleCausalPath={handleToggleCausalPath}
+      causalPathLocked={activeSituationLocked}
+      onFocusRoot={handleFocusRoot}
+      hasRoot={Boolean(rootAssetId)}
+      onFitPlant={handleFitPlant}
+      onZoomIn={handleZoomIn}
+      onZoomOut={handleZoomOut}
+      canNavigateCurrentMap={mapMode === "2d" || Boolean(map3dControls)}
+      zoomBand={zoomBand}
+      density={density}
+      onDensityChange={setDensity}
+      reducedMotion={reducedMotion}
+    />
   );
 
   const causalPathViewModel = useMemo(
@@ -430,7 +535,7 @@ export function RuntimeHMI() {
       },
       fitPlant: handleFitPlant,
       focusRoot: handleFocusRoot,
-      openRawAlarms: () => setRawExpanded(true),
+      openRawAlarms,
       setMapMode: (mode: "2d" | "3d") => setMapMode(mode),
       setRole: (role: "operator" | "engineer" | "maintenance" | "manager") => setMapRole(role),
       toggleLegend: () => setShowLegend((v) => !v),
@@ -445,6 +550,7 @@ export function RuntimeHMI() {
       mapMode,
       handleFitPlant,
       handleFocusRoot,
+      openRawAlarms,
       setMapMode,
       setMapRole,
       studio.openOverview,
@@ -508,23 +614,59 @@ export function RuntimeHMI() {
     [mapMode, setMapMode],
   );
 
-  return (
-    <div className={`runtime-hmi operator-shell${density === "compact" ? " runtime-hmi--compact" : ""}`}>
-      <AppIconRail
-        screen={screen}
-        alarmCount={activeAlarms.length}
-        hasActiveEvent={Boolean(hasActiveSituation)}
-        onNav={handleNavScreen}
-        onOpenStudio={studio.openOverview}
-        reducedMotion={reducedMotion}
-      />
+  const handleOpenIncidents = useCallback(() => {
+    const activeId =
+      incidentId ?? displayHmiState?.active_incident?.incident_id ?? null;
+    if (activeId) {
+      setIncidentId(activeId);
+      setScreen("incidents");
+      return;
+    }
+    setScreen("incidents");
+  }, [incidentId, displayHmiState?.active_incident?.incident_id]);
 
-      <div className="runtime-hmi__body">
+  return (
+    <TooltipProvider delayDuration={200}>
+      <SidebarProvider defaultOpen={false}>
+        <div
+          className={`runtime-hmi operator-shell${density === "compact" ? " runtime-hmi--compact" : ""}`}
+          data-density={density}
+        >
+          <AppSidebar
+            screen={screen}
+            alarmCount={activeAlarms.length}
+            hasActiveEvent={Boolean(hasActiveSituation || incidentId)}
+            onNav={handleNavScreen}
+            onOpenStudio={studio.openOverview}
+            onOpenIncidents={handleOpenIncidents}
+            studioOpen={studio.open}
+          />
+
+          <SidebarInset className="runtime-hmi__body">
+            <div className="flex shrink-0 items-center gap-1 border-b border-line bg-surface px-1">
+              <SidebarTrigger className="size-8" aria-label="Toggle navigation" />
+            </div>
 
       <RuntimeTopStrip
         plantName={plantName}
         plantHealth={plantHealth}
-        mode="Runtime"
+        mode={
+          screen === "monitor"
+            ? "Monitor"
+            : screen === "diagnose"
+              ? "Diagnose"
+              : screen === "incidents"
+                ? "Incidents"
+                : screen === "connection"
+                  ? "Connection"
+                  : screen === "atlas"
+                    ? "Atlas"
+                    : screen === "twin"
+                      ? "Twin"
+                      : screen === "actions"
+                        ? "Act"
+                        : "Runtime"
+        }
         dataSource={dataSource}
         timeLabel={timeLabel}
         role={mapRole}
@@ -532,16 +674,80 @@ export function RuntimeHMI() {
         apiAvailable={!compiledQuery.isError}
         scenarioId={scenarioState.scenarioId}
         scenarioStatus={scenarioState.status}
+        providerState={providerState}
+        providerLabel={providerLabel}
+        onOpenCopilot={openCopilot}
         onRoleChange={setMapRole}
         onOpenAgents={() => setAgentOpen(true)}
-        onOpenScenarios={() => setScenarioOpen((v) => !v)}
+        {...(showScenarios ? { onOpenScenarios: () => setScenarioOpen(true) } : {})}
         onOpenSearch={palette.openPalette}
-        showStudio={showStudio}
-        onOpenStudio={studio.openOverview}
+        {...(screen === "monitor"
+          ? {
+              showMap: showMonitorMap,
+              onToggleMap: () => setShowMonitorMap((v) => !v),
+            }
+          : {})}
       />
+
+      {/* ── MONITOR screen (default home) ── */}
+      <ScreenWrap active={screen === "monitor"} className="runtime-hmi__monitor flex flex-1 min-h-0 flex-col">
+        <MonitorScreen
+          tags={tags}
+          scores={faultMatrixScores}
+          matrix={faultMatrix}
+          selectedFaultId={selectedFaultId}
+          onSelectFault={setSelectedFaultId}
+          showMap={showMonitorMap}
+          onToggleMap={() => setShowMonitorMap((v) => !v)}
+          mapToolbarSlot={showMonitorMap ? mapToolbar : null}
+          calmCardSlot={
+            calmCard ? (
+              <CalmCard
+                card={calmCard}
+                onViewRawAlarms={openRawAlarms}
+                onExplain={openCopilot}
+                onEscalate={() => escalateMutation.mutate()}
+                onHighlightAsset={handleHighlightAsset}
+                onFocusRoot={handleFocusRoot}
+                escalating={escalateMutation.isPending}
+              />
+            ) : (
+              <NoActiveSituation />
+            )
+          }
+          mapSlot={
+            nodes2d.length > 0 ? (
+              <PlantMap2D
+                nodes={nodes2d}
+                edges={edges2d}
+                assetStatus={effectiveAssetStatus}
+                causalPath={causalPath}
+                rootAssetId={rootAssetId}
+                affectedAssetIds={affectedAssetIds}
+                focusAssetId={focusAssetId}
+                role={mapRole}
+                zoomBand={zoomBand}
+                visibleLayers={visibleLayers}
+                tags={tags}
+                alarms={activeAlarms}
+                reducedMotion={reducedMotion}
+                showLegend={showLegend}
+                density={density}
+                onSelectAsset={handleSelectAsset}
+                onZoomBandChange={handleZoomBandChange}
+              />
+            ) : (
+              <div className="p-3 text-xs text-[var(--ink-500)]">
+                No compiled 2D map nodes — open Atlas after compile, or keep the fault matrix as the operator hero.
+              </div>
+            )
+          }
+        />
+      </ScreenWrap>
 
       {/* ── ATLAS screen ── */}
       <ScreenWrap active={screen === "atlas"} className="runtime-hmi__atlas flex flex-1 min-h-0 flex-col relative">
+        {mapToolbar}
         <AtlasScreen
           tags={tags}
           assetStatus={effectiveAssetStatus}
@@ -556,7 +762,7 @@ export function RuntimeHMI() {
             focusAsset(id);
             useAtlasStore.getState().selectEquipment(id);
           }}
-          onViewRawAlarms={() => setRawExpanded(true)}
+          onViewRawAlarms={openRawAlarms}
           onEscalate={() => escalateMutation.mutate()}
           onHighlightAsset={handleHighlightAsset}
           onFocusRoot={handleFocusRoot}
@@ -570,11 +776,6 @@ export function RuntimeHMI() {
             />
           }
         />
-        {scenarioOpen && (
-          <div className="runtime-hmi__scenario-panel runtime-hmi__scenario-panel--atlas">
-            <ScenarioLauncher onClose={() => setScenarioOpen(false)} />
-          </div>
-        )}
       </ScreenWrap>
 
       {/* ── CONNECTION screen ── */}
@@ -594,43 +795,91 @@ export function RuntimeHMI() {
         />
       </ScreenWrap>
 
-      {/* ── ALARMS screen ── */}
-      <ScreenWrap active={screen === "alarms"}>
-        <div className="runtime-hmi__fullscreen-panel">
+      {/* ── DIAGNOSE screen (evidence-first) ── */}
+      <ScreenWrap active={screen === "diagnose"}>
+        <div className="runtime-hmi__fullscreen-panel runtime-hmi__diagnose-panel">
           <div className="runtime-hmi__fullscreen-header">
-            <span className="runtime-hmi__screen-title">Active Alarms</span>
-            <span className="runtime-hmi__screen-count">{activeAlarms.length} active</span>
+            <span className="runtime-hmi__screen-title">Diagnose</span>
+            <span className="runtime-hmi__screen-count">{activeAlarms.length} alarms</span>
           </div>
-          <RawAlarmTable
-            alarms={activeAlarms}
-            situationTitle={activeSituation?.title ?? null}
-            defaultExpanded
-            onExpandedChange={() => undefined}
-          />
+          <div className="runtime-hmi__diagnose-grid">
+            <section className="runtime-hmi__diagnose-evidence" aria-label="Situation evidence">
+              {displayHmiState ? (
+                <HmiStatePanel
+                  state={displayHmiState}
+                  runtimeError={hmiRuntimeError}
+                  onViewRawAlarms={openRawAlarms}
+                  onHighlightAsset={handleHighlightAsset}
+                />
+              ) : calmCard ? (
+                <CalmCard
+                  card={calmCard}
+                  onViewRawAlarms={openRawAlarms}
+                  onExplain={openCopilot}
+                  onEscalate={() => escalateMutation.mutate()}
+                  onHighlightAsset={handleHighlightAsset}
+                  onFocusRoot={handleFocusRoot}
+                  escalating={escalateMutation.isPending}
+                />
+              ) : (
+                <NoActiveSituation />
+              )}
+            </section>
+            <section className="runtime-hmi__diagnose-alarms" aria-label="Raw alarms">
+              <h3 className="runtime-hmi__diagnose-alarms-title">Raw alarms</h3>
+              <RawAlarmTable
+                alarms={activeAlarms}
+                situationTitle={activeSituation?.title ?? null}
+                defaultExpanded
+                onExpandedChange={() => undefined}
+              />
+            </section>
+          </div>
         </div>
       </ScreenWrap>
 
-      {/* ── EVENT screen ── */}
-      <ScreenWrap active={screen === "event"}>
-        <div className="runtime-hmi__fullscreen-panel runtime-hmi__event-panel">
-          {displayHmiState ? (
-            <HmiStatePanel
-              state={displayHmiState}
-              runtimeError={hmiRuntimeError}
-              onViewRawAlarms={() => { setRawExpanded(true); setScreen("alarms"); }}
-              onHighlightAsset={handleHighlightAsset}
-            />
-          ) : calmCard ? (
-            <CalmCard
-              card={calmCard}
-              onViewRawAlarms={() => { setRawExpanded(true); setScreen("alarms"); }}
-              onEscalate={() => escalateMutation.mutate()}
-              onHighlightAsset={handleHighlightAsset}
-              onFocusRoot={handleFocusRoot}
-              escalating={escalateMutation.isPending}
-            />
+      {/* ── INCIDENTS screen ── */}
+      <ScreenWrap active={screen === "incidents"}>
+        <div className="runtime-hmi__fullscreen-panel" data-testid="incidents-screen">
+          <div className="runtime-hmi__fullscreen-header">
+            <span className="runtime-hmi__screen-title">Incidents</span>
+          </div>
+          {incidentId || displayHmiState?.active_incident?.incident_id ? (
+            <div className="pl-empty-state" role="status">
+              <p>Incident room is open. Close it to return here.</p>
+              {!incidentId && displayHmiState?.active_incident ? (
+                <button
+                  type="button"
+                  className="pl-btn pl-btn--primary pl-btn--compact mt-2"
+                  onClick={() =>
+                    setIncidentId(displayHmiState.active_incident!.incident_id)
+                  }
+                >
+                  Open {displayHmiState.active_incident.title}
+                </button>
+              ) : null}
+            </div>
+          ) : calmCard && activeSituation ? (
+            <div className="runtime-hmi__actions-inner flex flex-col gap-3 p-3">
+              <p className="text-sm text-[var(--ink-700)]">
+                No incident room open. Escalate the active situation to open an
+                evidence-first incident room.
+              </p>
+              <CalmCard
+                card={calmCard}
+                onViewRawAlarms={openRawAlarms}
+                onExplain={openCopilot}
+                onEscalate={() => escalateMutation.mutate()}
+                onHighlightAsset={handleHighlightAsset}
+                onFocusRoot={handleFocusRoot}
+                escalating={escalateMutation.isPending}
+              />
+            </div>
           ) : (
-            <NoActiveSituation />
+            <div className="pl-empty-state" role="status">
+              No active incident. Escalate from Monitor or Diagnose when a
+              situation needs an evidence-first room.
+            </div>
           )}
         </div>
       </ScreenWrap>
@@ -663,7 +912,7 @@ export function RuntimeHMI() {
               <HmiStatePanel
                 state={displayHmiState}
                 runtimeError={null}
-                onViewRawAlarms={() => setScreen("alarms")}
+                onViewRawAlarms={() => setScreen("diagnose")}
                 onHighlightAsset={(id) => { handleHighlightAsset(id); setScreen("atlas"); }}
               />
             </div>
@@ -674,8 +923,6 @@ export function RuntimeHMI() {
           )}
         </div>
       </ScreenWrap>
-
-      </div>{/* end runtime-hmi__body */}
 
       <AssetDetailDrawer
         node={selectedNode}
@@ -692,7 +939,7 @@ export function RuntimeHMI() {
         open={Boolean(selectedNode)}
         onClose={clearSelection}
         onFocusMap={focusAsset}
-        onViewRawAlarms={() => setRawExpanded(true)}
+        onViewRawAlarms={openRawAlarms}
         sourceLineage={selectedAssetLineage}
         onOpenStudio={studio.openStudio}
       />
@@ -713,12 +960,57 @@ export function RuntimeHMI() {
         open={studio.open}
         route={studio.route}
         onClose={studio.closeStudio}
+        onNavigate={(surface, targetId = null) => studio.setSurface(surface, targetId)}
         compiledBundle={compiledQuery.data}
       />
 
       {incidentId && <IncidentRoom incidentId={incidentId} onClose={() => setIncidentId(null)} />}
       {agentOpen && <AgentConsole onClose={() => setAgentOpen(false)} />}
-    </div>
+
+      <CopilotPanel
+        open={copilotOpen}
+        onOpenChange={setCopilotOpen}
+        providerState={providerState}
+        providerLabel={providerLabel}
+      />
+
+      <Sheet
+        open={screen === "monitor" && rawExpanded}
+        onOpenChange={(open) => {
+          if (!open) setRawExpanded(false);
+        }}
+      >
+        <SheetContent side="bottom" className="max-h-[70vh] overflow-y-auto" data-testid="monitor-raw-alarms-sheet">
+          <SheetHeader>
+            <SheetTitle>Raw alarms</SheetTitle>
+          </SheetHeader>
+          <div className="mt-3">
+            <RawAlarmTable
+              alarms={activeAlarms}
+              situationTitle={activeSituation?.title ?? null}
+              defaultExpanded
+              onExpandedChange={(expanded) => {
+                if (!expanded) setRawExpanded(false);
+              }}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={showScenarios && scenarioOpen} onOpenChange={setScenarioOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Scenarios</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4">
+            <ScenarioLauncher onClose={() => setScenarioOpen(false)} />
+          </div>
+        </SheetContent>
+      </Sheet>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }
 

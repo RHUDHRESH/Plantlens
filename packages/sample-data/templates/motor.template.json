@@ -1,0 +1,71 @@
+{
+  "asset_type": "motor",
+  "display_name": "3-Phase Motor",
+  "version": "1.0.0",
+  "description": "Standard template for 3-phase induction motor with current, speed, temperature, and vibration monitoring.",
+  "required_tags": [
+    { "tag_suffix": "_I",   "signal_name": "Phase Current",          "unit": "A",     "data_type": "float", "description": "RMS phase current" },
+    { "tag_suffix": "_RPM", "signal_name": "Shaft Speed",            "unit": "rpm",   "data_type": "float", "description": "Encoder or estimated speed" },
+    { "tag_suffix": "_TEMP","signal_name": "Winding Temperature",    "unit": "C",     "data_type": "float", "description": "NTC/PTC winding sensor" }
+  ],
+  "optional_tags": [
+    { "tag_suffix": "_VIB", "signal_name": "Vibration RMS",          "unit": "mm/s",  "data_type": "float", "description": "ISO 10816 vibration RMS" },
+    { "tag_suffix": "_PF",  "signal_name": "Power Factor",           "unit": "",      "data_type": "float", "description": "Electrical power factor" }
+  ],
+  "default_alarm_rules": [
+    { "alarm_suffix": "CURRENT_HIGH", "tag_suffix": "_I",   "op": "gt", "warning_threshold": 3.5, "critical_threshold": 4.5, "severity": "critical", "deadband": 0.2, "debounce_ms": 0,   "unit": "A" },
+    { "alarm_suffix": "RPM_LOW",      "tag_suffix": "_RPM", "op": "lt", "critical_threshold": 800,"severity": "warning",  "deadband": 50,  "debounce_ms": 500, "unit": "rpm" },
+    { "alarm_suffix": "TEMP_HIGH",    "tag_suffix": "_TEMP","op": "gt", "critical_threshold": 80, "severity": "critical", "deadband": 2.0, "debounce_ms": 0,   "unit": "C" },
+    { "alarm_suffix": "VIB_HIGH",     "tag_suffix": "_VIB", "op": "gt", "critical_threshold": 4.5,"severity": "warning",  "deadband": 0.3, "debounce_ms": 500, "unit": "mm/s" }
+  ],
+  "quality_policy": {
+    "stale_after_ms": 2000,
+    "required_quality": "GOOD",
+    "missing_tag_action": "degrade_confidence"
+  },
+  "default_causal_edges": [
+    {
+      "role": "load_effect_on_bus",
+      "from": "{asset_id}",
+      "to": "{dc_bus_asset_id}",
+      "edge_type": "structural_load_effect",
+      "approved": false,
+      "lag_ms": [0, 5000],
+      "provenance": "template",
+      "note": "Replace {dc_bus_asset_id} with the actual bus asset id."
+    }
+  ],
+  "default_situation_types": [
+    {
+      "id": "{asset_id}_MECHANICAL_OVERLOAD",
+      "title": "Motor Mechanical Overload",
+      "root_asset_id": "{asset_id}",
+      "required_alarms": ["{asset_id_prefix}_CURRENT_HIGH", "{asset_id_prefix}_RPM_LOW"],
+      "require_all_alarms": true,
+      "why_it_matters": "Motor overload causes excess current draw, speed drop, and downstream bus sag.",
+      "projection": { "tag_id": "{asset_id_prefix}_TEMP", "alarm_id": "{asset_id_prefix}_TEMP_HIGH", "threshold": 80.0, "label": "thermal limit" }
+    }
+  ],
+  "default_action_envelope_entries": [
+    {
+      "id": "INSPECT_{asset_id}_SHAFT",
+      "label": "Inspect shaft, coupling, and bearing drag",
+      "situation_ids": ["{asset_id}_MECHANICAL_OVERLOAD"],
+      "allowed_roles": ["operator", "maintenance"],
+      "risk_level": "medium",
+      "requires_isolation": true
+    }
+  ],
+  "hmi_bindings": {
+    "primary_signal": "_I",
+    "speed_signal": "_RPM",
+    "health_signal": "_TEMP",
+    "vibration_signal": "_VIB",
+    "default_chart": "trend",
+    "status_color_map": {
+      "GOOD": "green",
+      "WARNING": "amber",
+      "FAULT": "red"
+    }
+  }
+}

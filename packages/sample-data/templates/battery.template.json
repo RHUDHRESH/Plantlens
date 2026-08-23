@@ -1,0 +1,62 @@
+{
+  "asset_type": "battery",
+  "display_name": "Battery Bank",
+  "version": "1.0.0",
+  "description": "Standard template for DC battery bank with voltage, current, SOC, and temperature monitoring.",
+  "required_tags": [
+    { "tag_suffix": "_V",    "signal_name": "Terminal Voltage",  "unit": "V",  "data_type": "float" },
+    { "tag_suffix": "_I",    "signal_name": "Current",           "unit": "A",  "data_type": "float" },
+    { "tag_suffix": "_SOC",  "signal_name": "State of Charge",   "unit": "%",  "data_type": "float" },
+    { "tag_suffix": "_TEMP", "signal_name": "Cell Temperature",  "unit": "C",  "data_type": "float" }
+  ],
+  "optional_tags": [
+    { "tag_suffix": "_SOH",  "signal_name": "State of Health",  "unit": "%",  "data_type": "float" }
+  ],
+  "default_alarm_rules": [
+    { "alarm_suffix": "V_LOW",    "tag_suffix": "_V",   "op": "lt", "critical_threshold": 43.0, "severity": "critical", "deadband": 0.5, "debounce_ms": 500, "unit": "V" },
+    { "alarm_suffix": "SOC_LOW",  "tag_suffix": "_SOC", "op": "lt", "critical_threshold": 25.0, "severity": "warning",  "deadband": 2.0, "debounce_ms": 0,   "unit": "%" },
+    { "alarm_suffix": "TEMP_HIGH","tag_suffix": "_TEMP","op": "gt", "critical_threshold": 45.0, "severity": "critical", "deadband": 1.0, "debounce_ms": 0,   "unit": "C" }
+  ],
+  "quality_policy": {
+    "stale_after_ms": 3000,
+    "required_quality": "GOOD",
+    "missing_tag_action": "degrade_confidence"
+  },
+  "default_causal_edges": [
+    {
+      "role": "battery_supplies_bus",
+      "from": "{asset_id}",
+      "to": "{dc_bus_asset_id}",
+      "edge_type": "structural_power",
+      "approved": false,
+      "lag_ms": [0, 3000],
+      "provenance": "template"
+    }
+  ],
+  "default_situation_types": [
+    {
+      "id": "{asset_id}_SUPPLY_WEAKNESS",
+      "title": "Battery Supply Weakness",
+      "root_asset_id": "{asset_id}",
+      "required_alarms": ["{asset_id_prefix}_V_LOW", "{bus_asset_id_prefix}_V_LOW"],
+      "require_all_alarms": true,
+      "why_it_matters": "Battery voltage drop precedes bus sag — source-side fault, not load-side."
+    }
+  ],
+  "default_action_envelope_entries": [
+    {
+      "id": "CHECK_{asset_id}_CHARGE",
+      "label": "Check battery charge state and charger output",
+      "situation_ids": ["{asset_id}_SUPPLY_WEAKNESS"],
+      "allowed_roles": ["operator", "maintenance"],
+      "risk_level": "low",
+      "requires_isolation": false
+    }
+  ],
+  "hmi_bindings": {
+    "primary_signal": "_V",
+    "soc_signal": "_SOC",
+    "health_signal": "_TEMP",
+    "default_chart": "gauge_and_trend"
+  }
+}

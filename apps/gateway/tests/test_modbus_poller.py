@@ -10,7 +10,13 @@ from pathlib import Path
 import pytest
 from pymodbus.client import AsyncModbusTcpClient
 
-from gateway.modbus_poller import ModbusPoller, PollGroup, PollTag, build_poll_plan
+from gateway.modbus_poller import (
+    ModbusPoller,
+    PollGroup,
+    PollTag,
+    build_poll_plan,
+    coalesce_poll_plan,
+)
 from gateway.simulator_adapter import float32_be_to_registers, start_modbus_tcp_simulator
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -118,7 +124,7 @@ async def test_poller_reads_good_quality():
 
 
 @pytest.mark.asyncio
-async def test_disconnect_publishes_stale():
+async def test_disconnect_before_first_read_publishes_missing():
     published: list = []
 
     async def capture(frame):
@@ -150,7 +156,102 @@ async def test_disconnect_publishes_stale():
     poller = ModbusPoller(client=client, gateway_id="test-gw", publish=capture)
     await poller.poll_group(group)
     assert published
-    assert published[0].quality == "STALE"
+    assert published[0].quality == "MISSING"
+
+
+@pytest.mark.asyncio
+async def test_timeout_before_first_read_marks_missing():
+    """A first-read timeout has no last value and must fail closed as MISSING."""
+    published: list = []
+
+    async def capture(frame):
+        published.append(frame)
+
+    class _TimeoutClient:
+        connected = True
+
+        async def read_holding_registers(self, *_args, **_kwargs):
+            raise TimeoutError("modbus poll timed out")
+
+    group = PollGroup(
+        source_id="gw-rs485-1",
+        slave_id=1,
+        poll_ms=100,
+        table="holding",
+        start_address=0,
+        count=2,
+        tags=(
+            PollTag(
+                tag_id="PV_101_V",
+                asset_id="PV-101",
+                unit="V",
+                address=0,
+                width=2,
+                table="holding",
+                codec="float32_be",
+                scale=1.0,
+                offset=0.0,
+                stale_after_ms=1500,
+            ),
+        ),
+    )
+    poller = ModbusPoller(client=_TimeoutClient(), gateway_id="test-gw", publish=capture)
+    await poller.poll_group(group)
+    assert published
+    assert published[0].quality == "MISSING"
+    assert published[0].value is None
+    assert poller.diagnostics.error_count >= 1
+    assert poller.diagnostics.stale_tag_count >= 1
+
+
+@pytest.mark.asyncio
+async def test_poll_plan_covers_twenty_one_register_bible_tags():
+    """21-signal REGISTER_BIBLE map is present in demo-microgrid tag_map poll plan."""
+    tag_map = json.loads(TAG_MAP.read_text(encoding="utf-8"))
+    plan = build_poll_plan(tag_map)
+    tag_ids = {tag.tag_id for group in plan for tag in group.tags}
+    expected = {
+        "PV_101_V",
+        "PV_101_I",
+        "PV_101_W",
+        "MAINS_V",
+        "MAINS_I",
+        "MAINS_W",
+        "BAT_101_V",
+        "BAT_101_I",
+        "BAT_101_W",
+        "INV_102_V",
+        "INV_102_I",
+        "INV_102_W",
+        "VFD_V",
+        "VFD_I",
+        "VFD_W",
+        "VIB_TEMP",
+        "VIB_X",
+        "VIB_Y",
+        "VIB_Z",
+        "MOTOR_301_RPM",
+        "MOTOR_301_TEMP",
+    }
+    missing = expected - tag_ids
+    assert not missing, f"missing REGISTER_BIBLE tags in poll plan: {sorted(missing)}"
+
+
+def test_coalesce_poll_plan_combines_only_adjacent_registers():
+    tag_map = json.loads(TAG_MAP.read_text(encoding="utf-8"))
+    raw_plan = build_poll_plan(tag_map)
+    plan = coalesce_poll_plan(raw_plan)
+    first_block = next(group for group in plan if group.start_address == 0)
+    assert first_block.count == 25
+    assert len(first_block.tags) == 13
+    assert len(plan) < len(raw_plan)
+    # The one-word Easy302 values have undocumented gaps, so they remain isolated.
+    assert any(group.start_address == 26 and group.count == 1 for group in plan)
+
+
+def test_coalesce_poll_plan_rejects_invalid_modbus_limit():
+    with pytest.raises(ValueError, match="positive"):
+        coalesce_poll_plan([], max_registers=0)
 
 
 @pytest.mark.asyncio

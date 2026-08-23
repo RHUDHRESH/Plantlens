@@ -23,7 +23,12 @@ SCENARIOS = json.loads((DEMO_DIR / "scenarios.json").read_text(encoding="utf-8")
 
 
 @pytest.fixture(autouse=True)
-def reset_singletons() -> None:
+def reset_singletons(monkeypatch: pytest.MonkeyPatch) -> None:
+    from app.settings import get_settings
+
+    monkeypatch.setenv("ACTIVE_PLANT_ID", "demo_microgrid_001")
+    monkeypatch.setenv("SAMPLE_DATA_DIR", str(DEMO_DIR))
+    get_settings.cache_clear()
     reset_runtime_config_for_tests()
     reset_simulator_gateway_for_tests()
     yield
@@ -67,24 +72,54 @@ def test_hero_motor_overload_end_to_end(gateway: SimulatorGateway):
 
     assert state.latest_calm_card is not None
     CalmCard.model_validate(state.latest_calm_card)
-    assert state.latest_calm_card["recommended_first_check"]["action_id"] == "INSPECT_SHAFT_LOAD"
+    # Matrix overlay may prefer fault safe_action when confidence is meaningful.
+    assert state.latest_calm_card["recommended_first_check"]["action_id"] in {
+        "INSPECT_SHAFT_LOAD",
+        "REQUEST_SAFE_STOP_MOTOR",
+    }
+    top = state.latest_calm_card.get("fault_matrix_top") or {}
+    assert top.get("fault_id") == "F_MOTOR_MECHANICAL_OVERLOAD"
 
 
 def test_sensor_stale_no_confident_situation(gateway: SimulatorGateway):
     state = asyncio.run(_run_scenario(gateway, "scn_sensor_stale_no_root"))
     scenario = next(s for s in SCENARIOS["scenarios"] if s["id"] == "scn_sensor_stale_no_root")
 
-    assert state.active_alarms == {}
+    assert "DQ_MOTOR_301_CURRENT_STALE" in state.active_alarms
+    assert all(
+        alarm.get("alarm_class") == "data_quality"
+        for alarm in state.active_alarms.values()
+    )
+    assert "MOTOR_CURRENT_HIGH" not in state.active_alarms
     assert state.active_situations == {}
     assert state.latest_calm_card is None
     assert scenario["expected_situation"] is None
     assert state.asset_status.get("MTR-301") == "sensor_bad"
 
 
+def test_stale_only_cannot_produce_process_root(gateway: SimulatorGateway):
+    """STALE-only evidence may raise DQ alarms but never a process Situation/root."""
+    state = asyncio.run(_run_scenario(gateway, "scn_sensor_stale_no_root"))
+    process_alarms = [
+        a for a in state.active_alarms.values() if a.get("alarm_class", "process") != "data_quality"
+    ]
+    assert process_alarms == []
+    assert not state.active_situations
+    assert state.latest_evidence_packet is None
+    assert state.latest_calm_card is None
+    assert state.asset_status.get("MTR-301") == "sensor_bad"
+
+
 def test_raw_alarms_preserved_in_situation(gateway: SimulatorGateway):
     state = asyncio.run(_run_scenario(gateway, "scn_motor_overload"))
     situation = next(iter(state.active_situations.values()))
-    assert set(situation["grouped_alarm_ids"]) == set(state.active_alarms.keys())
+    process_ids = {
+        alarm_id
+        for alarm_id, alarm in state.active_alarms.items()
+        if alarm.get("alarm_class", "process") != "data_quality"
+    }
+    assert set(situation["grouped_alarm_ids"]) == process_ids
+    assert process_ids  # hero scenario must still group process alarms
 
 
 def test_tag_frames_validate(gateway: SimulatorGateway):

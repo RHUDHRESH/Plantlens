@@ -40,6 +40,10 @@ class Map3DErrorBoundary extends Component<
   }
 }
 
+/**
+ * Route-split 3D entry: never eagerly load three.js on the monitor/2D path.
+ * When WebGL is unavailable (or Canvas throws), PlantMap3DFallback offers Return to 2D.
+ */
 export function LazyPlantMap3D({ webglAvailable, onSwitch2D, ...props }: LazyPlantMap3DProps) {
   if (!webglAvailable) {
     return (

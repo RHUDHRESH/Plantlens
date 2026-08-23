@@ -37,4 +37,11 @@ describe("RawAlarmTable", () => {
     wrap(<RawAlarmTable alarms={alarms} defaultExpanded />);
     expect(screen.getByRole("button", { name: /Acknowledge alarm/i })).toBeInTheDocument();
   });
+
+  it("uses grouped receipt language, never suppressed", () => {
+    wrap(<RawAlarmTable alarms={alarms} situationTitle="Motor overload" defaultExpanded />);
+    expect(screen.getByText(/grouped — view raw alarms/i)).toBeInTheDocument();
+    expect(screen.getByText(/Grouping receipt.*Motor overload.*grouped/i)).toBeInTheDocument();
+    expect(screen.queryByText(/suppress/i)).not.toBeInTheDocument();
+  });
 });

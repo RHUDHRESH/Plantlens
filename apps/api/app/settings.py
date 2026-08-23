@@ -23,11 +23,11 @@ class Settings(BaseSettings):
         validation_alias=AliasChoices("DATABASE_URL"),
     )
     active_plant_id: str = Field(
-        default="demo_microgrid_001",
+        default="bench_rig_001",
         validation_alias=AliasChoices("ACTIVE_PLANT_ID"),
     )
     sample_data_dir: str = Field(
-        default="../../packages/sample-data/demo-microgrid",
+        default="../../packages/sample-data/bench-rig",
         validation_alias=AliasChoices("SAMPLE_DATA_DIR"),
     )
     component_library_dir: str = Field(
@@ -60,6 +60,22 @@ class Settings(BaseSettings):
     agents_base_url: str = Field(
         default="http://localhost:8100",
         validation_alias=AliasChoices("AGENTS_BASE_URL"),
+    )
+    plantlens_llm_base_url: str = Field(
+        default="http://127.0.0.1:11434",
+        validation_alias=AliasChoices("PLANTLENS_LLM_BASE_URL"),
+    )
+    plantlens_llm_model: str = Field(
+        default="llama3.2",
+        validation_alias=AliasChoices("PLANTLENS_LLM_MODEL"),
+    )
+    plantlens_llm_enabled: bool = Field(
+        default=False,
+        validation_alias=AliasChoices("PLANTLENS_LLM_ENABLED"),
+    )
+    plantlens_llm_api_key: str = Field(
+        default="",
+        validation_alias=AliasChoices("PLANTLENS_LLM_API_KEY"),
     )
     otel_exporter_otlp_endpoint: str = Field(
         default="",

@@ -55,6 +55,13 @@ export function selectActions(bundle: StudioDraftBundle): Array<Record<string, u
     .filter((a): a is Record<string, unknown> => a != null);
 }
 
+export function selectFaults(bundle: StudioDraftBundle): Array<Record<string, unknown>> {
+  const matrix = asRecord(bundle.fault_matrix);
+  return asArray(matrix?.faults)
+    .map((f) => asRecord(f))
+    .filter((f): f is Record<string, unknown> => f != null && hasStringId(f, "id"));
+}
+
 export function selectRoles(bundle: StudioDraftBundle): string[] {
   const plant = asRecord(bundle.plant);
   const roles = plant?.roles;
@@ -110,6 +117,8 @@ export function surfaceToFamily(surface: string): StudioDraftFamily | null {
       return "causal_graph";
     case "action":
       return "action_envelope";
+    case "fault_matrix":
+      return "fault_matrix";
     default:
       return null;
   }
@@ -126,6 +135,8 @@ export function entityIdFromRecord(family: StudioDraftFamily, record: Record<str
     case "causal_graph":
       return readString(record, "id");
     case "action_envelope":
+      return readString(record, "id");
+    case "fault_matrix":
       return readString(record, "id");
     default:
       return "";
@@ -144,6 +155,8 @@ export function entityLabelFromRecord(family: StudioDraftFamily, record: Record<
       return `${readString(record, "from")} → ${readString(record, "to")}`;
     case "action_envelope":
       return readString(record, "label") || readString(record, "id");
+    case "fault_matrix":
+      return readString(record, "name") || readString(record, "id");
     default:
       return "";
   }
@@ -161,6 +174,8 @@ export function selectEntitiesForFamily(bundle: StudioDraftBundle, family: Studi
       return selectCausalEdges(bundle);
     case "action_envelope":
       return selectActions(bundle);
+    case "fault_matrix":
+      return selectFaults(bundle);
     default:
       return [];
   }

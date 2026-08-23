@@ -51,6 +51,7 @@ describe("studioSelectors", () => {
       alarm_rules: undefined,
       causal_graph: [],
       action_envelope: {},
+      fault_matrix: null,
     };
     expect(selectAssets(malformed)).toHaveLength(0);
     expect(selectTags(malformed)).toHaveLength(0);

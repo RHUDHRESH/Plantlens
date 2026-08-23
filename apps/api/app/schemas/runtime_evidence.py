@@ -6,6 +6,8 @@ from typing import Any, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
 
+from app.schemas.fault_matrix import FaultMatrixScore
+
 EvidenceRole = Literal[
     "first_signal",
     "supporting_signal",
@@ -82,3 +84,4 @@ class RuntimeEvidencePacket(BaseModel):
     time_to_consequence: dict[str, Any] | None = None
     audit_receipt_id: str | None = None
     deterministic_trace_id: str
+    fault_matrix_scores: list[FaultMatrixScore] = Field(default_factory=list)

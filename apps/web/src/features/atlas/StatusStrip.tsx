@@ -32,12 +32,12 @@ export function StatusStrip({
       <div className="flex items-center gap-3 min-w-0">
         <span
           className={cn(
-            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-pill text-[11px] font-semibold uppercase tracking-wide",
+            "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-[11px] font-semibold uppercase tracking-wide border border-line",
             liveDataDegraded
-              ? "bg-advisory-tint text-advisory"
+              ? "bg-advisory-tint text-advisory border-advisory/30"
               : plantHealthy && situationCount === 0
-                ? "bg-healthy/10 text-healthy"
-                : "bg-critical-tint text-critical",
+                ? "bg-surface text-ink-700"
+                : "bg-critical-tint text-critical border-critical/30",
           )}
         >
           <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden />

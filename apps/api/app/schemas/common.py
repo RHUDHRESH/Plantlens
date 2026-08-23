@@ -10,7 +10,21 @@ Confidence = Literal["low", "medium", "high"]
 RiskLevel = Literal["low", "medium", "high", "unknown"]
 
 EvidenceRole = Literal["first_signal", "evidence", "consequence"]
-AlarmOp = Literal["<", "<=", ">", ">=", "==", "!=", "bool_true", "bool_false"]
+AlarmOp = Literal[
+    "<",
+    "<=",
+    ">",
+    ">=",
+    "==",
+    "!=",
+    "bool_true",
+    "bool_false",
+    "quality_stale",
+    "quality_missing",
+    "quality_bad",
+    "quality_not_good",
+]
+AlarmClass = Literal["process", "data_quality"]
 
 ActorType = Literal["user", "agent", "system"]
 ActorRole = Literal["operator", "engineer", "maintenance", "supervisor", "admin", "agent"]

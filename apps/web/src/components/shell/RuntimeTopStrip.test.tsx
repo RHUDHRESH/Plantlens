@@ -6,7 +6,7 @@ import type { RuntimeTopStripProps } from "./RuntimeTopStrip";
 const BASE_PROPS = {
   plantName: "Demo Plant",
   plantHealth: "Normal",
-  mode: "Runtime",
+  mode: "Monitor",
   dataSource: "HMI Projection",
   timeLabel: "10:00",
   role: "engineer",
@@ -15,27 +15,25 @@ const BASE_PROPS = {
 } satisfies RuntimeTopStripProps;
 
 describe("RuntimeTopStrip", () => {
-  it("hides Studio button when showStudio is false", () => {
-    render(
-      <RuntimeTopStrip
-        {...BASE_PROPS}
-        showStudio={false}
-        onOpenStudio={vi.fn()}
-      />,
-    );
-    expect(screen.queryByRole("button", { name: /Studio/i })).not.toBeInTheDocument();
+  it("shows plant meta cluster (mode, source, time, health)", () => {
+    render(<RuntimeTopStrip {...BASE_PROPS} />);
+    expect(screen.getByText("Mode")).toBeInTheDocument();
+    expect(screen.getByText("Monitor")).toBeInTheDocument();
+    expect(screen.getByText("Source")).toBeInTheDocument();
+    expect(screen.getByText("Health")).toBeInTheDocument();
   });
 
-  it("calls onOpenStudio when Studio button is shown", () => {
-    const onOpenStudio = vi.fn();
+  it("does not expose a Studio button (Studio lives on the sidebar)", () => {
+    render(<RuntimeTopStrip {...BASE_PROPS} />);
+    expect(screen.queryByRole("button", { name: /^Studio$/i })).not.toBeInTheDocument();
+  });
+
+  it("toggles map when onToggleMap is provided", () => {
+    const onToggleMap = vi.fn();
     render(
-      <RuntimeTopStrip
-        {...BASE_PROPS}
-        showStudio
-        onOpenStudio={onOpenStudio}
-      />,
+      <RuntimeTopStrip {...BASE_PROPS} showMap={false} onToggleMap={onToggleMap} />,
     );
-    fireEvent.click(screen.getByRole("button", { name: /Studio/i }));
-    expect(onOpenStudio).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole("button", { name: /Map/i }));
+    expect(onToggleMap).toHaveBeenCalledOnce();
   });
 });

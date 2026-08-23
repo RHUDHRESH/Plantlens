@@ -1,0 +1,110 @@
+{
+  "version": "1.0.0",
+  "rules": [
+    {
+      "id": "PV_VOLTAGE_LOW",
+      "tag": "M1_PV_V",
+      "asset_id": "PV-SRC",
+      "severity": "warning",
+      "priority": 2,
+      "condition": {
+        "op": "<",
+        "threshold": 40,
+        "for_ms": 0
+      },
+      "deadband": 1.0,
+      "message": "PV/source voltage low",
+      "shelvable": false
+    },
+    {
+      "id": "PV_POWER_LOW",
+      "tag": "M1_PV_P",
+      "asset_id": "M1",
+      "severity": "info",
+      "priority": 3,
+      "condition": {
+        "op": "<",
+        "threshold": 5,
+        "for_ms": 0
+      },
+      "deadband": 1.0,
+      "message": "PV power low",
+      "shelvable": true
+    },
+    {
+      "id": "DC_BUS_LOW",
+      "tag": "DCBUS_V",
+      "asset_id": "DCBUS",
+      "severity": "warning",
+      "priority": 2,
+      "condition": {
+        "op": "<",
+        "threshold": 40,
+        "for_ms": 0
+      },
+      "deadband": 1.0,
+      "message": "DC bus voltage low",
+      "shelvable": false
+    },
+    {
+      "id": "GRID_UNDERVOLTAGE_ALM",
+      "tag": "M2_GRID_V",
+      "asset_id": "GRID",
+      "severity": "warning",
+      "priority": 2,
+      "condition": {
+        "op": "<",
+        "threshold": 200,
+        "for_ms": 0
+      },
+      "deadband": 2.0,
+      "message": "Grid mains undervoltage",
+      "shelvable": false
+    },
+    {
+      "id": "INV_OUTPUT_LOW",
+      "tag": "M4_INV_V",
+      "asset_id": "INV",
+      "severity": "warning",
+      "priority": 2,
+      "condition": {
+        "op": "<",
+        "threshold": 200,
+        "for_ms": 0
+      },
+      "deadband": 2.0,
+      "message": "Inverter output voltage low",
+      "shelvable": false
+    },
+    {
+      "id": "BATTERY_LOW",
+      "tag": "BAT_V",
+      "asset_id": "BAT",
+      "severity": "warning",
+      "priority": 2,
+      "condition": {
+        "op": "<",
+        "threshold": 24,
+        "for_ms": 0
+      },
+      "deadband": 0.3,
+      "message": "Battery voltage low",
+      "shelvable": false
+    },
+    {
+      "id": "MOTOR_CURRENT_HIGH",
+      "tag": "MOTOR_I",
+      "asset_id": "MOTOR",
+      "severity": "warning",
+      "priority": 2,
+      "condition": {
+        "op": ">",
+        "threshold": 2.6,
+        "for_ms": 0
+      },
+      "deadband": 0.2,
+      "message": "Motor current high",
+      "shelvable": false
+    }
+  ]
+}

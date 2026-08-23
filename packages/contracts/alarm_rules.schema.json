@@ -18,14 +18,23 @@
           "id": { "type": "string", "pattern": "^[A-Z0-9_]+$", "description": "Alarm id, SCREAMING_SNAKE, e.g. MOTOR_CURRENT_HIGH." },
           "tag": { "type": "string", "description": "Tag to evaluate; must exist in tag_map.json." },
           "asset_id": { "type": "string", "description": "Owning asset (denormalized for fast status derivation); must exist." },
-          "severity": { "type": "string", "enum": ["info", "warning", "critical"], "description": "Drives node color + Calm Card severity + priority." },
+          "severity": { "type": "string", "enum": ["info", "warning", "critical"], "description": "Drives node color + Calm Card severity + priority. Use info for data-quality alarms so they mark sensor_bad without inventing process root severity." },
+          "alarm_class": {
+            "type": "string",
+            "enum": ["process", "data_quality"],
+            "default": "process",
+            "description": "process = threshold/band process alarms (require GOOD quality). data_quality = STALE/MISSING/BAD sensor alarms; never feed DAG root-cause."
+          },
           "priority": { "type": "integer", "minimum": 1, "maximum": 4, "description": "1 highest. Used for ordering when not using time-to-consequence." },
           "condition": {
             "type": "object", "additionalProperties": false,
             "required": ["op"],
-            "description": "The trigger. Supports a single threshold or warning/critical bands.",
+            "description": "The trigger. Supports a single threshold, warning/critical bands, or data-quality operators.",
             "properties": {
-              "op": { "type": "string", "enum": ["<", "<=", ">", ">=", "==", "!=", "bool_true", "bool_false"] },
+              "op": {
+                "type": "string",
+                "enum": ["<", "<=", ">", ">=", "==", "!=", "bool_true", "bool_false", "quality_stale", "quality_missing", "quality_bad", "quality_not_good"]
+              },
               "threshold": { "type": "number", "description": "Single-threshold form." },
               "warning": { "type": "number", "description": "Band form: warning level." },
               "critical": { "type": "number", "description": "Band form: critical level. Must be more severe than warning (validator checks logical ordering)." },

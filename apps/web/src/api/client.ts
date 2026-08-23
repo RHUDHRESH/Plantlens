@@ -266,6 +266,80 @@ export function getPlcStatus(signal?: AbortSignal): Promise<Record<string, unkno
   return apiFetch("/api/plc/status", signal ? { signal } : {});
 }
 
+export interface AiProviderHealth {
+  enabled: boolean;
+  healthy: boolean;
+  state: "live" | "degraded" | "offline";
+  base_url: string;
+  model: string;
+  detail: string;
+  advisory_only: boolean;
+}
+
+export function getAiProviderHealth(signal?: AbortSignal): Promise<AiProviderHealth> {
+  return apiFetch<AiProviderHealth>("/api/ai/provider/health", signal ? { signal } : {});
+}
+
+export interface AiEvidenceRef {
+  ref_type: string;
+  ref_id: string;
+  quote_or_value?: string;
+  timestamp?: string | null;
+}
+
+export interface AiResponse {
+  response_id: string;
+  intent: string;
+  role: string;
+  summary: string;
+  answer: string;
+  evidence_refs: AiEvidenceRef[];
+  cited_signals: string[];
+  cited_alarms: string[];
+  cited_assets: string[];
+  cited_edges: string[];
+  cited_audit_ids: string[];
+  proposed_actions: Array<Record<string, unknown>>;
+  limitations: string[];
+  confidence: number;
+  requires_human_approval: boolean;
+  created_at: string;
+  draft_artifact?: Record<string, unknown> | null;
+}
+
+export interface AiMessageResult {
+  response: AiResponse;
+  intent: string;
+}
+
+export function postAiMessage(
+  message: string,
+  conversationId?: string | null,
+  signal?: AbortSignal,
+): Promise<AiMessageResult> {
+  return apiFetch<AiMessageResult>("/api/ai/message", {
+    method: "POST",
+    body: {
+      message,
+      ...(conversationId ? { conversation_id: conversationId } : {}),
+    },
+    ...(signal ? { signal } : {}),
+  });
+}
+
+export interface OfflineIngestRunSummary {
+  run_id: string;
+  artifact_ids: string[];
+  status: string;
+  started_at_utc: string;
+  completed_at_utc: string | null;
+  document_kind: string | null;
+}
+
+export function listOfflineIngestRuns(signal?: AbortSignal): Promise<OfflineIngestRunSummary[]> {
+  return apiFetch<OfflineIngestRunSummary[]>("/api/offline-ingest/runs", signal ? { signal } : {});
+}
+
 export function getComponentLibrary(signal?: AbortSignal): Promise<Record<string, unknown>> {
   return apiFetch("/api/library/components", signal ? { signal } : {});
 }

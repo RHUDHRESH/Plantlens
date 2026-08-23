@@ -121,3 +121,28 @@ def test_calm_card_includes_operator_disclaimer():
     card = build_calm_card_from_evidence(packet, config.action_envelope, situation_spec=spec)
     assert card["operator_authority"] == OPERATOR_AUTHORITY
     assert "does not trip" in OPERATOR_AUTHORITY.lower()
+
+
+def test_calm_card_includes_ttc_band_when_projection_available():
+    packet, config, spec = _motor_packet()
+    packet.time_to_consequence = {
+        "target_tag": "MOTOR_301_TEMP",
+        "target_label": "Motor temperature limit",
+        "state": "approaching_limit",
+        "seconds_low": 90.0,
+        "seconds_mid": 120.0,
+        "seconds_high": 150.0,
+        "confidence": 0.7,
+        "reason": "Advisory band from EMA slope — not for trip/control",
+    }
+    card = build_calm_card_from_evidence(packet, config.action_envelope, situation_spec=spec)
+    ttc = card["time_to_consequence"]
+    assert ttc is not None
+    assert ttc["state"] == "approaching_limit"
+    assert ttc["seconds_low"] == 90.0
+    assert ttc["seconds_mid"] == 120.0
+    assert ttc["seconds_high"] == 150.0
+    assert ttc["seconds_low"] < ttc["seconds_mid"] < ttc["seconds_high"]
+    from app.schemas.calm_card import CalmCard
+
+    CalmCard.model_validate(card)
