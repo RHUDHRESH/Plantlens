@@ -1,10 +1,22 @@
 # PlantLens
 
-Deterministic, read-only industrial cognition for alarm floods.
+PlantLens is an **edge-AI motor fingerprinting and causal fault-explanation system** for the Arduino Physical AI Challenge India 2026. It observes a physical motor bench without controlling it, recognizes healthy/known/unknown signatures locally on Arduino UNO Q, and turns multiple symptoms into one evidence-backed Calm Card.
 
-PlantLens turns raw plant telemetry into one evidence-backed Situation, renders it on a live HMI, and keeps a hash-chained audit trail for operator decisions. AI drafts explanations and contract changes only; live runtime diagnosis stays deterministic and human-gated.
+## Arduino Physical AI Challenge 2026
 
-**Current product rule:** deterministic runtime, AI draft-only, 2D default, 3D lazy.
+- **Team:** Volt Visionaries
+- **Members:** Rhudhresh R, Dhruv D. Mehta, Shyaam S, Suraj Sharma
+- **Institution:** Saveetha Engineering College
+- **Category:** Industrial & Sustainability
+- **Target:** Arduino UNO Q, local inference, read-only sensing
+- **Submission guide:** [docs/arduino-physical-ai-2026/README.md](docs/arduino-physical-ai-2026/README.md)
+- **Reference implementation:** [arduino/uno_q/README.md](arduino/uno_q/README.md)
+
+The physical path uses the UNO Q MCU for timestamped acquisition and quality checks, and the Linux MPU for feature extraction, a healthy-only novelty detector, a known-condition classifier, and deterministic causal confirmation. The existing PlantLens runtime remains the glass-box explanation and HMI layer.
+
+> **Evidence status:** repository tests and a synthetic software smoke test are documented. Synthetic data is never presented as physical accuracy. Bench measurements must be captured with the protocol in [VALIDATION_PROTOCOL.md](docs/arduino-physical-ai-2026/VALIDATION_PROTOCOL.md).
+
+**Product rule:** edge ML recognizes motor signatures; deterministic, human-gated logic validates the causal story; PlantLens never writes motor-control outputs.
 
 **Do not start from archived docs.** Use the source-of-truth list below.
 

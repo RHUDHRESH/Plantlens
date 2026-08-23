@@ -12,8 +12,7 @@ PV-101 ──▶ MPPT-101 ──▶ BAT-101 ──▶ BUS-101 ──┬─▶ IN
  (solar)   (charge ctl) (battery)   (DC bus)   └─▶ INV-102 ──▶ MTR-301 (3-phase motor)
 ```
 
-Why electrical/microgrid instead of a generic process loop: it aligns with ABB electrical
-distribution, gives clean structural causal edges (power flows downstream), and makes the
+Why electrical/microgrid instead of a generic process loop: it gives clean structural causal edges (power flows downstream), and makes the
 "effect looks like a cause" trap vivid (a bus sag downstream *looks* like the problem but is
 caused upstream by the motor pulling current).
 
