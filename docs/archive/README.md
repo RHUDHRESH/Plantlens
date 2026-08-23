@@ -12,9 +12,9 @@ Read these before changing code:
 4. [`docs/ALGORITHMS.md`](../ALGORITHMS.md)
 5. [`FINAL_READY_STATE.md`](../../FINAL_READY_STATE.md)
 
-## Agent rule
+## Historical docs
 
-Composer/Grok agents should **not** follow archived docs unless explicitly asked to review history.
+Archived docs are not current build instructions. Use them only when reviewing history.
 
 ## Archive layout
 

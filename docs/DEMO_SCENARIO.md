@@ -1,6 +1,6 @@
 # PlantLens Demo Scenario — the bench you build everything against
 
-> **CURRENT SOURCE OF TRUTH — safe for build agents.**
+> **Current source of truth.**
 
 One bench, one hero scenario, repeatable to the second. Everything in `packages/sample-data/
 demo-microgrid/` describes this bench. Build against it; demo from it.

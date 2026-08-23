@@ -8,19 +8,19 @@ function readCssVar(name: string, fallback: string): string {
 
 export function getMapTheme() {
   return {
-    canvas: readCssVar("--map-ground", "#F6F7F8"),
-    zoneStroke: readCssVar("--map-zone-stroke", "#CDD2D7"),
-    assetStroke: readCssVar("--map-asset-stroke", "#687077"),
-    edge: readCssVar("--map-edge", "#CDD2D7"),
-    edgeHighlight: readCssVar("--map-edge-highlight", "#2563EB"),
-    accent: readCssVar("--accent", "#2563EB"),
-    ink500: readCssVar("--ink-500", "#687077"),
-    ink700: readCssVar("--ink-700", "#3C4248"),
-    surface: readCssVar("--surface", "#FFFFFF"),
-    healthy: readCssVar("--healthy", "#1F8A4C"),
-    advisory: readCssVar("--advisory", "#B45309"),
-    warning: readCssVar("--warning", "#C2410C"),
-    critical: readCssVar("--critical", "#B42318"),
-    ink300: readCssVar("--ink-300", "#A6ADB4"),
+    canvas: readCssVar("--map-ground", "#EDE8DC"),
+    zoneStroke: readCssVar("--map-zone-stroke", "#B8AE97"),
+    assetStroke: readCssVar("--map-asset-stroke", "#585C55"),
+    edge: readCssVar("--map-edge", "#B8AE97"),
+    edgeHighlight: readCssVar("--map-edge-highlight", "#0F4C46"),
+    accent: readCssVar("--accent", "#0F4C46"),
+    ink500: readCssVar("--ink-500", "#585C55"),
+    ink700: readCssVar("--ink-700", "#3E443D"),
+    surface: readCssVar("--surface", "#F5F1E7"),
+    healthy: readCssVar("--healthy", "#37563A"),
+    advisory: readCssVar("--advisory", "#8A5E0E"),
+    warning: readCssVar("--warning", "#9C6B12"),
+    critical: readCssVar("--critical", "#A32B1E"),
+    ink300: readCssVar("--ink-300", "#8C8878"),
   };
 }

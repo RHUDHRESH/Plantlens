@@ -18,8 +18,6 @@ PlantLens turns raw plant telemetry into one evidence-backed Situation, renders 
 6. [`docs/ALGORITHMS.md`](docs/ALGORITHMS.md) — quality, alarms, DAG, Situation, Calm Card
 7. [`docs/DEMO_SCENARIO.md`](docs/DEMO_SCENARIO.md) — hero scenario and regression matrix
 
-Agent instructions: [`AGENTS.md`](AGENTS.md)
-
 Archived historical context only: [`docs/archive/`](docs/archive/) — **not** build instructions.
 
 ## Install and run
@@ -58,7 +56,6 @@ pnpm --filter @plantlens/web build
 ```text
 plantlens/
 ├─ PLANTLENS.md            # master build document
-├─ AGENTS.md               # strict agent instructions
 ├─ FINAL_READY_STATE.md    # demo-ready verification
 ├─ docs/                   # architecture, algorithms, build order
 ├─ packages/

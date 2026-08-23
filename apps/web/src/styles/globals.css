@@ -19,7 +19,46 @@ body {
   line-height: var(--type-body-lh);
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.005em;
 }
+
+/* Paper grain over the whole surface. Non-interactive, sits under modals/toasts
+ * (z-critical is 70) so it can never intercept a click or occlude an alarm. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 69;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: var(--grain-blend);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='180' height='180' filter='url(%23g)' opacity='0.55'/></svg>");
+}
+
+@media print {
+  body::after { display: none; }
+}
+
+/* Engineering dot grid — opt-in via class on canvas-like surfaces. */
+.paper-grid {
+  background-image: radial-gradient(var(--dot-grid) 0.5px, transparent 0.5px);
+  background-size: 15px 15px;
+}
+
+/* Corner registration ticks — the drafting-plate motif. */
+.ticked { position: relative; }
+.ticked::before,
+.ticked::after {
+  content: "";
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  pointer-events: none;
+  border-color: var(--line-strong);
+  border-style: solid;
+}
+.ticked::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+.ticked::after { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
 
 ::selection {
   background: var(--accent-tint);
@@ -62,25 +101,29 @@ a:focus-visible,
 .type-display {
   font-size: var(--type-display-size);
   line-height: var(--type-display-lh);
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: -0.032em;
 }
 
 .type-h1 {
   font-size: var(--type-h1-size);
   line-height: var(--type-h1-lh);
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: -0.024em;
 }
 
 .type-h2 {
   font-size: var(--type-h2-size);
   line-height: var(--type-h2-lh);
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: -0.018em;
 }
 
 .type-h3 {
   font-size: var(--type-h3-size);
   line-height: var(--type-h3-lh);
   font-weight: 600;
+  letter-spacing: -0.012em;
 }
 
 .type-caption {
@@ -132,10 +175,11 @@ a:focus-visible,
   text-transform: uppercase;
 }
 
-.status-chip--advisory { background: var(--advisory-tint); color: var(--advisory); }
-.status-chip--warning { background: var(--warning-tint); color: var(--warning); }
-.status-chip--critical { background: var(--critical-tint); color: var(--critical); }
-.status-chip--healthy { background: var(--surface-sunken); color: var(--ink-700); }
+.status-chip { border: 1px solid transparent; }
+.status-chip--advisory { background: var(--advisory-tint); color: var(--advisory); border-color: var(--advisory); }
+.status-chip--warning { background: var(--warning-tint); color: var(--warning); border-color: var(--warning); }
+.status-chip--critical { background: var(--critical-tint); color: var(--critical); border-color: var(--critical); }
+.status-chip--healthy { background: var(--surface-sunken); color: var(--ink-700); border-color: var(--line); }
 
 .status-badge {
   display: inline-flex;

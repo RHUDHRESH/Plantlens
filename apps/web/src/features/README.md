@@ -4,7 +4,7 @@ Each feature folder owns its components, hooks, and types. Features read the run
 (`app/store/runtime.ts`) and the typed API client; they don't talk to the WebSocket directly
 (only `api/ws.ts` writes the store). Below: every folder, its files, and what to build.
 
-## operational-map/ — shared map UI kernel (Prompt 1+)
+## operational-map/ — shared map UI kernel
 | File | Role |
 |------|------|
 | `mapKernelTypes.ts` | Map mode, role lens, zoom band, layer, and command types |
@@ -12,15 +12,13 @@ Each feature folder owns its components, hooks, and types. Features read the run
 | `roleLenses.ts` | Operator/engineer/maintenance/manager visibility defaults |
 | `zoomBands.ts` | Scale → zoom band helpers |
 | `viewportTypes.ts` | SVG viewBox, bounds, and viewport command types |
-| `viewportMath.ts` | Pure pan/zoom/focus viewBox math and zoom-band derivation (Prompt 2) |
-| `detailPolicy.ts` | Progressive detail policy by role, zoom band, and layer visibility (Prompt 3) |
+| `viewportMath.ts` | Pure pan/zoom/focus viewBox math and zoom-band derivation |
+| `detailPolicy.ts` | Progressive detail policy by role, zoom band, and layer visibility |
 | `useOperationalMapStore.ts` | Zustand store for map navigation state (not telemetry) |
 | `selectors.ts` | Pure selectors for layer/role visibility |
 | `index.ts` | Public API |
 
 Owns UI navigation state for 2D/3D maps: mode, role lens, layers, selection, focus, zoom band, commands.
-Prompt 2 adds deterministic SVG viewport math for pan/zoom/focus and zoom-band derivation from view scale.
-Prompt 3 adds progressive disclosure: zoom band + role lens control what map nodes and the asset drawer reveal.
 Does **not** own telemetry/runtime facts or change diagnosis. `app/store/runtime.ts` remains the WebSocket/HMI snapshot source.
 
 ## plant-runtime/ — the runtime HMI shell (Chunk 5)
@@ -39,15 +37,15 @@ Does **not** own telemetry/runtime facts or change diagnosis. `app/store/runtime
 | `AssetPopover.tsx` | side panel: tags, alarms, related situation, actions |
 | `mapTypes.ts` | shared `AssetStatus`, `MapNode`, `MapEdge`, `RuntimeState` types |
 | `MapToolbar.tsx` | zoom/fit/layer toggles and role lens controls |
-| `useSvgViewport.ts` | Native SVG pan/zoom/focus behavior for PlantMap2D (Prompt 2) |
-| `nodeOperationalMeta.ts` | Deterministic per-asset tag/alarm meta for progressive map badges (Prompt 3) |
+| `useSvgViewport.ts` | Native SVG pan/zoom/focus behavior for PlantMap2D |
+| `nodeOperationalMeta.ts` | Deterministic per-asset tag/alarm meta for progressive map badges |
 
 ## maps3d/ — R3F plant map (Chunk 8, lazy enhancement)
 | File | Role |
 |------|------|
 | `PlantMap3D.tsx` | Lazy R3F Canvas; operational viewport with layer-aware rendering |
 | `LazyPlantMap3D.tsx` | Route-split boundary + WebGL fallback/error handling |
-| `AssetMeshes.tsx` | Procedural low-poly schematic meshes (placeholders until asset-library prompt) |
+| `AssetMeshes.tsx` | Procedural low-poly schematic meshes (placeholders until an asset library is added) |
 | `sceneMath3D.ts` | Deterministic 3D bounds/fit/focus/zoom-band math |
 | `useOperationalCamera3D.tsx` | Fit plant, focus root/asset, zoom in/out; exposes viewport controls |
 
@@ -55,7 +53,7 @@ Does **not** own telemetry/runtime facts or change diagnosis. `app/store/runtime
 2D toolbar/search behavior. Causal path, selection, and focus use non-color rings/outlines.
 No diagnosis computation in 3D — reads compiled map + runtime store projections only.
 
-## causal-path/ — causal path explorer (Prompt 4)
+## causal-path/ — causal path explorer
 | File | Role |
 |------|------|
 | `causalPathTypes.ts` | View model types for path steps and evidence |
@@ -66,7 +64,7 @@ No diagnosis computation in 3D — reads compiled map + runtime store projection
 
 Visual explanation layer only: no diagnosis computation, no AI, no runtime mutation.
 
-## operational-search/ — deterministic command palette (Prompt 5)
+## operational-search/ — deterministic command palette
 | File | Role |
 |------|------|
 | `searchTypes.ts` | Search document, result, and action context types |
@@ -82,7 +80,7 @@ Visual explanation layer only: no diagnosis computation, no AI, no runtime mutat
 
 Frontend-only operational navigation: no AI, no embeddings, no backend mutation.
 
-## source-lineage/ — engineer source-of-truth inspector (Prompt 7)
+## source-lineage/ — engineer source-of-truth inspector
 | File | Role |
 |------|------|
 | `sourceLineageTypes.ts` | Contract family, edit target, and lineage ref types |
@@ -93,7 +91,7 @@ Frontend-only operational navigation: no AI, no embeddings, no backend mutation.
 Shows which authored contract objects define a selected asset, plus compiled HMI and runtime
 evidence. No live mutation, no fake authored refs, no raw JSON dumps.
 
-## studio-launchpad/ — Studio shell (Prompt 7)
+## studio-launchpad/ — Studio shell
 | File | Role |
 |------|------|
 | `studioTypes.ts` | Studio surface and route state types |
@@ -102,7 +100,7 @@ evidence. No live mutation, no fake authored refs, no raw JSON dumps.
 | `CompilePreviewShell.tsx` | Compile pipeline explanation; validate/compile actions disabled |
 | `index.ts` | Public API |
 
-Launchpad shell only — full forms and graph editing come in the next Studio prompt.
+Launchpad shell only — full forms and graph editing land in later Studio work.
 Authored contracts remain source of truth; runtime HMI is compiled output.
 
 ## calm-card/ — the decision layer (Chunk 6)
@@ -118,7 +116,7 @@ Always available; never hidden. UI says "N grouped", never "suppressed".
 ScenarioLauncher (list + run), ScenarioControlPanel (start/stop/reset), ScenarioTimeline,
 ScenarioStatusBadge.
 
-## studio-forms/ — draft authoring (Prompt 8, FORMS FIRST)
+## studio-forms/ — draft authoring (forms first)
 | File | Role |
 |------|------|
 | `studioDraftTypes.ts` | Draft bundle, issue, patch, and status types |
@@ -137,14 +135,14 @@ ScenarioStatusBadge.
 | `index.ts` | Public API |
 
 Draft only — no backend save, no apply, no compile. Demo authored bundle loads on Studio open.
-Graph editing and compile preview come in later prompts.
+Graph editing and compile preview land in later Studio work.
 
 ## studio-graph/ — React Flow projection (Chunk 9, SECOND)
 StudioCanvas (@xyflow/react), custom nodes (Source/Battery/Bus/Inverter/Motor/Sensor),
 custom edges (PowerFlow/Signal/Causal), NodeInspector, CompileDiff. The canonical JSON is the
 source of truth; React Flow is a view/editor over it (applyNodeChanges, not replace).
 
-## hmi-preview/ — local compile preview (Prompt 9)
+## hmi-preview/ — local compile preview
 | File | Role |
 |------|------|
 | `previewTypes.ts` | Local preview model and compile result types |

@@ -61,7 +61,7 @@ terminals/.next-id
 /hmi_probe.py
 /modbus_scout.py
 
-# Local Claude/Codex backups
+# Local tool caches
 .claude/
 .claude.project.backup-*/
 

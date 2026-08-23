@@ -35,7 +35,7 @@ FORBIDDEN_MODEL_IMPORT_PREFIXES = (
     "app.schemas",
 )
 
-# Guardian map: every table → architectural layer (Prompt 10 audit artifact).
+# Table to architectural layer map.
 TABLE_LAYER_MAP: dict[str, str] = {
     table: layer for layer, tables in LAYER_TABLES.items() for table in tables
 }

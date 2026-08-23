@@ -1,6 +1,6 @@
 # PlantLens docs
 
-> **CURRENT SOURCE OF TRUTH — safe for build agents.**
+> **Current source of truth.**
 
 Read in this order:
 

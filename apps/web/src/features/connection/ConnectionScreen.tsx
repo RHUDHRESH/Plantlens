@@ -76,6 +76,20 @@ function FieldRow({ label, children }: { label: string; children: React.ReactNod
   );
 }
 
+/**
+ * Recorded UNO Q compute-path benchmark. These are measurements taken on the connected
+ * board, not a live reading — the card states the date so it can never be mistaken for one.
+ * Source: docs/EDGE_AI_RESEARCH_PROGRAM.md and deploy/uno-q/README.md.
+ */
+const EDGE_BENCHMARK = {
+  medianMs: "11.63",
+  p95Ms: "11.96",
+  peakKiB: "274",
+  epochs: 200,
+  recordedOn: "23-Aug-2026",
+  replaySha256: "2234378f626afb18e2395710b1c45f3a791aa39d963a3de007ad303534afa4a9",
+} as const;
+
 function StatusRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid grid-cols-[88px_1fr] items-baseline gap-2 text-xs">
@@ -286,7 +300,7 @@ export function ConnectionScreen({
       <main className="flex-1 min-h-0 grid grid-cols-[300px_minmax(0,1fr)_360px] gap-3 p-3 overflow-hidden">
         {/* Left column */}
         <div className="flex flex-col gap-3 min-h-0 overflow-y-auto">
-          <Card title="Link Setup">
+          <Card title="Link Setup" className="shrink-0">
             <FieldRow label="Port">
               <div className="flex gap-1">
                 <select
@@ -402,7 +416,7 @@ export function ConnectionScreen({
             </div>
           </Card>
 
-          <Card title="Connection Status">
+          <Card title="Connection Status" className="shrink-0">
             <StatusRow
               label="Connected"
               value={panel.status?.connected ? "Yes" : "No"}
@@ -440,7 +454,7 @@ export function ConnectionScreen({
             <StatusRow label="Last error" value={formatDisplayValue(panel.status?.lastError)} />
           </Card>
 
-          <Card title="UNO Q Edge Shadow">
+          <Card title="UNO Q Edge Shadow" className="shrink-0">
             {panel.edgeReceipt?.status === "SHADOW_RESULT" ? (
               <>
                 <div className="flex items-center justify-between gap-2">
@@ -524,7 +538,51 @@ export function ConnectionScreen({
             )}
           </Card>
 
-          <Card title="Safety Contract">
+          <Card title="Edge Runtime · UNO Q" className="shrink-0">
+            <div className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1 text-xs">
+              <span className="text-ink-500">Real-time capture</span>
+              <span className="font-mono text-ink-900">STM32U585 · Zephyr</span>
+              <span className="text-ink-500">Inference &amp; HMI</span>
+              <span className="font-mono text-ink-900">Dragonwing QRB2210 · Debian</span>
+              <span className="text-ink-500">Accelerator</span>
+              <span className="font-mono text-ink-900">none — A53 cores</span>
+            </div>
+            <div className="border-t border-line pt-2 mt-1 grid grid-cols-3 gap-2 text-center">
+              <div>
+                <div className="font-mono tabular-nums text-base font-semibold text-ink-900">
+                  {EDGE_BENCHMARK.medianMs}
+                  <span className="text-[10px] text-ink-500 ml-0.5">ms</span>
+                </div>
+                <div className="text-[10px] uppercase tracking-wide text-ink-500">median</div>
+              </div>
+              <div>
+                <div className="font-mono tabular-nums text-base font-semibold text-ink-900">
+                  {EDGE_BENCHMARK.p95Ms}
+                  <span className="text-[10px] text-ink-500 ml-0.5">ms</span>
+                </div>
+                <div className="text-[10px] uppercase tracking-wide text-ink-500">p95</div>
+              </div>
+              <div>
+                <div className="font-mono tabular-nums text-base font-semibold text-ink-900">
+                  {EDGE_BENCHMARK.peakKiB}
+                  <span className="text-[10px] text-ink-500 ml-0.5">KiB</span>
+                </div>
+                <div className="text-[10px] uppercase tracking-wide text-ink-500">peak RAM</div>
+              </div>
+            </div>
+            <p
+              className="text-[10px] font-mono text-ink-500 truncate"
+              title={EDGE_BENCHMARK.replaySha256}
+            >
+              Replay {EDGE_BENCHMARK.replaySha256.slice(0, 12)}… · host-identical
+            </p>
+            <p className="text-[11px] text-ink-500 leading-relaxed">
+              Recorded benchmark from {EDGE_BENCHMARK.recordedOn} over {EDGE_BENCHMARK.epochs}{" "}
+              epochs — not a live reading. Compute path only; not an accuracy result.
+            </p>
+          </Card>
+
+          <Card title="Safety Contract" className="shrink-0">
             <p className="text-xs font-medium text-ink-900">READ-ONLY</p>
             <p className="text-xs text-ink-500 leading-relaxed">
               PlantLens reads Modbus registers only. No coil/register writes are issued from this
@@ -533,7 +591,7 @@ export function ConnectionScreen({
             </p>
           </Card>
 
-          <Card title="Register Bible (21 signals)">
+          <Card title="Register Bible (21 signals)" className="shrink-0">
             <p className="text-xs text-ink-500 leading-relaxed mb-2">
               Static map from docs/REGISTER_BIBLE — reference when live health is unavailable.
             </p>
@@ -561,7 +619,7 @@ export function ConnectionScreen({
             </div>
           </Card>
 
-          <Card title="Demo flow">
+          <Card title="Demo flow" className="shrink-0">
             <ol className="text-xs text-ink-500 list-decimal list-inside space-y-1 leading-relaxed">
               <li>Verify passive RS485 listener</li>
               <li>Inspect cached native registers</li>

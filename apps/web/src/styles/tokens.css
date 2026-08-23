@@ -1,42 +1,55 @@
-/* PlantLens design tokens — Control Room Craft × ISA-101 (source: packages/ui-tokens/tokens.json) */
+/* PlantLens design tokens — Vellum × ISA-101 (rev C).
+ *
+ * Ground is drafting vellum, ink is a green-biased plotter black, and the accent is
+ * machine-tool enamel. Status colour is RESERVED: a healthy plant renders monochrome,
+ * so an abnormal one is impossible to miss. Every status also carries a glyph and a
+ * word in the components — colour is never the only encoding.
+ *
+ * Dark theme is not an inversion. It is the same control room on night shift.
+ */
 :root {
-  /* 2.1 Neutrals — cool graphite field (90%) */
-  --ink-900: #14171A;
-  --ink-700: #3C4248;
-  --ink-500: #5A6168;
-  --ink-300: #A6ADB4;
-  --line: #D5D9DE;
-  --line-strong: #C0C5CC;
-  --surface: #FAFBFC;
-  --surface-raised: #F4F5F7;
-  --surface-sunken: #DEE1E5;
-  --canvas: #E8EAED;
+  /* 2.1 Neutrals — warm vellum field (90%) */
+  --ink-900: #191C1A;
+  --ink-700: #3E443D;
+  --ink-500: #585C55;
+  --ink-300: #8C8878;
+  --line: #CCC4B1;
+  --line-strong: #B8AE97;
+  --surface: #F5F1E7;
+  --surface-raised: #F5F1E7;
+  --surface-sunken: #E1DACA;
+  --canvas: #EDE8DC;
   --inverse: #FFFFFF;
 
-  /* 2.2 Accent — interactive ONLY */
-  --accent: #2563EB;
-  --accent-press: #1D4FD7;
-  --accent-tint: #EAF1FE;
-  --focus-ring: #2563EB;
+  /* 2.2 Accent — machine enamel; interactive ONLY, never decorative */
+  --accent: #0F4C46;
+  --accent-press: #0A3833;
+  --accent-tint: #DCE7E3;
+  --focus-ring: #0F4C46;
 
-  /* 2.3 Semantic status — abnormal only */
-  --advisory: #B45309;
-  --advisory-tint: #FBF1E3;
-  --warning: #C2410C;
-  --warning-tint: #FBEAE1;
-  --critical: #B42318;
-  --critical-tint: #FBE9E7;
-  --healthy: #1F8A4C;
+  /* 2.3 Semantic status — abnormal only, always paired with a glyph + label */
+  --advisory: #8A5E0E;
+  --advisory-tint: #EDE0C4;
+  --warning: #9C6B12;
+  --warning-tint: #EDE0C4;
+  --critical: #A32B1E;
+  --critical-tint: #EFD9D3;
+  --healthy: #37563A;
+
+  /* Paper texture — grain overlay + engineering dot grid */
+  --grain-opacity: 0.42;
+  --grain-blend: multiply;
+  --dot-grid: var(--line);
 
   /* shadcn Sidebar — PlantLens mapped */
-  --sidebar: #F4F5F7;
-  --sidebar-foreground: #14171A;
-  --sidebar-primary: #2563EB;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: #EAF1FE;
-  --sidebar-accent-foreground: #1D4FD7;
-  --sidebar-border: #D5D9DE;
-  --sidebar-ring: #2563EB;
+  --sidebar: #E1DACA;
+  --sidebar-foreground: #191C1A;
+  --sidebar-primary: #0F4C46;
+  --sidebar-primary-foreground: #F5F1E7;
+  --sidebar-accent: #DCE7E3;
+  --sidebar-accent-foreground: #0A3833;
+  --sidebar-border: #CCC4B1;
+  --sidebar-ring: #0F4C46;
 
   /* Legacy aliases — keep existing CSS working during migration */
   --bg: var(--canvas);
@@ -73,17 +86,18 @@
   --space-3xl: 48px;
   --space-4xl: 64px;
 
-  /* 5. Radius / elevation */
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  /* 5. Radius / elevation — panel plates, not SaaS cards. 4px is the ceiling. */
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 4px;
   --radius-pill: 999px;
   --radius: var(--radius-md);
   --radius-dialog: var(--radius-lg);
 
-  --shadow-e1: 0 1px 2px rgba(20, 23, 26, 0.06), 0 2px 6px rgba(20, 23, 26, 0.06);
-  --shadow-e2: 0 8px 24px rgba(20, 23, 26, 0.12);
-  --shadow-e3: 0 16px 48px rgba(20, 23, 26, 0.18);
+  /* Elevation is a silkscreened edge: inset highlight + hairline, no soft SaaS bloom. */
+  --shadow-e1: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 1px 2px rgba(25, 28, 26, 0.06);
+  --shadow-e2: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 4px 14px rgba(25, 28, 26, 0.12);
+  --shadow-e3: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 12px 36px rgba(25, 28, 26, 0.2);
   --shadow-sm: var(--shadow-e1);
   --shadow-md: var(--shadow-e2);
 
@@ -100,8 +114,8 @@
   --z-toolbar: var(--z-sidebar);
   --z-overlay: var(--z-modal);
 
-  /* 3. Typography — industrial HMI (IBM Plex); tabular data face */
-  --font-sans: "IBM Plex Sans", "Source Sans 3", system-ui, sans-serif;
+  /* 3. Typography — Archivo (engineered grotesque) + IBM Plex Mono for all data */
+  --font-sans: "Archivo", "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace, monospace;
   --font-ui: var(--font-sans);
   --font-data: var(--font-mono);
@@ -111,20 +125,20 @@
   --density-gap: 12px;
 
   --type-display-size: 28px;
-  --type-display-lh: 34px;
+  --type-display-lh: 32px;
   --type-h1-size: 22px;
-  --type-h1-lh: 28px;
+  --type-h1-lh: 27px;
   --type-h2-size: 18px;
-  --type-h2-lh: 24px;
+  --type-h2-lh: 23px;
   --type-h3-size: 16px;
-  --type-h3-lh: 22px;
+  --type-h3-lh: 21px;
   --type-body-size: 14px;
   --type-body-lh: 20px;
   --type-caption-size: 12px;
   --type-caption-lh: 16px;
-  --type-micro-size: 11px;
-  --type-micro-lh: 15px;
-  --type-micro-tracking: 0.4px;
+  --type-micro-size: 10px;
+  --type-micro-lh: 14px;
+  --type-micro-tracking: 1.4px;
 
   /* 11. Motion */
   --motion-micro: 120ms;
@@ -157,7 +171,105 @@
   --map-edge-highlight: var(--accent);
   --map-label-bg: var(--surface);
   --map-label-text: var(--ink-700);
-  --map-scrim: rgba(20, 23, 26, 0.45);
+  --map-scrim: rgba(25, 28, 26, 0.45);
+}
+
+/* ---------------------------------------------------------------------------
+ * Dark theme — night shift, not an inversion.
+ * Redefine tokens only; components keep styling through the same names.
+ * Three states are covered: system-dark (no stamp), explicit .dark / [data-theme].
+ * ------------------------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root:not(.light):not([data-theme="light"]) {
+    --ink-900: #E9E4D6;
+    --ink-700: #C4BFAF;
+    --ink-500: #A29D8E;
+    --ink-300: #6E6B60;
+    --line: #2E342F;
+    --line-strong: #3D443E;
+    --surface: #1B201C;
+    --surface-raised: #1B201C;
+    --surface-sunken: #0E1210;
+    --canvas: #131714;
+    --inverse: #090C0A;
+
+    --accent: #5FB8A8;
+    --accent-press: #8AD5C6;
+    --accent-tint: #16302C;
+    --focus-ring: #8AD5C6;
+
+    --advisory: #D9A441;
+    --advisory-tint: #33280F;
+    --warning: #D9A441;
+    --warning-tint: #33280F;
+    --critical: #E4705C;
+    --critical-tint: #3A1A15;
+    --healthy: #8FBF8A;
+
+    --grain-opacity: 0.3;
+    --grain-blend: overlay;
+
+    --sidebar: #0E1210;
+    --sidebar-foreground: #E9E4D6;
+    --sidebar-primary: #5FB8A8;
+    --sidebar-primary-foreground: #0E1210;
+    --sidebar-accent: #16302C;
+    --sidebar-accent-foreground: #8AD5C6;
+    --sidebar-border: #2E342F;
+    --sidebar-ring: #5FB8A8;
+
+    --shadow-e1: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 1px 3px rgba(0, 0, 0, 0.5);
+    --shadow-e2: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 4px 16px rgba(0, 0, 0, 0.6);
+    --shadow-e3: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 14px 40px rgba(0, 0, 0, 0.7);
+
+    --map-scrim: rgba(9, 12, 10, 0.6);
+  }
+}
+
+.dark,
+[data-theme="dark"] {
+  --ink-900: #E9E4D6;
+  --ink-700: #C4BFAF;
+  --ink-500: #A29D8E;
+  --ink-300: #6E6B60;
+  --line: #2E342F;
+  --line-strong: #3D443E;
+  --surface: #1B201C;
+  --surface-raised: #1B201C;
+  --surface-sunken: #0E1210;
+  --canvas: #131714;
+  --inverse: #090C0A;
+
+  --accent: #5FB8A8;
+  --accent-press: #8AD5C6;
+  --accent-tint: #16302C;
+  --focus-ring: #8AD5C6;
+
+  --advisory: #D9A441;
+  --advisory-tint: #33280F;
+  --warning: #D9A441;
+  --warning-tint: #33280F;
+  --critical: #E4705C;
+  --critical-tint: #3A1A15;
+  --healthy: #8FBF8A;
+
+  --grain-opacity: 0.3;
+  --grain-blend: overlay;
+
+  --sidebar: #0E1210;
+  --sidebar-foreground: #E9E4D6;
+  --sidebar-primary: #5FB8A8;
+  --sidebar-primary-foreground: #0E1210;
+  --sidebar-accent: #16302C;
+  --sidebar-accent-foreground: #8AD5C6;
+  --sidebar-border: #2E342F;
+  --sidebar-ring: #5FB8A8;
+
+  --shadow-e1: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-e2: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 4px 16px rgba(0, 0, 0, 0.6);
+  --shadow-e3: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 14px 40px rgba(0, 0, 0, 0.7);
+
+  --map-scrim: rgba(9, 12, 10, 0.6);
 }
 
 /* Operator runtime — matrix-hero Monitor; map secondary */

@@ -1,6 +1,6 @@
 # PlantLens Design System
 
-> **CURRENT SOURCE OF TRUTH — safe for build agents.**
+> **Current source of truth.**
 > Aligned with [`PRODUCT_VISION.md`](../PRODUCT_VISION.md).
 
 **Design language: Control Room Craft.** Calm industrial HMI with Linear-grade chrome craft.
