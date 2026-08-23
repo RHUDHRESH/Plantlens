@@ -59,6 +59,9 @@ def create_app() -> FastAPI:
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+        # Chrome requires an explicit opt-in when the localhost development UI
+        # sends a preflighted request to the UNO's private-LAN address.
+        allow_private_network=settings.plantlens_env in {"dev", "test"},
     )
     app.add_middleware(RequestIDMiddleware)
     app.include_router(health.router)

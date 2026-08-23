@@ -133,6 +133,25 @@ function normalizeScanRows(data: unknown, request: ScanRequest): ScanRow[] {
   return [];
 }
 
+function readNumberField(
+  data: Record<string, unknown>,
+  camelCaseKey: string,
+  snakeCaseKey: string,
+  fallback = 0,
+): number {
+  const value = data[camelCaseKey] ?? data[snakeCaseKey];
+  return typeof value === "number" ? value : fallback;
+}
+
+function readNumberArrayField(
+  data: Record<string, unknown>,
+  camelCaseKey: string,
+  snakeCaseKey: string,
+): number[] {
+  const value = data[camelCaseKey] ?? data[snakeCaseKey];
+  return Array.isArray(value) ? value.map(Number) : [];
+}
+
 export async function listPorts(signal?: AbortSignal): Promise<string[]> {
   const endpoint = "GET /api/ports";
   const data = await connectionFetch<unknown>(
@@ -165,6 +184,10 @@ export async function getConnectionStatus(signal?: AbortSignal): Promise<Connect
   return {
     connected: Boolean(data.connected),
     port: (data.port as string | null) ?? null,
+    mode: (data.mode as string | null) ?? null,
+    readOnly: Boolean(data.readOnly ?? data.read_only ?? false),
+    baudrate: typeof data.baudrate === "number" ? data.baudrate : null,
+    framing: (data.framing as string | null) ?? null,
     slaveId:
       typeof data.slaveId === "number"
         ? data.slaveId
@@ -191,6 +214,14 @@ export async function getConnectionStatus(signal?: AbortSignal): Promise<Connect
           ? data.error_count
           : 0,
     lastError: (data.lastError ?? data.last_error ?? null) as string | null,
+    bytesSeen: readNumberField(data, "bytesSeen", "bytes_seen"),
+    validFrames: readNumberField(data, "validFrames", "valid_frames"),
+    nativeRegisterCount: readNumberField(
+      data,
+      "nativeRegisterCount",
+      "native_register_count",
+    ),
+    observedSlaveIds: readNumberArrayField(data, "observedSlaveIds", "observed_slave_ids"),
   };
 }
 

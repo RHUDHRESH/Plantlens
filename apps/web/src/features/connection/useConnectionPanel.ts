@@ -22,7 +22,7 @@ import type {
 
 const DEFAULT_FORM: ConnectionFormState = {
   port: "",
-  baudrate: 9600,
+  baudrate: 38400,
   parity: "N",
   stopbits: 1,
   bytesize: 8,
@@ -33,8 +33,8 @@ const DEFAULT_FORM: ConnectionFormState = {
 const DEFAULT_SCAN: ScanRequest = {
   startReg: 0,
   count: 42,
-  regType: "input",
-  dataType: "float32",
+  regType: "holding",
+  dataType: "uint16",
   wordOrder: "AB",
 };
 

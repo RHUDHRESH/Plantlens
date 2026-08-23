@@ -205,6 +205,25 @@ def test_cors_respects_web_origin_override(monkeypatch: pytest.MonkeyPatch):
     assert response.headers.get("access-control-allow-origin") == allowed
 
 
+def test_dev_cors_allows_local_ui_private_network_preflight(monkeypatch: pytest.MonkeyPatch):
+    allowed = "http://localhost:5173"
+    monkeypatch.setenv("PLANTLENS_ENV", "dev")
+    monkeypatch.setenv("WEB_ORIGIN", allowed)
+    get_settings.cache_clear()
+    with TestClient(create_app()) as test_client:
+        response = test_client.options(
+            "/api/scan",
+            headers={
+                "Origin": allowed,
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "authorization,content-type",
+                "Access-Control-Request-Private-Network": "true",
+            },
+        )
+    assert response.status_code == 200
+    assert response.headers.get("access-control-allow-private-network") == "true"
+
+
 def test_shell_boots_with_empty_oidc_and_custom_gateway_token(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv("OIDC_ISSUER", "")
     monkeypatch.setenv("OIDC_AUDIENCE", "")

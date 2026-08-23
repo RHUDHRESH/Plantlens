@@ -370,26 +370,34 @@ export function ConnectionScreen({
               <button
                 type="button"
                 className={btnPrimaryClass}
-                disabled={!panel.form.port || panel.connectPending}
+                disabled={
+                  !panel.form.port ||
+                  panel.connectPending ||
+                  (panel.status?.mode === "passive_listener" && panel.status.connected)
+                }
                 onClick={panel.connect}
               >
-                Connect
+                {panel.status?.mode === "passive_listener" && panel.status.connected
+                  ? "Listener active"
+                  : "Connect"}
               </button>
-              <button
-                type="button"
-                className={btnClass}
-                disabled={panel.disconnectPending}
-                onClick={panel.disconnect}
-              >
-                Disconnect
-              </button>
+              {panel.status?.mode !== "passive_listener" ? (
+                <button
+                  type="button"
+                  className={btnClass}
+                  disabled={panel.disconnectPending}
+                  onClick={panel.disconnect}
+                >
+                  Disconnect
+                </button>
+              ) : null}
               <button
                 type="button"
                 className={btnClass}
                 disabled={panel.scanPending}
                 onClick={panel.scan}
               >
-                Scan registers
+                Inspect passive cache
               </button>
             </div>
           </Card>
@@ -400,6 +408,12 @@ export function ConnectionScreen({
               value={panel.status?.connected ? "Yes" : "No"}
             />
             <StatusRow label="Port" value={formatDisplayValue(panel.status?.port)} />
+            <StatusRow label="Mode" value={formatDisplayValue(panel.status?.mode)} />
+            <StatusRow label="Baud / framing" value={
+              panel.status?.baudrate
+                ? `${panel.status.baudrate} / ${panel.status.framing ?? "—"}`
+                : "—"
+            } />
             <StatusRow
               label="Slave ID"
               value={formatDisplayValue(panel.status?.slaveId)}
@@ -410,6 +424,18 @@ export function ConnectionScreen({
               value={formatTimestamp(panel.status?.lastPollTs)}
             />
             <StatusRow label="OK reads" value={formatDisplayValue(panel.status?.okCount)} />
+            <StatusRow label="Observed bytes" value={formatDisplayValue(panel.status?.bytesSeen)} />
+            <StatusRow label="CRC-valid frames" value={formatDisplayValue(panel.status?.validFrames)} />
+            <StatusRow
+              label="Native registers"
+              value={formatDisplayValue(panel.status?.nativeRegisterCount)}
+            />
+            <StatusRow
+              label="Slave IDs"
+              value={panel.status?.observedSlaveIds?.length
+                ? panel.status.observedSlaveIds.join(", ")
+                : "—"}
+            />
             <StatusRow label="Errors" value={formatDisplayValue(panel.status?.errorCount)} />
             <StatusRow label="Last error" value={formatDisplayValue(panel.status?.lastError)} />
           </Card>
@@ -453,8 +479,8 @@ export function ConnectionScreen({
 
           <Card title="Demo flow">
             <ol className="text-xs text-ink-500 list-decimal list-inside space-y-1 leading-relaxed">
-              <li>Connect RS485</li>
-              <li>Scan input registers</li>
+              <li>Verify passive RS485 listener</li>
+              <li>Inspect cached native registers</li>
               <li>Bind channel to tag</li>
               <li>Commit model</li>
               <li>Confirm runtime TagFrame</li>
@@ -563,7 +589,7 @@ export function ConnectionScreen({
                   {panel.scanRows.length === 0 ? (
                     <tr>
                       <td colSpan={9} className="p-4 text-center text-ink-500">
-                        No scan yet. Connect and scan input registers 0–41.
+                        No cache inspection yet. Inspect passive native observations.
                       </td>
                     </tr>
                   ) : (

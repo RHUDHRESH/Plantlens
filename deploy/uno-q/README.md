@@ -25,6 +25,18 @@ the HMI is polling.
 - `easy302/probe`: commissioning-only FC03/FC04 reads; never Modbus writes
 - CRC validation and explicit timeout/error results
 
+## Passive live gateway
+
+`plantlens_app/python/passive_gateway.py` continuously calls only `easy302/sniff`, recovers
+CRC-valid FC03/FC04 request/reply pairs, and publishes observed native words through the normal
+`TagFrame` ingest seam. The HMI remains the sole bus master. Native tags use names such as
+`NATIVE_S6_HR_00000` and unit `raw_word`; they are intentionally not relabeled as engineering
+signals until scaling and word order have been commissioned.
+
+`plantlens_app/python/main.py` starts this listener on the UNO Q, exposes read-only compatibility
+status for the Connection screen, and creates an ephemeral local development JWT key at each app
+start so the browser can authenticate without storing a secret in the repository.
+
 ## Edge research benchmark
 
 The pure-Python inference path requires no native ML runtime. Copy

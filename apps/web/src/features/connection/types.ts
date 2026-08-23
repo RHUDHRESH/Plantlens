@@ -3,12 +3,20 @@ export type DataQuality = "GOOD" | "UNCERTAIN" | "BAD" | "STALE" | "MISSING";
 export interface ConnectionStatus {
   connected: boolean;
   port: string | null;
+  mode?: string | null;
+  readOnly?: boolean;
+  baudrate?: number | null;
+  framing?: string | null;
   slaveId: number | null;
   pollHz: number | null;
   lastPollTs: number | string | null;
   okCount: number;
   errorCount: number;
   lastError: string | null;
+  bytesSeen?: number;
+  validFrames?: number;
+  nativeRegisterCount?: number;
+  observedSlaveIds?: number[];
 }
 
 export interface ConnectionFormState {
