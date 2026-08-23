@@ -5,7 +5,7 @@
 The brief: **calm, industrial, Scandinavian-minimal, second-to-none.** Operators do not need
 dribbble candy; they need legibility, focus, and trust. If you want it to feel expensive, the
 secret is restraint, not decoration. Reference feel: IKEA configurator + Google Maps zoom +
-Linear/Notion cleanliness + ABB control-room seriousness.
+Linear/Notion cleanliness + high-performance control-room seriousness.
 
 The single hardest rule: **this is a High-Performance HMI (ISA-101).** Mostly grey. Color is
 reserved for abnormal conditions. A screen full of color is a screen where nothing stands out.
