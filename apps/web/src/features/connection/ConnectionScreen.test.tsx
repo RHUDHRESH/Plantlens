@@ -9,6 +9,7 @@ import type { ScanRow } from "./types";
 const listPorts = vi.fn();
 const getConnectionStatus = vi.fn();
 const getModelBundle = vi.fn();
+const getEdgeCommissioning = vi.fn();
 const connectModbus = vi.fn();
 const disconnectModbus = vi.fn();
 const scanRegisters = vi.fn();
@@ -22,6 +23,7 @@ vi.mock("./api", async (importOriginal) => {
     listPorts: (...args: unknown[]) => listPorts(...args),
     getConnectionStatus: (...args: unknown[]) => getConnectionStatus(...args),
     getModelBundle: (...args: unknown[]) => getModelBundle(...args),
+    getEdgeCommissioning: (...args: unknown[]) => getEdgeCommissioning(...args),
     connectModbus: (...args: unknown[]) => connectModbus(...args),
     disconnectModbus: (...args: unknown[]) => disconnectModbus(...args),
     scanRegisters: (...args: unknown[]) => scanRegisters(...args),
@@ -77,6 +79,7 @@ describe("ConnectionScreen", () => {
     listPorts.mockReset();
     getConnectionStatus.mockReset();
     getModelBundle.mockReset();
+    getEdgeCommissioning.mockReset();
     connectModbus.mockReset();
     disconnectModbus.mockReset();
     scanRegisters.mockReset();
@@ -86,6 +89,48 @@ describe("ConnectionScreen", () => {
     listPorts.mockResolvedValue([]);
     getConnectionStatus.mockResolvedValue(DEFAULT_STATUS);
     getModelBundle.mockResolvedValue({ tags: [] });
+    getEdgeCommissioning.mockResolvedValue({
+      status: "SHADOW_RESULT",
+      observed_at: "2026-08-23T13:13:11Z",
+      measurements: {
+        voltage_candidate: 26.92,
+        current_candidate: 15.4,
+        power_candidate: 413.49,
+        auxiliary_candidate: 0,
+        power_balance_error_pct: 0.23,
+      },
+      thresholds: {
+        state: "CRITICAL",
+        provisional: true,
+        current_ratio: 6.8,
+        power_ratio: 6.7,
+        voltage_ratio: 0.99,
+      },
+      ensemble: {
+        decision: "INSUFFICIENT_DATA",
+        top_shadow_candidate: "overload",
+        probability: 0.92,
+        disagreement: 0.02,
+        effective_quality: 0.444,
+        abstention_reasons: ["INSUFFICIENT_DATA"],
+        contributors: [],
+      },
+      motor_fingerprint: {
+        model_type: "physics_informed_rbf_one_class",
+        model_sha256: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        trained_samples: 3,
+        decision: "KNOWN_SIGNATURE",
+        matched_prototype: "load_mode_2",
+        similarity: 0.98,
+        novelty_score: 0.02,
+        confidence: 0.95,
+        contributors: [],
+        limitations: ["Three commissioning samples only"],
+      },
+      explanation: "Load candidate is 6.8x the observed low-load baseline.",
+      read_only: true,
+      runtime_diagnosis: false,
+    });
   });
 
   it("renders title and read-only safety copy", async () => {
@@ -94,6 +139,17 @@ describe("ConnectionScreen", () => {
     expect(screen.getAllByText(/Read-only/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/No control writes/i)).toBeInTheDocument();
     expect(screen.getByText("READ-ONLY")).toBeInTheDocument();
+  });
+
+  it("renders the live edge shadow receipt without presenting it as diagnosis", async () => {
+    wrap(<ConnectionScreen />);
+    expect(await screen.findByText("UNO Q Edge Shadow")).toBeInTheDocument();
+    expect(await screen.findByText("CRITICAL · PROVISIONAL")).toBeInTheDocument();
+    expect(screen.getByText("overload 92.0%")).toBeInTheDocument();
+    expect(screen.getByText("INSUFFICIENT_DATA")).toBeInTheDocument();
+    expect(screen.getByText("KNOWN_SIGNATURE")).toBeInTheDocument();
+    expect(screen.getByText("load_mode_2 · 98.0%")).toBeInTheDocument();
+    expect(screen.getByText(/cannot create a runtime alarm/i)).toBeInTheDocument();
   });
 
   it("renders no ports found state", async () => {

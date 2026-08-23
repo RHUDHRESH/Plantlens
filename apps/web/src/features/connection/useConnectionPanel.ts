@@ -6,6 +6,7 @@ import {
   ConnectionApiError,
   disconnectModbus,
   getConnectionStatus,
+  getEdgeCommissioning,
   getModelBundle,
   listPorts,
   scanRegisters,
@@ -82,6 +83,13 @@ export function useConnectionPanel() {
   const modelQuery = useQuery({
     queryKey: ["connection-model"],
     queryFn: ({ signal }) => getModelBundle(signal),
+    retry: false,
+  });
+
+  const edgeQuery = useQuery({
+    queryKey: ["edge-commissioning"],
+    queryFn: ({ signal }) => getEdgeCommissioning(signal),
+    refetchInterval: 1000,
     retry: false,
   });
 
@@ -294,6 +302,8 @@ export function useConnectionPanel() {
     statusLoading: statusQuery.isLoading,
     model: modelQuery.data,
     modelLoading: modelQuery.isLoading,
+    edgeReceipt: edgeQuery.data,
+    edgeLoading: edgeQuery.isLoading,
     connectPending: connectMutation.isPending,
     disconnectPending: disconnectMutation.isPending,
     scanPending: scanMutation.isPending,

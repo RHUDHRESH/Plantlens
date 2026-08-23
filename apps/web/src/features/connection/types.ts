@@ -82,3 +82,48 @@ export interface EndpointError {
   message: string;
   status?: number;
 }
+
+export interface EdgeCommissioningReceipt {
+  status: "SHADOW_RESULT" | "ABSTAIN";
+  reason?: string;
+  observed_at?: string;
+  edge_node?: string;
+  measurements?: {
+    voltage_candidate: number;
+    current_candidate: number;
+    power_candidate: number;
+    auxiliary_candidate: number;
+    power_balance_error_pct: number;
+  };
+  thresholds?: {
+    state: "NORMAL" | "WARNING" | "CRITICAL";
+    provisional: boolean;
+    current_ratio: number;
+    power_ratio: number;
+    voltage_ratio: number;
+  };
+  ensemble?: {
+    decision: string;
+    top_shadow_candidate: string;
+    probability: number;
+    disagreement: number;
+    effective_quality: number;
+    abstention_reasons: string[];
+    contributors: Array<{ feature: string; contribution: number }>;
+  };
+  motor_fingerprint?: {
+    model_type: string;
+    model_sha256: string;
+    trained_samples: number;
+    decision: string;
+    matched_prototype: string;
+    similarity: number;
+    novelty_score: number;
+    confidence: number;
+    contributors: Array<{ feature: string; deviation: number }>;
+    limitations: string[];
+  };
+  explanation?: string;
+  read_only: boolean;
+  runtime_diagnosis: boolean;
+}

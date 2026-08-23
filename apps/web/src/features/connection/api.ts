@@ -5,6 +5,7 @@ import type {
   ConnectionFormState,
   ConnectionStatus,
   EndpointError,
+  EdgeCommissioningReceipt,
   ModelBundleLite,
   ScanRequest,
   ScanRow,
@@ -291,6 +292,17 @@ export async function testRead(channelRef: string): Promise<TestReadResult> {
 export async function getModelBundle(signal?: AbortSignal): Promise<ModelBundleLite> {
   const endpoint = "GET /api/model";
   return connectionFetch<ModelBundleLite>(endpoint, "/api/model", signal ? { signal } : {});
+}
+
+export async function getEdgeCommissioning(
+  signal?: AbortSignal,
+): Promise<EdgeCommissioningReceipt> {
+  const endpoint = "GET /api/edge/commissioning";
+  return connectionFetch<EdgeCommissioningReceipt>(
+    endpoint,
+    "/api/edge/commissioning",
+    signal ? { signal } : {},
+  );
 }
 
 export async function commitBindings(

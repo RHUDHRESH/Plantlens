@@ -21,6 +21,7 @@ os.environ.setdefault("PLANTLENS_DEV_JWT_SECRET", secrets.token_urlsafe(48))
 os.environ.setdefault("PLANTLENS_WEB_ORIGIN", "http://localhost:5173")
 
 from app.main import app
+from edge_commissioning import build_edge_router
 from passive_gateway import gateway, router as passive_gateway_router
 
 
@@ -39,6 +40,7 @@ class SPAStaticFiles(StaticFiles):
 
 # Routes must be registered before the catch-all SPA mount.
 app.include_router(passive_gateway_router)
+app.include_router(build_edge_router(gateway))
 app.mount("/", SPAStaticFiles(directory=WEB_ROOT, html=True), name="plantlens-web")
 gateway.start()
 

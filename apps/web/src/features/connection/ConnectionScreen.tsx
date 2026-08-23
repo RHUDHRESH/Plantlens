@@ -440,6 +440,90 @@ export function ConnectionScreen({
             <StatusRow label="Last error" value={formatDisplayValue(panel.status?.lastError)} />
           </Card>
 
+          <Card title="UNO Q Edge Shadow">
+            {panel.edgeReceipt?.status === "SHADOW_RESULT" ? (
+              <>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-ink-500">Threshold state</span>
+                  <span
+                    className={cn(
+                      "px-1.5 py-0.5 rounded text-xs font-medium",
+                      panel.edgeReceipt.thresholds?.state === "CRITICAL"
+                        ? "bg-critical-tint text-critical"
+                        : panel.edgeReceipt.thresholds?.state === "WARNING"
+                          ? "bg-advisory-tint text-advisory"
+                          : "bg-healthy-tint text-healthy",
+                    )}
+                  >
+                    {panel.edgeReceipt.thresholds?.state ?? "—"} · PROVISIONAL
+                  </span>
+                </div>
+                <StatusRow
+                  label="V / I / P*"
+                  value={panel.edgeReceipt.measurements
+                    ? `${panel.edgeReceipt.measurements.voltage_candidate.toFixed(2)} / ${panel.edgeReceipt.measurements.current_candidate.toFixed(2)} / ${panel.edgeReceipt.measurements.power_candidate.toFixed(2)}`
+                    : "—"}
+                />
+                <StatusRow
+                  label="Load ratios"
+                  value={panel.edgeReceipt.thresholds
+                    ? `I ${panel.edgeReceipt.thresholds.current_ratio.toFixed(1)}× · P ${panel.edgeReceipt.thresholds.power_ratio.toFixed(1)}×`
+                    : "—"}
+                />
+                <StatusRow
+                  label="Shadow top"
+                  value={panel.edgeReceipt.ensemble
+                    ? `${panel.edgeReceipt.ensemble.top_shadow_candidate} ${(panel.edgeReceipt.ensemble.probability * 100).toFixed(1)}%`
+                    : "—"}
+                />
+                <StatusRow
+                  label="Decision"
+                  value={panel.edgeReceipt.ensemble?.decision ?? "—"}
+                />
+                <div className="border-t border-line pt-2 mt-1">
+                  <p className="text-[11px] uppercase tracking-wide text-ink-500 mb-1">
+                    Motor fingerprint · one-class RBF
+                  </p>
+                  <StatusRow
+                    label="Signature"
+                    value={panel.edgeReceipt.motor_fingerprint?.decision ?? "—"}
+                  />
+                  <StatusRow
+                    label="Matched mode"
+                    value={panel.edgeReceipt.motor_fingerprint
+                      ? `${panel.edgeReceipt.motor_fingerprint.matched_prototype} · ${(panel.edgeReceipt.motor_fingerprint.similarity * 100).toFixed(1)}%`
+                      : "—"}
+                  />
+                  <StatusRow
+                    label="Novelty"
+                    value={panel.edgeReceipt.motor_fingerprint
+                      ? `${(panel.edgeReceipt.motor_fingerprint.novelty_score * 100).toFixed(1)}%`
+                      : "—"}
+                  />
+                  <p
+                    className="mt-1 text-[10px] font-mono text-ink-500 truncate"
+                    title={panel.edgeReceipt.motor_fingerprint?.model_sha256}
+                  >
+                    Model {panel.edgeReceipt.motor_fingerprint?.model_sha256.slice(0, 12) ?? "—"}
+                  </p>
+                </div>
+                <p className="text-xs text-ink-700 leading-relaxed">
+                  {panel.edgeReceipt.explanation}
+                </p>
+                <p className="text-[11px] text-ink-500 leading-relaxed">
+                  *Register meaning is inferred, not commissioned. Shadow output cannot create a
+                  runtime alarm or control hardware.
+                </p>
+              </>
+            ) : (
+              <p className="text-xs text-ink-500">
+                {panel.edgeLoading
+                  ? "Waiting for a coherent Modbus frame…"
+                  : `Edge model abstained: ${panel.edgeReceipt?.reason ?? "no coherent frame"}`}
+              </p>
+            )}
+          </Card>
+
           <Card title="Safety Contract">
             <p className="text-xs font-medium text-ink-900">READ-ONLY</p>
             <p className="text-xs text-ink-500 leading-relaxed">
