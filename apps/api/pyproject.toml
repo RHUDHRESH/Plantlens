@@ -49,6 +49,11 @@ postgres = ["psycopg[binary]~=3.2"]
 line-length = 100
 target-version = "py312"
 
+[tool.ruff.lint]
+# Pin Ruff's core correctness checks explicitly so newer releases do not
+# unexpectedly enable unrelated preview/style families across the codebase.
+select = ["E4", "E7", "E9", "F"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]

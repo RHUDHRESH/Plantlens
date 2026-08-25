@@ -49,6 +49,10 @@ The model consumes spectral and statistical features from vibration and current.
 
 ## Documentation map
 
+- [`JUDGE_BRIEF.md`](JUDGE_BRIEF.md) - concise functionality, innovation, evidence, and official scoring alignment
+- [`EVIDENCE_LEDGER.md`](EVIDENCE_LEDGER.md) - board-measured, prototype-observed, software-tested, and not-yet-validated claims
+- [`CAUSAL_DAG_PATTERNS.md`](CAUSAL_DAG_PATTERNS.md) - approved physical cause-effect patterns, compound faults, and safe abstention
+- [`BILL_OF_MATERIALS.md`](BILL_OF_MATERIALS.md) - deployed components, optional sensing components, and commissioning status
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) - hardware/software boundaries and runtime sequence
 - [`EDGE_AI_PIPELINE.md`](EDGE_AI_PIPELINE.md) - data collection, features, training, inference, and rejection logic
 - [`HARDWARE_AND_WIRING.md`](HARDWARE_AND_WIRING.md) - functional BOM and wiring rules
@@ -56,7 +60,9 @@ The model consumes spectral and statistical features from vibration and current.
 - [`DEMO_VIDEO_SCRIPT.md`](DEMO_VIDEO_SCRIPT.md) - continuous 5-10 minute recording plan
 - [`SUBMISSION_CHECKLIST.md`](SUBMISSION_CHECKLIST.md) - final portal and evidence checks
 - [`../../arduino/uno_q/README.md`](../../arduino/uno_q/README.md) - reference implementation
+- [`../../deploy/uno-q/README.md`](../../deploy/uno-q/README.md) - actual dual-processor deployment, passive RS485 gateway, confirmed pinout, and target-board benchmark
+- [`../EDGE_AI_RESEARCH_PROGRAM.md`](../EDGE_AI_RESEARCH_PROGRAM.md) - physics-informed motor fingerprint, compact fault ensemble, and bounded factorial shadow tracker
 
 ## Evidence status
 
-The repository contains a deterministic PlantLens runtime, simulator scenarios, and software regression tests. The Arduino folder adds a runnable motor-fingerprint reference pipeline and synthetic-data smoke test. Synthetic data verifies software plumbing only; it is never presented as physical accuracy. Hardware performance figures must come from the team's recorded bench run.
+The repository contains a deterministic production runtime, passive industrial communication capture, verified CRC fixtures, real electrical commissioning observations, software-tested physics-informed edge research, and a reference Arduino motor-fingerprint pipeline. A recorded connected-UNO-Q benchmark measured **11.6338 ms median fused inference**, **11.9572 ms p95**, and **274.34 KiB peak Python allocation** over **200 synthetic overload epochs**. This is real target-board compute evidence, not physical fault-classification accuracy, sensor-to-decision latency, or a claim that all sensor channels are commissioned. See the evidence ledger for exact boundaries.

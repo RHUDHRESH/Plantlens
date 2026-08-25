@@ -14,7 +14,6 @@ from app.runtime.quality import (
     classify_tag,
 )
 from app.runtime.calm_card_engine import (
-    build_calm_card,
     build_calm_card_from_evidence,
     find_blocked_actions,
     select_recommended_action,

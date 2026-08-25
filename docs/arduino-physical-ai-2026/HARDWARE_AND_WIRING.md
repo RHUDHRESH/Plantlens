@@ -17,6 +17,17 @@
 
 Replace functional names with exact part numbers before final submission when those numbers are available.
 
+## Confirmed passive RS485 prototype wiring
+
+| UNO Q | MAX485-compatible transceiver | Purpose |
+| --- | --- | --- |
+| D1 / TX | DI | UART transmit for isolated, explicit read-only commissioning probes. |
+| D0 / RX | RO | Passive UART receive from the industrial bus. |
+| D2 | DE and /RE tied | LOW for normal passive listening; HIGH only during an explicit commissioning read. |
+| GND | GND | Shared signal reference. |
+
+The observed bus uses Modbus RTU at **38,400 baud, 8N1**. Normal operation invokes only the passive `easy302/sniff` firmware endpoint; the existing HMI remains bus master. Commissioning permits FC03/FC04 reads only. See the [complete bill of materials](BILL_OF_MATERIALS.md) and [UNO Q deployment documentation](../../deploy/uno-q/README.md).
+
 ## Wiring boundary
 
 ```text
@@ -40,16 +51,18 @@ UNO Q GPIO -> resistor/driver -> LED or buzzer
 - Record sensor orientation and mounting point so training and test conditions match.
 - The application is advisory; automatic trip/control is outside the prototype boundary.
 
-## Pin map worksheet
+## Alternative analog-reference firmware pin map
 
-The final pin assignment depends on the exact sensor modules. Complete this table before filming:
+The standalone acquisition sketch defines these reference assignments. They document code, not verified installed sensors; physical models and calibration remain to be recorded.
 
 | Signal | Sensor model | UNO Q pin/bus | Sample rate | Calibration |
 | --- | --- | --- | ---: | --- |
-| Vibration |  |  |  |  |
-| Motor current |  |  |  |  |
-| RPM |  |  |  |  |
-| Temperature |  |  |  |  |
-| Airflow |  |  |  |  |
-| Voltage |  |  |  |  |
-| Alert LED/buzzer |  |  | n/a | n/a |
+| Vibration | Not recorded | A0 | 800 Hz reference loop | Not commissioned |
+| Motor current | Not recorded | A1 | 800 Hz reference loop | Not commissioned |
+| RPM | Not recorded | D2 | Interrupt-driven | Not commissioned |
+| Temperature | Not recorded | Not assigned | Not implemented | Not commissioned |
+| Airflow | Not recorded | A3 | 800 Hz reference loop | Not commissioned |
+| Voltage | Not recorded | A2 | 800 Hz reference loop | Not commissioned |
+| Alert | Built-in LED reference | `LED_BUILTIN` | n/a | n/a |
+
+**Integration constraint:** D2 controls MAX485 direction in the deployed RS485 bridge but captures RPM interrupts in the separate analog reference. These are alternative firmware configurations. A combined build must remap RPM to another verified interrupt-capable pin before use.

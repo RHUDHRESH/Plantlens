@@ -42,9 +42,22 @@ Fill from physical runs only.
 | V06 Sensor fault |  |  |  |  |  |
 | V07 Unknown |  |  |  |  |  |
 
+## Existing genuine UNO Q compute evidence
+
+The connected target board was benchmarked on 23 August 2026 using **200 synthetic motor-overload epochs**:
+
+| Metric | Result |
+| --- | ---: |
+| Median fused ensemble and temporal inference | 11.6338 ms |
+| 95th percentile / maximum | 11.9572 ms / 35.4903 ms |
+| Peak tracked Python allocation | 274.34 KiB |
+| Deterministic replay SHA-256 | `2234378f626afb18e2395710b1c45f3a791aa39d963a3de007ad303534afa4a9` |
+
+This establishes target-board compute cost only. It does not establish physical diagnostic accuracy, physical F1, or end-to-end sensor latency. Captured CRC-valid industrial Modbus frames and three electrical commissioning observations are additional communication evidence, but do not constitute labeled physical fault validation.
+
 ## Existing software evidence
 
-The PlantLens repository documents passing contract validation, backend tests, web type checking, web tests, and production build checks in `FINAL_READY_STATE.md`. The Arduino reference implementation includes its own synthetic-data smoke test. Neither substitutes for physical bench validation.
+The repository includes automated contract validation, backend and edge-research tests, web type checking, web tests, production build checks, passive Modbus parser regressions, and Arduino-reference synthetic-data tests. The CI badge is the current execution status. None substitutes for physical bench validation.
 
 ## Evidence package
 

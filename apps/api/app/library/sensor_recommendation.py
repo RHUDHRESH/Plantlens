@@ -9,7 +9,6 @@ from app.library.catalog import get_component
 from app.library.matrices import build_fault_signature_matrix, build_observability_matrix
 from app.library.signal_presence import (
     asset_has_signal,
-    build_asset_signal_presence,
     list_sensor_templates,
 )
 

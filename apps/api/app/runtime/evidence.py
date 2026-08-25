@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 from typing import Any
 
 from app.runtime.dag_runtime import RootCauseTrace
-from app.runtime.quality import collect_data_quality_notes
 from app.schemas.runtime_evidence import (
     CausalPathEdge,
     EvidenceChainItem,
@@ -92,7 +91,6 @@ def build_causal_path_edges(
             alarm_by_asset[aid] = alarm
 
     edges_out: list[CausalPathEdge] = []
-    edges_by_id = graph_index.get("edges_by_id", {})
     forward = graph_index.get("forward_adjacency", {})
 
     for i in range(len(path_asset_ids) - 1):
@@ -105,7 +103,6 @@ def build_causal_path_edges(
                 break
         if matching is None:
             continue
-        raw = edges_by_id.get(matching.id, {})
         cause_alarm = alarm_by_asset.get(from_id)
         effect_alarm = alarm_by_asset.get(to_id)
         observed_lag = None

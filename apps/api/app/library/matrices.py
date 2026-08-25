@@ -8,7 +8,6 @@ from typing import Any
 from app.library.catalog import get_component
 from app.library.ports import _can_sink, _can_source, check_port_compatibility, find_port
 from app.library.signal_presence import (
-    asset_has_signal,
     build_asset_signal_presence,
     list_sensor_templates,
     signal_key,

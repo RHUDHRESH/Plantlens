@@ -42,7 +42,6 @@ def _neighbors_for_signal_probe(
     assembly: dict[str, Any],
 ) -> list[str]:
     """Return asset ids reachable via non-monitoring approved connections."""
-    assets = _asset_index(assembly)
     neighbors: list[str] = []
     for connection in assembly.get("connections") or []:
         if not connection.get("approved", False):

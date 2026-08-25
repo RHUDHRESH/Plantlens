@@ -1,62 +1,79 @@
-# PlantLens
+# PlantLens: Physics-Informed Industrial Edge AI on Arduino UNO Q
 
-PlantLens is an **edge-AI motor fingerprinting and causal fault-explanation system** for the Arduino Physical AI Challenge India 2026. It observes a physical motor bench without controlling it, recognizes healthy/known/unknown signatures locally on Arduino UNO Q, and turns multiple symptoms into one evidence-backed Calm Card.
+[![Continuous integration](https://github.com/RHUDHRESH/Plantlens/actions/workflows/ci.yml/badge.svg)](https://github.com/RHUDHRESH/Plantlens/actions/workflows/ci.yml)
 
-## Arduino Physical AI Challenge 2026
+**One industrial machine. Multiple physical symptoms. One trustworthy maintenance explanation, computed locally.**
 
-- **Team:** Volt Visionaries
-- **Members:** Rhudhresh R, Dhruv D. Mehta, Shyaam S, Suraj Sharma
-- **Institution:** Saveetha Engineering College
-- **Category:** Industrial & Sustainability
-- **Target:** Arduino UNO Q, local inference, read-only sensing
-- **Submission guide:** [docs/arduino-physical-ai-2026/README.md](docs/arduino-physical-ai-2026/README.md)
-- **Reference implementation:** [arduino/uno_q/README.md](arduino/uno_q/README.md)
+PlantLens is a read-only industrial intelligence retrofit combining passive RS485 observation, physics-informed motor fingerprinting, uncertainty-aware edge AI, and deterministic causal-DAG reasoning. It explains what changed, why the physical evidence supports that conclusion, and when the system must abstain.
 
-The physical path uses the UNO Q MCU for timestamped acquisition and quality checks, and the Linux MPU for feature extraction, a healthy-only novelty detector, a known-condition classifier, and deterministic causal confirmation. The existing PlantLens runtime remains the glass-box explanation and HMI layer.
+**Arduino Physical AI Challenge India 2026 | Industrial & Sustainability**
 
-> **Evidence status:** repository tests and a synthetic software smoke test are documented. Synthetic data is never presented as physical accuracy. Bench measurements must be captured with the protocol in [VALIDATION_PROTOCOL.md](docs/arduino-physical-ai-2026/VALIDATION_PROTOCOL.md).
+**Team:** Volt Visionaries: Rhudhresh R, Dhruv D. Mehta, Shyaam S, Suraj Sharma
 
-**Product rule:** edge ML recognizes motor signatures; deterministic, human-gated logic validates the causal story; PlantLens never writes motor-control outputs.
+**Institution:** Saveetha Engineering College
 
-**Do not start from archived docs.** Use the source-of-truth list below.
+**Primary board:** Arduino UNO Q | **Operating model:** local inference, offline-capable, strictly read-only
 
-## Source of truth (read in order)
+## Judges: start here
 
-1. [`PLANTLENS.md`](PLANTLENS.md) — system rules, demo domain, architecture map
-2. [`FINAL_READY_STATE.md`](FINAL_READY_STATE.md) — demo-ready status and verification
-3. [`docs/BUILD_ORDER.md`](docs/BUILD_ORDER.md) — build sequence (chunks 0–13)
-4. [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) — tokens, status rules, motion, copy
-5. [`docs/ALGORITHMS.md`](docs/ALGORITHMS.md) — quality, alarms, DAG, Situation, Calm Card
-6. [`docs/DEMO_SCENARIO.md`](docs/DEMO_SCENARIO.md) — hero scenario and regression matrix
+- [Judge brief and scoring rubric](docs/arduino-physical-ai-2026/JUDGE_BRIEF.md)
+- [Verified evidence and limitations](docs/arduino-physical-ai-2026/EVIDENCE_LEDGER.md)
+- [Causal DAG patterns and explainability](docs/arduino-physical-ai-2026/CAUSAL_DAG_PATTERNS.md)
+- [Bill of materials and integration status](docs/arduino-physical-ai-2026/BILL_OF_MATERIALS.md)
+- [Actual UNO Q deployment, confirmed wiring, and on-board benchmark](deploy/uno-q/README.md)
+- [Full submission package](docs/arduino-physical-ai-2026/README.md)
 
-Agent instructions: [`AGENTS.md`](AGENTS.md)
+## Why this requires the Arduino UNO Q
 
-Archived historical context only: [`docs/archive/`](docs/archive/) — **not** build instructions.
+| Board component | Responsibility | Why it matters |
+| --- | --- | --- |
+| STM32U585 real-time MCU | Capture UART/RS485, delimit Modbus RTU frames, validate CRC, hold transceiver direction. | Reliable 38,400-baud frame boundaries require timing ordinary Linux userspace cannot guarantee. |
+| Qualcomm QRB2210 Linux MPU | Local inference, evidence generation, FastAPI, and operator HMI. | Usable industrial edge AI runs on the same board without cloud inference. |
+| Arduino Bridge | Transfer bounded passive captures between MCU and MPU. | Keeps physical acquisition and local reasoning within one explicit safety boundary. |
 
-## Install and run
+The existing HMI remains the only bus master during normal operation. PlantLens never writes coils, registers, PLC outputs, or motor-control commands.
+
+## Four AI capabilities that differentiate PlantLens
+
+1. **Physical motor fingerprinting:** RMS, crest factor, kurtosis, frequency-domain features, electrical load, RPM, airflow, and cross-sensor relationships support healthy-only novelty detection and known-condition classification.
+2. **Physics-informed one-class inference:** a dependency-free RBF model learns operating envelopes, verifies voltage-current-power consistency, assigns SHA-256 model identity, and rejects unsupported evidence.
+3. **Five-member uncertainty-aware ensemble:** compact experts consider overload, imbalance, bearing wear, thermal stress, and sensor faults while exposing disagreement and explicit `INSUFFICIENT_DATA` / `UNKNOWN_FAULT` decisions.
+4. **PI-BFAST compound-fault tracking:** the Physics-Informed Bounded Factorial Abductive State Tracker combines bounded beam search, temporal priors, approved causal-DAG edges, signal quality, and auditable evidence receipts.
+
+The advanced ensemble and PI-BFAST are **shadow-mode research**, not authoritative production diagnosis. The runtime remains deterministic, human-approved, and read-only. No LLM or generative AI is inserted into live equipment decisions.
+
+## Real on-board compute evidence
+
+Measured on the connected Arduino UNO Q on 23 August 2026 using **200 synthetic overload epochs**:
+
+| Metric | Result |
+| --- | ---: |
+| Median fused ensemble + temporal inference | **11.6338 ms** |
+| p95 / maximum inference | **11.9572 ms / 35.4903 ms** |
+| Peak tracked Python allocation | **274.34 KiB** |
+| Replay SHA-256 | `2234378f626afb18e2395710b1c45f3a791aa39d963a3de007ad303534afa4a9` |
+
+These are genuine board-side compute measurements on synthetic inputs. They are **not** physical fault-classification accuracy, field-validation results, or end-to-end sensing latency. Captured live Modbus traffic and three electrical commissioning observations are documented separately; full register semantics and labeled physical fault accuracy remain uncommissioned.
+
+## Alignment with challenge judging
+
+| Criterion | Weight | Submission evidence |
+| --- | ---: | --- |
+| Functionality | 40% | Dual-processor UNO Q deployment, passive industrial RS485 acquisition, CRC validation, local AI, quality-gated advisory HMI. |
+| Innovation | 25% | Physics-informed fingerprinting, uncertainty-aware ensemble, bounded compound-fault reasoning, approved causal DAG, non-invasive industrial retrofit. |
+| Documentation | 20% | Confirmed wiring, bill of materials, causal patterns, firmware, gateway, measured board benchmark, evidence ledger, validation protocol. |
+| Presentation | 15% | Judge brief, transparent quantitative evidence, operator-focused Calm Cards, demo script, reproducible commands, visible CI. |
+
+## Reproduce
 
 ```bash
-# Install
+python scripts/benchmark_edge_ensemble.py --iterations 200
+python scripts/benchmark_factorial_shadow.py
+python -m unittest discover -s arduino/uno_q/tests -v
+
 pnpm install --frozen-lockfile
 pip install -e "./apps/api[dev]"
-
-# Run API (from repo root)
-cd apps/api && PLANTLENS_DEV_JWT_SECRET=change-this-local-dev-secret uvicorn app.main:app --reload --port 8000
-
-# Run web
-pnpm --filter @plantlens/web dev
-
-# Run simulator scenario (API, engineer token)
-curl -X POST http://localhost:8000/api/scenarios/scn_motor_overload/start \
-  -H "Authorization: Bearer <token>"
-
-# Docker compose (web on :8080, proxies /api and /ws)
-docker compose -f deploy/docker/compose.full.yml up --build
-```
-
-## Validation
-
-```bash
+ruff check apps/api/app
 python -m pytest apps/api/tests -q
 pnpm contracts:validate
 pnpm --filter @plantlens/web typecheck
@@ -64,36 +81,14 @@ pnpm --filter @plantlens/web test
 pnpm --filter @plantlens/web build
 ```
 
-## Repository layout
+Host benchmark timings will differ from the documented UNO Q measurements. Synthetic replay verifies compute behavior, not physical diagnostic accuracy.
 
-```text
-plantlens/
-├─ PLANTLENS.md            # master build document
-├─ AGENTS.md               # strict agent instructions
-├─ FINAL_READY_STATE.md    # demo-ready verification
-├─ docs/                   # architecture, algorithms, build order
-├─ packages/
-│  ├─ contracts/           # JSON Schema contract spine
-│  └─ sample-data/         # demo-microgrid bundle
-├─ apps/
-│  ├─ api/                 # FastAPI runtime, compiler, incidents, audit
-│  ├─ gateway/             # read-only Modbus/RS485 poller
-│  ├─ agents/              # draft-only AI service
-│  └─ web/                 # React 19 + Vite HMI and Studio
-├─ deploy/                 # Docker, compose
-└─ legacy/cliffords-ts/    # frozen ingestion oracle
-```
+## Architecture and safety references
 
-## Safety model
+- [`PLANTLENS.md`](PLANTLENS.md): system rules and architecture.
+- [`AGENTS.md`](AGENTS.md): deterministic-runtime and human-approval constraints.
+- [`docs/ALGORITHMS.md`](docs/ALGORITHMS.md): quality, alarms, causal DAG, situations, and Calm Cards.
+- [`docs/EDGE_AI_RESEARCH_PROGRAM.md`](docs/EDGE_AI_RESEARCH_PROGRAM.md): shadow-mode research architecture.
+- [`docs/arduino-physical-ai-2026/`](docs/arduino-physical-ai-2026/): complete challenge submission.
 
-PlantLens is advisory. It does not trip equipment, write PLC registers, or mutate live control state.
-
-- One canonical plant model in `packages/contracts`
-- Runtime DAG is deterministic and read-only; approved edges only
-- Simulator and gateway emit the same `TagFrame` contract
-- Agents draft only; humans approve consequential changes
-- Append-only hash-chained audit
-
-## License
-
-TBD.
+**Safety contract:** advisory only; approved causal edges only; simulator and gateway share `TagFrame`; research AI remains shadow-only; consequential changes require human approval; audit history is append-only.
