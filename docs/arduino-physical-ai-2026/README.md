@@ -50,6 +50,8 @@ The model consumes spectral and statistical features from vibration and current.
 ## Documentation map
 
 - [`JUDGE_BRIEF.md`](JUDGE_BRIEF.md) - concise functionality, innovation, evidence, and official scoring alignment
+- [`JUDGING_RUBRIC_COVERAGE.md`](JUDGING_RUBRIC_COVERAGE.md) - exhaustive official criteria, additional industry expectations, evidence mapping, and unresolved gaps
+- [`JUDGE_DEFENSE_PLAYBOOK.md`](JUDGE_DEFENSE_PLAYBOOK.md) - technical questioning, evidence boundaries, difficult integration questions, and differentiated positioning
 - [`EVIDENCE_LEDGER.md`](EVIDENCE_LEDGER.md) - board-measured, prototype-observed, software-tested, and not-yet-validated claims
 - [`CAUSAL_DAG_PATTERNS.md`](CAUSAL_DAG_PATTERNS.md) - approved physical cause-effect patterns, compound faults, and safe abstention
 - [`BILL_OF_MATERIALS.md`](BILL_OF_MATERIALS.md) - deployed components, optional sensing components, and commissioning status

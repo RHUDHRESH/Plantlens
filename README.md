@@ -17,6 +17,8 @@ PlantLens is a read-only industrial intelligence retrofit combining passive RS48
 ## Judges: start here
 
 - [Judge brief and scoring rubric](docs/arduino-physical-ai-2026/JUDGE_BRIEF.md)
+- [Complete official rubric and industry evaluation coverage](docs/arduino-physical-ai-2026/JUDGING_RUBRIC_COVERAGE.md)
+- [Judge questions, technical defenses, and competitive positioning](docs/arduino-physical-ai-2026/JUDGE_DEFENSE_PLAYBOOK.md)
 - [Verified evidence and limitations](docs/arduino-physical-ai-2026/EVIDENCE_LEDGER.md)
 - [Causal DAG patterns and explainability](docs/arduino-physical-ai-2026/CAUSAL_DAG_PATTERNS.md)
 - [Bill of materials and integration status](docs/arduino-physical-ai-2026/BILL_OF_MATERIALS.md)
