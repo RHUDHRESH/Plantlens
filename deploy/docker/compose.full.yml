@@ -32,7 +32,20 @@ services:
     environment:
       API_BASE_URL: http://api:8000
       GATEWAY_INGEST_TOKEN: dev-token
-    # For real RS485 add:  devices: ["/dev/ttyUSB0:/dev/ttyUSB0"]
+      HEALTH_PORT: "9101"
+      # modbus (RS-485 adapter) | line (Arduino Uno streaming PL1/CSV over USB)
+      GATEWAY_SERIAL_MODE: ${GATEWAY_SERIAL_MODE:-modbus}
+      # Stable in-container path; map the host's /dev/serial/by-id/... link to it below.
+      GATEWAY_SERIAL_PORT: ${GATEWAY_SERIAL_PORT:-}
+      # Further tuning (GATEWAY_LINK__*, GATEWAY_LINE__*, GATEWAY_MODBUS__*): apps/gateway/README.md
+    ports: ["9101:9101"]
+    # Real hardware: pass the adapter by its by-id path (survives replug/renumbering), e.g.
+    # devices:
+    #   - /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0:/dev/ttyPLANTLENS0
+    # and set GATEWAY_SERIAL_PORT=/dev/ttyPLANTLENS0. Hotplug inside a container additionally
+    # needs the device cgroup rule instead of a fixed mapping, e.g.
+    #   device_cgroup_rules: ["c 188:* rmw", "c 166:* rmw"]   # ttyUSB*, ttyACM*
+    #   volumes: ["/dev:/dev"]
     depends_on: [api]
 
   agents:
