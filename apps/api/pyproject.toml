@@ -27,6 +27,8 @@ dependencies = [
   "openpyxl~=3.1",
   # Change pipeline — validate bundles against packages/contracts before deploy
   "jsonschema~=4.23",
+  # Agents proxy (routers/agents.py) — runtime import, not dev-only
+  "httpx~=0.28",
   # Auth (Chunk 1) — pick ONE path:
   "authlib~=1.7",           # production OIDC/JWT verify
   # "python-jose[cryptography]", "passlib[bcrypt]",  # local dev bootstrap alternative

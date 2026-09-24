@@ -177,7 +177,7 @@ network errors retry with capped backoff, re-queued in original order. `/health`
 | `GATEWAY_LINK__RESET_POLICY` | `hold_dtr_low` (modbus), `wait_for_reset` (line) | |
 | `GATEWAY_LINK__RESET_SETTLE_MS` / `__READY_BANNER` / `__READY_TIMEOUT_MS` | 2000 / `^#PLANTLENS READY` / 0 | |
 | `GATEWAY_LINK__LOCAL_ECHO` | false | adapters that echo their own TX |
-| `GATEWAY_LINE__PROTOCOL` / `__COLUMN_MAP` / `__CSV_HEADER` / `__SOURCE` / `__STALE_AFTER_MS` | auto / {} / — / manual / tag map | |
+| `GATEWAY_LINE__PROTOCOL` / `__COLUMN_MAP` / `__CSV_HEADER` / `__SOURCE` / `__STALE_AFTER_MS` | auto / {} / — / serial_line / tag map | |
 | `GATEWAY_MODBUS__TIMEOUT_MS` / `__RETRIES` / `__MAX_GAP` / `__INTER_REQUEST_MS` | 250 / 1 / 8 / t3.5 | |
 | `GATEWAY_UPLINK__BATCH_MAX` / `__FLUSH_MS` / `__QUEUE_MAX` | 200 / 250 / 5000 | |
 | `API_BASE_URL`, `GATEWAY_INGEST_TOKEN`, `TAG_MAP_PATH`, `GATEWAY_ID`, `HEALTH_PORT` | | as before |

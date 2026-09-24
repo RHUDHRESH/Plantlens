@@ -1,6 +1,9 @@
-# Full local stack. Run from repo root:
-#   docker compose -f deploy/docker/compose.full.yml up --build
-# MVP shortcut: comment out postgres + agents and set api DATABASE_URL to sqlite.
+# PlantLens stack. Run from the repo root on the SERVER PC:
+#   cp deploy/docker/.env.example deploy/docker/.env      # then edit secrets / ports
+#   docker compose -f deploy/docker/compose.full.yml --env-file deploy/docker/.env up -d --build
+# Other PCs on the network open  http://<server-ip>:8080  in a browser.
+# The gateway (RS-485 / Arduino) can run here (profile "gateway") or on another PC
+# (deploy/docker/compose.gateway.yml). See docs/MULTI_PC_SETUP.md.
 name: plantlens
 services:
   api:
@@ -8,47 +11,47 @@ services:
       context: ../..
       dockerfile: deploy/docker/api.Dockerfile
     environment:
-      PLANTLENS_ENV: dev
-      DATABASE_URL: postgresql+psycopg://plantlens:plantlens@postgres:5432/plantlens
+      PLANTLENS_ENV: ${PLANTLENS_ENV:-dev}
+      # SQLite in a named volume: approved revisions + audit ledger survive restarts.
+      DATABASE_URL: sqlite+aiosqlite:////data/plantlens.db
       ACTIVE_PLANT_ID: demo_microgrid_001
-      SAMPLE_DATA_DIR: /packages/sample-data/demo-microgrid
-      COMPILED_DIR: /app/compiled
-      GATEWAY_INGEST_TOKEN: dev-token
+      PLANTLENS_DEV_JWT_SECRET: ${PLANTLENS_DEV_JWT_SECRET:?set PLANTLENS_DEV_JWT_SECRET in .env}
+      GATEWAY_INGEST_TOKEN: ${GATEWAY_INGEST_TOKEN:?set GATEWAY_INGEST_TOKEN in .env}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:8080}
       AGENTS_BASE_URL: http://agents:8100
-    ports: ["8000:8000"]
-    depends_on: [postgres]
+    volumes: ["apidata:/data"]
+    ports: ["${API_PORT:-8000}:8000"]
+    restart: unless-stopped
 
   web:
     build:
       context: ../..
       dockerfile: deploy/docker/web.Dockerfile
-    ports: ["8080:80"]
+    ports: ["${WEB_PORT:-8080}:80"]
     depends_on: [api]
+    restart: unless-stopped
 
   gateway:
+    profiles: ["gateway"]   # only when the adapter/Uno is plugged into THIS PC
     build:
       context: ../..
       dockerfile: deploy/docker/gateway.Dockerfile
     environment:
       API_BASE_URL: http://api:8000
-      GATEWAY_INGEST_TOKEN: dev-token
+      GATEWAY_INGEST_TOKEN: ${GATEWAY_INGEST_TOKEN:?set GATEWAY_INGEST_TOKEN in .env}
       HEALTH_PORT: "9101"
       # modbus (RS-485 adapter) | line (Arduino Uno streaming PL1/CSV over USB)
       GATEWAY_SERIAL_MODE: ${GATEWAY_SERIAL_MODE:-modbus}
-      # Stable in-container path; map the host's /dev/serial/by-id/... link to it below.
-      GATEWAY_SERIAL_PORT: ${GATEWAY_SERIAL_PORT:-}
-      # Further tuning (GATEWAY_LINK__*, GATEWAY_LINE__*, GATEWAY_MODBUS__*): apps/gateway/README.md
+      GATEWAY_SERIAL_PORT: /dev/ttyPLANTLENS0
+    devices:
+      # Host path of the adapter; /dev/serial/by-id/... survives replugging. Set in .env.
+      - ${GATEWAY_DEVICE:-/dev/ttyUSB0}:/dev/ttyPLANTLENS0
     ports: ["9101:9101"]
-    # Real hardware: pass the adapter by its by-id path (survives replug/renumbering), e.g.
-    # devices:
-    #   - /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0:/dev/ttyPLANTLENS0
-    # and set GATEWAY_SERIAL_PORT=/dev/ttyPLANTLENS0. Hotplug inside a container additionally
-    # needs the device cgroup rule instead of a fixed mapping, e.g.
-    #   device_cgroup_rules: ["c 188:* rmw", "c 166:* rmw"]   # ttyUSB*, ttyACM*
-    #   volumes: ["/dev:/dev"]
     depends_on: [api]
+    restart: unless-stopped
 
   agents:
+    profiles: ["agents"]    # optional draft-only AI service
     build:
       context: ../..
       dockerfile: deploy/docker/agents.Dockerfile
@@ -56,14 +59,5 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     ports: ["8100:8100"]
 
-  postgres:
-    image: postgres:18-alpine
-    environment:
-      POSTGRES_USER: plantlens
-      POSTGRES_PASSWORD: plantlens
-      POSTGRES_DB: plantlens
-    ports: ["5432:5432"]
-    volumes: ["pgdata:/var/lib/postgresql/data"]
-
 volumes:
-  pgdata:
+  apidata:

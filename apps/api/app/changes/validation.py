@@ -8,6 +8,7 @@ Two gates, both must pass:
 from __future__ import annotations
 
 import json
+import os
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -16,7 +17,20 @@ from jsonschema import Draft202012Validator
 
 from app.runtime.graph_compile import validate_and_compile_graph
 
-CONTRACTS_DIR = Path(__file__).resolve().parents[4] / "packages" / "contracts"
+
+def _find_contracts_dir() -> Path:
+    """packages/contracts: env override, else the nearest ancestor that has it (repo or /)."""
+    override = os.environ.get("PLANTLENS_CONTRACTS_DIR")
+    if override:
+        return Path(override)
+    for base in Path(__file__).resolve().parents:
+        candidate = base / "packages" / "contracts"
+        if candidate.is_dir():
+            return candidate
+    return Path("/packages/contracts")
+
+
+CONTRACTS_DIR = _find_contracts_dir()
 SCHEMA_FOR_DOC = {
     "plant": "plant.schema.json",
     "tag_map": "tag_map.schema.json",
