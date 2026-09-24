@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { getRuntimeHmiState, isRuntimeEndpointUnavailable, postHmiPreview } from "../../api/hmi";
-import { issueDevToken } from "../../api/client";
-import { setAuthToken } from "../../api/config";
+import { useSession } from "../../app/session";
 import { ApiError } from "../../api/types";
 import type { PlantHMIState } from "../../app/schemas/plantHmi";
 import { AlarmGroups } from "./AlarmGroups";
@@ -45,27 +44,8 @@ export function HmiPreviewPage() {
   const [lastLoadedAt, setLastLoadedAt] = useState<string | null>(null);
   const [runtimeUnavailable, setRuntimeUnavailable] = useState(false);
   const [runtimeNetworkError, setRuntimeNetworkError] = useState(false);
-  const [authReady, setAuthReady] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    issueDevToken("viewer")
-      .then((token) => {
-        if (!cancelled) {
-          setAuthToken(token);
-          setAuthReady(true);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setError("Could not obtain dev auth token. API calls may fail.");
-          setAuthReady(true);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Use the shell's signed-in session; never mint a separate (lower-role) token here.
+  const authReady = useSession((s) => s.status === "ready");
 
   const selectedScenario = useMemo(
     () => HMI_SCENARIOS.find((scenario) => scenario.id === selectedScenarioId) ?? HMI_SCENARIOS[0],

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { HmiPreviewPage } from "./HmiPreviewPage";
+import { useSession } from "../../app/session";
 import { ApiError } from "../../api/types";
 import type { PlantHMIState } from "../../app/schemas/plantHmi";
 
@@ -46,6 +47,8 @@ function renderPage(ui: ReactElement = <HmiPreviewPage />) {
 
 describe("HmiPreviewPage", () => {
   beforeEach(() => {
+    // The app shell owns sign-in; the page only waits for a ready session.
+    useSession.setState({ status: "ready", role: "engineer", subject: "engineer-test", error: null });
     vi.mocked(postHmiPreview).mockReset();
     vi.mocked(getRuntimeHmiState).mockReset();
     vi.mocked(postHmiPreview).mockResolvedValue(BASE_STATE);
