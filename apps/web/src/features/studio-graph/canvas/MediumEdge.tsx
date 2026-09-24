@@ -8,6 +8,7 @@ import {
 } from "@xyflow/react";
 import { memo } from "react";
 import { mediumColor, mediumDash } from "../../connection-rules/media";
+import { orthogonalPoints, roundedPath } from "../model/autoLayout";
 
 export interface MediumEdgeData extends Record<string, unknown> {
   medium: string;
@@ -15,7 +16,13 @@ export interface MediumEdgeData extends Record<string, unknown> {
   issue: "deny" | "warn" | null;
   lagLabel: string | null;
   loopOk: boolean;
+  /** Orthogonal bend points from auto-arrange; null → smoothstep. */
+  points?: { x: number; y: number }[] | null;
 }
+
+/** Wires leave/enter ports horizontally with a clear stub before turning. */
+export const EDGE_RADIUS = 10;
+export const EDGE_OFFSET = 24;
 
 export type MediumFlowEdge = Edge<MediumEdgeData, "medium">;
 
@@ -31,16 +38,19 @@ function MediumEdgeImpl({
   selected,
   markerEnd,
 }: EdgeProps<MediumFlowEdge>) {
-  const [path, labelX, labelY] = getSmoothStepPath({
-    sourceX,
-    sourceY,
-    targetX,
-    targetY,
-    sourcePosition,
-    targetPosition,
-    borderRadius: 10,
-    offset: 20,
-  });
+  const bends = data?.points;
+  const [path, labelX, labelY] = bends
+    ? roundedPath(orthogonalPoints({ x: sourceX, y: sourceY }, bends, { x: targetX, y: targetY }), EDGE_RADIUS)
+    : getSmoothStepPath({
+        sourceX,
+        sourceY,
+        targetX,
+        targetY,
+        sourcePosition,
+        targetPosition,
+        borderRadius: EDGE_RADIUS,
+        offset: EDGE_OFFSET,
+      });
   const medium = data?.medium ?? "unknown";
   const draft = !data?.approved;
   const issue = data?.issue ?? null;
@@ -94,8 +104,8 @@ export function StudioConnectionLine({ fromX, fromY, toX, toY, fromPosition, toP
     targetY: toY,
     sourcePosition: fromPosition,
     targetPosition: toPosition,
-    borderRadius: 10,
-    offset: 20,
+    borderRadius: EDGE_RADIUS,
+    offset: EDGE_OFFSET,
   });
   return (
     <g className="st-connection-line" data-status={connectionStatus ?? undefined}>

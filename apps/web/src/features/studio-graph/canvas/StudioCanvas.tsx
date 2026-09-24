@@ -12,6 +12,7 @@ import {
   Controls,
   MarkerType,
   MiniMap,
+  Position,
   ReactFlow,
   SelectionMode,
   ViewportPortal,
@@ -21,6 +22,7 @@ import {
   type EdgeChange,
   type FinalConnectionState,
   type NodeChange,
+  type NodeHandle,
   type OnReconnect,
   type Viewport,
 } from "@xyflow/react";
@@ -31,7 +33,9 @@ import { mediumColor } from "../../connection-rules/media";
 import { useRulesStore } from "../../connection-rules/rulesStore";
 import type { Issue, RuleComponent } from "../../connection-rules/types";
 import { boundsOf, computeAlignment, GRID, nearbyRects, snapPoint, type Guide, type Rect } from "../model/geometry";
-import { cachedLayout } from "../model/portLayout";
+import { validRoute } from "../model/autoLayout";
+import { cachedLayout, type NodeLayout } from "../model/portLayout";
+import { useReducedMotion } from "../../../app/hooks/useReducedMotion";
 import type { XY } from "../model/assemblyOps";
 import { selectAssembly, useStudioStore } from "../studioStore";
 import { decideConnect, decideDropOnNode, makeIsValidConnection } from "./connectionHandlers";
@@ -53,6 +57,8 @@ const GUIDE_THRESHOLD_PX = 6;
 const GUIDE_RADIUS = 480;
 const PRO = { hideAttribution: true };
 const MULTI_SELECT_KEYS = ["Shift", "Meta", "Control"];
+const TWEEN_MS = 280;
+const ease = (t: number) => 1 - Math.pow(1 - t, 3);
 
 interface Ghost {
   templateId: string | null;
@@ -81,6 +87,25 @@ function severityMaps(issues: readonly Issue[]) {
   return { nodes, edges };
 }
 
+const HANDLE = 11;
+const handleCache = new WeakMap<NodeLayout, NodeHandle[]>();
+function handlesFor(layout: NodeLayout): NodeHandle[] {
+  let out = handleCache.get(layout);
+  if (!out) {
+    out = [...layout.left, ...layout.right].map((p) => ({
+      id: p.port.port_id,
+      type: "source" as const,
+      position: p.side === "left" ? Position.Left : Position.Right,
+      x: (p.side === "left" ? 0 : layout.width) - HANDLE / 2,
+      y: p.offsetY - HANDLE / 2,
+      width: HANDLE,
+      height: HANDLE,
+    }));
+    handleCache.set(layout, out);
+  }
+  return out;
+}
+
 function clientPoint(event: MouseEvent | TouchEvent): { x: number; y: number } | null {
   if ("changedTouches" in event) {
     const t = event.changedTouches[0];
@@ -98,6 +123,9 @@ export function StudioCanvas({ issues, readOnly, onOpenHelp, onViewportChange, d
   const renamingId = useStudioStore((s) => s.renamingId);
   const snapEnabled = useStudioStore((s) => s.snapEnabled);
   const showLagLabels = useStudioStore((s) => s.showLagLabels);
+  const edgeRoutes = useStudioStore((s) => s.edgeRoutes);
+  const layoutTween = useStudioStore((s) => s.layoutTween);
+  const reducedMotion = useReducedMotion();
   const rules = useRulesStore((s) => s.rules);
 
   // ---- rule engine (read imperatively by nodes/isValidConnection) ------------------------------
@@ -116,6 +144,37 @@ export function StudioCanvas({ issues, readOnly, onOpenHelp, onViewportChange, d
   const [ghost, setGhost] = useState<Ghost | null>(null);
   const [menuTarget, setMenuTarget] = useState<MenuTarget>({ kind: "pane" });
   const connectHandled = useRef(false);
+
+  // ---- auto-arrange tween: nodes glide from their old spots to the committed layout -------------
+  const [tweenPositions, setTweenPositions] = useState<Record<string, XY>>({});
+  useEffect(() => {
+    if (!layoutTween || reducedMotion) return;
+    const to = new Map(useStudioStore.getState().history.present.assets.map((a) => [a.asset_id, a.position_2d]));
+    const ids = Object.keys(layoutTween.from).filter((id) => to.has(id));
+    let raf = 0;
+    const start = performance.now();
+    const step = (now: number) => {
+      const t = Math.min(1, (now - start) / TWEEN_MS);
+      if (t >= 1) {
+        setTweenPositions({});
+        return;
+      }
+      const k = ease(t);
+      const out: Record<string, XY> = {};
+      for (const id of ids) {
+        const a = layoutTween.from[id]!;
+        const b = to.get(id)!;
+        out[id] = { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k };
+      }
+      setTweenPositions(out);
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => {
+      cancelAnimationFrame(raf);
+      setTweenPositions({});
+    };
+  }, [layoutTween, reducedMotion]);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => e.key === "Alt" && setAltHeld(true);
@@ -147,7 +206,7 @@ export function StudioCanvas({ issues, readOnly, onOpenHelp, onViewportChange, d
     const list = assembly.assets.map((asset) => {
       const template = templates.get(asset.component_type_id);
       const layout = cachedLayout(template?.ports ?? []);
-      const position = dragPositions[asset.asset_id] ?? asset.position_2d;
+      const position = dragPositions[asset.asset_id] ?? tweenPositions[asset.asset_id] ?? asset.position_2d;
       const isSelected = selected.has(asset.asset_id);
       const issue = nodeIssues.get(asset.asset_id) ?? null;
       const renaming = renamingId === asset.asset_id;
@@ -177,6 +236,9 @@ export function StudioCanvas({ issues, readOnly, onOpenHelp, onViewportChange, d
         width: layout.width,
         height: layout.height,
         selected: isSelected,
+        // Deterministic handle geometry: without it xyflow drops handleBounds whenever a node object
+        // is re-created before its measurement lands, and those edges silently never render.
+        handles: handlesFor(layout),
         ...(m ? { measured: m } : {}),
         data: { asset, template, issue, renaming, readOnly, connectedKey },
         ariaLabel: `${asset.display_name} (${asset.asset_id})`,
@@ -186,7 +248,7 @@ export function StudioCanvas({ issues, readOnly, onOpenHelp, onViewportChange, d
     });
     nodeCache.current = next;
     return list;
-  }, [assembly.assets, assembly.connections, templates, selection.nodes, dragPositions, nodeIssues, renamingId, readOnly, measured]);
+  }, [assembly.assets, assembly.connections, templates, selection.nodes, dragPositions, tweenPositions, nodeIssues, renamingId, readOnly, measured]);
 
   // ---- projection: connections → edges ----------------------------------------------------------
   const edges = useMemo<MediumFlowEdge[]>(() => {
@@ -194,7 +256,11 @@ export function StudioCanvas({ issues, readOnly, onOpenHelp, onViewportChange, d
     const loopOk = new Set(
       Array.isArray(assembly.metadata?.[LOOP_OK_METADATA_KEY]) ? (assembly.metadata[LOOP_OK_METADATA_KEY] as string[]) : [],
     );
+    const livePos = new Map<string, XY>();
+    for (const a of assembly.assets) livePos.set(a.asset_id, dragPositions[a.asset_id] ?? tweenPositions[a.asset_id] ?? a.position_2d);
     return assembly.connections.map((c) => {
+      // Stored ELK route only while neither endpoint has moved since the auto-arrange.
+      const route = validRoute(edgeRoutes[c.connection_id], livePos.get(c.from_asset_id), livePos.get(c.to_asset_id));
       const fromAsset = ctx.assets.get(c.from_asset_id);
       const medium = (fromAsset && templates.get(fromAsset.component_type_id)?.ports.find((p) => p.port_id === c.from_port_id)?.medium) ?? "unknown";
       const issue = edgeIssues.get(c.connection_id) ?? null;
@@ -215,11 +281,12 @@ export function StudioCanvas({ issues, readOnly, onOpenHelp, onViewportChange, d
           issue,
           loopOk: loopOk.has(c.connection_id),
           lagLabel: showLagLabels ? `${c.lag_min_ms}–${c.lag_max_ms} ms` : null,
+          points: route?.points ?? null,
         },
         ariaLabel: `Connection ${c.connection_id} ${c.from_asset_id} to ${c.to_asset_id}`,
       } satisfies MediumFlowEdge;
     });
-  }, [assembly.connections, assembly.metadata, selection.edges, edgeIssues, showLagLabels, readOnly, ctx, templates]);
+  }, [assembly.connections, assembly.assets, assembly.metadata, selection.edges, edgeIssues, showLagLabels, readOnly, ctx, templates, edgeRoutes, dragPositions, tweenPositions]);
 
   // ---- node changes: apply everything locally; select → store; drag stop → one command ----------
   const onNodesChange = useCallback(
