@@ -9,6 +9,92 @@ in the code path, behind a guard that raises on anything else.
 serial / TCP ──> transport ──> modbus.scan_engine | line.reader ──> publish.uplink ──POST /api/ingest/frame/batch──> apps/api
 ```
 
+## Quick start on any PC (one command)
+
+Plug in the RS-485 adapter or the Uno, then from anywhere:
+
+| OS | Command |
+|---|---|
+| Windows | double-click `apps\gateway\scripts\start-gateway.bat` (or `.\start-gateway.ps1` in PowerShell) |
+| Linux / macOS | `apps/gateway/scripts/start-gateway.sh` |
+
+The launcher finds Python 3.12+, creates `apps/gateway/.venv`, installs the gateway, runs the
+**setup wizard** on the first run, then runs the gateway and restarts it with backoff (2 s → 60 s)
+if it crashes. Ctrl+C stops it. Options: `-Setup`/`--setup` (re-run the wizard),
+`-Profile NAME`/`--profile NAME` (a second device), `-NoRestart`/`--no-restart`. On Windows the
+wizard answers can be given directly: `start-gateway.bat -Setup -Server http://192.168.1.50:8000 -Token XXX -Yes`;
+on Linux/macOS after `--`: `start-gateway.sh -- --yes --server http://192.168.1.50:8000 --token XXX`.
+
+### Setup wizard (`python -m gateway.setup_wizard`)
+
+1. Lists serial ports with the adapter family (VID:PID table below), description, serial number
+   and current COM/tty name; `*` marks recognised adapters. With exactly one recognised adapter it
+   is picked automatically; otherwise you pick by number (`r` rescans). Built-in UARTs are never
+   picked automatically.
+2. Mode: default `line` for Arduino boards (VID `2341`/`2A03`), `modbus` for RS-485 bridges.
+3. Server URL (default: the previous answer) and ingest token. It tests the server: `GET /healthz`
+   and a dry-run `POST /api/ingest/frame/batch` with an empty batch (nothing is stored). A 401
+   means the token differs from the server's `GATEWAY_INGEST_TOKEN`; the wizard says so and asks
+   again (non-interactive: exits 1 without saving). An unreachable server is only a warning.
+4. Probes the port: line mode listens 3 s for `#PLANTLENS READY` / `PL1` lines; Modbus mode runs
+   one real read-only scan of the first RTU device in the tag map and reports GOOD tags,
+   timeouts and CRC errors.
+5. Saves the per-machine config (see below) and prints how to start.
+
+The device is saved as a **stable selector**, never as the current COM number when anything better
+exists: `sn:<serial>` (unique USB serial number, e.g. genuine Uno, FTDI) → `VID:PID:SERIAL` (serial
+shared by two ports) → `VID:PID` (only one such adapter plugged in; the wizard notes that any adapter
+of that type will match) → `VID:PID@<usb-location>` (several identical serial-less CH340s: tied to
+the USB socket) → `/dev/serial/by-id/...` → raw `COM5`/`/dev/ttyUSB0` **with a warning**. Windows
+instance ids such as `5&2A3B4C5D&0&2` (serial-less CH340 clones) are not treated as serial numbers.
+So the same config keeps working after a reboot, in another USB socket, or when the COM number
+changes; copy the command, not the config, to another PC.
+
+Non-interactive flags: `--list`, `--port N|COMx|/dev/tty…|sn:…|VID:PID|auto`, `--mode modbus|line`,
+`--server URL`, `--token T`, `--gateway-id ID`, `--profile NAME`, `--yes`, `--no-probe`,
+`--skip-server-check`, `--force`, `--show` (token masked), `--config-path`.
+
+### Per-machine config file
+
+| OS | Default path |
+|---|---|
+| Windows | `%APPDATA%\PlantLens\gateway.env` |
+| Linux / macOS | `$XDG_CONFIG_HOME/plantlens/gateway.env` (`~/.config/plantlens/gateway.env`) |
+
+`PLANTLENS_GATEWAY_CONFIG=/path/file.env` overrides the path. The file is a plain dotenv
+(`API_BASE_URL`, `GATEWAY_INGEST_TOKEN`, `GATEWAY_SERIAL_MODE`, `GATEWAY_LINK__SELECTOR`,
+`GATEWAY_ID`, `HEALTH_PORT`, and for line mode a default `GATEWAY_LINE__COLUMN_MAP` for the Uno
+sketch's `vib,current,voltage,temp` keys); keys you add by hand are kept on re-runs. It is written
+`chmod 600` on POSIX, and the wizard refuses to write it inside the repository (it holds the token).
+`gateway.settings` loads it automatically with the **lowest precedence**: constructor args > real
+environment variables > `./.env` > machine config > defaults. So after the wizard,
+`python -m gateway.main` just works, and `GATEWAY_SERIAL_PORT=COM9 python -m gateway.main` still
+overrides it for one run. `python -m gateway.diagnostics` reports which config applies (`config`)
+and each port's `stable_selector`.
+
+### Several devices on one PC (profiles)
+
+`--profile NAME` (or `PLANTLENS_GATEWAY_PROFILE=NAME`) uses `gateway.NAME.env` next to the default
+file. The wizard gives each profile its own `GATEWAY_ID` (`gw-<host>-<rs485|line>-NAME`) and the
+next free `HEALTH_PORT` (9101, 9102, …), so two gateways run side by side:
+
+```bash
+scripts/start-gateway.sh                    # RS-485 stick, health :9101
+scripts/start-gateway.sh --profile uno      # Uno, health :9102 (second terminal)
+```
+
+### Start at boot
+
+* Linux: `scripts/install-service.sh [--profile NAME]` renders `scripts/plantlens-gateway.service`
+  (runs as you, in the `dialout`/`uucp` group, `Restart=always`) into
+  `/etc/systemd/system/plantlens-gateway[-NAME].service` and enables it. Logs:
+  `journalctl -u plantlens-gateway -f`. `--uninstall` removes it.
+* Windows: `scripts\install-task.ps1 [-Profile NAME]` registers a Task Scheduler task that runs
+  the launcher at your logon (as you, so it uses your `%APPDATA%` config and USB ports), with no
+  time limit and automatic restart. `-Uninstall` removes it. By hand: Task Scheduler → Create Task →
+  Trigger "At log on" → Action `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "<repo>\apps\gateway\scripts\start-gateway.ps1" -NoPause`.
+* macOS: add `start-gateway.sh` as a login item, or wrap it in a launchd agent.
+
 ## Layout
 
 | Module | Responsibility |
@@ -25,7 +111,9 @@ serial / TCP ──> transport ──> modbus.scan_engine | line.reader ──> 
 | `gateway/publish/uplink.py` | One background task, bounded ordered queue, batches, 4xx quarantine, 5xx retry |
 | `gateway/tag_frame.py` | TagFrame model identical to the API/contract (patterns, aware datetimes, `ingest_ts`, `scenario_id`) |
 | `gateway/health.py` | Threaded `/health`, `/commission/ports`, `/commission/probe` (default port 9101) |
-| `gateway/diagnostics.py` | CLI: list/auto-detect ports, probe, parse a line |
+| `gateway/diagnostics.py` | CLI: list/auto-detect ports (with stable selectors), probe, parse a line, active config |
+| `gateway/setup_wizard.py` | First-run wizard: pick device, stable selector, test server/token, probe, save per-machine config |
+| `scripts/` | `start-gateway.{bat,ps1,sh}` launchers, `install-service.sh` + `plantlens-gateway.service` (systemd), `install-task.ps1` (Windows Task Scheduler) |
 | `gateway/raw_serial_reader.py`, `modbus_poller.py`, `serial_client.py`, `publish/__init__.py` | Compatibility facades for the old entry points |
 | `gateway/plc_bridge/` | Advisory PLC bridge (Chunk 12), see below |
 
@@ -49,12 +137,13 @@ serial / TCP ──> transport ──> modbus.scan_engine | line.reader ──> 
 ## How auto-detect works
 
 The serial selector comes from `GATEWAY_SERIAL_PORT` (legacy name, highest priority), then
-`GATEWAY_LINK__SELECTOR`, then the tag map's `sources[].serial.port`.
+`GATEWAY_LINK__SELECTOR` (what the setup wizard saves), then the tag map's `sources[].serial.port`.
 
 | Selector | Meaning |
 |---|---|
 | *(empty)* / `auto` | Exactly one known adapter (table above) must be plugged in. Zero or several → error that lists the candidates. Built-in UARTs (`/dev/ttyS*`) are never picked. |
 | `1A86:7523` / `1A86:7523:SERIAL` | Match VID:PID (and serial number) |
+| `1A86:7523@1-1.4` | Match VID:PID at a USB location (the physical socket; for identical adapters without serial numbers) |
 | `sn:85735313932351B0A1F1` | Match the USB serial number (Arduino boards have unique ones) |
 | `/dev/serial/by-id/usb-…` | Stable Linux path, recommended |
 | `/dev/ttyACM0`, `COM5` | Explicit port |
@@ -181,6 +270,10 @@ network errors retry with capped backoff, re-queued in original order. `/health`
 | `GATEWAY_MODBUS__TIMEOUT_MS` / `__RETRIES` / `__MAX_GAP` / `__INTER_REQUEST_MS` | 250 / 1 / 8 / t3.5 | |
 | `GATEWAY_UPLINK__BATCH_MAX` / `__FLUSH_MS` / `__QUEUE_MAX` | 200 / 250 / 5000 | |
 | `API_BASE_URL`, `GATEWAY_INGEST_TOKEN`, `TAG_MAP_PATH`, `GATEWAY_ID`, `HEALTH_PORT` | | as before |
+| `PLANTLENS_GATEWAY_CONFIG` | per-user path | machine config file written by the setup wizard (lowest precedence) |
+| `PLANTLENS_GATEWAY_PROFILE` | — | use `gateway.<NAME>.env` instead (several devices on one PC) |
+
+Every variable above can live in the machine config file; real environment variables override it.
 
 ## Validate on real hardware
 
@@ -258,7 +351,8 @@ cd apps/gateway && timeout 300 python -m pytest -q -p no:cacheprovider
 (split lines, garbage, reset banner, unplug/replug, exclusive open), the batch planner, the scan
 engine against pymodbus' TCP server and RTU over a pty "bus" (silent slave, exception 02 split,
 request counting), the write guard, the uplink (ordering, 4xx quarantine, 5xx retry) and the
-TagFrame JSON-schema contract. `tests/test_firmware_output.py` compiles both Arduino sketches on the
+TagFrame JSON-schema contract. `tests/test_setup_wizard.py` covers stable-selector choice, config
+file precedence/permissions/profiles and the wizard flows against a local HTTP server (incl. 401). `tests/test_firmware_output.py` compiles both Arduino sketches on the
 host with a stub `Arduino.h` and parses their serial output with the real decoder (skipped without
 g++). `pytest-timeout` (30 s) and a conftest check for leaked non-daemon threads keep the suite from
 ever hanging.

@@ -3,18 +3,74 @@
 Flat legacy variables keep working (``GATEWAY_SERIAL_PORT``, ``GATEWAY_SERIAL_MODE``,
 ``GATEWAY_SERIAL_BAUDRATE``, ``LINE_DEFAULT_TAG_ID`` ...). Structured settings use a ``__``
 delimiter, e.g. ``GATEWAY_LINK__RESET_POLICY=wait_for_reset`` or ``GATEWAY_MODBUS__TIMEOUT_MS=300``.
+
+Precedence (highest first): constructor arguments, real environment variables, ``./.env`` in the
+working directory, the **per-machine config file** written by ``python -m gateway.setup_wizard``,
+then defaults. The machine config lives outside the repo:
+
+* Windows: ``%APPDATA%\\PlantLens\\gateway.env``
+* Linux/macOS: ``$XDG_CONFIG_HOME/plantlens/gateway.env`` (``~/.config/plantlens/gateway.env``)
+* ``PLANTLENS_GATEWAY_CONFIG=/path/to/file.env`` overrides the path.
+* ``PLANTLENS_GATEWAY_PROFILE=NAME`` selects ``gateway.NAME.env`` in the same directory (one
+  profile per device when several gateways run on one PC).
 """
 
 from __future__ import annotations
 
+import os
+import re
+import sys
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel, Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings,
+    DotEnvSettingsSource,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
 
 from gateway.tag_frame import TagSource
+
+CONFIG_ENV = "PLANTLENS_GATEWAY_CONFIG"
+PROFILE_ENV = "PLANTLENS_GATEWAY_PROFILE"
+_PROFILE_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,31}$")
+
+
+def validate_profile(name: str | None) -> str | None:
+    """Profile names become file names: letters, digits, ``-`` and ``_`` only."""
+    text = (name or "").strip()
+    if not text or text.lower() == "default":
+        return None
+    if not _PROFILE_RE.match(text):
+        msg = f"invalid profile name {text!r}: use letters, digits, '-' or '_' (max 32)"
+        raise ValueError(msg)
+    return text
+
+
+def config_dir() -> Path:
+    """Per-user directory for gateway config files (never inside the repo)."""
+    if sys.platform.startswith("win"):
+        base = os.environ.get("APPDATA") or str(Path.home() / "AppData" / "Roaming")
+        return Path(base) / "PlantLens"
+    base = os.environ.get("XDG_CONFIG_HOME") or str(Path.home() / ".config")
+    return Path(base) / "plantlens"
+
+
+def config_path(profile: str | None = None) -> Path:
+    """The machine config file for *profile* (default: ``$PLANTLENS_GATEWAY_PROFILE`` or none).
+
+    ``PLANTLENS_GATEWAY_CONFIG`` wins for the default profile; for a named profile the file sits
+    next to it as ``gateway.<profile>.env``.
+    """
+    name = validate_profile(profile if profile is not None else os.environ.get(PROFILE_ENV))
+    explicit = os.environ.get(CONFIG_ENV)
+    base = Path(explicit).expanduser() if explicit else config_dir() / "gateway.env"
+    if name is None:
+        return base
+    return base.with_name(f"gateway.{name}.env")
 
 
 class LinkSettings(BaseModel):
@@ -100,6 +156,20 @@ class Settings(BaseSettings):
 
     def link_selector(self, fallback: str | None = None) -> str | None:
         return self.serial_port_override or self.link.selector or fallback
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        # The machine config (setup wizard) sits just above the defaults, below real env vars and
+        # a local ./.env, so an explicit `GATEWAY_SERIAL_PORT=... python -m gateway.main` still wins.
+        machine = DotEnvSettingsSource(settings_cls, env_file=config_path())
+        return (init_settings, env_settings, dotenv_settings, machine, file_secret_settings)
 
 
 @lru_cache

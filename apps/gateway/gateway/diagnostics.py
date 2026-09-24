@@ -14,8 +14,16 @@ import serial
 from serial.tools import list_ports
 
 from gateway.raw_serial_reader import build_line_tag_index, parse_line_to_frames
-from gateway.settings import Settings, resolve_tag_map_path
-from gateway.transport.discovery import DiscoveryError, enumerate_ports, resolve
+from gateway.settings import Settings, config_path, resolve_tag_map_path
+from gateway.transport.discovery import (
+    DiscoveryError,
+    enumerate_ports,
+    friendly_name,
+    is_raw_port_name,
+    resolve,
+    stable_selector,
+    suggested_mode,
+)
 from gateway.transport.serial_link import is_port_held
 
 
@@ -27,15 +35,35 @@ class PortProbe:
 
 
 def list_serial_ports() -> list[dict[str, Any]]:
-    """Enumerate ports with VID/PID, serial number, by-id path and known-adapter name."""
+    """Enumerate ports with VID/PID, serial number, by-id path, known-adapter name and the stable
+    selector the setup wizard would save for each one."""
     hwids = {p.device: p.hwid for p in list_ports.comports()}
+    idents = enumerate_ports()
     rows: list[dict[str, Any]] = []
-    for ident in enumerate_ports():
+    for ident in idents:
         row = ident.as_dict()
         row["hwid"] = hwids.get(ident.device, "")
         row["held_by_gateway"] = is_port_held(ident.device)
+        stable = stable_selector(ident, idents)
+        row["friendly_name"] = friendly_name(ident)
+        row["stable_selector"] = stable.selector
+        row["stable_selector_warning"] = stable.warning
+        row["suggested_mode"] = suggested_mode(ident)
         rows.append(row)
     return rows
+
+
+def config_report(settings: Settings) -> dict[str, Any]:
+    """Which machine config file applies and whether the active selector is a fragile raw name."""
+    path = config_path()
+    selector = settings.link_selector()
+    report: dict[str, Any] = {"path": str(path), "exists": path.is_file(), "selector": selector or "auto"}
+    if is_raw_port_name(selector):
+        report["warning"] = (
+            f"selector {selector!r} is a raw port name that can change across reboots/PCs; run "
+            "`python -m gateway.setup_wizard` to save a stable one (sn:SERIAL or VID:PID)"
+        )
+    return report
 
 
 def detect_port(selector: str | None) -> dict[str, Any]:
@@ -158,8 +186,8 @@ def main() -> None:
         help="Resolve a link selector (auto | VID:PID[:SERIAL] | sn:SERIAL | path) like the gateway does.",
     )
     parser.add_argument("--baudrate", type=int, default=9600, help="Serial baudrate for open probe.")
-    parser.add_argument("--api-base", default="http://127.0.0.1:8000", help="PlantLens API base URL.")
-    parser.add_argument("--token", default="change-me", help="Gateway ingest token.")
+    parser.add_argument("--api-base", default=None, help="PlantLens API base URL (default: API_BASE_URL / saved config).")
+    parser.add_argument("--token", default=None, help="Gateway ingest token (default: GATEWAY_INGEST_TOKEN / saved config).")
     parser.add_argument("--line", default="", help="Optional raw serial line to parse. Does not post by default.")
     parser.add_argument("--post", action="store_true", help="POST --line frames to API ingest. Intended for explicit test-only use.")
     parser.add_argument("--default-tag-id", default="MOTOR_301_CURRENT", help="Tag for bare numeric lines.")
@@ -167,6 +195,8 @@ def main() -> None:
     args = parser.parse_args()
 
     settings = Settings()
+    args.api_base = args.api_base or settings.api_base_url
+    args.token = args.token or settings.gateway_ingest_token
     tag_map_path = resolve_tag_map_path(settings)
     detection = detect_port(args.detect if args.detect is not None else settings.link_selector())
     port = args.port or (detection["port"]["device"] if detection["ok"] else None)
@@ -175,6 +205,7 @@ def main() -> None:
         "detect": detection,
         "probe": asdict(probe_port(port, baudrate=args.baudrate)) if port else None,
         "api": api_health(args.api_base),
+        "config": config_report(settings),
         "tag_map_path": str(tag_map_path),
     }
     if args.line:

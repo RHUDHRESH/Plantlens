@@ -38,7 +38,8 @@ KNOWN_VENDORS: dict[int, str] = {
 }
 
 BY_ID_DIR = Path("/dev/serial/by-id")
-_VIDPID_RE = re.compile(r"^(?:usb:)?([0-9a-fA-F]{4}):([0-9a-fA-F]{4})(?::(.+))?$")
+_VIDPID_RE = re.compile(r"^(?:usb:)?([0-9a-fA-F]{4}):([0-9a-fA-F]{4})(?::([^@]+))?(?:@(.+))?$")
+_RAW_PORT_RE = re.compile(r"^(COM\d+|/dev/(tty|cu)[A-Za-z]*\S*)$", re.IGNORECASE)
 
 
 class DiscoveryError(RuntimeError):
@@ -96,6 +97,7 @@ class Selector:
     vid: int | None = None
     pid: int | None = None
     serial_number: str | None = None
+    location: str | None = None
 
     def __str__(self) -> str:
         return self.value or self.kind
@@ -108,7 +110,11 @@ def adapter_name(vid: int | None, pid: int | None) -> str | None:
 
 
 def parse_selector(raw: str | None) -> Selector:
-    """Parse ``auto`` | ``1A86:7523`` | ``1A86:7523:SERIAL`` | ``sn:SERIAL`` | port path/name."""
+    """Parse ``auto`` | ``1A86:7523`` | ``1A86:7523:SERIAL`` | ``1A86:7523@LOCATION`` | ``sn:SERIAL`` | path.
+
+    ``@LOCATION`` is the USB topology location pyserial reports (``1-1.2:1.0`` on Linux,
+    ``Port_#0002.Hub_#0001`` on Windows): stable across reboots for the same physical USB socket.
+    """
     text = (raw or "").strip()
     if not text or text.lower() == "auto":
         return Selector("auto")
@@ -123,12 +129,13 @@ def parse_selector(raw: str | None) -> Selector:
             vid=int(match.group(1), 16),
             pid=int(match.group(2), 16),
             serial_number=match.group(3),
+            location=match.group(4),
         )
     return Selector("path", text)
 
 
 def _foreign_platform_path(path: str) -> bool:
-    is_com = re.match(r"^COM\d+$", path, re.I) is not None
+    is_com = re.match(r"^COM\d+$", path, re.IGNORECASE) is not None
     if os.name == "nt":
         return path.startswith("/dev/")
     return is_com
@@ -220,6 +227,7 @@ def resolve(
             if p.vid == sel.vid
             and p.pid == sel.pid
             and (sel.serial_number is None or p.serial_number == sel.serial_number)
+            and (sel.location is None or p.location == sel.location)
         ]
     else:
         matches = [p for p in ports if p.is_known_adapter]
@@ -234,3 +242,97 @@ def resolve(
         "to a VID:PID:SERIAL, sn:SERIAL or /dev/serial/by-id path"
     )
     raise DiscoveryError(msg, matches)
+
+
+# ---------------------------------------------------------------------------------------------
+# Stable selectors (used by the setup wizard): what to write into a per-machine config so the
+# same device is found again after a reboot, a different USB socket or a new COM number.
+
+
+@dataclass(frozen=True, slots=True)
+class StableSelector:
+    selector: str
+    kind: Literal["serial", "vidpid", "vidpid_location", "by_id", "raw"]
+    warning: str | None = None
+
+
+def usable_serial_number(serial_number: str | None) -> str | None:
+    """A USB serial number worth pinning to, or None.
+
+    Windows invents an instance id such as ``5&2A3B4C5D&0&2`` for devices without an iSerial
+    descriptor (common on CH340 clones); it changes with the USB socket, so it is not an identity.
+    """
+    sn = (serial_number or "").strip()
+    if not sn or "&" in sn or len(sn) < 4 or not re.match(r"^[\w.\-]+$", sn):
+        return None
+    return sn
+
+
+def stable_selector(port: PortIdentity, ports: Iterable[PortIdentity] = ()) -> StableSelector:
+    """Pick the most stable selector that identifies *port* uniquely among *ports*.
+
+    Order: ``sn:SERIAL`` > ``VID:PID:SERIAL`` > ``VID:PID`` > ``VID:PID@LOCATION`` > by-id path >
+    raw device name (with a warning: ``COM3``/``/dev/ttyUSB0`` renumber across PCs and replugs).
+    """
+    others = [p for p in ports if p.device != port.device]
+    sn = usable_serial_number(port.serial_number)
+    has_usb = port.vid is not None and port.pid is not None
+    if sn:
+        if not any(usable_serial_number(p.serial_number) == sn for p in others):
+            return StableSelector(f"sn:{sn}", "serial")
+        if has_usb and not any(
+            p.vid == port.vid and p.pid == port.pid and usable_serial_number(p.serial_number) == sn for p in others
+        ):
+            return StableSelector(f"{port.vid:04X}:{port.pid:04X}:{sn}", "serial")
+    if has_usb:
+        vidpid = f"{port.vid:04X}:{port.pid:04X}"
+        if not any(p.vid == port.vid and p.pid == port.pid for p in others):
+            note = None
+            if not sn:
+                note = (
+                    f"{port.adapter or 'this adapter'} has no USB serial number; the selector {vidpid} "
+                    "matches ANY adapter of the same type, so plug in only one of them"
+                )
+            return StableSelector(vidpid, "vidpid", note)
+        if port.location:
+            return StableSelector(
+                f"{vidpid}@{port.location}",
+                "vidpid_location",
+                f"several {vidpid} adapters are plugged in and they have no serial number: the "
+                "selector is tied to this USB socket; keep the adapter in the same socket",
+            )
+    if port.by_id:
+        return StableSelector(port.by_id, "by_id")
+    return StableSelector(
+        port.device,
+        "raw",
+        f"{port.device} is a raw port name: nothing else identifies this device, and the name can "
+        "change after a reboot, a replug or on another PC; re-run the setup wizard if it moves",
+    )
+
+
+def is_raw_port_name(selector: str | None) -> bool:
+    """True for ``COM5`` / ``/dev/ttyUSB0``-style names (not by-id links, not VID:PID, not sn:)."""
+    text = (selector or "").strip()
+    return bool(_RAW_PORT_RE.match(text)) and not text.startswith(str(BY_ID_DIR))
+
+
+def friendly_name(port: PortIdentity) -> str:
+    """One line for humans: ``COM5  CH340 (1A86:7523) USB-SERIAL CH340  sn=...``."""
+    parts = [port.device]
+    if port.adapter:
+        parts.append(port.adapter)
+    if port.vid is not None and port.pid is not None:
+        parts.append(f"({port.vid:04X}:{port.pid:04X})")
+    if port.description and port.description not in {port.device, "n/a"}:
+        parts.append(f"- {port.description}")
+    if port.serial_number:
+        parts.append(f"sn={port.serial_number}")
+    return "  ".join(parts)
+
+
+def suggested_mode(port: PortIdentity) -> Literal["modbus", "line"]:
+    """Arduino boards stream PL1 text (line mode); USB-serial bridges are usually RS-485 sticks."""
+    if port.vid in KNOWN_VENDORS:
+        return "line"
+    return "modbus"

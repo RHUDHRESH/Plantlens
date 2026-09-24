@@ -27,6 +27,15 @@ def _non_daemon_threads() -> set[threading.Thread]:
 
 
 @pytest.fixture(autouse=True)
+def isolated_machine_config(tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Never let a developer's real per-machine gateway config (setup wizard) leak into tests."""
+    path = tmp_path_factory.mktemp("machine-config") / "gateway.env"
+    monkeypatch.setenv("PLANTLENS_GATEWAY_CONFIG", str(path))
+    monkeypatch.delenv("PLANTLENS_GATEWAY_PROFILE", raising=False)
+    return path
+
+
+@pytest.fixture(autouse=True)
 def no_leaked_non_daemon_threads() -> Iterator[None]:
     """Fail a test that leaves a non-daemon thread behind (it would hang interpreter exit)."""
     before = _non_daemon_threads()
