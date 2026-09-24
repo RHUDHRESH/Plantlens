@@ -1,18 +1,27 @@
-import { Suspense, useEffect, useMemo } from "react";
-import { Canvas } from "@react-three/fiber";
-import { Line, OrbitControls } from "@react-three/drei";
+/**
+ * Legacy runtime-HMI 3D map API, now rendered by the plant3d engine (realistic component models,
+ * routed cable trays, status outlines). Keeps the PlantMap3DProps / viewport-controls contract
+ * used by RuntimeHMI. Loaded lazily through LazyPlantMap3D.
+ */
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AssetStatus } from "../maps2d/mapTypes";
-import { statusForAsset } from "../maps2d/statusStyles";
-import { getMapTheme } from "./mapTheme";
 import type { MapLayerId, MapZoomBand, UserRole } from "../operational-map";
 import type { Map3DEdge, Map3DNode } from "../ops3d/map3dTypes";
-import { SchematicAssetMesh } from "./AssetMeshes";
-import {
-  useOperationalCamera3D,
-  type PlantMap3DViewportControls,
-} from "./useOperationalCamera3D";
+import type { CameraCommand, CameraCommandInput } from "../plant3d/lib/camera";
+import { buildPlantLayout } from "../plant3d/lib/layout";
+import PlantScene from "../plant3d/scene/PlantScene";
+import "../plant3d/plant3d.css";
+import { getSceneScaleBand, scaleFromDistance } from "./sceneMath3D";
 
-export type { PlantMap3DViewportControls };
+export interface PlantMap3DViewportControls {
+  fitPlant: () => void;
+  focusRoot: () => void;
+  focusAsset: (assetId: string) => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  scale: number;
+  zoomBand: MapZoomBand;
+}
 
 export interface PlantMap3DProps {
   nodes: Map3DNode[];
@@ -31,32 +40,7 @@ export interface PlantMap3DProps {
   onZoomBandChange?: (band: MapZoomBand) => void;
 }
 
-function PowerCable({
-  from,
-  to,
-  highlight,
-  theme,
-}: {
-  from: [number, number, number];
-  to: [number, number, number];
-  highlight: boolean;
-  theme: ReturnType<typeof getMapTheme>;
-}) {
-  const mid: [number, number, number] = [
-    (from[0] + to[0]) / 2,
-    (from[1] + to[1]) / 2,
-    (from[2] + to[2]) / 2,
-  ];
-  return (
-    <Line
-      points={[from, mid, to]}
-      color={highlight ? theme.edgeHighlight : theme.edge}
-      lineWidth={highlight ? 2 : 1}
-    />
-  );
-}
-
-function PlantScene({
+export function PlantMap3D({
   nodes,
   edges,
   assetStatus,
@@ -70,107 +54,68 @@ function PlantScene({
   onViewportReady,
   onZoomBandChange,
 }: PlantMap3DProps) {
-  const { controls, controlsRef, sceneFit, onControlsChange } = useOperationalCamera3D({
-    nodes,
-    rootAssetId: rootAssetId ?? null,
-    focusAssetId: focusAssetId ?? null,
-    reducedMotion: !!reducedMotion,
-    ...(onZoomBandChange ? { onZoomBandChange } : {}),
-  });
+  const layout = useMemo(() => buildPlantLayout(nodes), [nodes]);
+  const [command, setCommand] = useState<CameraCommand | null>(null);
+  const [view, setView] = useState<{ scale: number; zoomBand: MapZoomBand }>({ scale: 1, zoomBand: "plant" });
+  const bandRef = useRef<MapZoomBand>("plant");
+  const send = useCallback((c: CameraCommandInput) => setCommand({ ...c, nonce: Date.now() + Math.random() } as CameraCommand), []);
+
+  const controls = useMemo<PlantMap3DViewportControls>(
+    () => ({
+      fitPlant: () => send({ type: "fit" }),
+      focusRoot: () => (rootAssetId ? send({ type: "focus", id: rootAssetId }) : send({ type: "fit" })),
+      focusAsset: (id: string) => send({ type: "focus", id }),
+      zoomIn: () => send({ type: "zoom", factor: 0.8 }),
+      zoomOut: () => send({ type: "zoom", factor: 1.25 }),
+      scale: view.scale,
+      zoomBand: view.zoomBand,
+    }),
+    [send, rootAssetId, view],
+  );
 
   useEffect(() => {
     onViewportReady?.(controls);
   }, [onViewportReady, controls]);
 
-  const positions = useMemo(
-    () =>
-      Object.fromEntries(
-        nodes.map((n) => [
-          n.id,
-          { x: n.position.x, y: n.position.y, z: n.position.z },
-        ]),
-      ),
-    [nodes],
+  useEffect(() => {
+    if (focusAssetId) send({ type: "focus", id: focusAssetId });
+  }, [focusAssetId, send]);
+
+  const onDistance = useCallback(
+    (distance: number, fit: number) => {
+      const band = getSceneScaleBand(distance, fit);
+      if (band !== bandRef.current) {
+        bandRef.current = band;
+        onZoomBandChange?.(band);
+        setView({ scale: scaleFromDistance(distance, fit), zoomBand: band });
+      }
+    },
+    [onZoomBandChange],
   );
 
   const showCausalPath = visibleLayers?.causal_path ?? true;
-  const pathSet = useMemo(
-    () => (showCausalPath ? new Set(causalPath ?? []) : new Set<string>()),
-    [causalPath, showCausalPath],
-  );
-  const pathSteps = useMemo(
-    () =>
-      showCausalPath
-        ? Object.fromEntries((causalPath ?? []).map((id, i) => [id, i + 1]))
-        : {},
-    [causalPath, showCausalPath],
-  );
-
-  const maxControlDistance = Math.max(sceneFit.radius * 5, 14);
-  const theme = getMapTheme();
+  const statusById = useMemo(() => {
+    const out: Record<string, AssetStatus> = {};
+    for (const n of nodes) out[n.id] = assetStatus[n.id] ?? "unknown";
+    return out;
+  }, [nodes, assetStatus]);
 
   return (
-    <>
-      <color attach="background" args={[theme.canvas]} />
-      <ambientLight intensity={0.65} color={theme.canvas} />
-      <hemisphereLight args={[theme.surface, theme.canvas, 0.55]} />
-      <directionalLight position={[4, 8, 3]} intensity={0.55} color="#FFFFFF" castShadow />
-      <gridHelper args={[14, 28, theme.zoneStroke, theme.edge]} position={[0, 0, 0]} />
-      {edges.map((edge) => {
-        const a = positions[edge.from];
-        const b = positions[edge.to];
-        if (!a || !b) return null;
-        const highlight = showCausalPath && pathSet.has(edge.from) && pathSet.has(edge.to);
-        return (
-          <PowerCable
-            key={edge.id}
-            from={[a.x, a.y, a.z]}
-            to={[b.x, b.y, b.z]}
-            highlight={highlight}
-            theme={theme}
-          />
-        );
-      })}
-      {nodes.map((node) => {
-        const step = pathSteps[node.id];
-        const meshProps = {
-          node,
-          status: statusForAsset(node.id, assetStatus),
-          isRoot: node.id === rootAssetId,
-          isSelected: node.id === selectedAssetId,
-          isFocused: node.id === focusAssetId,
-          isOnPath: pathSet.has(node.id),
-          reducedMotion: !!reducedMotion,
-          layerHints: {
-            showCausalStep: showCausalPath,
-            showStatus: visibleLayers?.status ?? true,
-          },
-          ...(step !== undefined ? { pathStep: step } : {}),
-          ...(onSelectAsset ? { onSelect: onSelectAsset } : {}),
-        };
-        return <SchematicAssetMesh key={node.id} {...meshProps} />;
-      })}
-      {/* tags, audit, maintenance: no 3D overlays yet — layer toggles are honored by omission */}
-      <OrbitControls
-        ref={controlsRef}
-        minDistance={Math.max(sceneFit.radius * 0.25, 0.75)}
-        maxDistance={maxControlDistance}
-        enableDamping={!reducedMotion}
-        dampingFactor={0.08}
-        onChange={onControlsChange}
+    <div className="plant-map-3d plant-map-3d__hud plant3d" role="img" aria-label="3D plant view">
+      <PlantScene
+        layout={layout}
+        edges={edges}
+        assetStatus={statusById}
+        selectedId={selectedAssetId ?? null}
+        command={command}
+        reducedMotion={!!reducedMotion}
+        highlightIds={showCausalPath ? causalPath ?? [] : []}
+        showLabels={visibleLayers?.status ?? true}
+        onSelect={(id) => {
+          if (id) onSelectAsset?.(id);
+        }}
+        onDistance={onDistance}
       />
-    </>
-  );
-}
-
-export function PlantMap3D(props: PlantMap3DProps) {
-  return (
-    <div className="plant-map-3d plant-map-3d__hud" role="img" aria-label="3D plant schematic">
-      <Canvas camera={{ position: [3, 3, 3], fov: 42 }} dpr={[1, 1.5]} shadows>
-        <Suspense fallback={null}>
-          <PlantScene {...props} />
-        </Suspense>
-      </Canvas>
     </div>
   );
 }
