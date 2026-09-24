@@ -21,6 +21,7 @@ from typing import Any
 import structlog
 
 from gateway.health import start_health_server
+from gateway.heartbeat import Heartbeat
 from gateway.line.protocols import LineDecoder
 from gateway.line.reader import LineReader
 from gateway.modbus.batch_planner import BatchPlanner, PlannerLimits, SourceSpec, tags_from_tag_map
@@ -46,9 +47,10 @@ class GatewayRuntime:
     links: list[SerialLink] = field(default_factory=list)
     tcp: list[TcpTransport] = field(default_factory=list)
     mode: str = "modbus"
+    frames_published: int = 0
 
     def snapshot(self) -> dict[str, Any]:
-        body: dict[str, Any] = {"mode": self.mode}
+        body: dict[str, Any] = {"mode": self.mode, "frames_published": self.frames_published}
         last_good: datetime | None = None
         error_count = crc = reconnects = stale = 0
         if self.engine is not None:
@@ -214,6 +216,7 @@ async def run(settings: Settings | None = None, *, stop: asyncio.Event | None = 
     runtime.uplink = uplink
 
     async def publish(frame: TagFrame) -> None:
+        runtime.frames_published += 1
         uplink.enqueue(frame)
 
     if runtime.mode == "line":
@@ -231,6 +234,14 @@ async def run(settings: Settings | None = None, *, stop: asyncio.Event | None = 
 
     await uplink.start()
     server = start_health_server(settings.health_port, status_fn=runtime.snapshot)
+    heartbeat = Heartbeat(
+        api_base=settings.api_base_url,
+        token=settings.gateway_ingest_token,
+        gateway_id=settings.gateway_id,
+        snapshot_fn=runtime.snapshot,
+        health_port=settings.health_port,
+    )
+    await heartbeat.start()
     task = asyncio.create_task(work)
     stopper = asyncio.create_task(stop.wait())
     try:
@@ -246,6 +257,7 @@ async def run(settings: Settings | None = None, *, stop: asyncio.Event | None = 
             await link.stop()
         for tcp in runtime.tcp:
             await tcp.close()
+        await heartbeat.close()
         await uplink.close()
         server.shutdown()
         server.server_close()
