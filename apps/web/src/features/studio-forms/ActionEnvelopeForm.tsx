@@ -32,19 +32,19 @@ export function ActionEnvelopeForm({ action, assetOptions, issues, onPatch }: Ac
   }
 
   return (
-    <form className="studio-form-shell__form" onSubmit={(e) => e.preventDefault()}>
+    <form className="sf-form" onSubmit={(e) => e.preventDefault()}>
       <FormField label="Action ID" hint="ID rename requires cross-reference migration.">
-        <input value={actionId} readOnly disabled aria-readonly />
+        <input className="pl-input" value={actionId} readOnly disabled aria-readonly />
       </FormField>
       <FormField label="Label">
-        <input
+        <input className="pl-input"
           value={readString(action, "label")}
           onChange={(e) => patchField("label", e.target.value, "Update action label")}
         />
       </FormField>
       {"target_asset_id" in action ? (
         <FormField label="Target asset" {...(targetIssue?.message ? { error: targetIssue.message } : {})}>
-          <select
+          <select className="pl-select"
             value={readString(action, "target_asset_id")}
             onChange={(e) => patchField("target_asset_id", e.target.value, "Update target asset")}
           >
@@ -59,7 +59,7 @@ export function ActionEnvelopeForm({ action, assetOptions, issues, onPatch }: Ac
       ) : null}
       {"allowed_roles" in action && Array.isArray(action.allowed_roles) ? (
         <FormField label="Allowed roles" hint="Comma-separated role names.">
-          <input
+          <input className="pl-input"
             value={(action.allowed_roles as string[]).join(", ")}
             onChange={(e) =>
               patchField(
@@ -73,7 +73,7 @@ export function ActionEnvelopeForm({ action, assetOptions, issues, onPatch }: Ac
       ) : null}
       {"risk_level" in action ? (
         <FormField label="Risk level">
-          <select
+          <select className="pl-select"
             value={readString(action, "risk_level")}
             onChange={(e) => patchField("risk_level", e.target.value, "Update risk level")}
           >
@@ -85,7 +85,7 @@ export function ActionEnvelopeForm({ action, assetOptions, issues, onPatch }: Ac
       ) : null}
       {"blocked_if" in action && Array.isArray(action.blocked_if) ? (
         <FormField label="Blocked if" hint="Advisory gating only — no hardware write in Studio.">
-          <input value={(action.blocked_if as string[]).join(", ")} readOnly disabled />
+          <input className="pl-input" value={(action.blocked_if as string[]).join(", ")} readOnly disabled />
         </FormField>
       ) : null}
       {"requires_isolation" in action ? (
@@ -95,7 +95,7 @@ export function ActionEnvelopeForm({ action, assetOptions, issues, onPatch }: Ac
       ) : null}
       {"safety_note" in action ? (
         <FormField label="Safety note">
-          <textarea value={readString(action, "safety_note")} readOnly disabled rows={2} />
+          <textarea className="pl-textarea" value={readString(action, "safety_note")} readOnly disabled rows={2} />
         </FormField>
       ) : null}
     </form>

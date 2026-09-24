@@ -19,6 +19,26 @@ describe("useRuntimeStore", () => {
     expect(s.hasSnapshot).toBe(true);
   });
 
+  it("keeps every active situation and picks the Calm Card's as primary", () => {
+    const first = HERO_MOTOR_OVERLOAD.active_situations[0]!;
+    const other = { ...first, situation_id: "sit-bus-2", title: "Bus sag", root_asset_id: "BUS-101", grouped_alarm_ids: ["DC_BUS_LOW"] };
+    useRuntimeStore.getState().applySnapshot({
+      ...HERO_MOTOR_OVERLOAD,
+      active_situations: [other, first],
+    });
+    const s = useRuntimeStore.getState();
+    expect(s.activeSituations.map((x) => x.situation_id)).toEqual(["sit-bus-2", "sit-motor-1"]);
+    // latest_calm_card describes sit-motor-1, so it stays primary even though it is listed second.
+    expect(s.activeSituation?.situation_id).toBe("sit-motor-1");
+
+    useRuntimeStore.getState().applySnapshot({ ...HERO_MOTOR_OVERLOAD, active_situations: [other], latest_calm_card: null });
+    expect(useRuntimeStore.getState().activeSituation?.situation_id).toBe("sit-bus-2");
+
+    useRuntimeStore.getState().applySnapshot({ ...HERO_MOTOR_OVERLOAD, active_situations: [] });
+    expect(useRuntimeStore.getState().activeSituations).toEqual([]);
+    expect(useRuntimeStore.getState().activeSituation).toBeNull();
+  });
+
   it("setConnection does not clear frozen snapshot", () => {
     useRuntimeStore.getState().applySnapshot(HERO_MOTOR_OVERLOAD);
     useRuntimeStore.getState().setConnection("stale");

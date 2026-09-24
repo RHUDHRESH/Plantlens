@@ -78,7 +78,7 @@ export interface CalmCardView {
   rootAssetType: string | null;
   firstSignal: { message: string; assetName: string; ts: number | null; tagId: string | null; value: unknown; unit: string | null } | null;
   evidence: EvidenceStep[];
-  bestCheck: { label: string; risk: string; requiresIsolation: boolean } | null;
+  bestCheck: { actionId: string | null; label: string; risk: string; requiresIsolation: boolean } | null;
   blocked: { label: string; reason: string }[];
   whyItMatters: string | null;
   rawCount: number;
@@ -231,6 +231,7 @@ export function composeCalmCard(
     evidence,
     bestCheck: card?.recommended_first_check
       ? {
+          actionId: card.recommended_first_check.action_id ?? null,
           label: card.recommended_first_check.label,
           risk: card.recommended_first_check.risk_level,
           requiresIsolation: !!card.recommended_first_check.requires_isolation,

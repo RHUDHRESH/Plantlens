@@ -32,12 +32,12 @@ export function TagForm({ tag, assetOptions, issues, onPatch }: TagFormProps) {
   }
 
   return (
-    <form className="studio-form-shell__form" onSubmit={(e) => e.preventDefault()}>
+    <form className="sf-form" onSubmit={(e) => e.preventDefault()}>
       <FormField label="Tag ID" hint="Tag ID rename requires cross-reference migration.">
-        <input value={tagId} readOnly disabled aria-readonly />
+        <input className="pl-input" value={tagId} readOnly disabled aria-readonly />
       </FormField>
       <FormField label="Asset" {...(assetRefIssue?.message ? { error: assetRefIssue.message } : {})}>
-        <select
+        <select className="pl-select"
           value={readString(tag, "asset_id")}
           onChange={(e) => patchField("asset_id", e.target.value, "Update tag asset reference")}
         >
@@ -51,7 +51,7 @@ export function TagForm({ tag, assetOptions, issues, onPatch }: TagFormProps) {
       </FormField>
       {"signal_type" in tag ? (
         <FormField label="Signal / semantic name">
-          <input
+          <input className="pl-input"
             value={readString(tag, "signal_type")}
             onChange={(e) => patchField("signal_type", e.target.value, "Update signal type")}
           />
@@ -59,7 +59,7 @@ export function TagForm({ tag, assetOptions, issues, onPatch }: TagFormProps) {
       ) : null}
       {"unit" in tag ? (
         <FormField label="Unit">
-          <input
+          <input className="pl-input"
             value={readString(tag, "unit")}
             onChange={(e) => patchField("unit", e.target.value, "Update unit")}
           />
@@ -67,7 +67,7 @@ export function TagForm({ tag, assetOptions, issues, onPatch }: TagFormProps) {
       ) : null}
       {"source_id" in tag ? (
         <FormField label="Source ID">
-          <input
+          <input className="pl-input"
             value={readString(tag, "source_id")}
             onChange={(e) => patchField("source_id", e.target.value, "Update source")}
           />
@@ -75,7 +75,7 @@ export function TagForm({ tag, assetOptions, issues, onPatch }: TagFormProps) {
       ) : null}
       {"register" in tag ? (
         <FormField label="Register address" hint="Register mapping is read-only in this draft shell.">
-          <input
+          <input className="pl-input"
             value={String((tag.register as Record<string, unknown> | undefined)?.address ?? "")}
             readOnly
             disabled
@@ -84,7 +84,7 @@ export function TagForm({ tag, assetOptions, issues, onPatch }: TagFormProps) {
       ) : null}
       {"quality_policy" in tag ? (
         <FormField label="Stale after (ms)">
-          <input
+          <input className="pl-input"
             type="number"
             value={String((tag.quality_policy as Record<string, unknown> | undefined)?.stale_after_ms ?? "")}
             onChange={(e) =>

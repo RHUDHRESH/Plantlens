@@ -1,5 +1,5 @@
 .hmi-runtime-shell {
-  min-height: 100vh;
+
   padding: var(--space-lg);
   display: flex;
   flex-direction: column;

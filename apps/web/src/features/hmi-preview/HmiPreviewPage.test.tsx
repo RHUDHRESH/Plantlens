@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { HmiPreviewPage } from "./HmiPreviewPage";
 import { ApiError } from "../../api/types";
 import type { PlantHMIState } from "../../app/schemas/plantHmi";
@@ -40,7 +41,7 @@ vi.mock("../../api/hmi", () => ({
 import { getRuntimeHmiState, postHmiPreview } from "../../api/hmi";
 
 function renderPage(ui: ReactElement = <HmiPreviewPage />) {
-  return render(ui);
+  return render(<MemoryRouter initialEntries={["/eng/studio/hmi-preview"]}>{ui}</MemoryRouter>);
 }
 
 describe("HmiPreviewPage", () => {

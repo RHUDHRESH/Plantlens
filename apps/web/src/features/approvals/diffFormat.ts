@@ -4,6 +4,7 @@
  * pattern-library "Apply to asset" preview so every surface describes a change the same way.
  */
 import type { ChangeOp, ChangeRequest, ChangeSet, EntityDiff } from "../../api/v2";
+import { formatDateTime } from "../../lib/time";
 
 // ---- Durations & values --------------------------------------------------------------------
 
@@ -54,8 +55,8 @@ export function parseApiTime(ts: string | null | undefined): Date | null {
 
 export function formatTime(ts: string | null | undefined): string {
   const d = parseApiTime(ts);
-  if (!d) return "—";
-  return d.toLocaleString([], { year: "numeric", month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+  // App-wide time policy (lib/time.ts): local zone, 24 h; callers add timeTitle() for the zone.
+  return d ? formatDateTime(d) : "—";
 }
 
 export function formatRelative(ts: string | null | undefined, now: Date = new Date()): string {

@@ -44,7 +44,7 @@ describe("composeCalmCard", () => {
   });
 
   it("carries best check, blocked actions and grouped raw alarm count", () => {
-    expect(view.bestCheck).toEqual({ label: "Inspect shaft load, coupling, and bearing drag", risk: "medium", requiresIsolation: true });
+    expect(view.bestCheck).toEqual({ actionId: "INSPECT_SHAFT_LOAD", label: "Inspect shaft load, coupling, and bearing drag", risk: "medium", requiresIsolation: true });
     expect(view.blocked).toEqual([{ label: "Restart inverter", reason: "Blocked while motor thermal alarm is active" }]);
     expect(view.rawCount).toBe(5);
   });

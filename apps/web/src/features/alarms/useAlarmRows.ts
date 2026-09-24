@@ -8,14 +8,14 @@ import { buildAlarmRows } from "./alarmModel";
 /** Live alarm rows: runtime store (WebSocket) + alarm rules + plant names. */
 export function useAlarmRows(): { rows: AlarmRow[]; rules: RuntimeAlarmRule[] } {
   const alarms = useRuntimeStore((s) => s.activeAlarms) as RuntimeAlarm[];
-  const situation = useRuntimeStore((s) => s.activeSituation);
+  const situations = useRuntimeStore((s) => s.activeSituations);
   const tags = useRuntimeStore((s) => s.tags);
   const rulesQuery = useAlarmRules();
   const { model } = usePlantModel();
   const rules = useMemo(() => (rulesQuery.data?.rules ?? []) as RuntimeAlarmRule[], [rulesQuery.data]);
   const rows = useMemo(
-    () => buildAlarmRows({ alarms, rules, situations: [situation], model, tags }),
-    [alarms, rules, situation, model, tags],
+    () => buildAlarmRows({ alarms, rules, situations, model, tags }),
+    [alarms, rules, situations, model, tags],
   );
   return { rows, rules };
 }

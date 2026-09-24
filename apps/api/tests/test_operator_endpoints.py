@@ -145,6 +145,18 @@ def test_actions_are_gated_by_role_and_blocking_alarms(client: TestClient):
     assert all(a["allowed"] is False and "not permitted" in a["reason"] for a in viewer["actions"])
 
 
+def test_actions_can_target_a_specific_situation(client: TestClient):
+    _run_hero()
+    headers = _auth(client, "operator")
+    sid = next(iter(runtime_state.active_situations))
+    picked = client.get("/api/runtime/actions", params={"situation_id": sid}, headers=headers).json()
+    assert picked["situation_id"] == sid
+    assert picked["situation_type"] == "MOTOR_MECHANICAL_OVERLOAD"
+    assert picked["actions"]
+    gone = client.get("/api/runtime/actions", params={"situation_id": "no-such"}, headers=headers).json()
+    assert gone["situation_id"] is None and gone["situation_type"] is None and gone["actions"] == []
+
+
 def test_blocked_if_active_alarm_blocks_even_permitted_roles():
     from app.runtime.calm_card_engine import evaluate_actions_for_role
 

@@ -1,10 +1,11 @@
+import { Time } from "../../components/ui/Time";
 import { Download, Pause, Play, Search, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAlarmRules, useTrends } from "../../api/queries";
 import { useRuntimeStore } from "../../app/store/runtime";
 import { Button, EmptyState, ErrorNotice, IconButton, Mono, PageHeader, SegmentedControl } from "../../components/ui/primitives";
-import { formatClock, formatDateTime, formatValue, parseTs, unitLabel } from "../operational-map/format";
+import { formatValue, parseTs, unitLabel } from "../operational-map/format";
 import { usePlantModel } from "../operational-map/plantModel";
 import { useOperateRuntime } from "../operational-map/useRuntimeSeed";
 import "../operational-map/ops.css";
@@ -172,7 +173,7 @@ export function TrendsPage() {
               {data?.now ? (
                 <>
                   {" · "}
-                  <Mono>{formatClock(data.now)}</Mono>
+                  <Time value={data.now} />
                 </>
               ) : null}
             </span>
@@ -253,7 +254,7 @@ export function TrendsPage() {
               <p className="tr-foot ops-subtle">
                 {cursorX ? (
                   <>
-                    Cursor <Mono>{formatDateTime(cursorX * 1000)}</Mono> UTC
+                    Cursor <Time value={cursorX * 1000} format="datetime" />
                   </>
                 ) : (
                   <>Values shown are the latest samples. Hover a chart to read any instant.</>

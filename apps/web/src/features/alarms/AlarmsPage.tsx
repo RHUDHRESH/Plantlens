@@ -1,12 +1,13 @@
+import { Time } from "../../components/ui/Time";
 import * as Tabs from "@radix-ui/react-tabs";
 import { BellOff, CheckCheck, Search, X } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useShelvedAlarms, useUnshelveAlarm } from "../../api/queries";
 import { ALARM_ACTION_ROLES, useCan } from "../../app/session";
 import { useRuntimeStore } from "../../app/store/runtime";
-import { Button, EmptyState, ErrorNotice, Mono, PageHeader, PriorityGlyph } from "../../components/ui/primitives";
-import { formatAge, formatClock, formatDateTime, parseTs, pluralize } from "../operational-map/format";
+import { Button, EmptyState, ErrorNotice, Mono, PageHeader, PriorityGlyph, StatusBadge } from "../../components/ui/primitives";
+import { formatAge, parseTs, pluralize } from "../operational-map/format";
 import { usePlantModel } from "../operational-map/plantModel";
 import { useRuntimeNow } from "../operational-map/runtimeClock";
 import { useOperateRuntime } from "../operational-map/useRuntimeSeed";
@@ -347,11 +348,11 @@ function ShelvedView({
                 <td className="alm-col-asset">{rule?.asset_id ? (model.assetById[rule.asset_id]?.name ?? rule.asset_id) : "—"}</td>
                 <td>
                   <Mono>{s.by ?? "—"}</Mono>
-                  <div className="ops-id">{s.at ? `at ${formatDateTime(s.at)}` : ""}</div>
+                  <div className="ops-id">{s.at ? <>at <Time value={s.at} format="datetime" /></> : ""}</div>
                 </td>
                 <td className="alm-reason">{s.reason ?? "—"}</td>
                 <td className="alm-col-num">
-                  <Mono>{until ? formatClock(until) : "—"}</Mono>
+                  <Time value={until} />
                 </td>
                 <td className="alm-col-num">
                   <Mono>{until ? formatAge(until - now) : "—"}</Mono>
@@ -372,22 +373,33 @@ function ShelvedView({
   );
 }
 
+const SITUATION_SEVERITY_LABEL: Record<string, string> = { critical: "Critical", warning: "Warning", info: "Advisory" };
+
+function situationStatus(sev: string | undefined) {
+  return sev === "critical" ? ("critical" as const) : sev === "warning" ? ("high" as const) : ("low" as const);
+}
+
 function GroupedView({ rows, now, onOpen }: { rows: AlarmRow[]; now: number; onOpen: (r: AlarmRow) => void }) {
-  const situation = useRuntimeStore((s) => s.activeSituation);
+  const situations = useRuntimeStore((s) => s.activeSituations);
+  const { model } = usePlantModel();
   const groups = useMemo(() => {
-    const bySit = new Map<string, { title: string; rows: AlarmRow[] }>();
+    const bySit = new Map<string, AlarmRow[]>();
     const loose: AlarmRow[] = [];
     for (const r of sortRows(rows, "onset", "asc")) {
-      if (r.situationId) {
-        const g = bySit.get(r.situationId) ?? { title: r.situationTitle ?? r.situationId, rows: [] };
-        g.rows.push(r);
-        bySit.set(r.situationId, g);
-      } else loose.push(r);
+      if (r.situationId) bySit.set(r.situationId, [...(bySit.get(r.situationId) ?? []), r]);
+      else loose.push(r);
     }
-    return { bySit: [...bySit.entries()], loose };
-  }, [rows]);
+    // Every active situation gets a section (backend order), even when its alarms have cleared.
+    const known = new Set(situations.map((s) => s.situation_id));
+    const sections = situations.map((s) => ({ situation: s, rows: bySit.get(s.situation_id) ?? [] }));
+    // Rows that name a situation the snapshot no longer lists are still shown, never dropped.
+    for (const [id, list] of bySit) {
+      if (!known.has(id)) loose.push(...list);
+    }
+    return { sections, loose: sortRows(loose, "onset", "asc") };
+  }, [rows, situations]);
 
-  if (!rows.length) return <EmptyState title="No active alarms">Nothing to group.</EmptyState>;
+  if (!rows.length && !situations.length) return <EmptyState title="No active alarms">Nothing to group.</EmptyState>;
 
   const renderRows = (list: AlarmRow[]) => (
     <ol className="alm-group__list">
@@ -398,7 +410,7 @@ function GroupedView({ rows, now, onOpen }: { rows: AlarmRow[]; now: number; onO
             <span className="alm-group__msg">{r.message}</span>
             <span>{r.firstOut ? <span className="ops-first-out">First out</span> : null}</span>
             <span className="ops-muted">{r.assetName}</span>
-            <Mono className="alm-group__time">{formatClock(r.onsetMs, true)}</Mono>
+            <Time value={r.onsetMs} tenths className="alm-group__time" />
             <Mono className="alm-group__age">{formatAge(now - r.onsetMs)}</Mono>
           </button>
         </li>
@@ -408,20 +420,32 @@ function GroupedView({ rows, now, onOpen }: { rows: AlarmRow[]; now: number; onO
 
   return (
     <div className="alm-groups">
-      {groups.bySit.map(([id, g]) => (
-        <section key={id} className="alm-group" aria-label={g.title}>
-          <header className="alm-group__head">
-            <div>
-              <h3 className="alm-group__title">{g.title}</h3>
-              <div className="ops-muted">
-                Root: {situation?.situation_id === id ? (situation.root_asset_name ?? situation.root_asset_id) : "—"} ·{" "}
-                {pluralize(g.rows.length, "raw alarm")} grouped, in onset order
+      {groups.sections.length > 1 ? (
+        <p className="ops-muted alm-groups__intro">
+          {pluralize(groups.sections.length, "situation")} active. Each groups the raw alarms one approved root cause explains.
+        </p>
+      ) : null}
+      {groups.sections.map(({ situation: sit, rows: list }) => {
+        const rootName = sit.root_asset_name ?? model.assetById[sit.root_asset_id]?.name ?? sit.root_asset_id;
+        return (
+          <section key={sit.situation_id} className="alm-group" aria-label={sit.title}>
+            <header className="alm-group__head">
+              <div className="alm-group__head-text">
+                <h3 className="alm-group__title">{sit.title}</h3>
+                <div className="ops-muted">
+                  Root: {rootName} · {pluralize(list.length, "raw alarm")} grouped, in onset order
+                  {sit.grouped_alarm_ids.length > list.length ? ` · ${sit.grouped_alarm_ids.length - list.length} no longer active` : ""}
+                </div>
               </div>
-            </div>
-          </header>
-          {renderRows(g.rows)}
-        </section>
-      ))}
+              <StatusBadge status={situationStatus(sit.severity)} label={SITUATION_SEVERITY_LABEL[sit.severity] ?? "Advisory"} compact />
+              <Link className="ops-link alm-group__link" to={`/ops?situation=${encodeURIComponent(sit.situation_id)}`}>
+                Open Calm Card
+              </Link>
+            </header>
+            {list.length ? renderRows(list) : <p className="alm-group__empty ops-muted">All grouped alarms have cleared.</p>}
+          </section>
+        );
+      })}
       {groups.loose.length ? (
         <section className="alm-group" aria-label="Not grouped">
           <header className="alm-group__head">

@@ -41,25 +41,8 @@ export function parseTs(ts: string | null | undefined): number | null {
   return Number.isFinite(ms) ? ms : null;
 }
 
-/** HH:MM:SS (24 h). Runtime timestamps are shown in the plant's runtime clock, never re-zoned. */
-export function formatClock(ts: string | number | null | undefined, withMs = false): string {
-  const ms = typeof ts === "number" ? ts : parseTs(ts ?? null);
-  if (ms === null) return "—";
-  const d = new Date(ms);
-  const hh = String(d.getUTCHours()).padStart(2, "0");
-  const mm = String(d.getUTCMinutes()).padStart(2, "0");
-  const ss = String(d.getUTCSeconds()).padStart(2, "0");
-  if (!withMs) return `${hh}:${mm}:${ss}`;
-  const frac = String(Math.floor(d.getUTCMilliseconds() / 100));
-  return `${hh}:${mm}:${ss}.${frac}`;
-}
-
-export function formatDateTime(ts: string | number | null | undefined): string {
-  const ms = typeof ts === "number" ? ts : parseTs(ts ?? null);
-  if (ms === null) return "—";
-  const d = new Date(ms);
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")} ${formatClock(ms)}`;
-}
+// Absolute times follow the app-wide policy in lib/time.ts: local zone, 24 h, zone on hover.
+export { formatClock, formatDateTime, timeTitle } from "../../lib/time";
 
 /** Compact age: 42 s · 3 min 05 s · 2 h 14 min · 3 d 4 h. */
 export function formatAge(ms: number): string {

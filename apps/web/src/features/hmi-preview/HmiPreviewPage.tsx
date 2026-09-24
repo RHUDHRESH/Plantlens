@@ -17,6 +17,7 @@ import { RuntimeUnavailableNotice } from "./RuntimeUnavailableNotice";
 import { SignalTable } from "./SignalTable";
 import { SourceBadge } from "./SourceBadge";
 import { HMI_SCENARIOS } from "./scenarios";
+import { StudioFrame } from "../studio-nav/StudioFrame";
 import "./hmi-preview.css";
 
 function resolvePreviewSourceLabel(scenarioId: string, state: PlantHMIState | null): string {
@@ -128,7 +129,8 @@ export function HmiPreviewPage() {
   const evidence = hmiState?.active_incident?.evidence ?? [];
 
   return (
-    <div className="hmi-runtime-shell operator-shell">
+    <StudioFrame>
+    <div className="hmi-runtime-shell pl-page">
       <header className="hmi-runtime-shell__header">
         <div>
           <h1>HMI Runtime Shell</h1>
@@ -183,5 +185,6 @@ export function HmiPreviewPage() {
         </>
       )}
     </div>
+    </StudioFrame>
   );
 }

@@ -12,11 +12,12 @@ import { KindCounts } from "./EntityDiffView";
 import { EntityDiffView } from "./EntityDiffView";
 import { ReviewForm } from "./ReviewForm";
 import { ValidationBlock } from "./ValidationBlock";
-import { describeOp, diffTotals, formatTime, isOutdated, OP_VERB } from "./diffFormat";
+import { describeOp, diffTotals, formatTime, isOutdated, OP_VERB, parseApiTime } from "./diffFormat";
 import type { EdgeLike } from "./diffFormat";
 import { useEntityLookup, useUnitFor } from "./engData";
 import { RevChip, SourceTag } from "./engUi";
 import type { Decision } from "./reviewModel";
+import { timeTitle } from "../../lib/time";
 
 const STATUS_TEXT: Record<ChangeRequest["status"], string> = {
   pending: "Pending review",
@@ -88,7 +89,7 @@ export function ChangeDetail({
         {change.summary ? <p className="eng-detail__summary">{change.summary}</p> : null}
         <dl className="eng-meta">
           <div><dt>Author</dt><dd>{change.created_by} <span className="eng-muted">({change.created_by_role})</span></dd></div>
-          <div><dt>Created</dt><dd className="pl-mono">{formatTime(change.created_at)}</dd></div>
+          <div><dt>Created</dt><dd className="pl-mono" title={timeTitle(parseApiTime(change.created_at))}>{formatTime(change.created_at)}</dd></div>
           <div>
             <dt>{change.status === "deployed" ? "Base → result" : "Drafted against"}</dt>
             <dd>

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { AuditRecord } from "../../api/v2";
 import { Button, EmptyState, ErrorNotice, IconButton, PageHeader, Panel } from "../../components/ui/primitives";
-import { formatTime } from "../approvals/diffFormat";
+import { formatTime, parseApiTime } from "../approvals/diffFormat";
 import { CopyButton, focusContent } from "../approvals/engUi";
 import {
   ACTION_PREFIXES,
@@ -23,6 +23,7 @@ import type { AuditQueryState } from "./auditModel";
 import "../approvals/approvals.css";
 import "../pattern-library/pattern-library.css";
 import "./audit.css";
+import { timeTitle } from "../../lib/time";
 
 function ActorIcon({ type }: { type: string }) {
   if (type === "agent") return <Bot aria-hidden />;
@@ -194,7 +195,7 @@ export function AuditPage() {
             <tbody>
               {(data?.records ?? []).map((r) => (
                 <tr key={r.audit_id} className="aud-row" aria-selected={open?.audit_id === r.audit_id}>
-                  <td className="pl-mono aud-time">{formatTime(r.ts)}</td>
+                  <td className="pl-mono aud-time" title={timeTitle(parseApiTime(r.ts))}>{formatTime(r.ts)}</td>
                   <td>
                     <span className="aud-actor">
                       <ActorIcon type={r.actor_type} />

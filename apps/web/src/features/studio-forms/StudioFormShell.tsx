@@ -1,4 +1,7 @@
 import { useEffect, useMemo } from "react";
+import type { ReactNode } from "react";
+import { Button, StatusBadge, Tooltip } from "../../components/ui/primitives";
+import type { StatusKind } from "../../components/ui/primitives";
 import type { StudioRouteState } from "../studio-launchpad/studioTypes";
 import { ActionEnvelopeForm } from "./ActionEnvelopeForm";
 import { AlarmRuleForm } from "./AlarmRuleForm";
@@ -7,8 +10,10 @@ import { CausalEdgeForm } from "./CausalEdgeForm";
 import { EntityList } from "./EntityList";
 import { TagForm } from "./TagForm";
 import { ValidationPanel } from "./ValidationPanel";
+import "./studio-forms.css";
 import {
   entityIdFromRecord,
+  entityLabelFromRecord,
   selectAssetOptions,
   selectEntitiesForFamily,
   selectIssuesForFamily,
@@ -23,19 +28,58 @@ import { useStudioDraftStore } from "./useStudioDraftStore";
 
 interface StudioFormShellProps {
   route: StudioRouteState;
+  /** Extra toolbar actions (e.g. a link to the HMI preview) rendered next to Save/Submit. */
+  toolbarActions?: ReactNode;
 }
 
 const STATUS_LABELS = {
   clean: "Clean",
-  dirty: "Dirty — local edits not saved",
+  dirty: "Local edits not saved",
   invalid: "Invalid — fix errors before compile",
 } as const;
+
+const STATUS_KIND: Record<keyof typeof STATUS_LABELS, StatusKind> = {
+  clean: "normal",
+  dirty: "medium",
+  invalid: "critical",
+};
+
+export const SAVE_UNAVAILABLE = "Saving drafts to the server is not available yet. Edits stay in this browser tab.";
+export const SUBMIT_UNAVAILABLE = "Submitting for approval needs a saved draft. Use Plant Studio or the pattern library to propose changes today.";
+
+function FormToolbar({ status, actions }: { status: keyof typeof STATUS_LABELS; actions?: ReactNode }) {
+  return (
+    <div className="sf-toolbar">
+      <div className="sf-toolbar__status" role="status">
+        <span className="sf-toolbar__label">Draft status:</span>
+        <StatusBadge status={STATUS_KIND[status]} label={STATUS_LABELS[status]} compact />
+      </div>
+      <div className="sf-toolbar__actions">
+        {actions}
+        <Tooltip content={SAVE_UNAVAILABLE}>
+          <span tabIndex={0} className="sf-toolbar__disabled">
+            <Button size="sm" disabled title={SAVE_UNAVAILABLE}>
+              Save draft
+            </Button>
+          </span>
+        </Tooltip>
+        <Tooltip content={SUBMIT_UNAVAILABLE}>
+          <span tabIndex={0} className="sf-toolbar__disabled">
+            <Button size="sm" disabled title={SUBMIT_UNAVAILABLE}>
+              Submit for approval
+            </Button>
+          </span>
+        </Tooltip>
+      </div>
+    </div>
+  );
+}
 
 function familyFromRoute(route: StudioRouteState): StudioDraftFamily | null {
   return surfaceToFamily(route.surface);
 }
 
-export function StudioFormShell({ route }: StudioFormShellProps) {
+export function StudioFormShell({ route, toolbarActions }: StudioFormShellProps) {
   const loaded = useStudioDraftStore((s) => s.loaded);
   const bundle = useStudioDraftStore((s) => s.bundle);
   const status = useStudioDraftStore((s) => s.status);
@@ -53,23 +97,23 @@ export function StudioFormShell({ route }: StudioFormShellProps) {
     if (!loaded) loadInitialBundle();
   }, [loaded, loadInitialBundle]);
 
+  // Pick the routed target (or the family's first entity) when the family or target changes.
+  // Editing the draft must not reset the selection, so the bundle is read, not subscribed to.
   useEffect(() => {
     if (!family) return;
     if (route.targetId) {
       selectTarget(family, route.targetId);
       return;
     }
-    const entities = selectEntitiesForFamily(bundle, family);
-    const firstId = entities[0] ? entityIdFromRecord(family, entities[0]) : null;
-    if (firstId && selectedFamily !== family) {
-      selectTarget(family, firstId);
-    } else if (!firstId) {
-      selectTarget(family, null);
-    }
-  }, [family, route.targetId, bundle, selectTarget, selectedFamily]);
+    const st = useStudioDraftStore.getState();
+    if (st.selectedFamily === family && st.selectedTargetId) return;
+    const first = selectEntitiesForFamily(st.bundle, family)[0];
+    selectTarget(family, first ? entityIdFromRecord(family, first) : null);
+  }, [family, route.targetId, loaded, selectTarget]);
 
   const activeFamily = family ?? selectedFamily;
-  const activeTargetId = route.targetId ?? selectedTargetId;
+  const activeTargetId =
+    selectedFamily === activeFamily && selectedTargetId ? selectedTargetId : (route.targetId ?? selectedTargetId);
 
   const entities = useMemo(
     () => (activeFamily ? selectEntitiesForFamily(bundle, activeFamily) : []),
@@ -102,26 +146,29 @@ export function StudioFormShell({ route }: StudioFormShellProps) {
 
   if (route.surface === "role_view") {
     return (
-      <div className="studio-form-shell">
-        <div className={`studio-form-shell__status studio-form-shell__status--${status}`} role="status">
-          Draft status: {STATUS_LABELS[status]}
-        </div>
-        <div className="studio-form-shell__layout">
-          <div className="studio-form-shell__form">
-            <h3>Role views</h3>
-            <p className="studio-form-field__hint">
-              Role view stubs are represented as plant roles only in this prompt. Full role-view authoring
-              comes after draft persistence.
-            </p>
-            <ul>
-              {roles.map((role) => (
-                <li key={role}>{role}</li>
-              ))}
-            </ul>
-          </div>
+      <div className="sf-shell">
+        <FormToolbar status={status} actions={toolbarActions} />
+        <div className="sf-layout sf-layout--two">
+          <section className="sf-editor" aria-label="Role views">
+            <header className="sf-editor__head">
+              <h2 className="sf-editor__title">Role views</h2>
+            </header>
+            <div className="sf-editor__body">
+              <p className="sf-hint">
+                The plant declares these roles. Each role sees the same situations with its own map layers and
+                actions; per-role view authoring arrives with saved drafts.
+              </p>
+              <ul className="sf-roles">
+                {roles.map((role) => (
+                  <li key={role} className="pl-chip">
+                    {role}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
           <ValidationPanel issues={issues} selectedFamily="plant" />
         </div>
-        <DisabledActionsFooter />
       </div>
     );
   }
@@ -131,12 +178,10 @@ export function StudioFormShell({ route }: StudioFormShellProps) {
   }
 
   return (
-    <div className="studio-form-shell">
-      <div className={`studio-form-shell__status studio-form-shell__status--${status}`} role="status">
-        Draft status: {STATUS_LABELS[status]}
-      </div>
+    <div className="sf-shell">
+      <FormToolbar status={status} actions={toolbarActions} />
 
-      <div className="studio-form-shell__layout">
+      <div className="sf-layout">
         <EntityList
           family={activeFamily}
           items={entities}
@@ -146,7 +191,12 @@ export function StudioFormShell({ route }: StudioFormShellProps) {
           onSelect={(id) => selectTarget(activeFamily, id)}
         />
 
-        <div className="studio-form-shell__form">
+        <section className="sf-editor" aria-label="Editor">
+          <header className="sf-editor__head">
+            <h2 className="sf-editor__title">{selectedEntity ? entityLabelFromRecord(activeFamily, selectedEntity) : "Nothing selected"}</h2>
+            {activeTargetId ? <span className="sf-editor__id pl-mono">{activeTargetId}</span> : null}
+          </header>
+          <div className="sf-editor__body">
           {selectedEntity && activeFamily === "plant" ? (
             <AssetForm
               asset={selectedEntity}
@@ -188,9 +238,10 @@ export function StudioFormShell({ route }: StudioFormShellProps) {
             />
           ) : null}
           {!selectedEntity ? (
-            <p className="studio-form-field__hint">Select an entity from the list to edit the draft.</p>
+            <p className="sf-hint">Select an entity from the list to edit the draft.</p>
           ) : null}
-        </div>
+          </div>
+        </section>
 
         <ValidationPanel
           issues={issues}
@@ -201,28 +252,6 @@ export function StudioFormShell({ route }: StudioFormShellProps) {
           }}
         />
       </div>
-
-      <DisabledActionsFooter />
     </div>
-  );
-}
-
-function DisabledActionsFooter() {
-  return (
-    <footer className="studio-disabled-actions">
-      <button type="button" disabled title="Backend save is not wired in this prompt.">
-        Save draft
-      </button>
-      <button type="button" disabled title="Approval workflow comes after draft persistence.">
-        Submit for approval
-      </button>
-      <button
-        type="button"
-        disabled
-        title="Open the Compile Preview tab to generate a local read-only preview."
-      >
-        Compile preview
-      </button>
-    </footer>
   );
 }

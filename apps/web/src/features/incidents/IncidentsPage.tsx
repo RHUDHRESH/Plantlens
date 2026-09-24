@@ -1,3 +1,4 @@
+import { Time } from "../../components/ui/Time";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Circle, Siren } from "lucide-react";
 import { useState } from "react";
@@ -7,7 +8,7 @@ import { addIncidentComment, apiFetch, completeChecklistItem, getIncidentRoom, u
 import { ALARM_ACTION_ROLES, useCan, useSession } from "../../app/session";
 import { useRuntimeStore } from "../../app/store/runtime";
 import { Button, EmptyState, ErrorNotice, Mono, PageHeader, StatusBadge } from "../../components/ui/primitives";
-import { formatDateTime, formatValue } from "../operational-map/format";
+import { formatValue } from "../operational-map/format";
 import { SectionLabel } from "../operational-map/SideSheet";
 import { useOperateRuntime } from "../operational-map/useRuntimeSeed";
 import "../operational-map/ops.css";
@@ -213,7 +214,7 @@ function RoomView({ id, canAct }: { id: string; canAct: boolean }) {
         <ol className="inc-timeline">
           {r.timeline.map((t) => (
             <li key={t.id}>
-              <Mono className="inc-timeline__t">{formatDateTime(t.timestamp)}</Mono>
+              <Time value={t.timestamp} format="datetime" className="inc-timeline__t" />
               <span className="inc-timeline__type">{t.type.replace(/_/g, " ")}</span>
               <span className="inc-timeline__msg">
                 {t.message} <span className="ops-subtle">— {t.actor}</span>

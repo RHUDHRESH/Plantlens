@@ -14,10 +14,60 @@ const SNAP: RuntimeSnapshot = {
   },
 };
 
+const ACTIONS = {
+  situation_id: "sit-motor-1",
+  situation_type: "MOTOR_MECHANICAL_OVERLOAD",
+  role: "operator",
+  actions: [
+    {
+      action_id: "REQUEST_SAFE_STOP_MOTOR",
+      label: "Request PLC safe stop for motor",
+      allowed: false,
+      reason: "Role 'operator' is not permitted; allowed: maintenance.",
+      allowed_roles: ["maintenance"],
+      blocking_alarms: [],
+      risk_level: "high",
+      requires_isolation: false,
+      requires_operator_confirm: true,
+      plc_permission_required: true,
+      safety_note: null,
+      target_asset_id: "MTR-301",
+    },
+    {
+      action_id: "CHECK_COUPLING_GUARD",
+      label: "Check the coupling guard temperature by hand-held IR",
+      allowed: true,
+      reason: null,
+      allowed_roles: ["operator"],
+      blocking_alarms: [],
+      risk_level: "low",
+      requires_isolation: false,
+      requires_operator_confirm: false,
+      plc_permission_required: false,
+      safety_note: null,
+      target_asset_id: "MTR-301",
+    },
+    {
+      action_id: "INSPECT_SHAFT_LOAD",
+      label: "Inspect shaft load, coupling, and bearing drag",
+      allowed: true,
+      reason: null,
+      allowed_roles: ["operator", "maintenance"],
+      blocking_alarms: [],
+      risk_level: "medium",
+      requires_isolation: true,
+      requires_operator_confirm: false,
+      plc_permission_required: false,
+      safety_note: "Follow site isolation procedure before touching rotating equipment.",
+      target_asset_id: "MTR-301",
+    },
+  ],
+};
+
 describe("OverviewPage", () => {
   it("composes map, Calm Card and the raw alarm strip from the hero situation", async () => {
     seed(SNAP, "operator");
-    mockFetch(defaultRoutes(SNAP));
+    mockFetch(defaultRoutes(SNAP, { "/api/runtime/actions": ACTIONS }));
     renderPage(<OverviewPage />, "/ops");
 
     // Hero map from compiled coordinates, with live value and status text on the motor.
@@ -27,6 +77,7 @@ describe("OverviewPage", () => {
 
     // Calm Card in priority order.
     const card = screen.getByRole("article", { name: "Motor mechanical overload" });
+    await within(card).findByText("Check the coupling guard temperature by hand-held IR");
     const text = card.textContent ?? "";
     const order = ["Likely root", "First signal", "Evidence chain", "Check first", "Blocked actions", "raw alarms grouped"].map((k) =>
       text.indexOf(k),
@@ -42,6 +93,48 @@ describe("OverviewPage", () => {
     const strip = screen.getByRole("region", { name: "Raw alarms" });
     expect(within(strip).getByText("Motor current high")).toBeInTheDocument();
     expect(within(strip).getByText("DC bus low")).toBeInTheDocument();
+  });
+
+  it("lists role-gated checks: permitted first, blocked greyed with the reason, nothing executable", async () => {
+    seed(SNAP, "operator");
+    const { calls } = mockFetch(defaultRoutes(SNAP, { "/api/runtime/actions": ACTIONS }));
+    renderPage(<OverviewPage />, "/ops");
+    const checks = await screen.findByRole("region", { name: "Recommended checks" });
+    await within(checks).findByText("Check the coupling guard temperature by hand-held IR");
+    const items = within(checks).getAllByRole("listitem");
+    // The featured first check (INSPECT_SHAFT_LOAD) is not repeated; other permitted checks lead.
+    expect(items).toHaveLength(2);
+    expect(items[0]).toHaveTextContent("Recommended check");
+    expect(items[0]).toHaveTextContent("Risk low");
+    expect(items[1]).toHaveTextContent("Request PLC safe stop for motor");
+    expect(items[1]).toHaveTextContent("Not for the Operator role. Maintenance can carry this out.");
+    expect(items[1]).toHaveClass("is-blocked");
+    expect(within(checks).queryAllByRole("button")).toHaveLength(0);
+    expect(calls.some((c) => c.url.includes("/api/runtime/actions?situation_id=sit-motor-1"))).toBe(true);
+  });
+
+  it("switches between several active situations and refetches their actions", async () => {
+    const second = {
+      ...SNAP.active_situations[0]!,
+      situation_id: "sit-bus-2",
+      title: "DC bus undervoltage",
+      root_asset_id: "BUS-101",
+      root_asset_name: "DC Bus",
+      severity: "warning" as const,
+      grouped_alarm_ids: ["DC_BUS_LOW"],
+    };
+    const multi: RuntimeSnapshot = { ...SNAP, active_situations: [SNAP.active_situations[0]!, second] };
+    seed(multi, "operator");
+    const { calls } = mockFetch(defaultRoutes(multi, { "/api/runtime/actions": ACTIONS }));
+    renderPage(<OverviewPage />, "/ops");
+    const switcher = screen.getByRole("navigation", { name: "Active situations" });
+    const buttons = within(switcher).getAllByRole("button");
+    expect(buttons).toHaveLength(2);
+    expect(buttons[0]).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(within(switcher).getByRole("button", { name: /DC bus undervoltage/ }));
+    expect(await screen.findByRole("article", { name: "DC bus undervoltage" })).toBeInTheDocument();
+    expect(within(switcher).getByRole("button", { name: /DC bus undervoltage/ })).toHaveAttribute("aria-pressed", "true");
+    await vi.waitFor(() => expect(calls.some((c) => c.url.includes("situation_id=sit-bus-2"))).toBe(true));
   });
 
   it("opens the asset drawer from the map with live tags and links", async () => {

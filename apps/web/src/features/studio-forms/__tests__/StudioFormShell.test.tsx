@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { render, screen } from "@testing-library/react";
-import { StudioFormShell } from "../StudioFormShell";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import { SAVE_UNAVAILABLE, StudioFormShell, SUBMIT_UNAVAILABLE } from "../StudioFormShell";
+import { TooltipProvider } from "../../../components/ui/primitives";
 import { resetStudioDraftStoreForTests } from "../useStudioDraftStore";
 
 describe("StudioFormShell", () => {
@@ -9,46 +10,50 @@ describe("StudioFormShell", () => {
   });
 
   it("renders status strip", () => {
-    render(<StudioFormShell route={{ surface: "asset", targetId: null, mode: "inspect" }} />);
+    render(<TooltipProvider><StudioFormShell route={{ surface: "asset", targetId: null, mode: "inspect" }} /></TooltipProvider>);
     expect(screen.getByText(/Draft status:/i)).toBeInTheDocument();
   });
 
   it("renders entity list", () => {
-    render(<StudioFormShell route={{ surface: "asset", targetId: null, mode: "inspect" }} />);
-    expect(screen.getByLabelText("Entity list")).toBeInTheDocument();
-    expect(screen.getByText("PV-101")).toBeInTheDocument();
+    render(<TooltipProvider><StudioFormShell route={{ surface: "asset", targetId: null, mode: "inspect" }} /></TooltipProvider>);
+    const list = screen.getByLabelText("Entity list");
+    expect(within(list).getByText("PV-101")).toBeInTheDocument();
   });
 
   it("routes asset target", () => {
     render(
-      <StudioFormShell route={{ surface: "asset", targetId: "BAT-101", mode: "edit_intent" }} />,
+      <TooltipProvider>
+        <StudioFormShell route={{ surface: "asset", targetId: "BAT-101", mode: "edit_intent" }} />
+      </TooltipProvider>,
     );
     expect(screen.getByDisplayValue("Battery Bank")).toBeInTheDocument();
   });
 
-  it("shows disabled Save/Submit/Compile actions with reasons", () => {
-    render(<StudioFormShell route={{ surface: "tag", targetId: null, mode: "inspect" }} />);
+  it("shows disabled Save/Submit actions with reasons", () => {
+    render(<TooltipProvider><StudioFormShell route={{ surface: "tag", targetId: null, mode: "inspect" }} /></TooltipProvider>);
     const save = screen.getByRole("button", { name: /Save draft/i });
     const submit = screen.getByRole("button", { name: /Submit for approval/i });
-    const compile = screen.getByRole("button", { name: /Compile preview/i });
     expect(save).toBeDisabled();
     expect(submit).toBeDisabled();
-    expect(compile).toBeDisabled();
-    expect(save).toHaveAttribute("title", "Backend save is not wired in this prompt.");
-    expect(submit).toHaveAttribute("title", "Approval workflow comes after draft persistence.");
-    expect(compile).toHaveAttribute(
-      "title",
-      "Open the Compile Preview tab to generate a local read-only preview.",
-    );
+    expect(save).toHaveAttribute("title", SAVE_UNAVAILABLE);
+    expect(submit).toHaveAttribute("title", SUBMIT_UNAVAILABLE);
+  });
+
+  it("filters the entity list and marks entities with issues", () => {
+    render(<TooltipProvider><StudioFormShell route={{ surface: "asset", targetId: null, mode: "inspect" }} /></TooltipProvider>);
+    fireEvent.change(screen.getByRole("searchbox", { name: "Filter entities" }), { target: { value: "BAT" } });
+    const list = screen.getByLabelText("Entity list");
+    expect(within(list).getByText("BAT-101")).toBeInTheDocument();
+    expect(within(list).queryByText("PV-101")).not.toBeInTheDocument();
   });
 
   it("renders validation panel", () => {
-    render(<StudioFormShell route={{ surface: "asset", targetId: null, mode: "inspect" }} />);
+    render(<TooltipProvider><StudioFormShell route={{ surface: "asset", targetId: null, mode: "inspect" }} /></TooltipProvider>);
     expect(screen.getByLabelText("Validation")).toBeInTheDocument();
   });
 
   it("has no fake success copy", () => {
-    render(<StudioFormShell route={{ surface: "asset", targetId: null, mode: "inspect" }} />);
+    render(<TooltipProvider><StudioFormShell route={{ surface: "asset", targetId: null, mode: "inspect" }} /></TooltipProvider>);
     expect(screen.queryByText(/successfully saved/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/compile complete/i)).not.toBeInTheDocument();
   });
