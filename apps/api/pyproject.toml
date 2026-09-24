@@ -25,6 +25,8 @@ dependencies = [
   "pyyaml~=6.0",
   # Chunk 1A.4 — offline ingestion XLSX adapter
   "openpyxl~=3.1",
+  # Change pipeline — validate bundles against packages/contracts before deploy
+  "jsonschema~=4.23",
   # Auth (Chunk 1) — pick ONE path:
   "authlib~=1.7",           # production OIDC/JWT verify
   # "python-jose[cryptography]", "passlib[bcrypt]",  # local dev bootstrap alternative

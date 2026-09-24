@@ -41,6 +41,8 @@ ALLOWED_API_PREFIXES = (
     "/api/incidents",
     "/api/incidents/",
     "/api/agents/",
+    "/api/changes",
+    "/api/changes/",
     "/api/plc/",
     "/api/library/",
 )

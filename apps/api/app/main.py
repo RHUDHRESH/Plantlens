@@ -13,6 +13,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from app.lifespan import lifespan
 from app.routers import (
     agents,
+    changes,
     compiler,
     health,
     hmi,
@@ -74,6 +75,7 @@ def create_app() -> FastAPI:
     app.include_router(offline_ingest.router)
     app.include_router(incidents.router)
     app.include_router(agents.router)
+    app.include_router(changes.router)
     app.include_router(plc_status.router)
     return app
 

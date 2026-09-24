@@ -12,7 +12,7 @@
  * YAML note: action_envelope is authored as YAML; this script validates the JSON files only.
  * Validate action_envelope.yaml in the backend (it parses YAML there anyway) or add a YAML loader.
  */
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import Ajv2020 from "ajv/dist/2020.js";
@@ -26,6 +26,8 @@ const bundle = join(root, "packages", "sample-data", "demo-microgrid");
 // (tag_frame, situation, calm_card, incident, audit) are validated by backend tests, not here.
 const componentLibrary = join(root, "packages", "sample-data", "component-library");
 
+const causalPatterns = join(componentLibrary, "causal_patterns");
+
 const PAIRS = [
   ["plant.schema.json", "plant.json"],
   ["tag_map.schema.json", "tag_map.json"],
@@ -33,18 +35,30 @@ const PAIRS = [
   ["causal_graph.schema.json", "causal_graph.json"],
   ["scenarios.schema.json", "scenarios.json"],
   ["component_library.schema.json", "standard_components.json", componentLibrary],
-  ["plant_assembly.schema.json", "demo_motor_fan_blower_assembly.json", componentLibrary]
+  ["plant_assembly.schema.json", "demo_motor_fan_blower_assembly.json", componentLibrary],
+  // Every per-component causal pattern library.
+  ...readdirSync(causalPatterns)
+    .filter((f) => f.endsWith(".json"))
+    .sort()
+    .map((f) => ["causal_pattern_library.schema.json", f, causalPatterns]),
 ];
 
 const ajv = new Ajv2020({ allErrors: true, strict: false });
 addFormats(ajv);
 
+const validators = new Map();
+function validatorFor(schemaFile) {
+  if (!validators.has(schemaFile)) {
+    validators.set(schemaFile, ajv.compile(JSON.parse(readFileSync(join(contracts, schemaFile), "utf8"))));
+  }
+  return validators.get(schemaFile);
+}
+
 let failures = 0;
 for (const [schemaFile, dataFile, dataDir] of PAIRS) {
-  const schema = JSON.parse(readFileSync(join(contracts, schemaFile), "utf8"));
   const sampleDir = dataDir ?? bundle;
   const data = JSON.parse(readFileSync(join(sampleDir, dataFile), "utf8"));
-  const validate = ajv.compile(schema);
+  const validate = validatorFor(schemaFile);
   if (validate(data)) {
     console.log(`  ok   ${dataFile}  ✓  ${schemaFile}`);
   } else {

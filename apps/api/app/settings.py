@@ -71,6 +71,11 @@ class Settings(BaseSettings):
         description="Periodic runtime evaluation interval; 0 disables the ticker.",
         validation_alias=AliasChoices("RUNTIME_TICK_MS"),
     )
+    change_require_distinct_reviewer: bool = Field(
+        default=False,
+        description="Four-eyes policy: the author of a change may not approve it.",
+        validation_alias=AliasChoices("CHANGE_REQUIRE_DISTINCT_REVIEWER"),
+    )
     web_origin: str = Field(
         default="http://localhost:5173",
         validation_alias=AliasChoices("WEB_ORIGIN", "PLANTLENS_WEB_ORIGIN"),

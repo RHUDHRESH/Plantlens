@@ -3,8 +3,10 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import require_viewer
+from app.auth.dependencies import require_engineer, require_viewer
 from app.auth.principal import Principal
 from app.library.analysis import analyze_plant_assembly, score_plant_faults
 from app.library.assembly import validate_plant_assembly
@@ -13,6 +15,16 @@ from app.library.catalog import (
     group_components_by_category,
     list_components,
     load_standard_component_library,
+)
+from app.changes import service as change_service
+from app.dependencies import get_db
+from app.library.instantiate import PatternInstantiationError, instantiate_pattern
+from app.library.patterns import (
+    get_pattern,
+    libraries_for_asset_type,
+    library_for_pattern,
+    load_libraries,
+    summarize_library,
 )
 from app.library.matrices import build_compatibility_matrix, summarize_compatibility_matrix
 from app.library.ports import check_connection_by_type_ids
@@ -118,3 +130,119 @@ async def score_faults(
         body.observed_signals,
         body.data_quality,
     )
+
+# --- Causal pattern library ---------------------------------------------------------------
+
+
+class InstantiatePatternRequest(BaseModel):
+    asset_id: str
+    bindings: dict[str, str] | None = None
+    neighbours: dict[str, list[str]] | None = None
+    submit: bool = Field(default=False, description="Also submit the draft to the change review queue.")
+
+
+def _bundle_parts(bundle: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "plant": bundle["plant"],
+        "tag_map": bundle["tag_map"],
+        "causal_graph": bundle["causal_graph"],
+        "alarm_rules": bundle["alarm_rules"],
+    }
+
+
+@router.get("/patterns")
+async def list_pattern_libraries(
+    _principal: Principal = Depends(require_viewer),
+) -> dict[str, Any]:
+    libraries = [summarize_library(lib) for lib in load_libraries().values()]
+    return {
+        "libraries": sorted(libraries, key=lambda lib: lib["component_type"]),
+        "pattern_count": sum(lib["pattern_count"] for lib in libraries),
+    }
+
+
+@router.get("/patterns/coverage/{asset_id}")
+async def pattern_coverage_for_asset(
+    asset_id: str,
+    _principal: Principal = Depends(require_viewer),
+    session: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """Which failure modes of this asset are observable with today's instrumentation."""
+    revision = await change_service.ensure_seed_revision(session)
+    await session.commit()
+    bundle = _bundle_parts(revision.bundle_json)
+    asset = next((a for a in bundle["plant"].get("assets", []) if a["id"] == asset_id), None)
+    if asset is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Unknown asset {asset_id}")
+    rows: list[dict[str, Any]] = []
+    for library in libraries_for_asset_type(asset.get("type", "")):
+        for pattern in library["patterns"]:
+            result = instantiate_pattern(pattern, library, asset_id=asset_id, **bundle)
+            rows.append(
+                {
+                    "pattern_id": pattern["pattern_id"],
+                    "title": pattern["title"],
+                    "category": pattern["category"],
+                    "severity": pattern["severity"],
+                    "observable": result.ok,
+                    "missing_required": result.missing_required,
+                    "missing_optional": result.missing_optional,
+                    "unresolved": result.unresolved,
+                }
+            )
+    observable = sum(1 for r in rows if r["observable"])
+    return {
+        "asset_id": asset_id,
+        "asset_type": asset.get("type"),
+        "bundle_rev": revision.rev,
+        "observable": observable,
+        "total": len(rows),
+        "patterns": rows,
+    }
+
+
+@router.get("/patterns/{pattern_id}")
+async def get_causal_pattern(
+    pattern_id: str,
+    _principal: Principal = Depends(require_viewer),
+) -> dict[str, Any]:
+    pattern = get_pattern(pattern_id)
+    if pattern is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Unknown pattern {pattern_id}")
+    library = library_for_pattern(pattern_id) or {}
+    return {
+        "pattern": {k: v for k, v in pattern.items() if not k.startswith("_")},
+        "component_type": pattern["_component_type"],
+        "roles": library.get("roles", []),
+    }
+
+
+@router.post("/patterns/{pattern_id}/instantiate")
+async def instantiate_causal_pattern(
+    pattern_id: str,
+    body: InstantiatePatternRequest,
+    principal: Principal = Depends(require_engineer),
+    session: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    pattern = get_pattern(pattern_id)
+    library = library_for_pattern(pattern_id)
+    if pattern is None or library is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Unknown pattern {pattern_id}")
+    revision = await change_service.ensure_seed_revision(session)
+    try:
+        result = instantiate_pattern(
+            pattern,
+            library,
+            asset_id=body.asset_id,
+            bindings=body.bindings,
+            neighbours=body.neighbours,
+            **_bundle_parts(revision.bundle_json),
+        )
+    except PatternInstantiationError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+    payload: dict[str, Any] = {"result": result.to_dict(), "bundle_rev": revision.rev, "change": None}
+    if body.submit and result.change_set is not None:
+        row = await change_service.submit_change(session, result.change_set, principal)
+        payload["change"] = change_service.serialize_change(row)
+    await session.commit()
+    return payload

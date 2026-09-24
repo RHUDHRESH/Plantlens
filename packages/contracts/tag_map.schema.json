@@ -73,6 +73,7 @@
             }
           },
           "sim_address": { "type": "string", "description": "Simulator handle, e.g. sim://dc_bus_voltage. Required for simulator tags." },
+          "role": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$", "description": "Optional causal-pattern signal role (e.g. current, winding_temperature). Takes precedence over unit/name auto-binding when a pattern is instantiated." },
           "quality_policy": {
             "type": "object", "additionalProperties": false,
             "description": "Freshness/quality rules the runtime applies.",

@@ -36,6 +36,22 @@ def reset_alarm_engine_state() -> None:
     _alarm_engine_state = AlarmEngineState()
 
 
+def reconcile_alarm_engine_state(rule_ids: set[str]) -> None:
+    """Drop per-rule state for rules removed by a deploy; keep the rest (acks, latches)."""
+    local_state = _alarm_engine_state
+    for mapping in (
+        local_state.condition_true_since,
+        local_state.cleared_pending,
+        local_state.shelved_until,
+        local_state.pending_deadlines,
+        local_state.raised_at,
+        local_state.onset_at,
+    ):
+        for rule_id in [rid for rid in mapping if rid not in rule_ids]:
+            mapping.pop(rule_id, None)
+    local_state.acked &= rule_ids
+
+
 def next_debounce_deadline(engine_state: AlarmEngineState | None = None) -> datetime | None:
     """Earliest instant a pending debounce would latch, or None."""
     local_state = engine_state or _alarm_engine_state
