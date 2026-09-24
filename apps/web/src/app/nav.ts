@@ -32,7 +32,6 @@ export interface NavItem {
 
 const ALL: readonly Role[] = ["viewer", "operator", "maintenance", "engineer", "admin"];
 const ENG: readonly Role[] = ["engineer", "admin"];
-const ADMIN: readonly Role[] = ["admin"];
 
 export const WORKSPACE_LABEL: Record<Workspace, string> = {
   operate: "Operate",
@@ -61,7 +60,7 @@ export const NAV: readonly NavItem[] = [
     description: "Which failure modes are observable today" },
   { path: "/eng/approvals", label: "Approvals", icon: CheckSquare, workspace: "engineer", roles: ENG,
     description: "Review drafted changes before they reach the runtime" },
-  { path: "/admin/revisions", label: "Revisions", icon: History, workspace: "admin", roles: ADMIN,
+  { path: "/admin/revisions", label: "Revisions", icon: History, workspace: "admin", roles: ENG,
     description: "Deployed bundle history and rollback" },
   { path: "/admin/audit", label: "Audit ledger", icon: ShieldCheck, workspace: "admin", roles: ENG,
     description: "Hash-chained record of every decision" },
