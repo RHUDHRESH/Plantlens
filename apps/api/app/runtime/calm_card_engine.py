@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
+from app.runtime.causal.confidence import confidence_bucket
 from app.schemas.runtime_evidence import RuntimeEvidencePacket
 
 OPERATOR_AUTHORITY = (
@@ -114,11 +115,7 @@ def build_calm_card_from_evidence(
         packet.situation_type, active_alarm_ids, action_envelope
     )
 
-    confidence_label = "low"
-    if packet.confidence >= 0.75:
-        confidence_label = "high"
-    elif packet.confidence >= 0.45:
-        confidence_label = "medium"
+    confidence_label = confidence_bucket(packet.confidence)
 
     return {
         "card_id": f"CC_{packet.situation_id or packet.evidence_id}",

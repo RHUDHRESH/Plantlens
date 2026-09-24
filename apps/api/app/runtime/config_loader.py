@@ -21,6 +21,9 @@ class GraphEdge:
     lag_ms: tuple[int, int]
     edge_type: str
     weight: float = 1.0
+    polarity: str = "any"
+    loop_ok: bool = False
+    loop_id: str | None = None
 
 
 @dataclass
@@ -62,6 +65,9 @@ def _build_graph_index(causal_graph: dict[str, Any]) -> dict[str, Any]:
             lag_ms=(int(edge["lag_ms"][0]), int(edge["lag_ms"][1])),
             edge_type=edge.get("edge_type", ""),
             weight=float(edge.get("weight", 1.0)),
+            polarity=str(edge.get("polarity", "any")),
+            loop_ok=bool(edge.get("loop_ok", False)),
+            loop_id=edge.get("loop_id"),
         )
         reverse_adjacency.setdefault(graph_edge.to_node, []).append(graph_edge)
         forward_adjacency.setdefault(graph_edge.from_node, []).append(graph_edge)
@@ -73,6 +79,7 @@ def _build_graph_index(causal_graph: dict[str, Any]) -> dict[str, Any]:
         "forward_adjacency": forward_adjacency,
         "root_cause_rules": causal_graph.get("root_cause_rules", []),
         "situation_types": causal_graph.get("situation_types", []),
+        "scoring": causal_graph.get("scoring", {}),
         "edges_by_id": {edge["id"]: edge for edge in causal_graph.get("edges", [])},
     }
 
