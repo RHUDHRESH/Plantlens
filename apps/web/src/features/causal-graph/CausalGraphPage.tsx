@@ -222,6 +222,27 @@ function GraphCanvas({
   // Draw traversed edges last so the live path sits on top.
   const edges = [...layout.edges].sort((a, b) => Number(traversed.has(a.id)) - Number(traversed.has(b.id)));
 
+  // Keep the selected node clear of the side sheet (fixed, right edge): pan it into the
+  // uncovered part of the canvas once the sheet has mounted and finished its slide-in (240 ms),
+  // so its measured left edge is final.
+  const { reveal } = pz;
+  const selectedPos = selectedId ? layout.nodes[selectedId] : undefined;
+  useEffect(() => {
+    if (!selectedPos) return;
+    const t = window.setTimeout(() => {
+      // Use the resting position (layout box), not the possibly still-translating client rect.
+      const sheet = document.querySelector<HTMLElement>(".ops-sheet");
+      const left = sheet
+        ? window.innerWidth - sheet.offsetWidth - (parseFloat(getComputedStyle(sheet).right) || 0)
+        : undefined;
+      reveal(
+        { x: selectedPos.x, y: selectedPos.y, w: selectedPos.width, h: selectedPos.height },
+        left !== undefined && left > 0 ? { right: left } : {},
+      );
+    }, 260);
+    return () => window.clearTimeout(t);
+  }, [selectedPos, reveal]);
+
   return (
     <div className="cg-canvas">
       <svg

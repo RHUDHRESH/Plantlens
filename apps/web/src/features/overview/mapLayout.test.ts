@@ -1,7 +1,21 @@
 import { describe, expect, it } from "vitest";
 import { buildPlantModel } from "../operational-map/plantModel";
 import { COMPILED_FIXTURE } from "../operational-map/testUtils";
-import { MAP_SCALE_X, MAP_SCALE_Y, NODE_W, causalEdgeIds, contentBounds, keyTagFor, placeNodes, routeConnection } from "./mapLayout";
+import {
+  COMPACT_BELOW,
+  LABEL_MIN_PX,
+  MAP_SCALE_X,
+  MAP_SCALE_Y,
+  NODE_W,
+  SECONDARY_MIN_PX,
+  causalEdgeIds,
+  contentBounds,
+  keyTagFor,
+  mapTextBand,
+  placeNodes,
+  routeConnection,
+  truncateLabel,
+} from "./mapLayout";
 
 const model = buildPlantModel(COMPILED_FIXTURE as never);
 
@@ -44,5 +58,20 @@ describe("overview map layout", () => {
     expect(keyTagFor(motor, tags as never, new Set())?.tag_id).toBe("MOTOR_301_CURRENT");
     expect(keyTagFor(motor, tags as never, new Set(["MOTOR_301_TEMP"]))?.tag_id).toBe("MOTOR_301_TEMP");
     expect(keyTagFor(model.assetById["PV-101"]!, tags as never, new Set())).toBeNull();
+  });
+
+  it("keeps on-screen text at or above the minimum at any zoom and drops secondary text when cramped", () => {
+    for (const s of [0.5, 0.7, 0.85, 1, 1.6]) {
+      const band = mapTextBand(s);
+      expect(band.label * s).toBeGreaterThanOrEqual(LABEL_MIN_PX - 1e-9);
+      expect(band.secondary * s).toBeGreaterThanOrEqual(SECONDARY_MIN_PX - 1e-9);
+      expect(band.compact).toBe(s < COMPACT_BELOW);
+    }
+    // Zoomed in: base sizes, no counter-scaling.
+    expect(mapTextBand(1.6)).toMatchObject({ label: 13.5, secondary: 12.5, tagK: 1, badgeK: 1 });
+    // Status tag text (9.5 units) reaches 11 px at 1280-class scales.
+    expect(9.5 * mapTextBand(0.75).tagK * 0.75).toBeGreaterThanOrEqual(SECONDARY_MIN_PX - 1e-9);
+    expect(truncateLabel("MPPT Controller", 20)).toBe("MPPT Controller");
+    expect(truncateLabel("MPPT Controller", 8)).toBe("MPPT Co…");
   });
 });

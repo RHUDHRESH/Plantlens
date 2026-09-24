@@ -30,12 +30,103 @@ export function zoomBoxAt(view: Box, factor: number, cx: number, cy: number, bas
   return { x: cx - (cx - view.x) * f, y: cy - (cy - view.y) * f, w, h };
 }
 
+export interface ScreenRect {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
+/**
+ * Pan (never zoom) `view` so that `target` (content coords) lands inside `clear` (client px),
+ * e.g. the part of the canvas not covered by a side sheet. Returns null when already visible.
+ * `svg` is the SVG's client rect; the SVG uses preserveAspectRatio="xMidYMid meet".
+ */
+export function revealBox(view: Box, target: Box, svg: ScreenRect, clear: ScreenRect, pad = 24): Box | null {
+  const rw = svg.right - svg.left;
+  const rh = svg.bottom - svg.top;
+  if (rw <= 0 || rh <= 0) return null;
+  const s = Math.min(rw / view.w, rh / view.h);
+  const ox = svg.left + (rw - view.w * s) / 2;
+  const oy = svg.top + (rh - view.h * s) / 2;
+  const axis = (start: number, size: number, lo: number, hi: number) => {
+    const end = start + size;
+    if (hi - lo < size) return (lo + hi) / 2 - (start + end) / 2;
+    if (start < lo) return lo - start;
+    if (end > hi) return hi - end;
+    return 0;
+  };
+  const dx = axis(ox + (target.x - view.x) * s, target.w * s, Math.max(svg.left, clear.left) + pad, Math.min(svg.right, clear.right) - pad);
+  const dy = axis(oy + (target.y - view.y) * s, target.h * s, Math.max(svg.top, clear.top) + pad, Math.min(svg.bottom, clear.bottom) - pad);
+  if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return null;
+  return { ...view, x: view.x - dx / s, y: view.y - dy / s };
+}
+
+function prefersReducedMotion() {
+  try {
+    return typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  } catch {
+    return false;
+  }
+}
+
 export function usePanZoom(bounds: Box) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [view, setView] = useState<Box>(bounds);
   const baseRef = useRef(bounds);
   const drag = useRef<{ id: number; x: number; y: number; moved: boolean } | null>(null);
   const key = `${bounds.x}|${bounds.y}|${bounds.w}|${bounds.h}`;
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  const animRef = useRef<number | null>(null);
+  const stopAnim = useCallback(() => {
+    if (animRef.current !== null) cancelAnimationFrame(animRef.current);
+    animRef.current = null;
+  }, []);
+  useEffect(() => stopAnim, [stopAnim]);
+
+  /** Glide to `target` (300 ms ease-out; instant with reduced motion). */
+  const animateTo = useCallback(
+    (target: Box, ms = 300) => {
+      stopAnim();
+      if (ms <= 0 || prefersReducedMotion() || typeof requestAnimationFrame === "undefined") {
+        setView(target);
+        return;
+      }
+      const from = viewRef.current;
+      const t0 = performance.now();
+      const step = (now: number) => {
+        const t = Math.min(1, Math.max(0, (now - t0) / ms));
+        const k = 1 - (1 - t) ** 3;
+        setView({
+          x: from.x + (target.x - from.x) * k,
+          y: from.y + (target.y - from.y) * k,
+          w: from.w + (target.w - from.w) * k,
+          h: from.h + (target.h - from.h) * k,
+        });
+        animRef.current = t < 1 ? requestAnimationFrame(step) : null;
+      };
+      animRef.current = requestAnimationFrame(step);
+    },
+    [stopAnim],
+  );
+
+  /** Pan so `target` sits inside the unobstructed client rect `clear` (e.g. left of a side sheet). */
+  const reveal = useCallback(
+    (target: Box, clear: Partial<ScreenRect>) => {
+      const svg = svgRef.current;
+      if (!svg) return;
+      const r = svg.getBoundingClientRect();
+      const next = revealBox(viewRef.current, target, r, {
+        left: clear.left ?? r.left,
+        top: clear.top ?? r.top,
+        right: clear.right ?? r.right,
+        bottom: clear.bottom ?? r.bottom,
+      });
+      if (next) animateTo(next);
+    },
+    [animateTo],
+  );
 
   useEffect(() => {
     baseRef.current = bounds;
@@ -67,6 +158,7 @@ export function usePanZoom(bounds: Box) {
     if (!svg) return;
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
+      stopAnim();
       const factor = Math.exp(-e.deltaY * 0.0015);
       setView((v) => {
         const p = toContent(e.clientX, e.clientY, v);
@@ -75,14 +167,15 @@ export function usePanZoom(bounds: Box) {
     };
     svg.addEventListener("wheel", onWheel, { passive: false });
     return () => svg.removeEventListener("wheel", onWheel);
-  }, [toContent]);
+  }, [toContent, stopAnim]);
 
   const onPointerDown = useCallback((e: ReactPointerEvent<SVGSVGElement>) => {
     if (e.button !== 0) return;
     if ((e.target as Element).closest("[data-interactive]")) return;
+    stopAnim();
     drag.current = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false };
     e.currentTarget.setPointerCapture?.(e.pointerId);
-  }, []);
+  }, [stopAnim]);
 
   const onPointerMove = useCallback((e: ReactPointerEvent<SVGSVGElement>) => {
     const d = drag.current;
@@ -133,6 +226,7 @@ export function usePanZoom(bounds: Box) {
     zoomIn: () => zoomBy(1.25),
     zoomOut: () => zoomBy(0.8),
     fit,
+    reveal,
     handlers: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel: onPointerUp, onKeyDown },
   };
 }

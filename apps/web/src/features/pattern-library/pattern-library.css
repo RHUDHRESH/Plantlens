@@ -1,7 +1,7 @@
 /* Pattern library + coverage. Token-driven; light/dark via tokens. */
 
-.plib-layout { display: grid; grid-template-columns: 196px 288px minmax(0, 1fr); gap: 12px; align-items: start; }
-@media (max-width: 1280px) { .plib-layout { grid-template-columns: 180px 260px minmax(0, 1fr); } }
+.plib-layout { display: grid; grid-template-columns: 212px 300px minmax(0, 1fr); gap: 12px; align-items: start; }
+@media (max-width: 1280px) { .plib-layout { grid-template-columns: 212px 272px minmax(0, 1fr); } }
 @media (max-width: 1040px) { .plib-layout { grid-template-columns: 1fr; } }
 
 .plib-rail, .plib-list { position: sticky; top: 0; max-height: calc(100dvh - var(--layout-top-bar) - 110px); overflow: auto; }
@@ -20,7 +20,7 @@
 .plib-search > svg { position: absolute; left: 9px; width: 15px; height: 15px; color: var(--text-subtle); pointer-events: none; }
 .plib-search input { padding-left: 30px; padding-right: 32px; }
 .plib-search .pl-icon-btn { position: absolute; right: 3px; }
-.plib-filters__row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.plib-filters__row { display: grid; grid-template-columns: repeat(auto-fit, minmax(136px, 1fr)); gap: 6px; }
 .plib-filters__count { font-size: 11.5px; color: var(--text-subtle); }
 
 .plib-hits { list-style: none; margin: 0; padding: 4px; display: flex; flex-direction: column; gap: 1px; }
@@ -254,3 +254,10 @@
 .cov-chip-amb { border-style: dashed; border-color: var(--status-medium); color: var(--text); text-decoration: none; }
 .cov-chip-amb:hover { background: var(--status-medium-tint); }
 .cov-th-note { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--text-subtle); }
+/* Keep the coverage table inside its panel at 1280: the long header wraps, role chips truncate. */
+.cov-table { table-layout: fixed; }
+.cov-table th:nth-child(2) { width: 96px; }
+.cov-table th:nth-child(3) { width: 140px; }
+.cov-table th:last-child { width: 34%; white-space: normal; }
+.cov-table td { overflow-wrap: anywhere; }
+.cov-missing .eng-chip { max-width: 100%; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; line-height: 20px; }

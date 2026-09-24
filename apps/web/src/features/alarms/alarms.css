@@ -41,11 +41,19 @@
 .alm-col-num { text-align: right !important; white-space: nowrap; }
 .alm-col-value { width: 96px; }
 .alm-col-onset { width: 108px; }
-.alm-col-age { width: 104px; }
+.alm-col-age { width: 124px; }
 .alm-col-sit { width: 170px; }
 .alm-col-action { width: 60px; text-align: right; overflow: visible !important; }
 .alm-table { table-layout: fixed; min-width: 1040px; }
 .alm-table td { overflow: hidden; text-overflow: ellipsis; }
+/* Narrow desktops (e.g. 1280): drop the Situation column (the "By situation" tab carries it) so
+   the alarm message keeps room instead of the table scrolling sideways. */
+@media (max-width: 1439px) {
+  .alm-table { min-width: 860px; }
+  .alm-table .alm-col-sit { display: none; }
+  .alm-col-state { width: 116px; }
+  .alm-col-asset { width: 124px; }
+}
 .alm-table th.alm-col-num .alm-sort { margin-left: auto; }
 .alm-sort { display: inline-flex; align-items: center; gap: 4px; border: 0; padding: 0; background: none; font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; cursor: pointer; }
 .alm-sort:hover { color: var(--text); }
