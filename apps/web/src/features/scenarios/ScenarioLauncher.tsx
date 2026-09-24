@@ -1,170 +1,91 @@
+import * as Popover from "@radix-ui/react-popover";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { FlaskConical, Play, Square } from "lucide-react";
 import { getScenarios, startScenario, stopScenario } from "../../api/client";
-import { ApiError } from "../../api/types";
+import { ENGINEER_ROLES, useCan, useSession } from "../../app/session";
 import { useRuntimeStore } from "../../app/store/runtime";
+import { Button, ErrorNotice } from "../../components/ui/primitives";
+import "./scenarios.css";
 
-interface ScenarioLauncherProps {
-  onClose?: () => void;
-}
-
-function formatDuration(ms: number | undefined): string {
-  if (!ms) return "—";
-  return `${(ms / 1000).toFixed(1)}s`;
-}
-
-const HERO_SCENARIO_ID = "scn_motor_overload";
-
-export function ScenarioLauncher({ onClose }: ScenarioLauncherProps) {
-  const queryClient = useQueryClient();
+/**
+ * Bench-only scenario launcher (simulator replay). The API requires an engineer role, so the
+ * control is hidden for everyone else. It never talks to hardware.
+ */
+export function ScenarioLauncher() {
+  const canRun = useCan(ENGINEER_ROLES);
+  const ready = useSession((s) => s.status === "ready");
+  const client = useQueryClient();
   const scenarioState = useRuntimeStore((s) => s.scenarioState);
-
-  const listQuery = useQuery({
+  const list = useQuery({
     queryKey: ["scenarios"],
     queryFn: ({ signal }) => getScenarios(signal),
-    retry: 1,
+    enabled: ready && canRun,
+    refetchInterval: 5_000,
   });
-
-  const startMutation = useMutation({
-    mutationFn: (scenarioId: string) => startScenario(scenarioId),
-    onSuccess: (_data, scenarioId) => {
-      useRuntimeStore.getState().setScenarioState({
-        scenarioId,
-        status: "started",
-        progress: 0,
-      });
-      void queryClient.invalidateQueries({ queryKey: ["scenarios"] });
-    },
+  const start = useMutation({
+    mutationFn: (id: string) => startScenario(id),
+    onSettled: () => void client.invalidateQueries({ queryKey: ["scenarios"] }),
   });
-
-  const stopMutation = useMutation({
+  const stop = useMutation({
     mutationFn: () => stopScenario(),
-    onSuccess: () => {
-      useRuntimeStore.getState().setScenarioState({
-        scenarioId: null,
-        status: "stopped",
-        progress: null,
-      });
-      void queryClient.invalidateQueries({ queryKey: ["scenarios"] });
-    },
+    onSettled: () => void client.invalidateQueries({ queryKey: ["scenarios"] }),
   });
+  if (!canRun) return null;
 
-  const scenarios = listQuery.data?.scenarios ?? [];
-  const heroScenario = scenarios.find((s) => s.id === HERO_SCENARIO_ID) ?? scenarios[0];
-  const runningId =
-    scenarioState.scenarioId ?? listQuery.data?.running_scenario_id ?? null;
-  const isRunning =
-    scenarioState.status === "started" ||
-    scenarioState.status === "running" ||
-    Boolean(listQuery.data?.running_scenario_id);
-
-  const errorMessage =
-    (startMutation.error instanceof ApiError && startMutation.error.body.message) ||
-    (stopMutation.error instanceof ApiError && stopMutation.error.body.message) ||
-    (listQuery.error instanceof ApiError && listQuery.error.body.message) ||
-    null;
+  const running =
+    list.data?.running_scenario_id ??
+    (scenarioState.status === "running" || scenarioState.status === "started" ? scenarioState.scenarioId : null);
+  const runningName = list.data?.scenarios.find((s) => s.id === running)?.name;
 
   return (
-    <section className="scenario-launcher scenario-launcher--panel" aria-label="Simulator scenarios">
-      <div className="scenario-launcher__header">
-        <h2 className="scenario-launcher__title">Scenario control</h2>
-        {onClose && (
-          <button type="button" className="pl-btn pl-btn--ghost pl-btn--compact" onClick={onClose} aria-label="Close scenarios">
-            Close
-          </button>
-        )}
-      </div>
-
-      {runningId && (
-        <div className="scenario-launcher__status" role="status" aria-live="polite">
-          <span className="status-badge status-badge--warning">{scenarioState.status.toUpperCase()}</span>
-          <span className="data-number">{runningId}</span>
-          {scenarioState.progress != null && (
-            <span className="data-number">{Math.round(scenarioState.progress * 100)}%</span>
-          )}
-        </div>
-      )}
-
-      {listQuery.isLoading && <p className="scenario-launcher__hint">Loading scenarios…</p>}
-      {errorMessage && (
-        <p className="scenario-launcher__error" role="alert">
-          {errorMessage}
-        </p>
-      )}
-
-      {heroScenario && (
-        <div className="scenario-launcher__hero">
-          <div className="scenario-launcher__hero-meta">
-            <strong>{heroScenario.name}</strong>
-            {heroScenario.expected_situation && (
-              <span className="scenario-launcher__expect">
-                Expected: {heroScenario.expected_situation}
-                {heroScenario.expected_root_cause ? ` @ ${heroScenario.expected_root_cause}` : ""}
-              </span>
-            )}
-            <span className="scenario-launcher__duration data-number">{formatDuration(heroScenario.duration_ms)}</span>
+    <Popover.Root>
+      <Popover.Trigger asChild>
+        <Button size="sm" variant="ghost" icon={<FlaskConical />} aria-label="Bench scenarios">
+          {running ? `Replaying: ${runningName ?? running}` : "Bench scenarios"}
+        </Button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content className="pl-menu scn-pop" align="end" sideOffset={6}>
+          <div className="scn-pop__head">
+            <div className="pl-menu__label" style={{ padding: 0 }}>
+              Simulator scenarios
+            </div>
+            <p className="scn-pop__note">Replays recorded frames through the same runtime. Bench only — never hardware.</p>
           </div>
-          <button
-            type="button"
-            className="pl-btn pl-btn--primary scenario-launcher__hero-run"
-            aria-label={`Run scenario ${heroScenario.name}`}
-            disabled={isRunning || startMutation.isPending}
-            onClick={() => startMutation.mutate(heroScenario.id)}
-          >
-            {startMutation.isPending ? "Starting…" : `Run ${heroScenario.name}`}
-          </button>
-        </div>
-      )}
-
-      {scenarios.length > 1 && (
-        <ul className="scenario-launcher__list">
-          {scenarios
-            .filter((s) => s.id !== heroScenario?.id)
-            .map((scenario) => {
-              const isThisRunning = runningId === scenario.id && isRunning;
+          {list.error ? <ErrorNotice error={list.error} /> : null}
+          <ul className="scn-list">
+            {(list.data?.scenarios ?? []).map((s) => {
+              const isRunning = running === s.id;
               return (
-                <li key={scenario.id} className="scenario-launcher__item">
-                  <div className="scenario-launcher__meta">
-                    <strong>{scenario.name}</strong>
-                    <span className="scenario-launcher__id data-number">{scenario.id}</span>
-                    <span className="scenario-launcher__duration data-number">{formatDuration(scenario.duration_ms)}</span>
+                <li key={s.id} className={`scn-item${isRunning ? " is-running" : ""}`}>
+                  <div className="scn-item__text">
+                    <div className="scn-item__name">{s.name}</div>
+                    <div className="scn-item__desc">{s.description}</div>
                   </div>
-                  <button
-                    type="button"
-                    className="pl-btn pl-btn--compact"
-                    aria-label={`Run scenario ${scenario.name}`}
-                    disabled={isRunning || startMutation.isPending}
-                    onClick={() => startMutation.mutate(scenario.id)}
-                  >
-                    Run
-                  </button>
-                  {isThisRunning && (
-                    <button
-                      type="button"
-                      className="pl-btn pl-btn--ghost pl-btn--compact"
-                      aria-label="Stop current scenario"
-                      disabled={stopMutation.isPending}
-                      onClick={() => stopMutation.mutate()}
-                    >
+                  {isRunning ? (
+                    <Button size="sm" icon={<Square />} onClick={() => stop.mutate()} busy={stop.isPending}>
                       Stop
-                    </button>
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      icon={<Play />}
+                      onClick={() => start.mutate(s.id)}
+                      busy={start.isPending && start.variables === s.id}
+                      aria-label={`Start ${s.name}`}
+                    >
+                      Start
+                    </Button>
                   )}
                 </li>
               );
             })}
-        </ul>
-      )}
-
-      {isRunning && (
-        <button
-          type="button"
-          className="pl-btn pl-btn--ghost scenario-launcher__reset"
-          aria-label="Stop and reset scenario"
-          disabled={stopMutation.isPending}
-          onClick={() => stopMutation.mutate()}
-        >
-          Stop / Reset
-        </button>
-      )}
-    </section>
+            {list.isLoading ? <li className="scn-item scn-item__desc">Loading scenarios…</li> : null}
+          </ul>
+          {start.error ? <ErrorNotice error={start.error} /> : null}
+          {stop.error ? <ErrorNotice error={stop.error} /> : null}
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }
