@@ -46,8 +46,7 @@ across branches. If one is truly required, stop and explain why in your report.
 ```
 
 Feature CSS goes in the feature folder (for example `features/trends/trends.css`, imported by the
-page). Use `pl-` or feature-prefixed class names. Don't edit `styles/runtime.css`; it is legacy and
-will be removed.
+page). Use `pl-` or feature-prefixed class names.
 
 ## Tests
 
