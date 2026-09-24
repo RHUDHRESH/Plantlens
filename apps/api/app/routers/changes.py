@@ -8,7 +8,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import require_admin, require_change_approver, require_roles, require_viewer
+from app.auth.dependencies import (
+    require_admin,
+    require_change_approver,
+    require_engineer,
+    require_roles,
+    require_viewer,
+)
 from app.auth.principal import Principal
 from app.changes import service
 from app.changes.ops import ChangeSet
@@ -103,6 +109,63 @@ async def list_revisions(
             }
             for r in rows
         ]
+    }
+
+
+def _revision_summary(r: Any) -> dict[str, Any]:
+    return {
+        "rev": r.rev,
+        "parent_rev": r.parent_rev,
+        "bundle_hash": r.bundle_hash,
+        "created_by": r.created_by,
+        "source_change_id": r.source_change_id,
+        "note": r.note,
+        "deployed_at": r.deployed_at.isoformat() if r.deployed_at else None,
+        "deployed_by": r.deployed_by,
+    }
+
+
+async def _revision_or_404(session: AsyncSession, rev: int) -> Any:
+    revision = await service.get_revision(session, rev)
+    if revision is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": "revision_not_found",
+                "message": f"Revision r{rev} does not exist",
+                "fix": "List revisions with GET /api/changes/revisions and pick an existing rev.",
+            },
+        )
+    return revision
+
+
+@router.get("/revisions/{rev}")
+async def get_revision_bundle(
+    rev: int,
+    _principal: Principal = Depends(require_engineer),
+    session: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """One immutable revision with its full authored bundle snapshot."""
+    revision = await _revision_or_404(session, rev)
+    return {"revision": _revision_summary(revision), "bundle": revision.bundle_json}
+
+
+@router.get("/revisions/{rev_a}/diff/{rev_b}")
+async def diff_revisions(
+    rev_a: int,
+    rev_b: int,
+    _principal: Principal = Depends(require_engineer),
+    session: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
+    """Per-entity diff from revision ``rev_a`` (before) to ``rev_b`` (after)."""
+    before = await _revision_or_404(session, rev_a)
+    after = await _revision_or_404(session, rev_b)
+    diff = service.entity_diff(before.bundle_json, after.bundle_json)
+    return {
+        "from": _revision_summary(before),
+        "to": _revision_summary(after),
+        "identical": before.bundle_hash == after.bundle_hash,
+        "diff": diff,
     }
 
 
