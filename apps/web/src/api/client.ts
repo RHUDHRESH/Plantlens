@@ -16,9 +16,9 @@ import { ApiError } from "./types";
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 interface RequestOptions {
-  method?: HttpMethod;
+  method?: HttpMethod | undefined;
   body?: unknown;
-  signal?: AbortSignal;
+  signal?: AbortSignal | undefined;
 }
 
 async function parseErrorBody(response: Response): Promise<ApiErrorBody> {

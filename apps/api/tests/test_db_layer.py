@@ -251,9 +251,11 @@ def test_init_binds_database_url_without_leaking_in_readyz(client: TestClient):
 
 
 def test_table_layer_map_is_complete():
-    assert len(TABLE_LAYER_MAP) == 8
+    assert len(TABLE_LAYER_MAP) == 10
     assert set(TABLE_LAYER_MAP) == APP_TABLE_NAMES
     assert TABLE_LAYER_MAP["authored_plant_bundle"] == "authored"
+    assert TABLE_LAYER_MAP["authored_bundle_revision"] == "authored"
+    assert TABLE_LAYER_MAP["authored_change_request"] == "authored"
     assert TABLE_LAYER_MAP["compiled_bundle"] == "compiled"
     assert TABLE_LAYER_MAP["event_tag_frame"] == "event"
     assert TABLE_LAYER_MAP["derived_situation_snapshot"] == "derived"
@@ -261,9 +263,14 @@ def test_table_layer_map_is_complete():
 
 
 def test_authored_models_exclude_runtime_and_event_fields():
-    from app.db.models.authored import AuthoredConfigDocument, AuthoredPlantBundle
+    from app.db.models.authored import (
+        AuthoredConfigDocument,
+        AuthoredPlantBundle,
+        BundleRevision,
+        ChangeRequest,
+    )
 
-    for model in (AuthoredPlantBundle, AuthoredConfigDocument):
+    for model in (AuthoredPlantBundle, AuthoredConfigDocument, BundleRevision, ChangeRequest):
         columns = {column.key for column in model.__table__.columns}
         assert columns.isdisjoint(FORBIDDEN_AUTHORED_COLUMNS), model.__tablename__
 

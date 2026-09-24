@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" role="img">
+  <title>Disconnect switch</title>
+  <path d="M24 4V15M19.5 15H28.5"/>
+  <path d="M24 33L14.8 17.2"/>
+  <path d="M24 33V44"/>
+  <circle cx="24" cy="33" r="1.7" fill="currentColor" stroke="none"/>
+</svg>

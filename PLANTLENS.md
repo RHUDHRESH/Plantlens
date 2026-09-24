@@ -145,7 +145,14 @@ See `legacy/cliffords-ts/README.md` and `apps/api/app/ingest/README.md` for the 
 
 See [`docs/ALGORITHMS.md`](docs/ALGORITHMS.md), [`docs/AGENT_BOUNDARY.md`](docs/AGENT_BOUNDARY.md), and [`FINAL_READY_STATE.md`](FINAL_READY_STATE.md).
 
-**Still deferred:** approve-draft → contract patch → compile → hot_reload; full six agent types; per-tick situation audit.
+**Overhaul v2 (branch `overhaul/plantlens-v2`):**
+
+- **Bounded detection latency.** Debounce deadlines are caught up, a periodic ticker runs, and gateway frames use the server clock.
+- **Causal engine v2.** Engineer-flagged feedback loops (SCC), first-out timing, lag-window coverage, contradictions, several independent roots, and calibrated confidence.
+- **Change pipeline.** Draft, then engineer review with a comment, then an immutable revision, validation and an atomic hot deploy, with rollback and audit. See [`docs/CHANGE_PIPELINE.md`](docs/CHANGE_PIPELINE.md).
+- **Causal pattern library** per component type, with observability coverage and draft instantiation.
+
+**Still deferred:** full six agent types; per-tick situation audit.
 
 ## 8. How to extend the system
 

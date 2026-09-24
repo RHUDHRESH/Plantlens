@@ -1,5 +1,6 @@
 import type { AssetHMIState } from "../../app/schemas/plantHmi";
-import { assetStatusClass } from "./statusStyles";
+import { StatusBadge } from "../../components/ui/primitives";
+import { assetStatusKind, statusLabel } from "./statusStyles";
 
 interface AssetStatusCardProps {
   asset: AssetHMIState;
@@ -7,27 +8,27 @@ interface AssetStatusCardProps {
 
 export function AssetStatusCard({ asset }: AssetStatusCardProps) {
   return (
-    <article className="hmi-asset-card">
-      <header className="hmi-asset-card__head">
+    <article className="hmi-item hmi-asset-card">
+      <header className="hmi-item__head">
         <div>
-          <h3>{asset.name}</h3>
-          <p className="hmi-asset-card__id" data-tabular>
+          <h3 className="hmi-item__title">{asset.name}</h3>
+          <p className="hmi-meta" data-tabular>
             {asset.asset_id} · {asset.kind}
           </p>
         </div>
-        <span className={assetStatusClass(asset.status)}>{asset.status}</span>
+        <StatusBadge compact status={assetStatusKind(asset.status)} label={statusLabel(asset.status)} />
       </header>
-      <p className="hmi-asset-card__health" data-tabular>
-        Health {asset.health_score.toFixed(0)}
+      <p className="hmi-asset-card__health">
+        Health <span data-tabular>{asset.health_score.toFixed(0)}</span>
       </p>
       {asset.primary_signals.length > 0 && (
-        <p>Signals: {asset.primary_signals.join(", ")}</p>
+        <p className="hmi-meta">Signals: {asset.primary_signals.join(", ")}</p>
       )}
       {asset.active_faults.length > 0 && (
-        <p>Active faults: {asset.active_faults.join(", ")}</p>
+        <p className="hmi-meta">Active faults: {asset.active_faults.join(", ")}</p>
       )}
       {asset.downstream_impacts.length > 0 && (
-        <p>Downstream impacts: {asset.downstream_impacts.join(", ")}</p>
+        <p className="hmi-meta">Downstream impacts: {asset.downstream_impacts.join(", ")}</p>
       )}
     </article>
   );

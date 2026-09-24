@@ -14,4 +14,3 @@ export {
   type BuildAssetSourceLineageParams,
 } from "./sourceLineageModel";
 
-export { SourceLineagePanel } from "./SourceLineagePanel";

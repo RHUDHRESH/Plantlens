@@ -1,0 +1,101 @@
+/* Overview: map (hero) | situation, raw alarm strip below. Grey by default. */
+
+.ov-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(340px, 28vw, 420px);
+  grid-template-rows: minmax(0, 1fr) clamp(150px, 24vh, 220px);
+  gap: 12px;
+  padding: 12px;
+  height: 100%;
+  min-height: 560px;
+  box-sizing: border-box;
+}
+
+.ov-mapcard,
+.ov-side,
+.ov-strip { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); min-width: 0; min-height: 0; }
+
+.ov-mapcard { display: flex; flex-direction: column; overflow: hidden; }
+.ov-mapcard__head { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 10px 0 14px; border-bottom: 1px solid var(--border); }
+.ov-mapcard__title { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 10px; font-size: 12.5px; white-space: nowrap; overflow: hidden; }
+.ov-mapcard__title h1 { margin: 0; font-size: var(--type-h3-size); line-height: var(--type-h3-lh); font-weight: 600; }
+.ov-mapcard__actions { display: flex; align-items: center; gap: 4px; }
+.ov-mapcard__actions .pl-btn svg { width: 13px; height: 13px; }
+
+.ov-side { overflow: auto; }
+
+/* ---- Map ---- */
+.ov-map { position: relative; flex: 1; min-height: 0; background: var(--canvas); background-image: radial-gradient(var(--grid) 1px, transparent 1px); background-size: 24px 24px; }
+.ov-map__svg { position: absolute; inset: 0; width: 100%; height: 100%; cursor: grab; touch-action: none; user-select: none; outline: none; }
+.ov-map__svg:active { cursor: grabbing; }
+.ov-map__svg:focus-visible { box-shadow: inset 0 0 0 2px var(--focus-ring); }
+.ov-map__controls { position: absolute; right: 10px; bottom: 10px; }
+.ov-map__caption { position: absolute; left: 12px; bottom: 12px; display: flex; align-items: center; gap: 8px; max-width: calc(100% - 80px); padding: 5px 10px; background: color-mix(in srgb, var(--surface) 92%, transparent); border: 1px solid var(--border); border-radius: var(--radius-pill); font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ov-map__caption strong { color: var(--text); font-weight: 600; }
+.ov-map__caption-key { width: 18px; height: 3px; border-radius: 2px; background: var(--text); flex: none; }
+
+.ov-edge { fill: none; stroke: var(--border-strong); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; transition: stroke 300ms var(--motion-ease), stroke-width 300ms var(--motion-ease); }
+.ov-edge--signal { stroke-dasharray: 4 3; }
+.ov-edge.is-causal { stroke: var(--text); stroke-width: 3; }
+
+.ov-node { cursor: pointer; outline: none; }
+.ov-node__card { fill: var(--surface); stroke: var(--border-strong); stroke-width: 1; transition: stroke var(--motion-standard) var(--motion-ease), fill var(--motion-standard) var(--motion-ease); }
+.ov-node:hover .ov-node__card { stroke: var(--text-subtle); }
+.ov-node:focus-visible .ov-node__card { stroke: var(--focus-ring); stroke-width: 2.5; }
+.ov-node.is-selected .ov-node__card { stroke: var(--accent); stroke-width: 2; }
+.ov-node--critical .ov-node__card { stroke: var(--status-critical); stroke-width: 2; fill: var(--status-critical-tint); }
+.ov-node--high .ov-node__card { stroke: var(--status-high); stroke-width: 1.75; fill: var(--status-high-tint); }
+.ov-node--medium .ov-node__card { stroke: var(--status-medium); stroke-width: 1.5; fill: var(--status-medium-tint); }
+.ov-node--sensor_bad .ov-node__card { stroke: var(--status-sensor-bad); stroke-width: 1.5; stroke-dasharray: 5 3; fill: var(--status-sensor-bad-tint); }
+.ov-node--offline .ov-node__card { stroke: var(--status-offline); stroke-dasharray: 3 3; fill: var(--status-offline-tint); }
+.ov-node.is-selected.ov-node--critical .ov-node__card,
+.ov-node.is-selected.ov-node--high .ov-node__card { stroke-width: 3; }
+.ov-node__label { fill: var(--text); font: 600 13.5px var(--font-sans); }
+.ov-node__value { fill: var(--text-muted); font: 500 12.5px var(--font-mono); font-variant-numeric: tabular-nums; }
+.ov-node__value.is-bad { fill: var(--status-sensor-bad); }
+.ov-node__id { fill: var(--text-subtle); font: 500 11px var(--font-mono); }
+.ov-node__order circle { fill: var(--text); stroke: var(--surface); stroke-width: 2; }
+.ov-node__order text { fill: var(--surface); font: 700 11px var(--font-mono); }
+.ov-node__order .ov-node__root { fill: var(--text); font: 700 10px var(--font-sans); letter-spacing: 0.06em; }
+
+
+/* ---- No situation ---- */
+.ov-calm { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 20px 18px; }
+.ov-calm svg { width: 22px; height: 22px; color: var(--text-subtle); }
+.ov-calm h2 { margin: 4px 0 0; font-size: var(--type-h2-size); font-weight: 600; }
+.ov-calm p { margin: 0; color: var(--text-muted); }
+
+/* ---- Raw alarm strip ---- */
+.ov-strip { grid-column: 1 / -1; display: flex; flex-direction: column; overflow: hidden; }
+.ov-strip__head { display: flex; align-items: center; gap: 12px; min-height: 38px; padding: 0 14px; border-bottom: 1px solid var(--border); }
+.ov-strip__title { margin: 0; font-size: var(--type-h3-size); font-weight: 600; }
+.ov-strip__meta { font-size: 12px; color: var(--text-muted); flex: 1; }
+.ov-strip__link { font-size: 12.5px; }
+.ov-strip__scroll { overflow: auto; flex: 1; }
+.ov-strip__table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ov-strip__row { cursor: pointer; outline: none; }
+.ov-strip__row td { padding: 5px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.ov-strip__row:last-child td { border-bottom: 0; }
+.ov-strip__row:hover td { background: var(--surface-sunken); }
+.ov-strip__row:focus-visible td { background: var(--surface-sunken); box-shadow: inset 0 1px 0 var(--focus-ring), inset 0 -1px 0 var(--focus-ring); }
+.ov-strip__prio { width: 56px; }
+.ov-strip__msg { font-weight: 600; width: 40%; }
+.ov-strip__msg .ops-first-out { margin-left: 8px; }
+.ov-strip__row--acked .ov-strip__msg { font-weight: 400; color: var(--text-muted); }
+.ov-strip__asset { color: var(--text-muted); }
+.ov-strip__num { text-align: right; width: 1%; }
+.ov-strip__state { width: 150px; }
+.ov-strip__empty { margin: 0; padding: 14px; color: var(--text-muted); }
+
+/* ---- Asset sheet ---- */
+.ov-sheet-tags { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.ov-sheet-tag__none { font-size: 12px; }
+.ov-sheet-tag { display: flex; flex-direction: column; gap: 4px; }
+.ov-sheet-tag__head { display: flex; justify-content: space-between; gap: 8px; }
+.ov-sheet-tag__id { color: var(--text-muted); font-size: 11.5px; }
+.ov-sheet-tag__v { font-weight: 600; }
+.ov-sheet-tag__q { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--status-sensor-bad); }
+
+@media (max-width: 1100px) {
+  .ov-page { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(360px, 1fr) auto clamp(150px, 24vh, 220px); height: auto; }
+}

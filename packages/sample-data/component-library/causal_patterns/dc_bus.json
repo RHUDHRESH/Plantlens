@@ -1,0 +1,1117 @@
+{
+  "library_id": "plantlens.patterns.dc_bus",
+  "version": "1.0.0",
+  "component_type": "dc_bus",
+  "display_name": "DC bus / DC distribution",
+  "description": "Failure patterns for DC distribution buses, DC power supplies and fuse/protection blocks: overload, connection heating, ground faults, ripple, power balance and feeder protection.",
+  "asset_type_aliases": [
+    "distribution.dc_bus"
+  ],
+  "library_type_aliases": [
+    "dc_power_supply",
+    "fuse_protection_block"
+  ],
+  "roles": [
+    {
+      "role": "voltage",
+      "quantity": "bus voltage (pole to pole)",
+      "units": [
+        "V"
+      ],
+      "signal_type_prefixes": [
+        "electrical.voltage.dc",
+        "electrical.voltage"
+      ],
+      "name_hints": [
+        "voltage",
+        "vbus",
+        "bus_v",
+        "_v"
+      ]
+    },
+    {
+      "role": "current",
+      "quantity": "total bus / feeder current",
+      "units": [
+        "A"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current"
+      ],
+      "name_hints": [
+        "current",
+        "ibus",
+        "feeder_i",
+        "amps"
+      ]
+    },
+    {
+      "role": "source_current",
+      "quantity": "current delivered by sources (PSU, charger, converter)",
+      "units": [
+        "A"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current.source"
+      ],
+      "name_hints": [
+        "src_i",
+        "psu_i",
+        "charger_i"
+      ]
+    },
+    {
+      "role": "load_current",
+      "quantity": "current drawn by loads",
+      "units": [
+        "A"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current.load"
+      ],
+      "name_hints": [
+        "load_i",
+        "i_load"
+      ]
+    },
+    {
+      "role": "power",
+      "quantity": "bus power",
+      "units": [
+        "W",
+        "kW"
+      ],
+      "signal_type_prefixes": [
+        "electrical.power"
+      ],
+      "name_hints": [
+        "power",
+        "_w",
+        "_kw"
+      ]
+    },
+    {
+      "role": "ripple_voltage",
+      "quantity": "bus voltage ripple (peak-to-peak)",
+      "units": [
+        "V",
+        "mV",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "electrical.voltage.ripple"
+      ],
+      "name_hints": [
+        "ripple",
+        "vpp"
+      ]
+    },
+    {
+      "role": "joint_temperature",
+      "quantity": "busbar / terminal / connection temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.joint",
+        "thermal.temperature"
+      ],
+      "name_hints": [
+        "joint_t",
+        "term_t",
+        "lug_t",
+        "bus_t"
+      ]
+    },
+    {
+      "role": "joint_voltage_drop",
+      "quantity": "voltage drop across a connection or bus section",
+      "units": [
+        "mV",
+        "V"
+      ],
+      "signal_type_prefixes": [
+        "electrical.voltage.drop"
+      ],
+      "name_hints": [
+        "vdrop",
+        "drop"
+      ]
+    },
+    {
+      "role": "ambient_temperature",
+      "quantity": "enclosure / ambient temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.ambient"
+      ],
+      "name_hints": [
+        "ambient",
+        "amb",
+        "cabinet"
+      ]
+    },
+    {
+      "role": "insulation_resistance",
+      "quantity": "bus insulation resistance to earth (insulation monitoring device)",
+      "units": [
+        "kΩ",
+        "MΩ"
+      ],
+      "signal_type_prefixes": [
+        "electrical.insulation"
+      ],
+      "name_hints": [
+        "riso",
+        "imd",
+        "insul"
+      ]
+    },
+    {
+      "role": "ground_voltage_offset",
+      "quantity": "pole-to-earth voltage asymmetry ((V+ − |V−|)/2 on floating systems)",
+      "units": [
+        "V",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "electrical.voltage.ground_offset"
+      ],
+      "name_hints": [
+        "v_pe",
+        "earth_v",
+        "gnd_off"
+      ]
+    },
+    {
+      "role": "ground_current",
+      "quantity": "earth leakage / residual current",
+      "units": [
+        "mA",
+        "A"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current.residual"
+      ],
+      "name_hints": [
+        "ground",
+        "residual",
+        "earth"
+      ]
+    },
+    {
+      "role": "capacitor_temperature",
+      "quantity": "bus capacitor bank temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.capacitor"
+      ],
+      "name_hints": [
+        "cap_t"
+      ]
+    },
+    {
+      "role": "fuse_status",
+      "quantity": "feeder fuse / breaker state (open = trip)",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "protection.trip",
+        "status.bool"
+      ],
+      "name_hints": [
+        "fuse",
+        "breaker",
+        "cb_",
+        "trip"
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "pattern_id": "dc_bus.overload_voltage_sag",
+      "version": "1.0.0",
+      "failure_mode": "overload_voltage_sag",
+      "title": "Bus overload / voltage sag",
+      "category": "supply",
+      "severity": "warning",
+      "description": "Load current exceeds what the sources and bus impedance can support. Bus voltage sags under load, sources go into current limit, and downstream loads see low voltage; feeders may trip.",
+      "typical_progression": "Seconds for voltage; minutes for thermal protection.",
+      "required_roles": [
+        "voltage",
+        "current"
+      ],
+      "optional_roles": [
+        "source_current",
+        "power",
+        "joint_temperature",
+        "fuse_status"
+      ],
+      "trigger_role": "current",
+      "symptoms": [
+        {
+          "role": "current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 1.1,
+            "for_ms": 2000
+          },
+          "note": "Above the rated bus / source current"
+        },
+        {
+          "role": "voltage",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.9,
+          "threshold_hint": {
+            "relative_to_nominal": 0.9
+          },
+          "note": "Many 24 V DC devices tolerate −15 % / +20 % (IEC 61131-2)"
+        },
+        {
+          "role": "source_current",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.5,
+          "note": "Sources at current limit"
+        },
+        {
+          "role": "joint_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            300000,
+            3600000
+          ],
+          "weight": 0.3
+        },
+        {
+          "role": "fuse_status",
+          "direction": "trip",
+          "onset_lag_ms": [
+            1000,
+            1800000
+          ],
+          "weight": 0.4
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "downstream_load",
+          "effect_role": "voltage",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "structural_power"
+        },
+        {
+          "relation": "upstream_supply",
+          "effect_role": "current",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            500
+          ],
+          "edge_type": "structural_load_effect",
+          "note": "Sources and chargers go to their current limit"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "dc_bus.source_sink_imbalance",
+          "rule": "Overload: current rises first and voltage sags in seconds. Imbalance: sources lose capacity and voltage drifts over minutes to hours.",
+          "first_role": "current",
+          "then_role": "voltage"
+        },
+        {
+          "vs_pattern": "dc_bus.loose_connection_high_resistance",
+          "rule": "A loose joint drops voltage only downstream of the joint, with a hot termination; overload sags the whole bus."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare total load current with the source and bus rating; identify which loads increased.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check for loads starting simultaneously (inrush) and for a failed parallel source.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check feeder protection ratings against cable ampacity.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 61131-2 (24 V DC tolerance for PLC I/O)",
+        "IEC 60364-5-52 (cable current-carrying capacity)"
+      ]
+    },
+    {
+      "pattern_id": "dc_bus.loose_connection_high_resistance",
+      "version": "1.0.0",
+      "failure_mode": "loose_connection_high_resistance",
+      "title": "Loose connection / high-resistance joint",
+      "category": "electrical",
+      "severity": "warning",
+      "description": "A loose, corroded or under-torqued termination has high contact resistance. It heats under load, and heat oxidises the contact and relaxes clamping force, so resistance keeps rising until the joint fails open or starts an arc.",
+      "typical_progression": "Weeks to months; minutes once the joint glows or arcs.",
+      "required_roles": [
+        "joint_temperature"
+      ],
+      "optional_roles": [
+        "joint_voltage_drop",
+        "voltage",
+        "current",
+        "ambient_temperature"
+      ],
+      "trigger_role": "joint_temperature",
+      "symptoms": [
+        {
+          "role": "joint_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "NETA MTS Table 100.18: 4–15 °C above similar components = probable deficiency, > 15 °C = major"
+        },
+        {
+          "role": "joint_voltage_drop",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.9,
+          "note": "Compare mV drop at the same current across similar joints"
+        },
+        {
+          "role": "voltage",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.5,
+          "note": "Flicker or intermittent drop downstream of the joint"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "loose",
+            "label": "Loose / corroded termination",
+            "kind": "cause"
+          },
+          {
+            "id": "r",
+            "label": "Contact resistance ↑",
+            "kind": "state"
+          },
+          {
+            "id": "heat",
+            "label": "I²R heating at joint",
+            "kind": "symptom",
+            "role": "joint_temperature"
+          },
+          {
+            "id": "ox",
+            "label": "Oxidation / clamping force relaxation",
+            "kind": "state"
+          },
+          {
+            "id": "drop",
+            "label": "Voltage drop across joint",
+            "kind": "symptom",
+            "role": "joint_voltage_drop"
+          },
+          {
+            "id": "fail",
+            "label": "Open circuit / arcing",
+            "kind": "consequence"
+          }
+        ],
+        "edges": [
+          {
+            "from": "loose",
+            "to": "r",
+            "sign": "+"
+          },
+          {
+            "from": "r",
+            "to": "heat",
+            "sign": "+"
+          },
+          {
+            "from": "r",
+            "to": "drop",
+            "sign": "+"
+          },
+          {
+            "from": "heat",
+            "to": "ox",
+            "sign": "+",
+            "lag_ms": [
+              86400000,
+              15552000000
+            ],
+            "loop_id": "joint_thermal"
+          },
+          {
+            "from": "ox",
+            "to": "r",
+            "sign": "+",
+            "loop_id": "joint_thermal"
+          },
+          {
+            "from": "heat",
+            "to": "fail",
+            "sign": "+"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "joint_thermal",
+            "polarity": "reinforcing",
+            "description": "Heat oxidises the contact and relaxes clamping force, raising resistance and heat further."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "downstream_load",
+          "effect_role": "voltage",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "structural_power",
+          "note": "Loads beyond the joint see the drop, intermittently"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "dc_bus.overload_voltage_sag",
+          "rule": "A loose joint heats one termination at normal current; overload heats all conductors with high current.",
+          "first_role": "joint_temperature",
+          "then_role": "current"
+        },
+        {
+          "vs_pattern": "battery.high_internal_resistance",
+          "rule": "Measure the drop across the battery terminals versus the cells to separate connection from cell resistance."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "thermal",
+          "description": "Thermography: one termination hotter than similar terminations at the same load"
+        },
+        {
+          "domain": "trend",
+          "description": "Joint resistance",
+          "formula": "R_joint = V_drop / I"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Thermally scan terminations under at least 40 % load and compare with similar joints.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Measure millivolt drop across suspect joints at a known current.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Re-terminate: clean, replace damaged lugs and torque to the manufacturer's value with the bus isolated.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "ANSI/NETA MTS (Table 100.18 thermographic survey)",
+        "NFPA 70B (electrical equipment maintenance)"
+      ]
+    },
+    {
+      "pattern_id": "dc_bus.ground_fault",
+      "version": "1.0.0",
+      "failure_mode": "ground_fault",
+      "title": "Ground fault on the DC bus",
+      "category": "insulation",
+      "severity": "critical",
+      "description": "Insulation from a pole to earth breaks down (damaged cable, water, a failed load). On a floating (IT) DC system the first fault shifts pole-to-earth voltages but does not trip; a second fault on the other pole is a short circuit. On an earthed system it trips protection.",
+      "typical_progression": "Often intermittent with moisture before becoming permanent.",
+      "required_roles": [
+        "insulation_resistance"
+      ],
+      "optional_roles": [
+        "ground_voltage_offset",
+        "ground_current",
+        "fuse_status"
+      ],
+      "trigger_role": "insulation_resistance",
+      "symptoms": [
+        {
+          "role": "insulation_resistance",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "IMD alarm per IEC 61557-8; common practice is ≥ 100 Ω/V as a warning level"
+        },
+        {
+          "role": "ground_voltage_offset",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.8,
+          "note": "The faulted pole's voltage to earth moves toward zero"
+        },
+        {
+          "role": "ground_current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "fuse_status",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.4,
+          "note": "Earthed systems, or a second fault on a floating system"
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "downstream_load",
+          "effect_role": "voltage",
+          "direction": "missing",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "structural_power",
+          "note": "If protection trips"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "pv_mppt.ground_fault_insulation",
+          "rule": "On DC-coupled PV, compare insulation readings with the PV input isolated to locate the fault."
+        },
+        {
+          "vs_pattern": "dc_bus.loose_connection_high_resistance",
+          "rule": "A loose joint changes pole-to-pole voltage; a ground fault changes pole-to-earth voltages."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Faulted pole identification on floating systems",
+          "formula": "V+PE and V−PE: the pole whose voltage to earth falls is the faulted pole"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Read the insulation monitor and pole-to-earth voltages to identify the faulted pole.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Use the IMD's fault location function or a DC clamp-on leakage tester per feeder.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Isolate feeders one at a time per the site procedure and insulation-test the faulted one.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "IEC 61557-8 (insulation monitoring devices for IT systems)",
+        "IEC 60364-4-41"
+      ]
+    },
+    {
+      "pattern_id": "dc_bus.ripple_capacitor_failure",
+      "version": "1.0.0",
+      "failure_mode": "ripple_capacitor_failure",
+      "title": "Excess ripple / bus capacitor failure",
+      "category": "electrical",
+      "severity": "warning",
+      "description": "Bus capacitors lose capacitance and gain ESR (electrolyte drying, overtemperature), or a source's output stage degrades. Ripple rises; sensitive loads reset, controllers misread analogue signals, and capacitor heating accelerates.",
+      "typical_progression": "Months to years; faster at high temperature.",
+      "required_roles": [
+        "ripple_voltage"
+      ],
+      "optional_roles": [
+        "capacitor_temperature",
+        "voltage",
+        "ambient_temperature"
+      ],
+      "trigger_role": "ripple_voltage",
+      "symptoms": [
+        {
+          "role": "ripple_voltage",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Many SELV power supplies specify ≤ 1 % or ≤ 100–200 mV p-p; compare with the supply datasheet"
+        },
+        {
+          "role": "capacitor_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2592000000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "voltage",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.5
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "dry",
+            "label": "Electrolyte loss",
+            "kind": "cause"
+          },
+          {
+            "id": "esr",
+            "label": "ESR ↑",
+            "kind": "state"
+          },
+          {
+            "id": "ripple",
+            "label": "Ripple voltage ↑",
+            "kind": "symptom",
+            "role": "ripple_voltage"
+          },
+          {
+            "id": "heat",
+            "label": "Capacitor temperature ↑",
+            "kind": "symptom",
+            "role": "capacitor_temperature"
+          }
+        ],
+        "edges": [
+          {
+            "from": "dry",
+            "to": "esr",
+            "sign": "+"
+          },
+          {
+            "from": "esr",
+            "to": "ripple",
+            "sign": "+"
+          },
+          {
+            "from": "esr",
+            "to": "heat",
+            "sign": "+",
+            "loop_id": "cap_ageing"
+          },
+          {
+            "from": "heat",
+            "to": "dry",
+            "sign": "+",
+            "lag_ms": [
+              2592000000,
+              31536000000
+            ],
+            "loop_id": "cap_ageing"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "cap_ageing",
+            "polarity": "reinforcing",
+            "description": "ESR heating dries the electrolyte, raising ESR further; life halves roughly every 10 °C."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "downstream_load",
+          "effect_role": "voltage",
+          "direction": "oscillate",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            0
+          ],
+          "edge_type": "structural_power",
+          "note": "Loads see the ripple"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "vfd.dc_link_capacitor_ageing",
+          "rule": "In drive systems compare ripple inside each drive's DC link with the common bus."
+        },
+        {
+          "vs_pattern": "dc_bus.overload_voltage_sag",
+          "rule": "Overload lowers mean voltage; capacitor failure raises ripple at normal mean voltage."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "waveform",
+          "description": "Ripple frequency identifies the source: 2·f_line (single-phase rectifier), 6·f_line (three-phase bridge) or the converter switching frequency"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Measure ripple with an oscilloscope (AC-coupled, bandwidth-limited) at the bus and at each source.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check capacitor bank and supply temperatures and their age.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Measure capacitance and ESR of the bank with the bus isolated and discharged.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "IEC 60384-4 (aluminium electrolytic capacitors)",
+        "IEC 61204 (low-voltage DC power supplies)"
+      ]
+    },
+    {
+      "pattern_id": "dc_bus.source_sink_imbalance",
+      "version": "1.0.0",
+      "failure_mode": "source_sink_imbalance",
+      "title": "Source–sink power imbalance (bus voltage drift)",
+      "category": "supply",
+      "severity": "warning",
+      "description": "Available source power falls below demand (a failed parallel supply, charger fault, low PV yield) or loads grow. The bus relies on storage and its voltage drifts down. Constant-power loads draw more current as voltage falls, which pulls voltage down further.",
+      "typical_progression": "Minutes to hours on battery-backed buses; seconds on unbuffered buses.",
+      "required_roles": [
+        "voltage"
+      ],
+      "optional_roles": [
+        "source_current",
+        "load_current",
+        "power"
+      ],
+      "trigger_role": "voltage",
+      "symptoms": [
+        {
+          "role": "voltage",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 0.95
+          },
+          "note": "Slow drift rather than a step"
+        },
+        {
+          "role": "source_current",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.8,
+          "note": "Sources deliver less than loads draw"
+        },
+        {
+          "role": "load_current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            600000
+          ],
+          "weight": 0.5,
+          "note": "Constant-power loads (converters, drives) draw more current at lower voltage"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "deficit",
+            "label": "Source power < load power",
+            "kind": "cause"
+          },
+          {
+            "id": "v",
+            "label": "Bus voltage ↓",
+            "kind": "symptom",
+            "role": "voltage"
+          },
+          {
+            "id": "il",
+            "label": "Constant-power load current ↑",
+            "kind": "symptom",
+            "role": "load_current"
+          },
+          {
+            "id": "droop",
+            "label": "Sources with droop raise output",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "deficit",
+            "to": "v",
+            "sign": "-"
+          },
+          {
+            "from": "v",
+            "to": "il",
+            "sign": "-",
+            "loop_id": "cpl_instability"
+          },
+          {
+            "from": "il",
+            "to": "v",
+            "sign": "-",
+            "loop_id": "cpl_instability"
+          },
+          {
+            "from": "v",
+            "to": "droop",
+            "sign": "-",
+            "loop_id": "droop_sharing"
+          },
+          {
+            "from": "droop",
+            "to": "v",
+            "sign": "+",
+            "loop_id": "droop_sharing"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "cpl_instability",
+            "polarity": "reinforcing",
+            "description": "Constant-power loads have negative incremental resistance: lower voltage draws more current, which sags voltage further."
+          },
+          {
+            "loop_id": "droop_sharing",
+            "polarity": "balancing",
+            "description": "Droop-controlled sources raise output as voltage falls, until they reach their limits."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "upstream_supply",
+          "effect_role": "current",
+          "direction": "rise",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            60000
+          ],
+          "edge_type": "structural_load_effect",
+          "note": "Remaining sources and storage pick up the deficit"
+        },
+        {
+          "relation": "downstream_load",
+          "effect_role": "voltage",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "structural_power"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "dc_bus.overload_voltage_sag",
+          "rule": "Imbalance starts with source current falling; overload starts with load current rising.",
+          "first_role": "source_current",
+          "then_role": "voltage"
+        },
+        {
+          "vs_pattern": "battery.deep_discharge",
+          "rule": "If the bus is battery-backed, a long imbalance ends in a deep discharge."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Power balance",
+          "formula": "ΣP_sources − ΣP_loads = C·V·dV/dt (unbuffered) or storage charge/discharge power"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare source current (each supply or charger) with load current over the last hours.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check each parallel source is on, not in fault, and sharing current.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Review whether new loads were added or source capacity (PV, charger) fell.",
+          "requires_isolation": false
+        }
+      ]
+    },
+    {
+      "pattern_id": "dc_bus.feeder_protection_operated",
+      "version": "1.0.0",
+      "failure_mode": "feeder_protection_operated",
+      "title": "Feeder fuse / breaker operated",
+      "category": "electrical",
+      "severity": "warning",
+      "description": "A feeder fuse or DC breaker has opened on a short circuit, overload or ageing (fuse element fatigue from cyclic load). Loads on that feeder lose supply while the bus stays healthy.",
+      "typical_progression": "Sudden.",
+      "required_roles": [
+        "fuse_status"
+      ],
+      "optional_roles": [
+        "load_current",
+        "voltage"
+      ],
+      "trigger_role": "fuse_status",
+      "symptoms": [
+        {
+          "role": "fuse_status",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0
+        },
+        {
+          "role": "load_current",
+          "direction": "step",
+          "onset_lag_ms": [
+            0,
+            100
+          ],
+          "weight": 0.8,
+          "note": "Feeder current falls to zero"
+        },
+        {
+          "role": "voltage",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.3,
+          "note": "Bus voltage recovers slightly as load drops"
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "downstream_load",
+          "effect_role": "voltage",
+          "direction": "missing",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            100
+          ],
+          "edge_type": "structural_power"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "dc_bus.ground_fault",
+          "rule": "A trip preceded by falling insulation resistance points to a ground fault as the cause."
+        },
+        {
+          "vs_pattern": "dc_bus.overload_voltage_sag",
+          "rule": "A trip preceded by high feeder current and bus sag points to overload."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check the load current trend before the trip to separate short circuit (instantaneous) from overload (time-delayed).",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Insulation-test the feeder and load before replacing the fuse or reclosing.",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Confirm the replacement fuse or breaker has the correct DC voltage rating and characteristic.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 60269 (low-voltage fuses)",
+        "IEC 60947-2 (circuit-breakers, DC ratings)"
+      ]
+    }
+  ]
+}

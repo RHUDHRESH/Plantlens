@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" role="img">
+  <title>Positive-displacement pump</title>
+  <path d="M4 24H11M37 24H44"/>
+  <path d="M16.54 34.65L13.34 43H34.66L31.46 34.65"/>
+  <circle cx="24" cy="24" r="13"/>
+  <circle cx="19.6" cy="24" r="4.4"/>
+  <circle cx="28.4" cy="24" r="4.4"/>
+</svg>

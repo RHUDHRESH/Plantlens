@@ -1,5 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="12" r="3"/>
-  <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
-  <path d="M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1l2.1-2.1M17 7l2.1-2.1"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" role="img">
+  <title>Instrument</title>
+  <path d="M24 35V44" stroke-dasharray="2.4 2.2"/>
+  <circle cx="24" cy="22" r="13"/>
+  <text x="24" y="25.4" text-anchor="middle" fill="currentColor" stroke="none" font-family="Inter, system-ui, sans-serif" font-weight="600" font-size="9.5">TT</text>
 </svg>

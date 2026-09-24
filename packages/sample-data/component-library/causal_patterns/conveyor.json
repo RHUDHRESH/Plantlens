@@ -1,0 +1,1214 @@
+{
+  "library_id": "plantlens.patterns.conveyor",
+  "version": "1.0.0",
+  "component_type": "conveyor",
+  "display_name": "Belt conveyor",
+  "description": "Failure patterns for bulk-material belt conveyors and belt couplings: slip, tracking, jams, idler and pulley bearings, overload and belt rips.",
+  "asset_type_aliases": [],
+  "library_type_aliases": [
+    "belt_coupling"
+  ],
+  "roles": [
+    {
+      "role": "belt_speed",
+      "quantity": "belt speed (non-driven pulley encoder or belt-contact wheel)",
+      "units": [
+        "m/s",
+        "rpm",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.speed.belt",
+        "mechanical.speed"
+      ],
+      "name_hints": [
+        "belt_speed",
+        "belt_v",
+        "tail_rpm"
+      ]
+    },
+    {
+      "role": "drive_speed",
+      "quantity": "drive pulley / gearbox output speed",
+      "units": [
+        "m/s",
+        "rpm",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.speed.drive"
+      ],
+      "name_hints": [
+        "drive_speed",
+        "head_rpm",
+        "pulley_rpm"
+      ]
+    },
+    {
+      "role": "belt_slip",
+      "quantity": "slip between drive pulley and belt, derived",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "derived.slip"
+      ],
+      "name_hints": [
+        "slip"
+      ]
+    },
+    {
+      "role": "drive_torque",
+      "quantity": "drive torque or motor load (from drive or power meter)",
+      "units": [
+        "%",
+        "Nm",
+        "kW"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.torque",
+        "electrical.power"
+      ],
+      "name_hints": [
+        "torque",
+        "load_pct",
+        "kw"
+      ]
+    },
+    {
+      "role": "throughput",
+      "quantity": "belt scale throughput",
+      "units": [
+        "t/h",
+        "kg/s"
+      ],
+      "signal_type_prefixes": [
+        "process.mass_flow"
+      ],
+      "name_hints": [
+        "tph",
+        "scale",
+        "throughput"
+      ]
+    },
+    {
+      "role": "belt_tension",
+      "quantity": "take-up / belt tension",
+      "units": [
+        "kN",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.tension"
+      ],
+      "name_hints": [
+        "tension",
+        "takeup"
+      ]
+    },
+    {
+      "role": "belt_edge_position",
+      "quantity": "belt edge / lateral position (tracking sensor)",
+      "units": [
+        "mm"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.position.lateral"
+      ],
+      "name_hints": [
+        "edge",
+        "track",
+        "drift"
+      ]
+    },
+    {
+      "role": "drift_switch",
+      "quantity": "belt drift / misalignment switch",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "status.drift",
+        "status.bool"
+      ],
+      "name_hints": [
+        "drift_sw",
+        "misalign",
+        "bas"
+      ]
+    },
+    {
+      "role": "chute_blocked",
+      "quantity": "blocked-chute / plugged-chute switch",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "status.chute",
+        "status.bool"
+      ],
+      "name_hints": [
+        "chute",
+        "plug",
+        "blocked"
+      ]
+    },
+    {
+      "role": "rip_detection",
+      "quantity": "belt rip detection (embedded loop / cross-belt sensor)",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "status.rip",
+        "status.bool"
+      ],
+      "name_hints": [
+        "rip",
+        "tear"
+      ]
+    },
+    {
+      "role": "idler_temperature",
+      "quantity": "idler / roller temperature (linear heat detection, IR scanner)",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.idler",
+        "thermal.temperature"
+      ],
+      "name_hints": [
+        "idler_t",
+        "roller_t",
+        "lhd"
+      ]
+    },
+    {
+      "role": "pulley_bearing_temperature",
+      "quantity": "pulley bearing housing temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.bearing"
+      ],
+      "name_hints": [
+        "brg_t",
+        "pulley_t"
+      ]
+    },
+    {
+      "role": "bearing_envelope",
+      "quantity": "pulley bearing envelope acceleration",
+      "units": [
+        "gE",
+        "g"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration.envelope"
+      ],
+      "name_hints": [
+        "env",
+        "gE"
+      ]
+    },
+    {
+      "role": "vibration",
+      "quantity": "pulley / gearbox vibration velocity",
+      "units": [
+        "mm/s"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration"
+      ],
+      "name_hints": [
+        "vib"
+      ]
+    },
+    {
+      "role": "zero_speed_switch",
+      "quantity": "motion / zero-speed switch",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "status.motion",
+        "status.bool"
+      ],
+      "name_hints": [
+        "zss",
+        "motion",
+        "zero_speed"
+      ]
+    },
+    {
+      "role": "pulley_temperature",
+      "quantity": "drive pulley lagging surface temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.pulley"
+      ],
+      "name_hints": [
+        "lagging_t",
+        "pulley_surf"
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "pattern_id": "conveyor.belt_slip",
+      "version": "1.0.0",
+      "failure_mode": "belt_slip",
+      "title": "Belt slip on the drive pulley",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "Friction at the drive pulley cannot transmit the tension difference: low take-up tension, worn or wet lagging, or material between belt and pulley. The drive pulley turns faster than the belt, lagging heats (fire risk) and throughput falls.",
+      "typical_progression": "Seconds during starts or wet conditions; weeks as lagging wears.",
+      "required_roles": [
+        "belt_slip"
+      ],
+      "optional_roles": [
+        "belt_speed",
+        "drive_speed",
+        "drive_torque",
+        "belt_tension",
+        "pulley_temperature"
+      ],
+      "trigger_role": "belt_slip",
+      "symptoms": [
+        {
+          "role": "belt_slip",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 2,
+            "for_ms": 5000
+          },
+          "note": "Speed-differential switches are often set at 2–10 %"
+        },
+        {
+          "role": "belt_speed",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "drive_torque",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.6,
+          "note": "Torque capped by friction, stick-slip"
+        },
+        {
+          "role": "belt_tension",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.4,
+          "note": "When low take-up tension is the cause"
+        },
+        {
+          "role": "pulley_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            60000,
+            1800000
+          ],
+          "weight": 0.6
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "t2",
+            "label": "Slack-side tension low / friction low",
+            "kind": "cause"
+          },
+          {
+            "id": "slip",
+            "label": "Slip ↑",
+            "kind": "symptom",
+            "role": "belt_slip"
+          },
+          {
+            "id": "heat",
+            "label": "Lagging heating",
+            "kind": "symptom",
+            "role": "pulley_temperature"
+          },
+          {
+            "id": "wear",
+            "label": "Lagging wear / glazing (μ ↓)",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "t2",
+            "to": "slip",
+            "sign": "+"
+          },
+          {
+            "from": "slip",
+            "to": "heat",
+            "sign": "+"
+          },
+          {
+            "from": "heat",
+            "to": "wear",
+            "sign": "+",
+            "lag_ms": [
+              3600000,
+              7776000000
+            ],
+            "loop_id": "lagging_wear"
+          },
+          {
+            "from": "wear",
+            "to": "slip",
+            "sign": "+",
+            "loop_id": "lagging_wear"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "lagging_wear",
+            "polarity": "reinforcing",
+            "description": "Slip heats and wears the lagging, lowering friction and increasing slip."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "driver",
+          "effect_role": "current",
+          "direction": "oscillate",
+          "polarity": "any",
+          "lag_ms": [
+            0,
+            2000
+          ],
+          "edge_type": "structural_load_effect",
+          "note": "Motor load fluctuates with stick-slip"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.coupling_or_belt_slip",
+          "rule": "Motor/coupling slip shows motor speed normal and drive pulley slow; belt slip shows drive pulley normal and belt slow."
+        },
+        {
+          "vs_pattern": "conveyor.overload",
+          "rule": "Overload raises torque first; slip follows once the friction limit is reached.",
+          "first_role": "drive_torque",
+          "then_role": "belt_slip"
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Euler–Eytelwein friction limit",
+          "formula": "T1/T2 ≤ e^(μ·θ)"
+        },
+        {
+          "domain": "trend",
+          "description": "Slip",
+          "formula": "slip % = 100 · (v_drive − v_belt) / v_drive"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare drive pulley speed with belt speed at the tail pulley.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check take-up travel, counterweight freedom and tension.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Inspect drive pulley lagging and look for spillage or water between belt and pulley.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "ISO 5048 (belt conveyor power and tension calculation)",
+        "DIN 22101",
+        "CEMA 'Belt Conveyors for Bulk Materials'"
+      ]
+    },
+    {
+      "pattern_id": "conveyor.belt_misalignment",
+      "version": "1.0.0",
+      "failure_mode": "belt_misalignment",
+      "title": "Belt misalignment / mistracking",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "The belt runs off-centre from off-centre loading, misaligned idlers or pulleys, build-up on pulleys or return idlers, or a belt splice cut out of square. The edge rubs the structure, spills material and trips the drift switch.",
+      "typical_progression": "Hours to weeks; sudden with a jammed idler or loading change.",
+      "required_roles": [
+        "belt_edge_position"
+      ],
+      "optional_roles": [
+        "drift_switch",
+        "throughput",
+        "drive_torque"
+      ],
+      "trigger_role": "belt_edge_position",
+      "symptoms": [
+        {
+          "role": "belt_edge_position",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Lateral offset; alarm is often set at ~50 mm or 5 % of belt width"
+        },
+        {
+          "role": "drift_switch",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "drive_torque",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.3,
+          "note": "Edge friction on the structure"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "offload",
+            "label": "Off-centre load / misaligned idler",
+            "kind": "cause"
+          },
+          {
+            "id": "drift",
+            "label": "Belt drifts off-centre",
+            "kind": "symptom",
+            "role": "belt_edge_position"
+          },
+          {
+            "id": "spill",
+            "label": "Spillage",
+            "kind": "state"
+          },
+          {
+            "id": "build",
+            "label": "Build-up on return idlers / pulleys",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "offload",
+            "to": "drift",
+            "sign": "+"
+          },
+          {
+            "from": "drift",
+            "to": "spill",
+            "sign": "+"
+          },
+          {
+            "from": "spill",
+            "to": "build",
+            "sign": "+",
+            "lag_ms": [
+              86400000,
+              2592000000
+            ],
+            "loop_id": "spill_buildup"
+          },
+          {
+            "from": "build",
+            "to": "drift",
+            "sign": "+",
+            "loop_id": "spill_buildup"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "spill_buildup",
+            "polarity": "reinforcing",
+            "description": "Mistracking spills material that builds up on return idlers and pulleys, which steers the belt further off-centre."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "conveyor.belt_tear_rip",
+          "rule": "A rip detector trip and sudden spillage point to a rip rather than tracking."
+        },
+        {
+          "vs_pattern": "conveyor.idler_pulley_bearing_failure",
+          "rule": "A seized idler can steer the belt; check idler temperatures along the drift zone."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Identify where along the conveyor the belt starts to drift and whether it drifts loaded, empty or both.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the loading chute centres material on the belt.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check idler and pulley alignment and clean build-up with the conveyor isolated.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "CEMA 'Belt Conveyors for Bulk Materials' (belt training)",
+        "ISO 5048"
+      ]
+    },
+    {
+      "pattern_id": "conveyor.jam_blockage",
+      "version": "1.0.0",
+      "failure_mode": "jam_blockage",
+      "title": "Jam / blocked chute",
+      "category": "process",
+      "severity": "critical",
+      "description": "A blocked transfer chute, oversize lump, tramp material or a collapsed skirt stops material flow and can stall the belt. Drive torque rises sharply toward the limit and the belt stops or slips; upstream conveyors keep feeding into the blockage.",
+      "typical_progression": "Seconds.",
+      "required_roles": [
+        "drive_torque"
+      ],
+      "optional_roles": [
+        "chute_blocked",
+        "belt_speed",
+        "zero_speed_switch",
+        "throughput",
+        "belt_slip"
+      ],
+      "trigger_role": "drive_torque",
+      "symptoms": [
+        {
+          "role": "drive_torque",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 1.3
+          },
+          "note": "Rapid rise to the drive's torque / current limit"
+        },
+        {
+          "role": "chute_blocked",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            5000
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "belt_speed",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "zero_speed_switch",
+          "direction": "trip",
+          "onset_lag_ms": [
+            1000,
+            10000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "throughput",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            10000
+          ],
+          "weight": 0.5
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "driver",
+          "effect_role": "current",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            500
+          ],
+          "edge_type": "structural_load_effect",
+          "loop_ok": true,
+          "loop_id": "drive_current_limit",
+          "note": "Motor current rises; on a VFD the current limit lowers speed"
+        },
+        {
+          "relation": "process_upstream",
+          "effect_role": "drive_torque",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            1000,
+            60000
+          ],
+          "edge_type": "cause_to_effect",
+          "note": "The feeding conveyor loads up against the blockage until interlocked"
+        },
+        {
+          "relation": "process_downstream",
+          "effect_role": "throughput",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            30000
+          ],
+          "edge_type": "cause_to_effect"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "conveyor.overload",
+          "rule": "Jam: torque jumps in seconds and the belt slows or stops. Overload: throughput is high and torque rises with it."
+        },
+        {
+          "vs_pattern": "induction_motor.locked_rotor_stall",
+          "rule": "Motor-side view of a full jam; the conveyor is the origin when the chute switch trips first.",
+          "first_role": "chute_blocked",
+          "then_role": "drive_torque"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Confirm the conveyor and upstream feeders have stopped via their interlocks.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Isolate and lock out the conveyor and all feeding equipment before entering a chute to clear a blockage.",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Inspect for tramp metal, oversize material and damaged skirts or liners.",
+          "requires_isolation": true
+        },
+        {
+          "order": 4,
+          "text": "Check the belt for damage at the jam point before restarting.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "EN 620 (safety of fixed belt conveyors for bulk materials)",
+        "CEMA 'Belt Conveyors for Bulk Materials'"
+      ]
+    },
+    {
+      "pattern_id": "conveyor.idler_pulley_bearing_failure",
+      "version": "1.0.0",
+      "failure_mode": "idler_pulley_bearing_failure",
+      "title": "Idler / pulley bearing failure",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "An idler or pulley bearing fails from contamination or fatigue. A seized idler runs hot against the moving belt (fire risk, belt wear); a failing pulley bearing shows envelope energy and temperature rise.",
+      "typical_progression": "Weeks to months; a seized idler heats within minutes.",
+      "required_roles": [
+        "idler_temperature"
+      ],
+      "optional_roles": [
+        "pulley_bearing_temperature",
+        "bearing_envelope",
+        "drive_torque",
+        "vibration"
+      ],
+      "trigger_role": "idler_temperature",
+      "symptoms": [
+        {
+          "role": "idler_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "A single idler well above its neighbours; linear heat detectors often alarm near 70–90 °C"
+        },
+        {
+          "role": "bearing_envelope",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.8,
+          "note": "Pulley bearings"
+        },
+        {
+          "role": "pulley_bearing_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            86400000,
+            5184000000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "drive_torque",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.2,
+          "note": "Only with many seized idlers"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "contam",
+            "label": "Seal failure / contamination",
+            "kind": "cause"
+          },
+          {
+            "id": "fric",
+            "label": "Bearing friction ↑",
+            "kind": "state"
+          },
+          {
+            "id": "seize",
+            "label": "Idler seizes",
+            "kind": "state"
+          },
+          {
+            "id": "rub",
+            "label": "Belt rubs on stationary roll",
+            "kind": "state"
+          },
+          {
+            "id": "heat",
+            "label": "Idler temperature ↑",
+            "kind": "symptom",
+            "role": "idler_temperature"
+          },
+          {
+            "id": "fire",
+            "label": "Belt fire / shell wear-through",
+            "kind": "consequence"
+          }
+        ],
+        "edges": [
+          {
+            "from": "contam",
+            "to": "fric",
+            "sign": "+"
+          },
+          {
+            "from": "fric",
+            "to": "heat",
+            "sign": "+"
+          },
+          {
+            "from": "heat",
+            "to": "fric",
+            "sign": "+",
+            "lag_ms": [
+              3600000,
+              2592000000
+            ],
+            "loop_id": "bearing_heat"
+          },
+          {
+            "from": "fric",
+            "to": "seize",
+            "sign": "+"
+          },
+          {
+            "from": "seize",
+            "to": "rub",
+            "sign": "+"
+          },
+          {
+            "from": "rub",
+            "to": "heat",
+            "sign": "+"
+          },
+          {
+            "from": "heat",
+            "to": "fire",
+            "sign": "+"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "bearing_heat",
+            "polarity": "reinforcing",
+            "description": "Heat degrades grease and seals, raising friction and heat until the idler seizes."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "conveyor.belt_slip",
+          "rule": "Slip heats the drive pulley lagging; a failed idler heats one roll along the carry or return strand."
+        },
+        {
+          "vs_pattern": "induction_motor.bearing_defect",
+          "rule": "Motor bearing defects appear at the motor; pulley defects at the pulley blocks with pulley-speed defect frequencies."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "thermal",
+          "description": "IR scan / linear heat detection: one roll hotter than its neighbours"
+        },
+        {
+          "domain": "vibration_envelope",
+          "description": "Pulley bearing outer race defect",
+          "formula": "BPFO = (n/2)·fr·(1 − d/D·cosθ)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Locate the hot idler from the heat detection zone or an IR walk-down.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Listen for noisy idlers along the conveyor (from a safe walkway).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Replace seized idlers and inspect pulley bearings with the conveyor isolated and locked out.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "CEMA 502 (troughed belt conveyor idlers)",
+        "ISO 1537 (conveyor idlers)"
+      ]
+    },
+    {
+      "pattern_id": "conveyor.overload",
+      "version": "1.0.0",
+      "failure_mode": "overload",
+      "title": "Conveyor overload",
+      "category": "process",
+      "severity": "warning",
+      "description": "The belt carries more than design throughput (feeder rate too high, surge from a bin, wet or dense material). Drive torque and motor current rise; spillage increases and the drive may slip or trip.",
+      "typical_progression": "Seconds to minutes.",
+      "required_roles": [
+        "drive_torque"
+      ],
+      "optional_roles": [
+        "throughput",
+        "belt_slip",
+        "belt_speed"
+      ],
+      "trigger_role": "drive_torque",
+      "symptoms": [
+        {
+          "role": "drive_torque",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 1.1,
+            "for_ms": 10000
+          },
+          "note": "Sustained above rated; rises with load rather than jumping"
+        },
+        {
+          "role": "throughput",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.9,
+          "threshold_hint": {
+            "relative_to_nominal": 1.1
+          },
+          "note": "Above design capacity; usually rises with or just before torque"
+        },
+        {
+          "role": "belt_slip",
+          "direction": "rise",
+          "onset_lag_ms": [
+            5000,
+            60000
+          ],
+          "weight": 0.4
+        },
+        {
+          "role": "belt_speed",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            10000
+          ],
+          "weight": 0.3
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "driver",
+          "effect_role": "current",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            5000
+          ],
+          "edge_type": "structural_load_effect",
+          "loop_ok": true,
+          "loop_id": "drive_current_limit"
+        },
+        {
+          "relation": "process_upstream",
+          "effect_role": "throughput",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            0
+          ],
+          "edge_type": "cause_to_effect",
+          "note": "The upstream feeder is the usual source of the excess"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "conveyor.jam_blockage",
+          "rule": "Overload has high throughput; a jam has falling throughput and a blocked chute."
+        },
+        {
+          "vs_pattern": "induction_motor.mechanical_overload",
+          "rule": "Motor-side view; if throughput rose before motor current, the conveyor load is the origin.",
+          "first_role": "throughput",
+          "then_role": "drive_torque"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare belt scale throughput with the design capacity at the operating speed.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check feeder rate settings and bin discharge control.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check material moisture and bulk density against design.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "ISO 5048",
+        "CEMA"
+      ]
+    },
+    {
+      "pattern_id": "conveyor.belt_tear_rip",
+      "version": "1.0.0",
+      "failure_mode": "belt_tear_rip",
+      "title": "Belt tear / longitudinal rip",
+      "category": "mechanical",
+      "severity": "critical",
+      "description": "A sharp object (tramp steel, a liner plate) lodges in a chute or skirt and slices the belt as it runs. A longitudinal rip propagates at belt speed until the belt stops, so detection time sets the damage length.",
+      "typical_progression": "Seconds; damage length ≈ belt speed × time to stop.",
+      "required_roles": [
+        "rip_detection"
+      ],
+      "optional_roles": [
+        "belt_tension",
+        "throughput",
+        "drive_torque",
+        "belt_edge_position"
+      ],
+      "trigger_role": "rip_detection",
+      "symptoms": [
+        {
+          "role": "rip_detection",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0
+        },
+        {
+          "role": "belt_tension",
+          "direction": "step",
+          "onset_lag_ms": [
+            0,
+            5000
+          ],
+          "weight": 0.4
+        },
+        {
+          "role": "throughput",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            30000
+          ],
+          "weight": 0.4,
+          "note": "Material falls through the rip"
+        },
+        {
+          "role": "belt_edge_position",
+          "direction": "step",
+          "onset_lag_ms": [
+            0,
+            10000
+          ],
+          "weight": 0.3
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "tramp",
+            "label": "Sharp object lodged at loading point",
+            "kind": "cause"
+          },
+          {
+            "id": "cut",
+            "label": "Belt cut",
+            "kind": "state"
+          },
+          {
+            "id": "run",
+            "label": "Belt keeps running",
+            "kind": "state"
+          },
+          {
+            "id": "rip",
+            "label": "Rip length ↑",
+            "kind": "symptom",
+            "role": "rip_detection"
+          }
+        ],
+        "edges": [
+          {
+            "from": "tramp",
+            "to": "cut",
+            "sign": "+"
+          },
+          {
+            "from": "cut",
+            "to": "rip",
+            "sign": "+"
+          },
+          {
+            "from": "run",
+            "to": "rip",
+            "sign": "+",
+            "lag_ms": [
+              0,
+              60000
+            ]
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "process_downstream",
+          "effect_role": "throughput",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            30000
+          ],
+          "edge_type": "cause_to_effect"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "conveyor.belt_misalignment",
+          "rule": "Mistracking shows gradual edge drift; a rip trips the rip detector with sudden spillage."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Confirm the conveyor stopped on the rip detector.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Isolate and lock out, then inspect the belt length along the carry side and remove the object from the loading zone.",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Check the tramp-metal magnet and metal detector upstream were working.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Record rip length and position for splice or repair planning.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "ISO 15236 (steel cord conveyor belts)",
+        "EN 620"
+      ]
+    }
+  ]
+}

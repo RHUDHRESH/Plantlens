@@ -1,0 +1,1482 @@
+{
+  "library_id": "plantlens.patterns.transformer",
+  "version": "1.0.0",
+  "component_type": "transformer",
+  "display_name": "Power transformer (oil-immersed)",
+  "description": "Failure patterns for oil-immersed distribution and power transformers: loading, cooling, insulation and DGA, tap changers, harmonics and overexcitation.",
+  "asset_type_aliases": [],
+  "library_type_aliases": [],
+  "roles": [
+    {
+      "role": "current",
+      "quantity": "load current (per unit of rating or amperes)",
+      "units": [
+        "A",
+        "pu",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current"
+      ],
+      "name_hints": [
+        "current",
+        "load_i",
+        "amps"
+      ]
+    },
+    {
+      "role": "voltage",
+      "quantity": "secondary (LV) voltage",
+      "units": [
+        "V",
+        "kV",
+        "pu"
+      ],
+      "signal_type_prefixes": [
+        "electrical.voltage.ac",
+        "electrical.voltage"
+      ],
+      "name_hints": [
+        "voltage",
+        "lv_v",
+        "sec_v"
+      ]
+    },
+    {
+      "role": "frequency",
+      "quantity": "system frequency",
+      "units": [
+        "Hz"
+      ],
+      "signal_type_prefixes": [
+        "electrical.frequency"
+      ],
+      "name_hints": [
+        "freq",
+        "_hz"
+      ]
+    },
+    {
+      "role": "volts_per_hertz",
+      "quantity": "excitation in V/Hz per unit of rated",
+      "units": [
+        "pu",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "electrical.volts_per_hertz"
+      ],
+      "name_hints": [
+        "v_hz",
+        "vhz",
+        "overflux"
+      ]
+    },
+    {
+      "role": "top_oil_temperature",
+      "quantity": "top-oil temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.oil.top"
+      ],
+      "name_hints": [
+        "top_oil",
+        "oti",
+        "tot"
+      ]
+    },
+    {
+      "role": "hot_spot_temperature",
+      "quantity": "winding hot-spot temperature (fibre-optic or thermal image / model)",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.winding.hotspot",
+        "thermal.winding"
+      ],
+      "name_hints": [
+        "hot_spot",
+        "wti",
+        "hst",
+        "winding_t"
+      ]
+    },
+    {
+      "role": "ambient_temperature",
+      "quantity": "ambient / cooling air temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.ambient"
+      ],
+      "name_hints": [
+        "ambient",
+        "amb"
+      ]
+    },
+    {
+      "role": "cooling_status",
+      "quantity": "cooling stage status (fans / pumps running)",
+      "units": [
+        "bool",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "status.cooling",
+        "status.bool"
+      ],
+      "name_hints": [
+        "fan",
+        "cooler",
+        "cooling",
+        "onaf"
+      ]
+    },
+    {
+      "role": "oil_level",
+      "quantity": "conservator oil level",
+      "units": [
+        "%",
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "process.level.oil"
+      ],
+      "name_hints": [
+        "oil_level",
+        "mog"
+      ]
+    },
+    {
+      "role": "dga_h2",
+      "quantity": "dissolved hydrogen in oil (online monitor)",
+      "units": [
+        "ppm"
+      ],
+      "signal_type_prefixes": [
+        "analyzer.dga.h2"
+      ],
+      "name_hints": [
+        "h2",
+        "hydrogen"
+      ]
+    },
+    {
+      "role": "dga_c2h2",
+      "quantity": "dissolved acetylene in oil",
+      "units": [
+        "ppm"
+      ],
+      "signal_type_prefixes": [
+        "analyzer.dga.c2h2"
+      ],
+      "name_hints": [
+        "c2h2",
+        "acetylene"
+      ]
+    },
+    {
+      "role": "dga_c2h4",
+      "quantity": "dissolved ethylene in oil",
+      "units": [
+        "ppm"
+      ],
+      "signal_type_prefixes": [
+        "analyzer.dga.c2h4"
+      ],
+      "name_hints": [
+        "c2h4",
+        "ethylene"
+      ]
+    },
+    {
+      "role": "dga_co",
+      "quantity": "dissolved carbon monoxide in oil",
+      "units": [
+        "ppm"
+      ],
+      "signal_type_prefixes": [
+        "analyzer.dga.co"
+      ],
+      "name_hints": [
+        "dga_co",
+        "carbon_monoxide"
+      ]
+    },
+    {
+      "role": "dga_tdcg",
+      "quantity": "total dissolved combustible gas",
+      "units": [
+        "ppm"
+      ],
+      "signal_type_prefixes": [
+        "analyzer.dga.tdcg"
+      ],
+      "name_hints": [
+        "tdcg",
+        "combustible"
+      ]
+    },
+    {
+      "role": "moisture_in_oil",
+      "quantity": "water content in oil",
+      "units": [
+        "ppm",
+        "%RS"
+      ],
+      "signal_type_prefixes": [
+        "analyzer.moisture"
+      ],
+      "name_hints": [
+        "moisture",
+        "h2o",
+        "water"
+      ]
+    },
+    {
+      "role": "partial_discharge",
+      "quantity": "partial discharge magnitude (UHF / acoustic / electrical)",
+      "units": [
+        "pC",
+        "dB",
+        "mV"
+      ],
+      "signal_type_prefixes": [
+        "electrical.partial_discharge"
+      ],
+      "name_hints": [
+        "pd_",
+        "partial"
+      ]
+    },
+    {
+      "role": "tap_position",
+      "quantity": "on-load tap changer position",
+      "units": [
+        "step"
+      ],
+      "signal_type_prefixes": [
+        "control.tap_position",
+        "control.position"
+      ],
+      "name_hints": [
+        "tap",
+        "oltc_pos"
+      ]
+    },
+    {
+      "role": "oltc_temperature_diff",
+      "quantity": "OLTC compartment minus main tank temperature",
+      "units": [
+        "K",
+        "°C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.oltc_diff"
+      ],
+      "name_hints": [
+        "oltc_dt",
+        "tc_diff"
+      ]
+    },
+    {
+      "role": "oltc_motor_current",
+      "quantity": "OLTC drive motor current / torque during operation",
+      "units": [
+        "A"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current.oltc_motor"
+      ],
+      "name_hints": [
+        "oltc_i",
+        "tc_motor"
+      ]
+    },
+    {
+      "role": "thd_current",
+      "quantity": "load current total harmonic distortion",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "electrical.harmonics.thd_i"
+      ],
+      "name_hints": [
+        "thdi",
+        "thd_i"
+      ]
+    },
+    {
+      "role": "k_factor",
+      "quantity": "harmonic K-factor of the load current",
+      "units": [
+        "ratio"
+      ],
+      "signal_type_prefixes": [
+        "electrical.harmonics.k_factor"
+      ],
+      "name_hints": [
+        "k_factor",
+        "kfactor"
+      ]
+    },
+    {
+      "role": "neutral_current",
+      "quantity": "LV neutral current",
+      "units": [
+        "A"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current.neutral"
+      ],
+      "name_hints": [
+        "neutral",
+        "i_n"
+      ]
+    },
+    {
+      "role": "excitation_current",
+      "quantity": "no-load / magnetising current estimate",
+      "units": [
+        "A",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current.excitation"
+      ],
+      "name_hints": [
+        "i0",
+        "excitation",
+        "magnetising"
+      ]
+    },
+    {
+      "role": "vibration",
+      "quantity": "tank vibration / core noise",
+      "units": [
+        "mm/s",
+        "g",
+        "dBA"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration",
+        "acoustic"
+      ],
+      "name_hints": [
+        "vib",
+        "noise"
+      ]
+    },
+    {
+      "role": "buchholz",
+      "quantity": "Buchholz / gas relay alarm or trip",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "protection.trip",
+        "status.bool"
+      ],
+      "name_hints": [
+        "buchholz",
+        "gas_relay"
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "pattern_id": "transformer.overload",
+      "version": "1.0.0",
+      "failure_mode": "overload",
+      "title": "Overload (loading beyond nameplate)",
+      "category": "thermal",
+      "severity": "warning",
+      "description": "Load current above rating raises load losses (∝ I²). Top oil follows with a time constant of hours, the winding hot spot with minutes. Insulation ageing rate grows exponentially with hot-spot temperature.",
+      "typical_progression": "Minutes for hot-spot gradient; 1.5–3 h (ONAN) oil time constant; ageing accrues over the overload duration.",
+      "required_roles": [
+        "current"
+      ],
+      "optional_roles": [
+        "hot_spot_temperature",
+        "top_oil_temperature",
+        "voltage",
+        "cooling_status"
+      ],
+      "trigger_role": "current",
+      "symptoms": [
+        {
+          "role": "current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 1.0,
+            "for_ms": 600000
+          },
+          "note": "Above nameplate rating at the current cooling stage"
+        },
+        {
+          "role": "hot_spot_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            60000,
+            1800000
+          ],
+          "weight": 0.8,
+          "threshold_hint": {
+            "absolute": 110
+          },
+          "note": "IEEE C57.91: 110 °C continuous for thermally upgraded paper; IEC 60076-7: 98 °C reference for normal paper"
+        },
+        {
+          "role": "top_oil_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            1800000,
+            21600000
+          ],
+          "weight": 0.7
+        },
+        {
+          "role": "cooling_status",
+          "direction": "step",
+          "onset_lag_ms": [
+            300000,
+            3600000
+          ],
+          "weight": 0.4,
+          "note": "Fan stages start"
+        },
+        {
+          "role": "voltage",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.3,
+          "note": "Regulation drop at high load"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "load",
+            "label": "Load current ↑",
+            "kind": "cause",
+            "role": "current"
+          },
+          {
+            "id": "loss",
+            "label": "Load losses ∝ I²",
+            "kind": "state"
+          },
+          {
+            "id": "hs",
+            "label": "Hot-spot temperature ↑",
+            "kind": "symptom",
+            "role": "hot_spot_temperature"
+          },
+          {
+            "id": "to",
+            "label": "Top-oil temperature ↑",
+            "kind": "symptom",
+            "role": "top_oil_temperature"
+          },
+          {
+            "id": "fan",
+            "label": "Cooling stages start",
+            "kind": "state",
+            "role": "cooling_status"
+          },
+          {
+            "id": "age",
+            "label": "Insulation ageing rate ↑",
+            "kind": "consequence"
+          }
+        ],
+        "edges": [
+          {
+            "from": "load",
+            "to": "loss",
+            "sign": "+"
+          },
+          {
+            "from": "loss",
+            "to": "hs",
+            "sign": "+",
+            "lag_ms": [
+              60000,
+              1800000
+            ]
+          },
+          {
+            "from": "loss",
+            "to": "to",
+            "sign": "+",
+            "lag_ms": [
+              1800000,
+              21600000
+            ]
+          },
+          {
+            "from": "to",
+            "to": "fan",
+            "sign": "+",
+            "loop_id": "forced_cooling"
+          },
+          {
+            "from": "fan",
+            "to": "to",
+            "sign": "-",
+            "loop_id": "forced_cooling"
+          },
+          {
+            "from": "hs",
+            "to": "age",
+            "sign": "+"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "forced_cooling",
+            "polarity": "balancing",
+            "description": "Rising oil temperature switches on fans and pumps, which lower the oil temperature rise."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "upstream_supply",
+          "effect_role": "current",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            100
+          ],
+          "edge_type": "structural_load_effect"
+        },
+        {
+          "relation": "downstream_load",
+          "effect_role": "voltage",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "structural_power"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "transformer.hotspot_cooling_failure",
+          "rule": "Overload: current rises first. Cooling failure: temperature rises at normal current, usually after cooling status changes.",
+          "first_role": "current",
+          "then_role": "top_oil_temperature"
+        },
+        {
+          "vs_pattern": "transformer.harmonic_heating_k_factor",
+          "rule": "Harmonic heating raises temperature at normal RMS current with high THD."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Relative ageing rate (IEC 60076-7, non-upgraded paper)",
+          "formula": "V = 2^((θh − 98)/6)"
+        },
+        {
+          "domain": "trend",
+          "description": "Relative ageing rate (IEEE C57.91, upgraded paper)",
+          "formula": "F_AA = exp(15000/383 − 15000/(θH + 273))"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare load with nameplate rating for the active cooling stage (ONAN / ONAF).",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Compute loss-of-life for the event with the IEC 60076-7 or IEEE C57.91 model.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check whether load can be shared with a parallel transformer (operator decision).",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 60076-7 (loading guide for oil-immersed transformers)",
+        "IEEE C57.91 (loading guide)",
+        "IEC 60076-2 (temperature rise)"
+      ]
+    },
+    {
+      "pattern_id": "transformer.hotspot_cooling_failure",
+      "version": "1.0.0",
+      "failure_mode": "hotspot_cooling_failure",
+      "title": "Winding hot spot / cooling failure",
+      "category": "thermal",
+      "severity": "warning",
+      "description": "Fans or oil pumps fail, radiator valves are closed, radiators are blocked, or oil level is low. Temperatures rise at normal load; the transformer effectively operates at its lower ONAN rating.",
+      "typical_progression": "Tens of minutes to hours.",
+      "required_roles": [
+        "top_oil_temperature"
+      ],
+      "optional_roles": [
+        "hot_spot_temperature",
+        "cooling_status",
+        "current",
+        "ambient_temperature",
+        "oil_level"
+      ],
+      "trigger_role": "top_oil_temperature",
+      "symptoms": [
+        {
+          "role": "top_oil_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Top oil above the expected value for load and ambient by > ~10 K"
+        },
+        {
+          "role": "cooling_status",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.8,
+          "note": "Fans / pumps off or tripped while commanded"
+        },
+        {
+          "role": "hot_spot_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1800000
+          ],
+          "weight": 0.9
+        },
+        {
+          "role": "oil_level",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.3,
+          "note": "When the cause is oil loss"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "cool",
+            "label": "Cooling capacity ↓",
+            "kind": "cause",
+            "role": "cooling_status"
+          },
+          {
+            "id": "to",
+            "label": "Top-oil temperature ↑",
+            "kind": "symptom",
+            "role": "top_oil_temperature"
+          },
+          {
+            "id": "hs",
+            "label": "Hot spot ↑",
+            "kind": "symptom",
+            "role": "hot_spot_temperature"
+          },
+          {
+            "id": "h2o",
+            "label": "Moisture released from paper",
+            "kind": "state"
+          },
+          {
+            "id": "age",
+            "label": "Paper depolymerisation ↑",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "cool",
+            "to": "to",
+            "sign": "-",
+            "lag_ms": [
+              1800000,
+              14400000
+            ]
+          },
+          {
+            "from": "to",
+            "to": "hs",
+            "sign": "+"
+          },
+          {
+            "from": "hs",
+            "to": "age",
+            "sign": "+",
+            "loop_id": "moisture_ageing"
+          },
+          {
+            "from": "age",
+            "to": "h2o",
+            "sign": "+",
+            "loop_id": "moisture_ageing"
+          },
+          {
+            "from": "h2o",
+            "to": "age",
+            "sign": "+",
+            "lag_ms": [
+              2592000000,
+              31536000000
+            ],
+            "loop_id": "moisture_ageing"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "moisture_ageing",
+            "polarity": "reinforcing",
+            "description": "Hot paper degrades and releases water; wet paper ages several times faster."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "cooling_system",
+          "effect_role": "temperature",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            1800000
+          ],
+          "edge_type": "thermal"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "transformer.overload",
+          "rule": "Cooling failure: cooling status falls first and temperature rises at normal current.",
+          "first_role": "cooling_status",
+          "then_role": "top_oil_temperature"
+        },
+        {
+          "vs_pattern": "transformer.harmonic_heating_k_factor",
+          "rule": "Harmonic heating shows high current THD with cooling running normally."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check fan and pump contactors, supply MCBs and the cooling control (thermostat / WTI contacts).",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check radiator valves are open and radiators are not blocked.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check conservator oil level and look for leaks.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Compare top oil with the expected value from load and ambient (IEC 60076-7 thermal model).",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 60076-7",
+        "IEEE C57.91",
+        "IEC 60076-2"
+      ]
+    },
+    {
+      "pattern_id": "transformer.insulation_dga_gassing",
+      "version": "1.0.0",
+      "failure_mode": "insulation_dga_gassing",
+      "title": "Insulation degradation / abnormal DGA gassing",
+      "category": "insulation",
+      "severity": "critical",
+      "description": "Oil and paper break down under partial discharge, arcing or local overheating and generate characteristic gases: H2 (PD), C2H2 (arcing), C2H4 (thermal > 300 °C), CO/CO2 (paper). Rising gas levels and generation rates indicate an active fault.",
+      "typical_progression": "Weeks to months for thermal faults; hours for arcing faults (Buchholz may operate).",
+      "required_roles": [
+        "dga_h2"
+      ],
+      "optional_roles": [
+        "dga_c2h2",
+        "dga_c2h4",
+        "dga_co",
+        "dga_tdcg",
+        "moisture_in_oil",
+        "partial_discharge",
+        "buchholz"
+      ],
+      "trigger_role": "dga_h2",
+      "symptoms": [
+        {
+          "role": "dga_h2",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Compare with IEEE C57.104-2019 90th/95th percentile levels and rates for the transformer's age and O2/N2 ratio"
+        },
+        {
+          "role": "dga_c2h2",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2592000000
+          ],
+          "weight": 0.8,
+          "note": "Any sustained increase indicates arcing or high-energy discharge"
+        },
+        {
+          "role": "dga_c2h4",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2592000000
+          ],
+          "weight": 0.6,
+          "note": "Thermal fault > 300 °C"
+        },
+        {
+          "role": "dga_co",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2592000000
+          ],
+          "weight": 0.5,
+          "note": "Paper involvement; CO2/CO < 3 suggests severe paper degradation"
+        },
+        {
+          "role": "partial_discharge",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.5
+        },
+        {
+          "role": "buchholz",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            2592000000
+          ],
+          "weight": 0.3,
+          "note": "Gas accumulation alarm or surge trip"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "stress",
+            "label": "Electrical / thermal stress",
+            "kind": "cause"
+          },
+          {
+            "id": "deg",
+            "label": "Oil and paper decomposition",
+            "kind": "state"
+          },
+          {
+            "id": "gas",
+            "label": "Fault gases in oil",
+            "kind": "symptom",
+            "role": "dga_h2"
+          },
+          {
+            "id": "h2o",
+            "label": "Water and acids formed",
+            "kind": "state",
+            "role": "moisture_in_oil"
+          },
+          {
+            "id": "ins",
+            "label": "Dielectric strength ↓",
+            "kind": "state"
+          },
+          {
+            "id": "pd",
+            "label": "Partial discharge ↑",
+            "kind": "symptom",
+            "role": "partial_discharge"
+          }
+        ],
+        "edges": [
+          {
+            "from": "stress",
+            "to": "deg",
+            "sign": "+"
+          },
+          {
+            "from": "deg",
+            "to": "gas",
+            "sign": "+"
+          },
+          {
+            "from": "deg",
+            "to": "h2o",
+            "sign": "+"
+          },
+          {
+            "from": "h2o",
+            "to": "ins",
+            "sign": "-"
+          },
+          {
+            "from": "ins",
+            "to": "pd",
+            "sign": "-",
+            "loop_id": "insulation_ageing"
+          },
+          {
+            "from": "pd",
+            "to": "deg",
+            "sign": "+",
+            "lag_ms": [
+              604800000,
+              31536000000
+            ],
+            "loop_id": "insulation_ageing"
+          },
+          {
+            "from": "h2o",
+            "to": "deg",
+            "sign": "+",
+            "loop_id": "insulation_ageing"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "insulation_ageing",
+            "polarity": "reinforcing",
+            "description": "Decomposition produces water and acids that lower dielectric strength and catalyse further degradation; weaker insulation discharges more."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "transformer.tap_changer_fault",
+          "rule": "C2H2 in the main tank may come from OLTC oil leaking through the barrier; compare with the OLTC compartment sample."
+        },
+        {
+          "vs_pattern": "transformer.overload",
+          "rule": "Overload-driven gassing is mostly CO/CO2 with hot-spot excursions; a localised fault generates hydrocarbons at normal load."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Duval Triangle 1 fault classification (PD, D1, D2, T1, T2, T3, DT)",
+          "formula": "%CH4 = CH4/(CH4+C2H4+C2H2); %C2H4 = C2H4/(…); %C2H2 = C2H2/(…)"
+        },
+        {
+          "domain": "trend",
+          "description": "Gas generation rate",
+          "formula": "rate = Δppm / Δdays (use ≥ 3 samples, IEEE C57.104)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Take a confirmatory oil sample for laboratory DGA and moisture; compare with the online monitor.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Classify the fault with IEC 60599 ratios / Duval Triangle and IEEE C57.104 status levels.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Increase sampling frequency and review loading and through-fault history.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Plan electrical tests (winding resistance, FRA, power factor) at an outage if gassing persists.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "IEEE C57.104-2019 (DGA interpretation)",
+        "IEC 60599 (DGA interpretation)",
+        "IEC 60567 (oil sampling)"
+      ]
+    },
+    {
+      "pattern_id": "transformer.tap_changer_fault",
+      "version": "1.0.0",
+      "failure_mode": "tap_changer_fault",
+      "title": "On-load tap changer fault",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "The OLTC drive mechanism fails to move (motor, brake, limit switch, control), hunts between taps (AVR bandwidth narrower than the tap step), or its contacts coke and overheat. Secondary voltage leaves the regulation band or the OLTC compartment runs hot.",
+      "typical_progression": "Sudden for drive failures; months for contact coking.",
+      "required_roles": [
+        "tap_position"
+      ],
+      "optional_roles": [
+        "voltage",
+        "oltc_temperature_diff",
+        "oltc_motor_current"
+      ],
+      "trigger_role": "tap_position",
+      "symptoms": [
+        {
+          "role": "tap_position",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "No tap change while voltage is outside the AVR band beyond its time delay; or rapid alternation (hunting)"
+        },
+        {
+          "role": "voltage",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            300000
+          ],
+          "weight": 0.8,
+          "note": "Or rise: outside the regulation band"
+        },
+        {
+          "role": "oltc_temperature_diff",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2592000000
+          ],
+          "weight": 0.5,
+          "note": "OLTC compartment warmer than main tank points to contact overheating"
+        },
+        {
+          "role": "oltc_motor_current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.4,
+          "note": "Higher or longer motor current indicates mechanical drag"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "v",
+            "label": "Secondary voltage deviation",
+            "kind": "symptom",
+            "role": "voltage"
+          },
+          {
+            "id": "avr",
+            "label": "AVR (ANSI 90) commands tap change",
+            "kind": "state"
+          },
+          {
+            "id": "tap",
+            "label": "Tap position changes",
+            "kind": "symptom",
+            "role": "tap_position"
+          },
+          {
+            "id": "stuck",
+            "label": "Drive mechanism fault",
+            "kind": "cause"
+          }
+        ],
+        "edges": [
+          {
+            "from": "v",
+            "to": "avr",
+            "sign": "+",
+            "loop_id": "voltage_regulation"
+          },
+          {
+            "from": "avr",
+            "to": "tap",
+            "sign": "+",
+            "loop_id": "voltage_regulation"
+          },
+          {
+            "from": "tap",
+            "to": "v",
+            "sign": "-",
+            "loop_id": "voltage_regulation"
+          },
+          {
+            "from": "stuck",
+            "to": "tap",
+            "sign": "-"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "voltage_regulation",
+            "polarity": "balancing",
+            "description": "The AVR changes taps to hold voltage within its band; if the band is narrower than one tap step the loop hunts."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "downstream_load",
+          "effect_role": "voltage",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            300000
+          ],
+          "edge_type": "structural_power",
+          "note": "Or rise, following the regulation error"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "transformer.overload",
+          "rule": "Load-driven voltage drop is within the regulation capability with taps moving; a tap changer fault shows voltage out of band with taps stuck."
+        },
+        {
+          "vs_pattern": "transformer.insulation_dga_gassing",
+          "rule": "Acetylene is normal in the OLTC compartment; it is abnormal in the main tank."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check the AVR mode (auto / manual), bandwidth and time delay, and any blocking signals.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the OLTC drive motor supply, protective switch and operation counter.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Sample OLTC oil and interpret with IEEE C57.139.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Inspect and maintain the diverter / selector contacts at an outage per the operation count.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "IEC 60214-1 (tap-changers)",
+        "IEEE C57.131 (tap-changers)",
+        "IEEE C57.139 (DGA in load tap changers)"
+      ]
+    },
+    {
+      "pattern_id": "transformer.harmonic_heating_k_factor",
+      "version": "1.0.0",
+      "failure_mode": "harmonic_heating_k_factor",
+      "title": "Harmonic heating (K-factor)",
+      "category": "thermal",
+      "severity": "warning",
+      "description": "Non-linear loads (drives, rectifiers, LED and IT loads) inject harmonic currents. Eddy-current and stray losses grow with h², so the windings and structural parts heat above what the RMS current suggests; triplen harmonics also add up in the neutral.",
+      "typical_progression": "Continuous; heating follows the load mix.",
+      "required_roles": [
+        "thd_current"
+      ],
+      "optional_roles": [
+        "k_factor",
+        "hot_spot_temperature",
+        "top_oil_temperature",
+        "neutral_current",
+        "current"
+      ],
+      "trigger_role": "thd_current",
+      "symptoms": [
+        {
+          "role": "thd_current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 15
+          },
+          "note": "Check against IEEE 519 current distortion limits at the PCC"
+        },
+        {
+          "role": "k_factor",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.8,
+          "threshold_hint": {
+            "absolute": 4
+          },
+          "note": "Above the transformer's K rating (standard units K-1)"
+        },
+        {
+          "role": "hot_spot_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            600000,
+            7200000
+          ],
+          "weight": 0.7,
+          "note": "Temperature high relative to RMS load"
+        },
+        {
+          "role": "neutral_current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.5,
+          "note": "Triplen harmonics sum in the neutral"
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "upstream_supply",
+          "effect_role": "voltage_thd",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "structural_power",
+          "note": "Harmonic currents through source impedance distort the voltage"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "transformer.overload",
+          "rule": "Harmonic heating raises temperature at normal RMS current with high THD."
+        },
+        {
+          "vs_pattern": "transformer.hotspot_cooling_failure",
+          "rule": "Cooling failure has normal THD and a cooling status change."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "current_spectrum",
+          "description": "K-factor from the load current spectrum",
+          "formula": "K = Σ (I_h/I_rms)² · h²"
+        },
+        {
+          "domain": "current_spectrum",
+          "description": "Harmonic loss factor for winding eddy losses (IEEE C57.110)",
+          "formula": "F_HL = Σ (I_h/I_1)² h² / Σ (I_h/I_1)²"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Measure the current harmonic spectrum at the LV terminals under typical load.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Derate per IEEE C57.110 or compare with the transformer K rating.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check neutral conductor sizing and temperature for triplen currents.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEEE C57.110 (transformer capability with non-sinusoidal load)",
+        "IEEE 519 (harmonic control)",
+        "UL 1561 (K-factor rating)"
+      ]
+    },
+    {
+      "pattern_id": "transformer.core_saturation_overexcitation",
+      "version": "1.0.0",
+      "failure_mode": "core_saturation_overexcitation",
+      "title": "Core saturation / overexcitation",
+      "category": "electrical",
+      "severity": "critical",
+      "description": "Voltage too high for the frequency (over-voltage, under-frequency during start-up or islanding) or DC bias (geomagnetically induced current) drives the core into saturation. Magnetising current becomes large and distorted, flux leaks into the tank and structural parts, and they overheat; core noise rises.",
+      "typical_progression": "Seconds to minutes; V/Hz protection has inverse-time curves.",
+      "required_roles": [
+        "volts_per_hertz"
+      ],
+      "optional_roles": [
+        "voltage",
+        "frequency",
+        "excitation_current",
+        "vibration",
+        "thd_current",
+        "top_oil_temperature",
+        "dga_c2h4"
+      ],
+      "trigger_role": "volts_per_hertz",
+      "symptoms": [
+        {
+          "role": "volts_per_hertz",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 1.05
+          },
+          "note": "IEEE C57.12.00: capable of 1.05 pu at rated load and 1.10 pu at no load"
+        },
+        {
+          "role": "excitation_current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "thd_current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.6,
+          "note": "Odd harmonics (notably 3rd and 5th); even harmonics with DC bias"
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.6,
+          "note": "Core noise at 2× supply frequency rises"
+        },
+        {
+          "role": "top_oil_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            600000,
+            7200000
+          ],
+          "weight": 0.4
+        },
+        {
+          "role": "dga_c2h4",
+          "direction": "rise",
+          "onset_lag_ms": [
+            86400000,
+            2592000000
+          ],
+          "weight": 0.3,
+          "note": "Structural hot spots after sustained overexcitation"
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "upstream_supply",
+          "effect_role": "voltage_thd",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "structural_power"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "transformer.harmonic_heating_k_factor",
+          "rule": "Load harmonics scale with load; overexcitation harmonics scale with V/Hz and appear at no load."
+        },
+        {
+          "vs_pattern": "transformer.overload",
+          "rule": "Overexcitation heats at normal load current."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "waveform",
+          "description": "Peaky, distorted magnetising current; 5th harmonic ratio is used for overexcitation blocking of differential protection"
+        },
+        {
+          "domain": "trend",
+          "description": "Overexcitation",
+          "formula": "V/Hz (pu) = (V/V_rated) / (f/f_rated)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check system voltage and frequency and the tap position against the V/Hz limit.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Review the V/Hz (ANSI 24) protection settings and operations.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check for geomagnetic disturbance alerts if neutral DC current is measured.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEEE C57.12.00 (general requirements)",
+        "IEEE C37.91 (transformer protection)",
+        "IEEE C37.102 (V/Hz protection)"
+      ]
+    }
+  ]
+}

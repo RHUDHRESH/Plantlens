@@ -3,7 +3,7 @@
 from typing import Literal
 
 TagQuality = Literal["GOOD", "UNCERTAIN", "BAD", "STALE", "MISSING"]
-TagSource = Literal["simulator", "modbus_rtu", "modbus_tcp", "manual", "backfill"]
+TagSource = Literal["simulator", "modbus_rtu", "modbus_tcp", "serial_line", "manual", "backfill"]
 
 Severity = Literal["info", "warning", "critical"]
 Confidence = Literal["low", "medium", "high"]

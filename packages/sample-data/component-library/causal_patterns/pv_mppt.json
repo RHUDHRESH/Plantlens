@@ -1,0 +1,1092 @@
+{
+  "library_id": "plantlens.patterns.pv_mppt",
+  "version": "1.0.0",
+  "component_type": "pv_mppt",
+  "display_name": "PV array with MPPT inverter / charge controller",
+  "description": "Failure patterns for PV arrays and their MPPT converters: soiling and shading, string faults, tracking, clipping, insulation and hot spots.",
+  "asset_type_aliases": [
+    "source.solar",
+    "control.charge_controller"
+  ],
+  "library_type_aliases": [],
+  "roles": [
+    {
+      "role": "pv_voltage",
+      "quantity": "PV array / MPPT input voltage",
+      "units": [
+        "V"
+      ],
+      "signal_type_prefixes": [
+        "electrical.voltage.dc",
+        "electrical.voltage.pv"
+      ],
+      "name_hints": [
+        "vpv",
+        "pv_v",
+        "array_v",
+        "voltage"
+      ]
+    },
+    {
+      "role": "pv_current",
+      "quantity": "PV array / MPPT input current",
+      "units": [
+        "A"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current.pv",
+        "electrical.current"
+      ],
+      "name_hints": [
+        "ipv",
+        "pv_i",
+        "array_i",
+        "current"
+      ]
+    },
+    {
+      "role": "pv_power",
+      "quantity": "PV input power",
+      "units": [
+        "W",
+        "kW"
+      ],
+      "signal_type_prefixes": [
+        "electrical.power.pv",
+        "electrical.power"
+      ],
+      "name_hints": [
+        "ppv",
+        "pv_p",
+        "pv_power"
+      ]
+    },
+    {
+      "role": "output_power",
+      "quantity": "inverter AC output or charge controller output power",
+      "units": [
+        "W",
+        "kW"
+      ],
+      "signal_type_prefixes": [
+        "electrical.power.output"
+      ],
+      "name_hints": [
+        "pout",
+        "ac_p",
+        "charge_p"
+      ]
+    },
+    {
+      "role": "irradiance",
+      "quantity": "plane-of-array irradiance",
+      "units": [
+        "W/m2"
+      ],
+      "signal_type_prefixes": [
+        "environment.irradiance"
+      ],
+      "name_hints": [
+        "irr",
+        "poa",
+        "ghi"
+      ]
+    },
+    {
+      "role": "module_temperature",
+      "quantity": "module back-of-panel temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.module",
+        "thermal.temperature"
+      ],
+      "name_hints": [
+        "mod_t",
+        "panel_t",
+        "tmod"
+      ]
+    },
+    {
+      "role": "performance_ratio",
+      "quantity": "performance ratio (measured / irradiance-expected yield), derived",
+      "units": [
+        "%",
+        "ratio"
+      ],
+      "signal_type_prefixes": [
+        "derived.performance_ratio"
+      ],
+      "name_hints": [
+        "pr",
+        "perf_ratio"
+      ]
+    },
+    {
+      "role": "string_current_min",
+      "quantity": "lowest string current in the combiner / MPPT input",
+      "units": [
+        "A"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current.string_min"
+      ],
+      "name_hints": [
+        "string_min",
+        "istr_min"
+      ]
+    },
+    {
+      "role": "string_current_deviation",
+      "quantity": "string current deviation from the mean of same-orientation strings",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current.string_deviation"
+      ],
+      "name_hints": [
+        "str_dev",
+        "string_dev"
+      ]
+    },
+    {
+      "role": "string_voltage",
+      "quantity": "string open-circuit or operating voltage",
+      "units": [
+        "V"
+      ],
+      "signal_type_prefixes": [
+        "electrical.voltage.string"
+      ],
+      "name_hints": [
+        "vstr",
+        "string_v"
+      ]
+    },
+    {
+      "role": "insulation_resistance",
+      "quantity": "array insulation resistance to ground (inverter Riso measurement)",
+      "units": [
+        "kΩ",
+        "MΩ"
+      ],
+      "signal_type_prefixes": [
+        "electrical.insulation"
+      ],
+      "name_hints": [
+        "riso",
+        "insul",
+        "iso_r"
+      ]
+    },
+    {
+      "role": "residual_current",
+      "quantity": "residual / ground-fault current (RCMU)",
+      "units": [
+        "mA"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current.residual"
+      ],
+      "name_hints": [
+        "rcd",
+        "residual",
+        "gfdi",
+        "ground"
+      ]
+    },
+    {
+      "role": "hotspot_delta_t",
+      "quantity": "hot-spot temperature above neighbouring cells (thermography or string analytics)",
+      "units": [
+        "K",
+        "°C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.hotspot"
+      ],
+      "name_hints": [
+        "hotspot",
+        "delta_t"
+      ]
+    },
+    {
+      "role": "derating_active",
+      "quantity": "inverter / charger power limit or derating active",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "status.limit",
+        "status.bool"
+      ],
+      "name_hints": [
+        "derate",
+        "limit",
+        "clip"
+      ]
+    },
+    {
+      "role": "heatsink_temperature",
+      "quantity": "inverter / charger heatsink temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.heatsink"
+      ],
+      "name_hints": [
+        "heatsink",
+        "hs_t"
+      ]
+    },
+    {
+      "role": "inverter_trip",
+      "quantity": "inverter / charger fault or disconnect state",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "protection.trip",
+        "status.bool"
+      ],
+      "name_hints": [
+        "trip",
+        "fault"
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "pattern_id": "pv_mppt.shading_soiling",
+      "version": "1.0.0",
+      "failure_mode": "shading_soiling",
+      "title": "Shading / soiling",
+      "category": "process",
+      "severity": "info",
+      "description": "Dust, pollen, bird droppings or snow (soiling) reduce current across the array gradually; objects or row-to-row shading reduce it at particular times of day. Current falls relative to irradiance while voltage stays near normal; partial shading also splits the P-V curve into several peaks.",
+      "typical_progression": "Soiling: days to weeks between rain or cleaning. Shading: repeats daily at the same sun position, changing seasonally.",
+      "required_roles": [
+        "performance_ratio"
+      ],
+      "optional_roles": [
+        "pv_current",
+        "pv_power",
+        "irradiance",
+        "string_current_deviation",
+        "pv_voltage"
+      ],
+      "trigger_role": "performance_ratio",
+      "symptoms": [
+        {
+          "role": "performance_ratio",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 0.9
+          },
+          "note": "Temperature-corrected PR below ~90 % of the clean baseline"
+        },
+        {
+          "role": "pv_current",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.8,
+          "note": "Current per unit irradiance falls; voltage almost unchanged"
+        },
+        {
+          "role": "string_current_deviation",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.5,
+          "note": "Only strings that are shaded or more soiled"
+        },
+        {
+          "role": "pv_power",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.7
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "pv_mppt.string_fault_open_string",
+          "rule": "A string fault is a step change that persists at all hours; soiling is gradual and shading follows the sun position."
+        },
+        {
+          "vs_pattern": "pv_mppt.mppt_tracking_failure",
+          "rule": "Shading lowers current at near-normal voltage; tracking failure moves voltage away from Vmp."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Temperature-corrected performance ratio",
+          "formula": "PR = (P_meas / P_STC) / (G_POA / 1000) / (1 + γ·(T_mod − 25))"
+        },
+        {
+          "domain": "trend",
+          "description": "Soiling ratio: clean vs soiled reference cell or before/after cleaning"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare PR by string and by time of day; daily repeating dips point to shading.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Inspect module surfaces; compare with a cleaned reference module or reference cell.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Walk the array for new obstructions (vegetation, structures).",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 61724-1 (PV system performance monitoring)",
+        "IEC 62446-1"
+      ]
+    },
+    {
+      "pattern_id": "pv_mppt.string_fault_open_string",
+      "version": "1.0.0",
+      "failure_mode": "string_fault_open_string",
+      "title": "String fault / open string",
+      "category": "electrical",
+      "severity": "warning",
+      "description": "A string stops producing: blown string fuse, open connector (often a mismatched or poorly crimped connector), broken cable, or a failed module. Array current and power step down by about one string's share.",
+      "typical_progression": "Sudden; an overheating connector may first show as intermittent drop-outs on hot afternoons.",
+      "required_roles": [
+        "string_current_min"
+      ],
+      "optional_roles": [
+        "pv_current",
+        "pv_power",
+        "string_voltage",
+        "irradiance"
+      ],
+      "trigger_role": "string_current_min",
+      "symptoms": [
+        {
+          "role": "string_current_min",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 0.1
+          },
+          "note": "Near zero under irradiance > ~200 W/m²"
+        },
+        {
+          "role": "pv_current",
+          "direction": "step",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.8,
+          "note": "Array current falls by ~1/N for N parallel strings"
+        },
+        {
+          "role": "pv_power",
+          "direction": "step",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "string_voltage",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.4,
+          "note": "Open string reads Voc or zero depending on where the break is"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "conn",
+            "label": "Poor connector contact",
+            "kind": "cause"
+          },
+          {
+            "id": "r",
+            "label": "Contact resistance ↑",
+            "kind": "state"
+          },
+          {
+            "id": "heat",
+            "label": "Connector heating",
+            "kind": "state"
+          },
+          {
+            "id": "open",
+            "label": "Connector / fuse opens",
+            "kind": "symptom",
+            "role": "string_current_min"
+          },
+          {
+            "id": "arc",
+            "label": "DC arc risk",
+            "kind": "consequence"
+          }
+        ],
+        "edges": [
+          {
+            "from": "conn",
+            "to": "r",
+            "sign": "+"
+          },
+          {
+            "from": "r",
+            "to": "heat",
+            "sign": "+",
+            "loop_id": "connector_heating"
+          },
+          {
+            "from": "heat",
+            "to": "r",
+            "sign": "+",
+            "lag_ms": [
+              86400000,
+              15552000000
+            ],
+            "loop_id": "connector_heating"
+          },
+          {
+            "from": "heat",
+            "to": "open",
+            "sign": "+"
+          },
+          {
+            "from": "r",
+            "to": "arc",
+            "sign": "+"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "connector_heating",
+            "polarity": "reinforcing",
+            "description": "A hot connector oxidises and relaxes its contact force, which raises resistance and heat."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "downstream_load",
+          "effect_role": "power",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "structural_power"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "pv_mppt.shading_soiling",
+          "rule": "Open string: step change to ~zero current at all hours; shading is partial and time-dependent."
+        },
+        {
+          "vs_pattern": "pv_mppt.hotspot_bypass_diode",
+          "rule": "A failed bypass diode lowers string voltage by about one substring; an open string drops string current to zero."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare string currents at the combiner or inverter monitoring.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Open the string disconnect before touching connectors; never pull a connector under load (DC arc).",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Measure string Voc and Isc and check fuses and connector condition per IEC 62446-1.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "IEC 62446-1 (PV systems: testing and documentation)",
+        "IEC 62852 (PV connectors)"
+      ]
+    },
+    {
+      "pattern_id": "pv_mppt.mppt_tracking_failure",
+      "version": "1.0.0",
+      "failure_mode": "mppt_tracking_failure",
+      "title": "MPPT tracking failure",
+      "category": "control",
+      "severity": "warning",
+      "description": "The maximum power point tracker operates away from the true maximum: stuck at a fixed voltage, hunting excessively, locked on a local maximum under partial shading, or limited by an incorrect input voltage window. Input power falls below the irradiance-expected value with voltage away from Vmp.",
+      "typical_progression": "Continuous once triggered; often appears after firmware changes or with partial shading.",
+      "required_roles": [
+        "pv_voltage",
+        "pv_power"
+      ],
+      "optional_roles": [
+        "pv_current",
+        "irradiance",
+        "module_temperature"
+      ],
+      "trigger_role": "pv_voltage",
+      "symptoms": [
+        {
+          "role": "pv_voltage",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Voltage held away from the temperature-corrected Vmp, or oscillating widely"
+        },
+        {
+          "role": "pv_power",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            60000
+          ],
+          "weight": 0.9,
+          "threshold_hint": {
+            "relative_to_nominal": 0.9
+          }
+        },
+        {
+          "role": "pv_current",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            60000
+          ],
+          "weight": 0.4,
+          "note": "Excess perturbation amplitude"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "perturb",
+            "label": "MPPT perturbs voltage",
+            "kind": "state"
+          },
+          {
+            "id": "dp",
+            "label": "Power change measured",
+            "kind": "state"
+          },
+          {
+            "id": "step",
+            "label": "Step toward higher power",
+            "kind": "state"
+          },
+          {
+            "id": "local",
+            "label": "Local maximum under partial shading",
+            "kind": "cause"
+          },
+          {
+            "id": "p",
+            "label": "Input power < available",
+            "kind": "symptom",
+            "role": "pv_power"
+          }
+        ],
+        "edges": [
+          {
+            "from": "perturb",
+            "to": "dp",
+            "sign": "+",
+            "loop_id": "p_and_o"
+          },
+          {
+            "from": "dp",
+            "to": "step",
+            "sign": "+",
+            "loop_id": "p_and_o"
+          },
+          {
+            "from": "step",
+            "to": "perturb",
+            "sign": "-",
+            "loop_id": "p_and_o"
+          },
+          {
+            "from": "local",
+            "to": "p",
+            "sign": "+"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "p_and_o",
+            "polarity": "balancing",
+            "description": "Perturb-and-observe climbs the P-V curve and settles around the nearest maximum; it cannot see a higher peak elsewhere without a global scan."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "pv_mppt.shading_soiling",
+          "rule": "Shading lowers current with voltage near Vmp; tracking failure puts voltage away from Vmp."
+        },
+        {
+          "vs_pattern": "pv_mppt.inverter_charger_clipping",
+          "rule": "Clipping moves voltage up (toward Voc) only when output is at its limit; tracking failure occurs below the output limit."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Expected MPP voltage",
+          "formula": "Vmp(T) ≈ Vmp,STC · (1 + β·(T_mod − 25)) · N_series"
+        },
+        {
+          "domain": "waveform",
+          "description": "Periodic global MPPT scan shows full P-V curve; multiple peaks indicate partial shading"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare operating voltage with the temperature-corrected Vmp for the string configuration.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Trigger or review a global MPPT scan / I-V curve if the device supports it.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check the MPPT input voltage window and firmware version against the array design.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "EN 50530 (overall efficiency of grid-connected inverters, MPPT efficiency)",
+        "IEC 62891"
+      ]
+    },
+    {
+      "pattern_id": "pv_mppt.inverter_charger_clipping",
+      "version": "1.0.0",
+      "failure_mode": "inverter_charger_clipping",
+      "title": "Inverter / charger clipping and curtailment",
+      "category": "control",
+      "severity": "info",
+      "description": "Output is capped at the inverter AC rating, an export limit, the charge controller's current limit, or because the battery is in absorption / float. The converter moves the array voltage above Vmp to shed power; energy is lost but nothing is broken.",
+      "typical_progression": "Daily around solar noon on high-DC/AC-ratio arrays; on charge controllers whenever the battery is nearly full.",
+      "required_roles": [
+        "output_power"
+      ],
+      "optional_roles": [
+        "pv_voltage",
+        "irradiance",
+        "derating_active",
+        "heatsink_temperature"
+      ],
+      "trigger_role": "output_power",
+      "symptoms": [
+        {
+          "role": "output_power",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Flat top at the rated or configured limit"
+        },
+        {
+          "role": "pv_voltage",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            10000
+          ],
+          "weight": 0.7,
+          "note": "Operating point moves toward Voc"
+        },
+        {
+          "role": "irradiance",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.5,
+          "note": "Irradiance keeps rising while output stays flat"
+        },
+        {
+          "role": "derating_active",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            10000
+          ],
+          "weight": 0.5
+        },
+        {
+          "role": "heatsink_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.3,
+          "note": "Thermal derating lowers the cap on hot days"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "pv_mppt.mppt_tracking_failure",
+          "rule": "Clipping happens at the output limit; tracking failure happens below it."
+        },
+        {
+          "vs_pattern": "battery.charging_fault_overcharge",
+          "rule": "Charge current limited at absorption is normal; voltage above the set absorption level is a fault."
+        },
+        {
+          "vs_pattern": "vfd.heatsink_overtemperature_fan_failure",
+          "rule": "Thermal derating on a cool day with a hot heatsink points to a cooling fault in the converter."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Confirm the flat top equals the nameplate or configured export / charge limit.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the battery state (absorption / float) for charge controllers.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "If the cap falls with heatsink temperature, check converter cooling.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 61724-1"
+      ]
+    },
+    {
+      "pattern_id": "pv_mppt.ground_fault_insulation",
+      "version": "1.0.0",
+      "failure_mode": "ground_fault_insulation",
+      "title": "Ground fault / insulation degradation",
+      "category": "insulation",
+      "severity": "critical",
+      "description": "Damaged cable insulation, water ingress in junction boxes or connectors, or a module backsheet failure creates a leakage path to earth. Array insulation resistance falls (often worst in the morning with dew); the inverter refuses to connect or trips on residual current. A second fault can create a fire-risk fault current path.",
+      "typical_progression": "Weeks of low morning Riso; then persistent trips.",
+      "required_roles": [
+        "insulation_resistance"
+      ],
+      "optional_roles": [
+        "residual_current",
+        "inverter_trip",
+        "pv_power"
+      ],
+      "trigger_role": "insulation_resistance",
+      "symptoms": [
+        {
+          "role": "insulation_resistance",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "IEC 62109-2 minimum Riso = V_max,PV / 30 mA (e.g. 33 kΩ at 1000 V); IEC 62446-1 test minimum 1 MΩ for arrays above 120 V"
+        },
+        {
+          "role": "residual_current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.8,
+          "threshold_hint": {
+            "absolute": 30
+          },
+          "note": "Sudden 30 mA step or 300 mA continuous trip (IEC 62109-2)"
+        },
+        {
+          "role": "inverter_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.7
+        },
+        {
+          "role": "pv_power",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.4
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "downstream_load",
+          "effect_role": "power",
+          "direction": "missing",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            3600000
+          ],
+          "edge_type": "structural_power",
+          "note": "Inverter disconnects"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "pv_mppt.string_fault_open_string",
+          "rule": "Open strings lower current without an insulation or residual-current alarm."
+        },
+        {
+          "vs_pattern": "dc_bus.ground_fault",
+          "rule": "On DC-coupled systems, compare insulation readings on the PV side and the DC bus side to locate the fault."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Riso logged at each morning start; a dew-correlated minimum points to water ingress"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Trend Riso at each start-up against weather (dew, rain).",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Split the array by string and insulation-test each string per IEC 62446-1 with the strings isolated.",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Inspect junction boxes, connectors and cable routes for damage or water.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "IEC 62109-2 (safety of PV inverters)",
+        "IEC 62446-1",
+        "NEC 690.41 (PV ground-fault protection)"
+      ]
+    },
+    {
+      "pattern_id": "pv_mppt.hotspot_bypass_diode",
+      "version": "1.0.0",
+      "failure_mode": "hotspot_bypass_diode",
+      "title": "Hot spot / bypass diode failure",
+      "category": "thermal",
+      "severity": "warning",
+      "description": "A cracked or shaded cell is driven into reverse bias and dissipates the string current as heat (hot spot). A bypass diode that has failed open allows severe hot spots; one that has failed short removes its substring and lowers module voltage by about a third.",
+      "typical_progression": "Weeks to years; hot spots accelerate backsheet and encapsulant degradation.",
+      "required_roles": [
+        "hotspot_delta_t"
+      ],
+      "optional_roles": [
+        "string_voltage",
+        "pv_power",
+        "string_current_deviation"
+      ],
+      "trigger_role": "hotspot_delta_t",
+      "symptoms": [
+        {
+          "role": "hotspot_delta_t",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 10
+          },
+          "note": "IEC TS 62446-3 thermography: > ~10 K over neighbouring cells at ≥ 600 W/m² is treated as abnormal"
+        },
+        {
+          "role": "string_voltage",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.6,
+          "note": "A shorted bypass diode removes ~1/3 of one module's voltage (≈ Voc_module/3)"
+        },
+        {
+          "role": "pv_power",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.4
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "crack",
+            "label": "Cell crack / partial shade",
+            "kind": "cause"
+          },
+          {
+            "id": "rev",
+            "label": "Cell in reverse bias",
+            "kind": "state"
+          },
+          {
+            "id": "hot",
+            "label": "Hot spot",
+            "kind": "symptom",
+            "role": "hotspot_delta_t"
+          },
+          {
+            "id": "deg",
+            "label": "Encapsulant / cell degradation",
+            "kind": "state"
+          },
+          {
+            "id": "diode",
+            "label": "Bypass diode overstress",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "crack",
+            "to": "rev",
+            "sign": "+"
+          },
+          {
+            "from": "rev",
+            "to": "hot",
+            "sign": "+"
+          },
+          {
+            "from": "hot",
+            "to": "deg",
+            "sign": "+",
+            "lag_ms": [
+              604800000,
+              31536000000
+            ],
+            "loop_id": "hotspot_growth"
+          },
+          {
+            "from": "deg",
+            "to": "rev",
+            "sign": "+",
+            "loop_id": "hotspot_growth"
+          },
+          {
+            "from": "hot",
+            "to": "diode",
+            "sign": "+"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "hotspot_growth",
+            "polarity": "reinforcing",
+            "description": "Heat degrades the cell and encapsulant, lowering the cell's current capability and deepening reverse bias."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "pv_mppt.shading_soiling",
+          "rule": "Shading hot spots move with the shadow; defect hot spots stay on the same cell."
+        },
+        {
+          "vs_pattern": "pv_mppt.string_fault_open_string",
+          "rule": "A bypass diode short lowers string voltage by a substring; an open string drops current to zero."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "thermal",
+          "description": "IR image: single hot cell (cell defect), hot junction box (diode), or hot substring (open diode or shorted cells)"
+        },
+        {
+          "domain": "trend",
+          "description": "String voltage step",
+          "formula": "ΔV ≈ Voc,module / n_bypass_diodes"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Perform IR thermography at ≥ 600 W/m² per IEC TS 62446-3.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Compare string voltages for steps of about one substring.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Test bypass diodes and inspect the junction box with the string isolated.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "IEC TS 62446-3 (outdoor infrared thermography of PV modules)",
+        "IEC 61215 (hot-spot endurance test)"
+      ]
+    }
+  ]
+}

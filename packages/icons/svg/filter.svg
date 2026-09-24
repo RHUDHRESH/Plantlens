@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" role="img">
+  <title>Filter</title>
+  <path d="M4 24H9M39 24H44"/>
+  <path d="M24 9L39 24L24 39L9 24Z"/>
+  <path d="M24 11V37" stroke-dasharray="2.4 2.2"/>
+</svg>

@@ -73,3 +73,18 @@ def test_human_approve_writes_audit(client: TestClient):
     assert response.status_code == 200
     assert response.json()["draft"]["status"] == "approved"
     assert "audit_id" in response.json()
+
+@pytest.mark.parametrize("role", ["operator", "maintenance", "viewer"])
+def test_non_engineer_humans_cannot_approve_or_reject_changes(client: TestClient, role: str):
+    draft_id = client.post(
+        "/api/agents/graph-draft",
+        json={"prompt": "test"},
+        headers=_token(client, "engineer"),
+    ).json()["draft"]["draft_id"]
+    for action in ("approve", "reject"):
+        response = client.post(
+            f"/api/agents/drafts/{action}",
+            json={"draft_id": draft_id},
+            headers=_token(client, role, subject=f"{role}-1"),
+        )
+        assert response.status_code == 403

@@ -7,6 +7,8 @@ from hashlib import sha256
 import json
 from typing import Any
 
+from app.runtime.causal.structure import tarjan_scc
+
 
 @dataclass
 class CompileError:
@@ -24,39 +26,23 @@ class GraphCompileResult:
     approved_edge_index: dict[str, dict[str, Any]] = field(default_factory=dict)
     reverse_adjacency: dict[str, list[str]] = field(default_factory=dict)
     situation_pattern_index: dict[str, dict[str, Any]] = field(default_factory=dict)
+    feedback_loops: list[dict[str, Any]] = field(default_factory=list)
 
 
-def _detect_cycle(approved_edges: list[dict[str, Any]]) -> list[str] | None:
-    adj: dict[str, list[str]] = {}
-    nodes: set[str] = set()
-    for edge in approved_edges:
-        adj.setdefault(edge["from"], []).append(edge["to"])
-        nodes.add(edge["from"])
-        nodes.add(edge["to"])
-
-    visited: set[str] = set()
-    stack: set[str] = set()
-    path: list[str] = []
-
-    def dfs(node: str) -> bool:
-        visited.add(node)
-        stack.add(node)
-        path.append(node)
-        for neighbor in adj.get(node, []):
-            if neighbor not in visited:
-                if dfs(neighbor):
-                    return True
-            elif neighbor in stack:
-                path.append(neighbor)
-                return True
-        stack.remove(node)
-        path.pop()
-        return False
-
-    for node in sorted(nodes):
-        if node not in visited and dfs(node):
-            return path
-    return None
+def _cycles(approved_edges: list[dict[str, Any]]) -> list[tuple[list[str], list[dict[str, Any]]]]:
+    """Strongly-connected components containing a cycle, as (members, internal edges)."""
+    ordered = sorted(approved_edges, key=lambda e: e["id"])
+    nodes = sorted({e["from"] for e in ordered} | {e["to"] for e in ordered})
+    successors: dict[str, list[str]] = {n: [] for n in nodes}
+    for edge in ordered:
+        successors[edge["from"]].append(edge["to"])
+    out: list[tuple[list[str], list[dict[str, Any]]]] = []
+    for comp in tarjan_scc(nodes, successors):
+        members = set(comp)
+        internal = [e for e in ordered if e["from"] in members and e["to"] in members]
+        if len(comp) > 1 or internal:
+            out.append((comp, internal))
+    return out
 
 
 def validate_and_compile_graph(
@@ -117,15 +103,26 @@ def validate_and_compile_graph(
             approved_edge_index[eid] = edge
             reverse_adjacency.setdefault(edge["to"], []).append(edge["from"])
 
-    cycle_path = _detect_cycle(approved_edges)
-    if cycle_path:
-        errors.append(
-            CompileError(
-                "edges",
-                f"Cycle detected: {' → '.join(cycle_path)}",
-                "Remove or unapprove edges that create a runtime cycle",
+    feedback_loops: list[dict[str, Any]] = []
+    for members, internal in _cycles(approved_edges):
+        unflagged = [e["id"] for e in internal if not e.get("loop_ok", False)]
+        if unflagged:
+            errors.append(
+                CompileError(
+                    "edges",
+                    f"Cycle detected: {' → '.join(members)} (edges without loop_ok: {', '.join(unflagged)})",
+                    "Unapprove an edge to break the cycle, or have an engineer flag every edge of an "
+                    "intended feedback loop with loop_ok=true",
+                )
             )
-        )
+        else:
+            feedback_loops.append(
+                {
+                    "members": members,
+                    "edge_ids": [e["id"] for e in internal],
+                    "loop_ids": sorted({e["loop_id"] for e in internal if e.get("loop_id")}),
+                }
+            )
 
     for spec in causal_graph.get("situation_types", []):
         sid = spec.get("id", "unknown")
@@ -173,4 +170,5 @@ def validate_and_compile_graph(
         approved_edge_index=approved_edge_index,
         reverse_adjacency=reverse_adjacency,
         situation_pattern_index=situation_pattern_index,
+        feedback_loops=feedback_loops,
     )

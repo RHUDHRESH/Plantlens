@@ -1,0 +1,1486 @@
+{
+  "library_id": "plantlens.patterns.compressor",
+  "version": "1.0.0",
+  "component_type": "compressor",
+  "display_name": "Compressor (centrifugal, reciprocating, screw)",
+  "description": "Failure patterns for gas and air compressors: surge, valve leaks, discharge temperature, intercooling, lubrication and inlet restriction.",
+  "asset_type_aliases": [],
+  "library_type_aliases": [],
+  "roles": [
+    {
+      "role": "flow",
+      "quantity": "compressor inlet / throughput flow",
+      "units": [
+        "m3/h",
+        "Nm3/h",
+        "kg/s",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "process.flow"
+      ],
+      "name_hints": [
+        "flow",
+        "fit",
+        "_q"
+      ]
+    },
+    {
+      "role": "suction_pressure",
+      "quantity": "compressor suction pressure",
+      "units": [
+        "bar",
+        "kPa",
+        "psi"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.suction"
+      ],
+      "name_hints": [
+        "suct",
+        "p_in",
+        "p1"
+      ]
+    },
+    {
+      "role": "discharge_pressure",
+      "quantity": "compressor discharge pressure",
+      "units": [
+        "bar",
+        "kPa",
+        "psi"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.discharge"
+      ],
+      "name_hints": [
+        "disch",
+        "p_out",
+        "p2"
+      ]
+    },
+    {
+      "role": "interstage_pressure",
+      "quantity": "pressure between stages (after intercooler)",
+      "units": [
+        "bar",
+        "kPa",
+        "psi"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.interstage"
+      ],
+      "name_hints": [
+        "interstage_p",
+        "stg_p",
+        "p_int"
+      ]
+    },
+    {
+      "role": "suction_temperature",
+      "quantity": "gas temperature at compressor suction",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "process.temperature.suction"
+      ],
+      "name_hints": [
+        "suct_t",
+        "t1",
+        "inlet_t"
+      ]
+    },
+    {
+      "role": "discharge_temperature",
+      "quantity": "gas temperature at compressor (or stage) discharge",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "process.temperature.discharge"
+      ],
+      "name_hints": [
+        "disch_t",
+        "t2",
+        "outlet_t"
+      ]
+    },
+    {
+      "role": "interstage_temperature",
+      "quantity": "gas temperature leaving the intercooler (next stage inlet)",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "process.temperature.interstage"
+      ],
+      "name_hints": [
+        "interstage_t",
+        "ic_out",
+        "stg_t"
+      ]
+    },
+    {
+      "role": "cooling_water_temperature",
+      "quantity": "intercooler cooling water inlet temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "process.temperature.cooling_water"
+      ],
+      "name_hints": [
+        "cw_t",
+        "cws",
+        "cooling_t"
+      ]
+    },
+    {
+      "role": "valve_cover_temperature",
+      "quantity": "reciprocating compressor valve cap / cover temperature (per valve)",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.valve_cover"
+      ],
+      "name_hints": [
+        "valve_t",
+        "vc_t",
+        "cap_t"
+      ]
+    },
+    {
+      "role": "inlet_filter_dp",
+      "quantity": "air / gas inlet filter differential pressure",
+      "units": [
+        "kPa",
+        "mbar",
+        "inH2O"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.differential.filter"
+      ],
+      "name_hints": [
+        "filter",
+        "fdp",
+        "inlet_dp"
+      ]
+    },
+    {
+      "role": "oil_pressure",
+      "quantity": "lube oil supply pressure (header)",
+      "units": [
+        "bar",
+        "kPa",
+        "psi"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.oil"
+      ],
+      "name_hints": [
+        "oil_p",
+        "lube_p",
+        "lop"
+      ]
+    },
+    {
+      "role": "oil_temperature",
+      "quantity": "lube oil supply / sump temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.oil"
+      ],
+      "name_hints": [
+        "oil_t",
+        "lube_t"
+      ]
+    },
+    {
+      "role": "oil_level",
+      "quantity": "lube oil reservoir / crankcase level",
+      "units": [
+        "%",
+        "mm",
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "process.level.oil"
+      ],
+      "name_hints": [
+        "oil_lvl",
+        "oil_level"
+      ]
+    },
+    {
+      "role": "bearing_temperature",
+      "quantity": "bearing metal / housing temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.bearing"
+      ],
+      "name_hints": [
+        "brg_t",
+        "bearing_t",
+        "pad_t"
+      ]
+    },
+    {
+      "role": "vibration",
+      "quantity": "overall vibration (casing velocity or shaft displacement)",
+      "units": [
+        "mm/s",
+        "µm"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration"
+      ],
+      "name_hints": [
+        "vib"
+      ]
+    },
+    {
+      "role": "power",
+      "quantity": "absorbed power (driver electrical power)",
+      "units": [
+        "kW",
+        "MW"
+      ],
+      "signal_type_prefixes": [
+        "electrical.power",
+        "mechanical.power"
+      ],
+      "name_hints": [
+        "power",
+        "_kw"
+      ]
+    },
+    {
+      "role": "antisurge_valve_position",
+      "quantity": "anti-surge / recycle valve position",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "control.position"
+      ],
+      "name_hints": [
+        "asv",
+        "recycle",
+        "surge_v"
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "pattern_id": "compressor.surge",
+      "version": "1.0.0",
+      "failure_mode": "surge",
+      "title": "Surge (centrifugal / axial compressor)",
+      "category": "process",
+      "severity": "critical",
+      "description": "Flow falls below the surge limit at the prevailing pressure ratio. The compressor cannot sustain head, flow reverses through the machine, discharge pressure drops, forward flow resumes and the cycle repeats. Each cycle heats the gas, loads thrust bearings and seals, and can damage the rotor.",
+      "typical_progression": "Cycle period typically 0.5–3 s for plant compressors; damage within a few cycles on large machines.",
+      "required_roles": [
+        "flow",
+        "discharge_pressure"
+      ],
+      "optional_roles": [
+        "discharge_temperature",
+        "vibration",
+        "power",
+        "antisurge_valve_position",
+        "suction_pressure"
+      ],
+      "trigger_role": "flow",
+      "symptoms": [
+        {
+          "role": "flow",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Rapid flow collapse and recovery; flow may read negative momentarily"
+        },
+        {
+          "role": "discharge_pressure",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.9
+        },
+        {
+          "role": "discharge_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            10000
+          ],
+          "weight": 0.7,
+          "note": "Recirculated hot gas is recompressed"
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.6,
+          "note": "Axial and sub-synchronous components"
+        },
+        {
+          "role": "power",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.5
+        },
+        {
+          "role": "antisurge_valve_position",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.5,
+          "note": "Anti-surge controller opens the recycle valve"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "low",
+            "label": "Flow below surge limit",
+            "kind": "cause",
+            "role": "flow"
+          },
+          {
+            "id": "head",
+            "label": "Developed head < system pressure",
+            "kind": "state"
+          },
+          {
+            "id": "rev",
+            "label": "Flow reversal",
+            "kind": "state"
+          },
+          {
+            "id": "pd",
+            "label": "Discharge pressure ↓",
+            "kind": "symptom",
+            "role": "discharge_pressure"
+          },
+          {
+            "id": "fwd",
+            "label": "Forward flow resumes",
+            "kind": "state"
+          },
+          {
+            "id": "hot",
+            "label": "Gas temperature ↑",
+            "kind": "symptom",
+            "role": "discharge_temperature"
+          },
+          {
+            "id": "asv",
+            "label": "Anti-surge valve opens",
+            "kind": "state",
+            "role": "antisurge_valve_position"
+          }
+        ],
+        "edges": [
+          {
+            "from": "low",
+            "to": "head",
+            "sign": "-"
+          },
+          {
+            "from": "head",
+            "to": "rev",
+            "sign": "-",
+            "loop_id": "surge_cycle"
+          },
+          {
+            "from": "rev",
+            "to": "pd",
+            "sign": "-",
+            "loop_id": "surge_cycle"
+          },
+          {
+            "from": "pd",
+            "to": "fwd",
+            "sign": "-",
+            "loop_id": "surge_cycle"
+          },
+          {
+            "from": "fwd",
+            "to": "low",
+            "sign": "-",
+            "loop_id": "surge_cycle"
+          },
+          {
+            "from": "rev",
+            "to": "hot",
+            "sign": "+"
+          },
+          {
+            "from": "low",
+            "to": "asv",
+            "sign": "-",
+            "lag_ms": [
+              0,
+              2000
+            ],
+            "loop_id": "antisurge"
+          },
+          {
+            "from": "asv",
+            "to": "low",
+            "sign": "-",
+            "loop_id": "antisurge"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "surge_cycle",
+            "polarity": "reinforcing",
+            "description": "On the positive-slope side of the characteristic, lower flow lowers head, which lets the system pressure push flow back: the cycle sustains itself."
+          },
+          {
+            "loop_id": "antisurge",
+            "polarity": "balancing",
+            "description": "The anti-surge controller opens the recycle valve to restore flow through the machine."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "process_upstream",
+          "effect_role": "pressure",
+          "direction": "oscillate",
+          "polarity": "any",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "cause_to_effect"
+        },
+        {
+          "relation": "process_downstream",
+          "effect_role": "pressure",
+          "direction": "oscillate",
+          "polarity": "any",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "cause_to_effect"
+        },
+        {
+          "relation": "driver",
+          "effect_role": "current",
+          "direction": "oscillate",
+          "polarity": "any",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "structural_load_effect"
+        },
+        {
+          "relation": "controller",
+          "effect_role": "controller_output",
+          "direction": "rise",
+          "polarity": "any",
+          "lag_ms": [
+            0,
+            2000
+          ],
+          "edge_type": "control",
+          "note": "Anti-surge controller output increases"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "compressor.capacity_loss_inlet_filter",
+          "rule": "Inlet restriction reduces flow smoothly with rising filter ΔP and can move the machine toward surge; surge itself is a fast oscillation."
+        },
+        {
+          "vs_pattern": "fan.axial_stall_surge",
+          "rule": "Same physics at low pressure rise; use the fan pattern for fans and blowers."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "waveform",
+          "description": "Large-amplitude, low-frequency flow and pressure oscillation; flow trace shows sharp drops to zero or negative."
+        },
+        {
+          "domain": "trend",
+          "description": "Surge margin on the compressor map",
+          "formula": "SM = (Q_op − Q_surge) / Q_op at the operating pressure ratio"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Plot the operating point on the compressor map against the surge control line; record surge counter events.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check anti-surge valve stroke time and positioner response; check flow transmitter for plugged impulse lines.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check for changes in gas molecular weight, suction temperature or downstream demand that shifted the operating point.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "After a surge event, review thrust bearing temperature and axial position trends.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "API 617 (axial and centrifugal compressors)",
+        "API 670 (machinery protection)"
+      ]
+    },
+    {
+      "pattern_id": "compressor.discharge_valve_leak",
+      "version": "1.0.0",
+      "failure_mode": "discharge_valve_leak",
+      "title": "Discharge valve leak (reciprocating compressor)",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "A broken plate, worn seat or debris lets hot discharge gas leak back into the cylinder on the suction stroke. The gas is recompressed, so that valve cover and the stage discharge temperature rise while capacity falls.",
+      "typical_progression": "Days to weeks from first leak to broken valve components.",
+      "required_roles": [
+        "valve_cover_temperature"
+      ],
+      "optional_roles": [
+        "discharge_temperature",
+        "flow",
+        "interstage_pressure",
+        "power"
+      ],
+      "trigger_role": "valve_cover_temperature",
+      "symptoms": [
+        {
+          "role": "valve_cover_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Rise of more than ~10–15 °C versus other discharge valves on the same stage"
+        },
+        {
+          "role": "discharge_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "flow",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "interstage_pressure",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.5,
+          "note": "First-stage discharge valve leak lowers interstage pressure; a later-stage leak raises it"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "leak",
+            "label": "Discharge valve leaking",
+            "kind": "cause"
+          },
+          {
+            "id": "back",
+            "label": "Hot gas flows back into cylinder",
+            "kind": "state"
+          },
+          {
+            "id": "recomp",
+            "label": "Gas recompressed",
+            "kind": "state"
+          },
+          {
+            "id": "tv",
+            "label": "Valve cover temperature ↑",
+            "kind": "symptom",
+            "role": "valve_cover_temperature"
+          },
+          {
+            "id": "td",
+            "label": "Discharge temperature ↑",
+            "kind": "symptom",
+            "role": "discharge_temperature"
+          },
+          {
+            "id": "cap",
+            "label": "Stage capacity ↓",
+            "kind": "symptom",
+            "role": "flow"
+          },
+          {
+            "id": "damage",
+            "label": "Valve plate heat and wear",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "leak",
+            "to": "back",
+            "sign": "+"
+          },
+          {
+            "from": "back",
+            "to": "recomp",
+            "sign": "+"
+          },
+          {
+            "from": "recomp",
+            "to": "tv",
+            "sign": "+"
+          },
+          {
+            "from": "recomp",
+            "to": "td",
+            "sign": "+"
+          },
+          {
+            "from": "back",
+            "to": "cap",
+            "sign": "-"
+          },
+          {
+            "from": "tv",
+            "to": "damage",
+            "sign": "+",
+            "lag_ms": [
+              86400000,
+              1209600000
+            ],
+            "loop_id": "valve_degradation"
+          },
+          {
+            "from": "damage",
+            "to": "leak",
+            "sign": "+",
+            "loop_id": "valve_degradation"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "valve_degradation",
+            "polarity": "reinforcing",
+            "description": "Leaking gas heats and erodes the valve components, which increases the leak."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "compressor.high_discharge_temperature",
+          "rule": "A valve leak heats one valve cover more than the others on the stage; a process cause heats all valves and the whole stage."
+        },
+        {
+          "vs_pattern": "compressor.intercooler_fouling",
+          "rule": "Intercooler fouling raises next-stage inlet temperature first; a valve leak raises one valve cover first.",
+          "first_role": "valve_cover_temperature",
+          "then_role": "interstage_temperature"
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "thermal",
+          "description": "Per-valve cover temperature compared with siblings on the same cylinder end"
+        },
+        {
+          "domain": "waveform",
+          "description": "PV diagram: discharge valve leak steepens the re-expansion line and shifts suction valve opening later"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare valve cover temperatures across all valves of the stage.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Run a PV / ultrasonic valve analysis if an analyser is installed.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Remove and inspect the suspect valve with the cylinder isolated, depressurised and purged.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "API 618 (reciprocating compressors)",
+        "API 670"
+      ]
+    },
+    {
+      "pattern_id": "compressor.high_discharge_temperature",
+      "version": "1.0.0",
+      "failure_mode": "high_discharge_temperature",
+      "title": "High discharge temperature",
+      "category": "thermal",
+      "severity": "warning",
+      "description": "Discharge temperature rises above the design value from a higher pressure ratio, hotter suction gas, reduced oil-injection cooling (screw compressors), or internal recirculation. High temperature degrades lubricant, carbonises valves and can ignite oil deposits.",
+      "typical_progression": "Minutes to hours.",
+      "required_roles": [
+        "discharge_temperature"
+      ],
+      "optional_roles": [
+        "suction_temperature",
+        "suction_pressure",
+        "discharge_pressure",
+        "oil_temperature",
+        "power"
+      ],
+      "trigger_role": "discharge_temperature",
+      "symptoms": [
+        {
+          "role": "discharge_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 150
+          },
+          "note": "API 618 limits predicted discharge temperature to 150 °C; oil-flooded screws often trip near 110 °C"
+        },
+        {
+          "role": "suction_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.4,
+          "note": "When the cause is hot suction gas"
+        },
+        {
+          "role": "discharge_pressure",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.4,
+          "note": "When the cause is a higher pressure ratio"
+        },
+        {
+          "role": "oil_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1800000
+          ],
+          "weight": 0.5,
+          "note": "Oil-injected machines: oil cooler or thermostatic valve fault"
+        },
+        {
+          "role": "power",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1800000
+          ],
+          "weight": 0.3
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "ratio",
+            "label": "Pressure ratio ↑ / suction temperature ↑",
+            "kind": "cause"
+          },
+          {
+            "id": "t2",
+            "label": "Discharge temperature ↑",
+            "kind": "symptom",
+            "role": "discharge_temperature"
+          },
+          {
+            "id": "visc",
+            "label": "Oil viscosity ↓",
+            "kind": "state"
+          },
+          {
+            "id": "seal",
+            "label": "Internal sealing ↓ (screw)",
+            "kind": "state"
+          },
+          {
+            "id": "recirc",
+            "label": "Internal leakage ↑",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "ratio",
+            "to": "t2",
+            "sign": "+"
+          },
+          {
+            "from": "t2",
+            "to": "visc",
+            "sign": "-",
+            "loop_id": "oil_seal"
+          },
+          {
+            "from": "visc",
+            "to": "seal",
+            "sign": "+",
+            "loop_id": "oil_seal"
+          },
+          {
+            "from": "seal",
+            "to": "recirc",
+            "sign": "-",
+            "loop_id": "oil_seal"
+          },
+          {
+            "from": "recirc",
+            "to": "t2",
+            "sign": "+",
+            "loop_id": "oil_seal"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "oil_seal",
+            "polarity": "reinforcing",
+            "description": "In oil-injected screw compressors hotter oil seals the rotors less well; more gas leaks back and is recompressed, raising temperature further."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "process_downstream",
+          "effect_role": "temperature",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            300000
+          ],
+          "edge_type": "thermal"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "compressor.discharge_valve_leak",
+          "rule": "A single hot valve cover points to a valve leak; a uniform stage-wide rise points to process or cooling causes."
+        },
+        {
+          "vs_pattern": "compressor.intercooler_fouling",
+          "rule": "If next-stage inlet temperature rose first, the intercooler is the cause.",
+          "first_role": "interstage_temperature",
+          "then_role": "discharge_temperature"
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Expected discharge temperature for comparison",
+          "formula": "T2 = T1 · (P2/P1)^((k−1)/(k·ηp))  (absolute temperatures)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compute expected discharge temperature from measured suction temperature and pressure ratio; a large excess points to internal leakage or valve faults.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check oil injection temperature, oil cooler and thermostatic valve on oil-flooded machines.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check suction gas temperature and upstream aftercooler performance.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "API 618",
+        "API 619 (rotary-type positive-displacement compressors)"
+      ]
+    },
+    {
+      "pattern_id": "compressor.intercooler_fouling",
+      "version": "1.0.0",
+      "failure_mode": "intercooler_fouling",
+      "title": "Intercooler fouling / loss of intercooling",
+      "category": "thermal",
+      "severity": "warning",
+      "description": "Scale on the water side or oil and dirt on the gas side reduces intercooler duty. The next stage takes in hotter gas, so its discharge temperature and power rise and interstage pressure shifts.",
+      "typical_progression": "Weeks to months for fouling; minutes for loss of cooling water.",
+      "required_roles": [
+        "interstage_temperature"
+      ],
+      "optional_roles": [
+        "cooling_water_temperature",
+        "discharge_temperature",
+        "interstage_pressure",
+        "power"
+      ],
+      "trigger_role": "interstage_temperature",
+      "symptoms": [
+        {
+          "role": "interstage_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Approach (gas out − water in) above design, typically > 10–15 K"
+        },
+        {
+          "role": "discharge_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "interstage_pressure",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.4,
+          "note": "Hotter gas occupies more volume at the next-stage inlet"
+        },
+        {
+          "role": "power",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.4
+        },
+        {
+          "role": "cooling_water_temperature",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.3,
+          "note": "Normal water inlet temperature separates fouling from a warm cooling-water supply"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "scale",
+            "label": "Water-side scaling",
+            "kind": "cause"
+          },
+          {
+            "id": "u",
+            "label": "Heat-transfer coefficient ↓",
+            "kind": "state"
+          },
+          {
+            "id": "tg",
+            "label": "Gas out temperature ↑",
+            "kind": "symptom",
+            "role": "interstage_temperature"
+          },
+          {
+            "id": "tw",
+            "label": "Tube wall temperature ↑",
+            "kind": "state"
+          },
+          {
+            "id": "t2",
+            "label": "Next-stage discharge temperature ↑",
+            "kind": "symptom",
+            "role": "discharge_temperature"
+          }
+        ],
+        "edges": [
+          {
+            "from": "scale",
+            "to": "u",
+            "sign": "-"
+          },
+          {
+            "from": "u",
+            "to": "tg",
+            "sign": "-"
+          },
+          {
+            "from": "tg",
+            "to": "t2",
+            "sign": "+"
+          },
+          {
+            "from": "u",
+            "to": "tw",
+            "sign": "-",
+            "loop_id": "scale_growth"
+          },
+          {
+            "from": "tw",
+            "to": "scale",
+            "sign": "+",
+            "lag_ms": [
+              604800000,
+              15552000000
+            ],
+            "loop_id": "scale_growth"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "scale_growth",
+            "polarity": "reinforcing",
+            "description": "Hardness salts (CaCO3) have inverse solubility; a hotter wall scales faster, further reducing heat transfer."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "cooling_system",
+          "effect_role": "temperature",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            3600000
+          ],
+          "edge_type": "thermal",
+          "note": "Cooling water return temperature falls as less heat is absorbed"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "heat_exchanger.loss_of_cooling_flow",
+          "rule": "Loss of cooling flow is abrupt and raises water outlet temperature; fouling is gradual and lowers it."
+        },
+        {
+          "vs_pattern": "compressor.high_discharge_temperature",
+          "rule": "Intercooler fouling raises next-stage inlet temperature first.",
+          "first_role": "interstage_temperature",
+          "then_role": "discharge_temperature"
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Intercooler approach and effectiveness",
+          "formula": "approach = T_gas,out − T_water,in ; ε = (T_gas,in − T_gas,out) / (T_gas,in − T_water,in)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Trend intercooler approach temperature at similar load and water temperature.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check cooling water flow, inlet temperature and water treatment records.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check the intercooler condensate drain; a flooded cooler loses surface.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Clean the cooler (chemical or mechanical) with it isolated and drained.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "API 618",
+        "TEMA Standards (fouling resistances)"
+      ]
+    },
+    {
+      "pattern_id": "compressor.oil_starvation",
+      "version": "1.0.0",
+      "failure_mode": "oil_starvation",
+      "title": "Lube oil starvation / low oil pressure",
+      "category": "lubrication",
+      "severity": "critical",
+      "description": "Lube oil supply falls from low reservoir level, a clogged filter, a failing oil pump, an open relief valve or oil leakage. Bearings and crosshead run with thin or no film; temperatures climb within seconds to minutes.",
+      "typical_progression": "Seconds to minutes to bearing damage; protection must trip on low oil pressure.",
+      "required_roles": [
+        "oil_pressure"
+      ],
+      "optional_roles": [
+        "bearing_temperature",
+        "oil_level",
+        "oil_temperature",
+        "vibration"
+      ],
+      "trigger_role": "oil_pressure",
+      "symptoms": [
+        {
+          "role": "oil_pressure",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 0.7,
+            "for_ms": 2000
+          },
+          "note": "Alarm and trip settings per manufacturer; API 614 systems alarm before trip"
+        },
+        {
+          "role": "bearing_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            5000,
+            300000
+          ],
+          "weight": 0.9
+        },
+        {
+          "role": "oil_level",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.4,
+          "note": "When leakage or low fill is the cause"
+        },
+        {
+          "role": "oil_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            600000
+          ],
+          "weight": 0.4
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            30000,
+            600000
+          ],
+          "weight": 0.4
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "supply",
+            "label": "Oil supply ↓",
+            "kind": "cause",
+            "role": "oil_pressure"
+          },
+          {
+            "id": "film",
+            "label": "Oil film thickness ↓",
+            "kind": "state"
+          },
+          {
+            "id": "fric",
+            "label": "Friction ↑",
+            "kind": "state"
+          },
+          {
+            "id": "tb",
+            "label": "Bearing temperature ↑",
+            "kind": "symptom",
+            "role": "bearing_temperature"
+          },
+          {
+            "id": "visc",
+            "label": "Oil viscosity ↓",
+            "kind": "state"
+          },
+          {
+            "id": "wipe",
+            "label": "Bearing wipe / seizure",
+            "kind": "consequence"
+          }
+        ],
+        "edges": [
+          {
+            "from": "supply",
+            "to": "film",
+            "sign": "+"
+          },
+          {
+            "from": "film",
+            "to": "fric",
+            "sign": "-"
+          },
+          {
+            "from": "fric",
+            "to": "tb",
+            "sign": "+",
+            "lag_ms": [
+              5000,
+              300000
+            ]
+          },
+          {
+            "from": "tb",
+            "to": "visc",
+            "sign": "-",
+            "loop_id": "film_collapse"
+          },
+          {
+            "from": "visc",
+            "to": "film",
+            "sign": "+",
+            "loop_id": "film_collapse"
+          },
+          {
+            "from": "tb",
+            "to": "wipe",
+            "sign": "+"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "film_collapse",
+            "polarity": "reinforcing",
+            "description": "Heat thins the oil and the film collapses further, generating more heat."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "compressor.high_discharge_temperature",
+          "rule": "Oil starvation starts with falling oil pressure; process overheating starts with discharge temperature."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check oil reservoir level and look for leaks.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check oil filter ΔP, oil pump discharge pressure and relief / regulating valve setting.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Confirm the standby oil pump auto-start and low-oil-pressure trip are healthy.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Inspect bearings for wiping before restart after a low-oil-pressure trip.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "API 614 (lubrication, shaft-sealing and oil-control systems)",
+        "API 618"
+      ]
+    },
+    {
+      "pattern_id": "compressor.capacity_loss_inlet_filter",
+      "version": "1.0.0",
+      "failure_mode": "capacity_loss_inlet_filter",
+      "title": "Capacity loss / inlet filter blockage",
+      "category": "process",
+      "severity": "warning",
+      "description": "A loaded inlet filter (or a partly closed inlet valve) lowers suction pressure. Mass flow falls, pressure ratio and discharge temperature rise, and a centrifugal machine moves toward surge.",
+      "typical_progression": "Days to months for filter loading.",
+      "required_roles": [
+        "inlet_filter_dp"
+      ],
+      "optional_roles": [
+        "suction_pressure",
+        "flow",
+        "discharge_temperature",
+        "power"
+      ],
+      "trigger_role": "inlet_filter_dp",
+      "symptoms": [
+        {
+          "role": "inlet_filter_dp",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 2.0
+          },
+          "note": "Change at the manufacturer's final ΔP"
+        },
+        {
+          "role": "suction_pressure",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "flow",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.7,
+          "note": "Mass flow ∝ suction density"
+        },
+        {
+          "role": "discharge_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.4,
+          "note": "Higher pressure ratio for the same discharge pressure"
+        },
+        {
+          "role": "power",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.3,
+          "note": "Specific power (kW per unit flow) rises"
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "process_downstream",
+          "effect_role": "pressure",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            604800000
+          ],
+          "edge_type": "cause_to_effect",
+          "note": "Header pressure sags when demand exceeds reduced capacity"
+        },
+        {
+          "relation": "parallel_unit",
+          "effect_role": "power",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            604800000
+          ],
+          "edge_type": "cause_to_effect",
+          "note": "Other compressors pick up the shortfall"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "compressor.surge",
+          "rule": "Filter blockage reduces flow smoothly with rising ΔP; surge is an oscillation."
+        },
+        {
+          "vs_pattern": "compressor.discharge_valve_leak",
+          "rule": "Valve leaks lower capacity with a hot valve cover and normal inlet ΔP."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Specific power trend",
+          "formula": "SP = P / Q_delivered (kW per m3/min)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check inlet filter ΔP against the change-out value and the inlet valve position.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Trend specific power at comparable discharge pressure.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Replace filter elements with the compressor stopped and isolated.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "ISO 1217 (displacement compressor acceptance tests)",
+        "ISO 5389 (turbocompressor performance tests)"
+      ]
+    }
+  ]
+}

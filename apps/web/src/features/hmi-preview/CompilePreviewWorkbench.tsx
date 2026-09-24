@@ -8,6 +8,7 @@ import { PreviewReportPanel } from "./PreviewReportPanel";
 import { PreviewStatusStrip } from "./PreviewStatusStrip";
 import { diffPreviewAgainstCompiled } from "./previewDiff";
 import type { PreviewCompileResult } from "./previewTypes";
+import "./hmi-preview.css";
 
 const IDLE_RESULT: PreviewCompileResult = {
   status: "idle",
@@ -124,12 +125,12 @@ export function CompilePreviewWorkbench({ compiledBundle }: CompilePreviewWorkbe
       />
 
       <div className="compile-preview-workbench__actions">
-        <button type="button" className="pl-btn pl-btn--compact" onClick={handleValidate}>
+        <button type="button" className="pl-btn pl-btn--sm" onClick={handleValidate}>
           Validate draft
         </button>
         <button
           type="button"
-          className="pl-btn pl-btn--compact"
+          className="pl-btn pl-btn--sm"
           onClick={handleGenerate}
           disabled={hasDraftErrors}
           title={
@@ -140,7 +141,7 @@ export function CompilePreviewWorkbench({ compiledBundle }: CompilePreviewWorkbe
         >
           Generate local preview
         </button>
-        <button type="button" className="pl-btn pl-btn--ghost pl-btn--compact" onClick={handleReset}>
+        <button type="button" className="pl-btn pl-btn--ghost pl-btn--sm" onClick={handleReset}>
           Reset local preview
         </button>
       </div>

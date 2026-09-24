@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" role="img">
+  <title>Transformer</title>
+  <path d="M24 4V9.5M24 38.5V44"/>
+  <circle cx="24" cy="18.5" r="9"/>
+  <circle cx="24" cy="29.5" r="9"/>
+  <circle cx="24" cy="18.5" r="9"/>
+</svg>

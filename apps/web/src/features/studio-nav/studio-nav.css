@@ -1,0 +1,17 @@
+/* Plant Studio tab strip: canvas ↔ forms ↔ HMI preview ↔ components. */
+
+.sn-frame { display: grid; grid-template-rows: auto minmax(0, 1fr); height: 100%; min-height: 0; }
+.sn-frame__body { min-height: 0; overflow: auto; }
+.sn-frame__body--full { overflow: hidden; }
+
+.sn-tabs { display: flex; align-items: stretch; gap: 16px; height: 40px; padding: 0 var(--layout-gutter); background: var(--surface); border-bottom: 1px solid var(--border); min-width: 0; }
+.sn-tabs__title { display: inline-flex; align-items: center; font-size: var(--type-micro-size); font-weight: 600; letter-spacing: var(--type-micro-tracking); text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
+.sn-tabs__list { display: flex; align-items: stretch; gap: 2px; margin: 0; padding: 0; list-style: none; min-width: 0; overflow-x: auto; }
+.sn-tabs__list li { display: flex; }
+.sn-tabs__tab { position: relative; display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; color: var(--text-muted); font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap; border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+.sn-tabs__tab svg { width: 15px; height: 15px; }
+.sn-tabs__tab:hover { color: var(--text); background: var(--surface-sunken); }
+.sn-tabs__tab:focus-visible { outline-offset: -2px; }
+.sn-tabs__tab[aria-current="page"] { color: var(--text); }
+.sn-tabs__tab[aria-current="page"]::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: -1px; height: 2px; border-radius: 2px 2px 0 0; background: var(--accent); }
+.sn-tabs__tab[aria-current="page"] svg { color: var(--accent); }

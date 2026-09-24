@@ -1,0 +1,935 @@
+{
+  "library_id": "plantlens.patterns.tank",
+  "version": "1.0.0",
+  "component_type": "tank",
+  "display_name": "Tank / reservoir",
+  "description": "Failure patterns for process tanks and reservoirs: level instrumentation, overfill, leaks, valve faults and level-control oscillation.",
+  "asset_type_aliases": [],
+  "library_type_aliases": [
+    "tank_reservoir"
+  ],
+  "roles": [
+    {
+      "role": "level",
+      "quantity": "primary level measurement",
+      "units": [
+        "%",
+        "m",
+        "mm"
+      ],
+      "signal_type_prefixes": [
+        "process.level"
+      ],
+      "name_hints": [
+        "level",
+        "lt",
+        "lvl"
+      ]
+    },
+    {
+      "role": "level_secondary",
+      "quantity": "independent level measurement (redundant transmitter, radar, gauge)",
+      "units": [
+        "%",
+        "m",
+        "mm"
+      ],
+      "signal_type_prefixes": [
+        "process.level.secondary"
+      ],
+      "name_hints": [
+        "level2",
+        "lt_b",
+        "radar",
+        "gauge"
+      ]
+    },
+    {
+      "role": "level_deviation",
+      "quantity": "primary minus secondary level, derived",
+      "units": [
+        "%",
+        "m",
+        "mm"
+      ],
+      "signal_type_prefixes": [
+        "derived.level_deviation"
+      ],
+      "name_hints": [
+        "lvl_dev",
+        "level_diff"
+      ]
+    },
+    {
+      "role": "level_switch_high",
+      "quantity": "high / high-high level switch",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "status.level.high",
+        "status.bool"
+      ],
+      "name_hints": [
+        "lsh",
+        "lshh",
+        "high_level"
+      ]
+    },
+    {
+      "role": "level_switch_low",
+      "quantity": "low / low-low level switch",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "status.level.low",
+        "status.bool"
+      ],
+      "name_hints": [
+        "lsl",
+        "lsll",
+        "low_level"
+      ]
+    },
+    {
+      "role": "inflow",
+      "quantity": "total inflow",
+      "units": [
+        "m3/h",
+        "L/min",
+        "t/h"
+      ],
+      "signal_type_prefixes": [
+        "process.flow.in"
+      ],
+      "name_hints": [
+        "inflow",
+        "fin",
+        "feed"
+      ]
+    },
+    {
+      "role": "outflow",
+      "quantity": "total outflow",
+      "units": [
+        "m3/h",
+        "L/min",
+        "t/h"
+      ],
+      "signal_type_prefixes": [
+        "process.flow.out"
+      ],
+      "name_hints": [
+        "outflow",
+        "fout",
+        "draw"
+      ]
+    },
+    {
+      "role": "mass_balance_error",
+      "quantity": "inventory change minus (inflow − outflow), derived",
+      "units": [
+        "m3/h",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "derived.mass_balance"
+      ],
+      "name_hints": [
+        "balance",
+        "imbalance"
+      ]
+    },
+    {
+      "role": "valve_command",
+      "quantity": "command to the level control valve (inlet or outlet)",
+      "units": [
+        "%",
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "control.command",
+        "control.output"
+      ],
+      "name_hints": [
+        "lcv_op",
+        "valve_cmd",
+        "_op"
+      ]
+    },
+    {
+      "role": "valve_position",
+      "quantity": "position of the level control / isolation valve",
+      "units": [
+        "%",
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "control.position"
+      ],
+      "name_hints": [
+        "lcv_pos",
+        "valve_fb",
+        "zt"
+      ]
+    },
+    {
+      "role": "controller_output",
+      "quantity": "level controller output",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "control.output"
+      ],
+      "name_hints": [
+        "lic_op",
+        "ctrl_out"
+      ]
+    },
+    {
+      "role": "temperature",
+      "quantity": "liquid temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "process.temperature",
+        "thermal.temperature"
+      ],
+      "name_hints": [
+        "temp",
+        "tt"
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "pattern_id": "tank.level_transmitter_fault",
+      "version": "1.0.0",
+      "failure_mode": "level_transmitter_fault",
+      "title": "Level transmitter fault (instrument vs real level)",
+      "category": "instrumentation",
+      "severity": "warning",
+      "description": "The level reading is wrong while the real level is not: plugged or leaking DP impulse lines, density or temperature change on a DP transmitter, foam or build-up on a radar, a stuck float, or a failed transmitter. The reading freezes, drifts or steps without the flows to explain it.",
+      "typical_progression": "Sudden (failure, freeze) or gradual (drift, build-up).",
+      "required_roles": [
+        "level"
+      ],
+      "optional_roles": [
+        "level_secondary",
+        "level_deviation",
+        "mass_balance_error",
+        "inflow",
+        "outflow",
+        "temperature"
+      ],
+      "trigger_role": "level",
+      "symptoms": [
+        {
+          "role": "level",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Frozen, flat-lined, or stepping without a matching flow change"
+        },
+        {
+          "role": "level_deviation",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.9,
+          "note": "Disagreement with the independent measurement beyond its accuracy"
+        },
+        {
+          "role": "mass_balance_error",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.8,
+          "note": "dL/dt disagrees with (inflow − outflow)/area"
+        },
+        {
+          "role": "level_secondary",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.4,
+          "note": "The independent measurement keeps moving (either direction)"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "tank.overflow_risk",
+          "rule": "Real level change is confirmed by the secondary measurement and the flow balance; a transmitter fault is not."
+        },
+        {
+          "vs_pattern": "tank.leak",
+          "rule": "A leak shows level falling on BOTH measurements with a flow-balance deficit."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Inventory balance",
+          "formula": "A · dL/dt = Q_in − Q_out  (residual = mass_balance_error)"
+        },
+        {
+          "domain": "trend",
+          "description": "DP level density dependence",
+          "formula": "L = ΔP / (ρ · g): a density change shifts the reading without a real change"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare the primary reading with the secondary measurement, sight glass or a manual dip.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the flow balance over the last hours for consistency with the level trend.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "For DP transmitters, check impulse lines, seals and the density used in the configuration.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Isolate and service the transmitter per the procedure (the tank may need alternative level monitoring meanwhile).",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "IEC 61511 (instrument diagnostics for SIF level sensors)",
+        "API 2350 (tank overfill protection)"
+      ]
+    },
+    {
+      "pattern_id": "tank.overflow_risk",
+      "version": "1.0.0",
+      "failure_mode": "overflow_risk",
+      "title": "Overfill / overflow risk",
+      "category": "process",
+      "severity": "critical",
+      "description": "Inflow exceeds outflow for long enough to approach the high-high level: a stuck-open inlet, a closed outlet, a failed level control or an operator line-up error. Time to overflow is (free volume)/(net inflow).",
+      "typical_progression": "Minutes to hours depending on free volume and net inflow.",
+      "required_roles": [
+        "level"
+      ],
+      "optional_roles": [
+        "inflow",
+        "outflow",
+        "level_switch_high",
+        "level_secondary",
+        "valve_position"
+      ],
+      "trigger_role": "level",
+      "symptoms": [
+        {
+          "role": "level",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 90
+          },
+          "note": "Alarm set so operators have the API 2350 response time before high-high"
+        },
+        {
+          "role": "inflow",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.6,
+          "note": "Or normal inflow with falling outflow"
+        },
+        {
+          "role": "outflow",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.5
+        },
+        {
+          "role": "level_secondary",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.7,
+          "note": "Independent measurement confirms"
+        },
+        {
+          "role": "level_switch_high",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            7200000
+          ],
+          "weight": 0.8
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "imb",
+            "label": "Inflow > outflow",
+            "kind": "cause"
+          },
+          {
+            "id": "l",
+            "label": "Level ↑",
+            "kind": "symptom",
+            "role": "level"
+          },
+          {
+            "id": "lic",
+            "label": "Level controller acts",
+            "kind": "state"
+          },
+          {
+            "id": "q",
+            "label": "Net inflow ↓",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "imb",
+            "to": "l",
+            "sign": "+",
+            "lag_ms": [
+              0,
+              7200000
+            ]
+          },
+          {
+            "from": "l",
+            "to": "lic",
+            "sign": "+",
+            "loop_id": "level_control"
+          },
+          {
+            "from": "lic",
+            "to": "q",
+            "sign": "-",
+            "loop_id": "level_control"
+          },
+          {
+            "from": "q",
+            "to": "l",
+            "sign": "+",
+            "loop_id": "level_control"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "level_control",
+            "polarity": "balancing",
+            "description": "Normally the level controller cuts net inflow; overflow risk appears when this loop is broken (valve stuck, controller in manual, or flows outside its authority)."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "process_upstream",
+          "effect_role": "flow",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            60000
+          ],
+          "edge_type": "cause_to_effect",
+          "note": "If the high-level interlock closes the inlet, upstream pumps may dead-head"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "tank.level_transmitter_fault",
+          "rule": "A real rise is confirmed by the secondary measurement and the flow balance."
+        },
+        {
+          "vs_pattern": "tank.inlet_outlet_valve_stuck",
+          "rule": "If the controller output is saturated but the valve position did not follow, the valve is the cause.",
+          "first_role": "valve_position",
+          "then_role": "level"
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Time to overflow",
+          "formula": "t_overflow = A · (L_overflow − L) / (Q_in − Q_out)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Confirm the level with the independent measurement or a local gauge.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the valve line-up on inlet and outlet and whether the level controller is in auto.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Estimate time to overflow from net inflow and inform the operator in charge.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Confirm the independent high-high protection (SIF / overfill protection) is in service.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "API 2350 (overfill protection for storage tanks)",
+        "IEC 61511"
+      ]
+    },
+    {
+      "pattern_id": "tank.leak",
+      "version": "1.0.0",
+      "failure_mode": "leak",
+      "title": "Tank leak",
+      "category": "process",
+      "severity": "critical",
+      "description": "Liquid is lost through the floor, shell, a nozzle or a drain valve left open. Level falls (or rises less than the flows predict) on all level measurements and the flow balance shows a persistent deficit.",
+      "typical_progression": "Hours to months; small floor leaks may only show in a static (no-flow) test.",
+      "required_roles": [
+        "level"
+      ],
+      "optional_roles": [
+        "mass_balance_error",
+        "level_secondary",
+        "inflow",
+        "outflow",
+        "level_switch_low"
+      ],
+      "trigger_role": "level",
+      "symptoms": [
+        {
+          "role": "level",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Unexplained fall, clearest during a static period with inlet and outlet closed"
+        },
+        {
+          "role": "mass_balance_error",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.9,
+          "note": "Persistent deficit beyond measurement uncertainty; correct for temperature expansion"
+        },
+        {
+          "role": "level_secondary",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.6,
+          "note": "Confirms the loss is real"
+        },
+        {
+          "role": "level_switch_low",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.4,
+          "note": "Large leaks only"
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "process_downstream",
+          "effect_role": "flow",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            3600000
+          ],
+          "edge_type": "cause_to_effect",
+          "note": "Less liquid is available to downstream consumers"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "tank.level_transmitter_fault",
+          "rule": "A leak shows on all independent measurements; a transmitter drift shows on one."
+        },
+        {
+          "vs_pattern": "valve.seat_leakage",
+          "rule": "A passing outlet or drain valve is a 'leak' through a closed valve; check downstream of each valve."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Static leak test",
+          "formula": "Q_leak = −A · dL/dt with inlet and outlet isolated, temperature-corrected"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Run a static level test with inlet and outlet isolated and correct for temperature.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Walk the tank, bund and nozzles for visible leakage and check drain and sample valves are closed.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check leak detection under the floor or in the interstitial space where fitted.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "API 653 (tank inspection)",
+        "API 575 (inspection of atmospheric and low-pressure storage tanks)"
+      ]
+    },
+    {
+      "pattern_id": "tank.inlet_outlet_valve_stuck",
+      "version": "1.0.0",
+      "failure_mode": "inlet_outlet_valve_stuck",
+      "title": "Inlet / outlet valve stuck",
+      "category": "control",
+      "severity": "warning",
+      "description": "The valve that controls inflow or outflow does not follow its command (seized, lost air or power, failed solenoid). The level drifts and the level controller winds up against its limit.",
+      "typical_progression": "Level drift starts at the first command change; minutes to hours to reach an alarm.",
+      "required_roles": [
+        "valve_position"
+      ],
+      "optional_roles": [
+        "valve_command",
+        "level",
+        "inflow",
+        "outflow",
+        "controller_output"
+      ],
+      "trigger_role": "valve_position",
+      "symptoms": [
+        {
+          "role": "valve_position",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "No movement while command changes"
+        },
+        {
+          "role": "controller_output",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            600000
+          ],
+          "weight": 0.8,
+          "note": "Winds up toward a limit (either direction)"
+        },
+        {
+          "role": "level",
+          "direction": "rise",
+          "onset_lag_ms": [
+            60000,
+            7200000
+          ],
+          "weight": 0.8,
+          "note": "Direction depends on which valve and where it stuck"
+        },
+        {
+          "role": "outflow",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            60000
+          ],
+          "weight": 0.5
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "process_downstream",
+          "effect_role": "flow",
+          "direction": "stuck",
+          "polarity": "any",
+          "lag_ms": [
+            0,
+            60000
+          ],
+          "edge_type": "cause_to_effect"
+        },
+        {
+          "relation": "controller",
+          "effect_role": "controller_output",
+          "direction": "rise",
+          "polarity": "any",
+          "lag_ms": [
+            0,
+            600000
+          ],
+          "edge_type": "control"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "valve.stiction",
+          "rule": "Stiction moves in jumps and creates a limit cycle; a stuck valve does not move."
+        },
+        {
+          "vs_pattern": "valve.actuator_air_supply_loss",
+          "rule": "Loss of air drives the valve to its fail position; check supply pressure."
+        },
+        {
+          "vs_pattern": "valve.solenoid_coil_failure",
+          "rule": "On/off valves: check coil current and limit switches."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare valve command, position and the flow through the valve.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the valve's actuator supply and diagnostics (see the valve patterns).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check that no manual block or bypass valve has been operated.",
+          "requires_isolation": false
+        }
+      ]
+    },
+    {
+      "pattern_id": "tank.level_control_oscillation",
+      "version": "1.0.0",
+      "failure_mode": "level_control_oscillation",
+      "title": "Level control loop oscillation",
+      "category": "control",
+      "severity": "warning",
+      "description": "The level loop cycles: PI tuning too aggressive for an integrating process, too little integral time, valve stiction, or interaction with another loop. Level and outflow oscillate and disturb downstream units.",
+      "typical_progression": "Continuous once established; often starts after a retune, valve change or throughput change.",
+      "required_roles": [
+        "level",
+        "controller_output"
+      ],
+      "optional_roles": [
+        "outflow",
+        "valve_position"
+      ],
+      "trigger_role": "level",
+      "symptoms": [
+        {
+          "role": "level",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0
+        },
+        {
+          "role": "controller_output",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.9
+        },
+        {
+          "role": "outflow",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            60000
+          ],
+          "weight": 0.7
+        },
+        {
+          "role": "valve_position",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            60000
+          ],
+          "weight": 0.5
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "err",
+            "label": "Level error",
+            "kind": "state"
+          },
+          {
+            "id": "op",
+            "label": "Controller output",
+            "kind": "symptom",
+            "role": "controller_output"
+          },
+          {
+            "id": "q",
+            "label": "Outflow",
+            "kind": "symptom",
+            "role": "outflow"
+          },
+          {
+            "id": "l",
+            "label": "Level",
+            "kind": "symptom",
+            "role": "level"
+          },
+          {
+            "id": "tune",
+            "label": "Kc·Ti too small / stiction",
+            "kind": "cause"
+          }
+        ],
+        "edges": [
+          {
+            "from": "l",
+            "to": "err",
+            "sign": "+",
+            "loop_id": "level_loop"
+          },
+          {
+            "from": "err",
+            "to": "op",
+            "sign": "+",
+            "loop_id": "level_loop"
+          },
+          {
+            "from": "op",
+            "to": "q",
+            "sign": "+",
+            "loop_id": "level_loop"
+          },
+          {
+            "from": "q",
+            "to": "l",
+            "sign": "-",
+            "lag_ms": [
+              10000,
+              1800000
+            ],
+            "loop_id": "level_loop"
+          },
+          {
+            "from": "tune",
+            "to": "op",
+            "sign": "+"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "level_loop",
+            "polarity": "balancing",
+            "description": "The loop is balancing, but an integrating process with PI control oscillates when Kc·Kp·Ti is small (damping ζ = 0.5·√(Kc·Kp·Ti))."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "process_downstream",
+          "effect_role": "flow",
+          "direction": "oscillate",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            60000
+          ],
+          "edge_type": "cause_to_effect",
+          "note": "Outflow swings disturb the downstream unit"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "valve.stiction",
+          "rule": "Stiction: triangular controller output with square-ish level/flow. Tuning: both sinusoidal."
+        },
+        {
+          "vs_pattern": "tank.level_transmitter_fault",
+          "rule": "A noisy or stepping transmitter can drive the loop; check the secondary measurement."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Integrating process with PI control",
+          "formula": "T_osc ≈ 2π·√(Ti/(Kc·Kp)); ζ = 0.5·√(Kc·Kp·Ti), Kp = integrating gain"
+        },
+        {
+          "domain": "waveform",
+          "description": "Sinusoidal OP and PV indicate tuning; triangular OP and square PV indicate stiction"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Measure the oscillation period and compare OP and PV shapes.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Run a valve stiction test (small command steps with the loop in manual, operator decision).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Review tuning; averaging level control usually needs a low gain and long integral time.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "ISA-TR75.25.02 (valve response and loop performance)",
+        "Seborg, Edgar, Mellichamp, 'Process Dynamics and Control' (integrating processes)"
+      ]
+    }
+  ]
+}

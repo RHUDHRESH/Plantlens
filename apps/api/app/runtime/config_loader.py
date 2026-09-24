@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import threading
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -21,6 +22,9 @@ class GraphEdge:
     lag_ms: tuple[int, int]
     edge_type: str
     weight: float = 1.0
+    polarity: str = "any"
+    loop_ok: bool = False
+    loop_id: str | None = None
 
 
 @dataclass
@@ -31,6 +35,8 @@ class RuntimeConfig:
     asset_index: dict[str, dict[str, Any]]
     tag_index: dict[str, dict[str, Any]]
     graph_index: dict[str, Any] = field(default_factory=dict)
+    bundle_rev: int | None = None  # authored revision this config was built from (None = files)
+    bundle_hash: str | None = None
 
 
 _config: RuntimeConfig | None = None
@@ -62,6 +68,9 @@ def _build_graph_index(causal_graph: dict[str, Any]) -> dict[str, Any]:
             lag_ms=(int(edge["lag_ms"][0]), int(edge["lag_ms"][1])),
             edge_type=edge.get("edge_type", ""),
             weight=float(edge.get("weight", 1.0)),
+            polarity=str(edge.get("polarity", "any")),
+            loop_ok=bool(edge.get("loop_ok", False)),
+            loop_id=edge.get("loop_id"),
         )
         reverse_adjacency.setdefault(graph_edge.to_node, []).append(graph_edge)
         forward_adjacency.setdefault(graph_edge.from_node, []).append(graph_edge)
@@ -73,29 +82,57 @@ def _build_graph_index(causal_graph: dict[str, Any]) -> dict[str, Any]:
         "forward_adjacency": forward_adjacency,
         "root_cause_rules": causal_graph.get("root_cause_rules", []),
         "situation_types": causal_graph.get("situation_types", []),
+        "scoring": causal_graph.get("scoring", {}),
         "edges_by_id": {edge["id"]: edge for edge in causal_graph.get("edges", [])},
     }
 
 
-def load_runtime_config(plant_id: str, *, sample_data_dir: Path) -> RuntimeConfig:
-    bundle_dir = sample_data_dir
-    plant = _load_json(bundle_dir / "plant.json")
-    tag_map = _load_json(bundle_dir / "tag_map.json")
-    alarm_rules_doc = AlarmRules.model_validate(_load_json(bundle_dir / "alarm_rules.json"))
-    causal_graph = _load_json(bundle_dir / "causal_graph.json")
-    action_envelope = yaml.safe_load((bundle_dir / "action_envelope.yaml").read_text(encoding="utf-8"))
+BUNDLE_DOCS = ("plant", "tag_map", "alarm_rules", "causal_graph", "action_envelope")
 
+
+def read_bundle_files(sample_data_dir: Path) -> dict[str, Any]:
+    """Authored bundle documents from disk, as one dict keyed by document name."""
+    return {
+        "plant": _load_json(sample_data_dir / "plant.json"),
+        "tag_map": _load_json(sample_data_dir / "tag_map.json"),
+        "alarm_rules": _load_json(sample_data_dir / "alarm_rules.json"),
+        "causal_graph": _load_json(sample_data_dir / "causal_graph.json"),
+        "action_envelope": yaml.safe_load(
+            (sample_data_dir / "action_envelope.yaml").read_text(encoding="utf-8")
+        )
+        or {"actions": []},
+    }
+
+
+def build_runtime_config(
+    plant_id: str,
+    bundle: dict[str, Any],
+    *,
+    bundle_rev: int | None = None,
+    bundle_hash: str | None = None,
+) -> RuntimeConfig:
+    """Build immutable runtime indexes from an in-memory bundle (files or a DB revision)."""
     return RuntimeConfig(
         plant_id=plant_id,
-        alarm_rules=alarm_rules_doc.rules,
-        action_envelope=action_envelope or {"actions": []},
-        asset_index=_build_asset_index(plant),
-        tag_index=_build_tag_index(tag_map),
-        graph_index=_build_graph_index(causal_graph),
+        alarm_rules=AlarmRules.model_validate(bundle["alarm_rules"]).rules,
+        action_envelope=bundle.get("action_envelope") or {"actions": []},
+        asset_index=_build_asset_index(bundle["plant"]),
+        tag_index=_build_tag_index(bundle["tag_map"]),
+        graph_index=_build_graph_index(bundle["causal_graph"]),
+        bundle_rev=bundle_rev,
+        bundle_hash=bundle_hash,
     )
 
 
+def load_runtime_config(plant_id: str, *, sample_data_dir: Path) -> RuntimeConfig:
+    return build_runtime_config(plant_id, read_bundle_files(sample_data_dir))
+
+
+_swap_lock = threading.Lock()
+
+
 def get_runtime_config() -> RuntimeConfig:
+    """Current config. Callers take ONE reference per evaluation, so a swap never lands mid-tick."""
     global _config
     if _config is None:
         from app.settings import get_settings
@@ -109,9 +146,23 @@ def get_runtime_config() -> RuntimeConfig:
 
 
 def hot_reload(plant_id: str, *, sample_data_dir: Path) -> RuntimeConfig:
+    return deploy_runtime_config(load_runtime_config(plant_id, sample_data_dir=sample_data_dir))
+
+
+def deploy_runtime_config(config: RuntimeConfig) -> RuntimeConfig:
+    """Atomically replace the active config and reconcile per-rule runtime state.
+
+    Graph and rules are never mutated in place (R2): a new immutable config replaces the old
+    reference. Alarm/projection state for rules that no longer exist is dropped; state for
+    rules that still exist carries over, so active alarms are not spuriously re-raised.
+    """
     global _config
-    _config = load_runtime_config(plant_id, sample_data_dir=sample_data_dir)
-    return _config
+    from app.runtime.alarm_engine import reconcile_alarm_engine_state
+
+    with _swap_lock:
+        _config = config
+        reconcile_alarm_engine_state({rule.id for rule in config.alarm_rules})
+    return config
 
 
 def reset_runtime_config_for_tests() -> None:

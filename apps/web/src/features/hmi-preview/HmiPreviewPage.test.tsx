@@ -1,7 +1,9 @@
 import type { ReactElement } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { HmiPreviewPage } from "./HmiPreviewPage";
+import { useSession } from "../../app/session";
 import { ApiError } from "../../api/types";
 import type { PlantHMIState } from "../../app/schemas/plantHmi";
 
@@ -40,11 +42,13 @@ vi.mock("../../api/hmi", () => ({
 import { getRuntimeHmiState, postHmiPreview } from "../../api/hmi";
 
 function renderPage(ui: ReactElement = <HmiPreviewPage />) {
-  return render(ui);
+  return render(<MemoryRouter initialEntries={["/eng/studio/hmi-preview"]}>{ui}</MemoryRouter>);
 }
 
 describe("HmiPreviewPage", () => {
   beforeEach(() => {
+    // The app shell owns sign-in; the page only waits for a ready session.
+    useSession.setState({ status: "ready", role: "engineer", subject: "engineer-test", error: null });
     vi.mocked(postHmiPreview).mockReset();
     vi.mocked(getRuntimeHmiState).mockReset();
     vi.mocked(postHmiPreview).mockResolvedValue(BASE_STATE);
@@ -52,8 +56,8 @@ describe("HmiPreviewPage", () => {
 
   it("renders mode switcher", async () => {
     renderPage();
-    expect(await screen.findByRole("tab", { name: /Scenario Preview/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /Runtime Snapshot/i })).toBeInTheDocument();
+    expect(await screen.findByRole("radio", { name: /Scenario Preview/i })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /Runtime Snapshot/i })).toBeInTheDocument();
   });
 
   it("renders scenario preview source badge", async () => {
@@ -68,8 +72,8 @@ describe("HmiPreviewPage", () => {
       new ApiError(404, { message: "Not found" }),
     );
     renderPage();
-    await screen.findByRole("tab", { name: /Runtime Snapshot/i });
-    fireEvent.click(screen.getByRole("tab", { name: /Runtime Snapshot/i }));
+    await screen.findByRole("radio", { name: /Runtime Snapshot/i });
+    fireEvent.click(screen.getByRole("radio", { name: /Runtime Snapshot/i }));
     fireEvent.click(screen.getByRole("button", { name: /Load runtime HMI/i }));
     expect(
       await screen.findByText(/Runtime HMI endpoint is not available yet/i),

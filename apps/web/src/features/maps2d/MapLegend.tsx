@@ -1,3 +1,5 @@
+import { PriorityGlyph } from "../../components/ui/primitives";
+import { assetStatusKind } from "../operational-map/format";
 import { STATUS_VISUALS } from "./statusStyles";
 import type { AssetStatus } from "./mapTypes";
 
@@ -36,7 +38,7 @@ export function MapLegend({ reducedMotion = false }: { reducedMotion?: boolean }
               aria-hidden
             />
             <span>
-              {visual.icon} {visual.label}
+              <PriorityGlyph status={assetStatusKind(status)} /> {visual.label}
             </span>
           </span>
         );

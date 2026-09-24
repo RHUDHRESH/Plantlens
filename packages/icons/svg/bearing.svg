@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" role="img">
+  <title>Bearing</title>
+  <path d="M8 41H40"/>
+  <path d="M11 41V36.5H15.6L17 30.4A11.2 11.2 0 1 1 31 30.4L32.4 36.5H37V41"/>
+  <circle cx="24" cy="22" r="6.6"/>
+  <circle cx="24" cy="22" r="2.8"/>
+</svg>

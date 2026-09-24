@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" role="img">
+  <title>Check valve</title>
+  <path d="M9 21.5V38.5L39 21.5V38.5Z"/>
+  <path d="M11 14H31"/>
+  <path d="M37 14L31 17.2L31 10.8Z" fill="currentColor" stroke="none"/>
+</svg>

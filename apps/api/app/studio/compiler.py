@@ -8,7 +8,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-from app.runtime.config_loader import hot_reload
+from app.runtime.config_loader import get_runtime_config, hot_reload
 from app.studio.config_store import load_authored, load_compiled, save_compiled
 from app.studio.graph_checks import check_acyclic, topo_order
 from app.studio.validators import validate_bundle
@@ -238,5 +238,13 @@ def compile_project(
         compiled_dir=compiled_dir,
     )
     if result.get("status") == "ok":
-        hot_reload(plant_id, sample_data_dir=sample_data_dir)
+        active_rev = get_runtime_config().bundle_rev
+        if active_rev is None:
+            hot_reload(plant_id, sample_data_dir=sample_data_dir)
+            result["runtime_reload"] = "reloaded_from_files"
+        else:
+            # An engineer-approved revision is live; editing files must not silently replace it.
+            result["runtime_reload"] = (
+                f"skipped: runtime runs approved revision r{active_rev}; submit changes via /api/changes"
+            )
     return result

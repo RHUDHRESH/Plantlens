@@ -49,7 +49,11 @@ python -m unittest discover -s tests -v
 
 ## Default prototype configuration
 
-- sample rate: 800 Hz
+- sample rate: 800 Hz on the MCU; the serial stream carries 25 Hz window aggregates
+  (`vib_mean`, `vib_p2p`, ...) as header-driven CSV at 115200 baud. 800 raw rows/s of text
+  (~320 kbit/s) do not fit a serial link and used to block `loop()`. Raw 800 Hz windows for
+  training must be captured on the MCU side (or over a binary transport), not over this text link.
+  See `apps/gateway/README.md` for the gateway-side CSV mapping.
 - window: 2 seconds
 - overlap: 50%
 - accepted known class: probability at least 0.70

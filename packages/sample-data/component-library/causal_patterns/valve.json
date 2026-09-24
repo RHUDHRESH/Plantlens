@@ -1,0 +1,1235 @@
+{
+  "library_id": "plantlens.patterns.valve",
+  "version": "1.0.0",
+  "component_type": "valve",
+  "display_name": "Valve (control and on/off)",
+  "description": "Failure patterns for pneumatic control valves and solenoid on/off valves: friction, actuator supply, positioner, seat tightness, cavitation and coil failure.",
+  "asset_type_aliases": [],
+  "library_type_aliases": [
+    "solenoid_valve"
+  ],
+  "roles": [
+    {
+      "role": "command",
+      "quantity": "valve command (controller output / positioner setpoint or on-off command)",
+      "units": [
+        "%",
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "control.command",
+        "control.output"
+      ],
+      "name_hints": [
+        "cmd",
+        "_op",
+        "_sp",
+        "demand"
+      ]
+    },
+    {
+      "role": "position",
+      "quantity": "valve stem position feedback",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "control.position"
+      ],
+      "name_hints": [
+        "pos",
+        "zt",
+        "_fb",
+        "travel"
+      ]
+    },
+    {
+      "role": "position_deviation",
+      "quantity": "command minus position (positioner deviation)",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "control.deviation"
+      ],
+      "name_hints": [
+        "dev",
+        "deviation",
+        "err"
+      ]
+    },
+    {
+      "role": "limit_open",
+      "quantity": "open limit switch",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "status.limit.open",
+        "status.bool"
+      ],
+      "name_hints": [
+        "zso",
+        "lso",
+        "open_ls"
+      ]
+    },
+    {
+      "role": "limit_closed",
+      "quantity": "closed limit switch",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "status.limit.closed",
+        "status.bool"
+      ],
+      "name_hints": [
+        "zsc",
+        "lsc",
+        "closed_ls"
+      ]
+    },
+    {
+      "role": "flow",
+      "quantity": "flow through the valve (line flow)",
+      "units": [
+        "m3/h",
+        "kg/h",
+        "L/min",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "process.flow"
+      ],
+      "name_hints": [
+        "flow",
+        "fit"
+      ]
+    },
+    {
+      "role": "upstream_pressure",
+      "quantity": "valve inlet pressure (P1)",
+      "units": [
+        "bar",
+        "kPa",
+        "psi"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.upstream"
+      ],
+      "name_hints": [
+        "p1",
+        "inlet_p",
+        "up_p"
+      ]
+    },
+    {
+      "role": "downstream_pressure",
+      "quantity": "valve outlet pressure (P2)",
+      "units": [
+        "bar",
+        "kPa",
+        "psi"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.downstream"
+      ],
+      "name_hints": [
+        "p2",
+        "outlet_p",
+        "dn_p"
+      ]
+    },
+    {
+      "role": "downstream_temperature",
+      "quantity": "fluid / pipe temperature just downstream of the valve",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "process.temperature",
+        "thermal.temperature"
+      ],
+      "name_hints": [
+        "dn_t",
+        "outlet_t",
+        "tail_t"
+      ]
+    },
+    {
+      "role": "supply_air_pressure",
+      "quantity": "actuator instrument air supply pressure",
+      "units": [
+        "bar",
+        "kPa",
+        "psi"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.air_supply"
+      ],
+      "name_hints": [
+        "air_sup",
+        "ias",
+        "supply_p"
+      ]
+    },
+    {
+      "role": "actuator_pressure",
+      "quantity": "actuator diaphragm / cylinder pressure (positioner output)",
+      "units": [
+        "bar",
+        "kPa",
+        "psi"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.actuator"
+      ],
+      "name_hints": [
+        "act_p",
+        "output_p"
+      ]
+    },
+    {
+      "role": "vibration",
+      "quantity": "valve body / downstream pipe vibration",
+      "units": [
+        "mm/s",
+        "g"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration"
+      ],
+      "name_hints": [
+        "vib"
+      ]
+    },
+    {
+      "role": "acoustic",
+      "quantity": "acoustic emission / noise level at the valve",
+      "units": [
+        "dB",
+        "dBA"
+      ],
+      "signal_type_prefixes": [
+        "acoustic"
+      ],
+      "name_hints": [
+        "acoustic",
+        "noise",
+        "ae_"
+      ]
+    },
+    {
+      "role": "solenoid_current",
+      "quantity": "solenoid coil current",
+      "units": [
+        "A",
+        "mA"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current"
+      ],
+      "name_hints": [
+        "coil_i",
+        "sol_i",
+        "current"
+      ]
+    },
+    {
+      "role": "solenoid_voltage",
+      "quantity": "voltage at the solenoid coil terminals",
+      "units": [
+        "V"
+      ],
+      "signal_type_prefixes": [
+        "electrical.voltage"
+      ],
+      "name_hints": [
+        "coil_v",
+        "sol_v",
+        "voltage"
+      ]
+    },
+    {
+      "role": "coil_temperature",
+      "quantity": "solenoid coil / housing temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.coil",
+        "thermal.temperature"
+      ],
+      "name_hints": [
+        "coil_t",
+        "sol_t"
+      ]
+    },
+    {
+      "role": "travel_time",
+      "quantity": "measured stroke time on the last operation",
+      "units": [
+        "s"
+      ],
+      "signal_type_prefixes": [
+        "duty.stroke_time"
+      ],
+      "name_hints": [
+        "stroke",
+        "travel_t"
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "pattern_id": "valve.stiction",
+      "version": "1.0.0",
+      "failure_mode": "stiction",
+      "title": "Control valve stiction (stick-slip)",
+      "category": "control",
+      "severity": "warning",
+      "description": "Packing friction, a damaged stem or a sticky actuator stops the valve until the positioner builds enough force; it then jumps. Inside a PI loop this produces a self-sustaining limit cycle: the controller output ramps (triangle) while position and the process variable move in steps (square-ish).",
+      "typical_progression": "Weeks to months as packing tightens or wears; persistent once established.",
+      "required_roles": [
+        "position",
+        "command"
+      ],
+      "optional_roles": [
+        "position_deviation",
+        "flow",
+        "actuator_pressure"
+      ],
+      "trigger_role": "position",
+      "symptoms": [
+        {
+          "role": "position",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Position holds while command changes by more than the valve's dead band, then jumps"
+        },
+        {
+          "role": "command",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            300000
+          ],
+          "weight": 0.9,
+          "note": "Triangular / sawtooth controller output"
+        },
+        {
+          "role": "flow",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            300000
+          ],
+          "weight": 0.8,
+          "note": "Square-ish process variable"
+        },
+        {
+          "role": "position_deviation",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            300000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "actuator_pressure",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            300000
+          ],
+          "weight": 0.4,
+          "note": "Pressure ramps then drops at each slip"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "fric",
+            "label": "Static friction > dynamic friction",
+            "kind": "cause"
+          },
+          {
+            "id": "stick",
+            "label": "Valve sticks",
+            "kind": "symptom",
+            "role": "position"
+          },
+          {
+            "id": "err",
+            "label": "Control error persists",
+            "kind": "state"
+          },
+          {
+            "id": "op",
+            "label": "Controller output ramps (integral)",
+            "kind": "symptom",
+            "role": "command"
+          },
+          {
+            "id": "slip",
+            "label": "Valve slips and overshoots",
+            "kind": "state"
+          },
+          {
+            "id": "pv",
+            "label": "PV steps past setpoint",
+            "kind": "symptom",
+            "role": "flow"
+          }
+        ],
+        "edges": [
+          {
+            "from": "fric",
+            "to": "stick",
+            "sign": "+"
+          },
+          {
+            "from": "stick",
+            "to": "err",
+            "sign": "+"
+          },
+          {
+            "from": "err",
+            "to": "op",
+            "sign": "+",
+            "lag_ms": [
+              0,
+              300000
+            ],
+            "loop_id": "stick_slip_cycle"
+          },
+          {
+            "from": "op",
+            "to": "slip",
+            "sign": "+",
+            "loop_id": "stick_slip_cycle"
+          },
+          {
+            "from": "slip",
+            "to": "pv",
+            "sign": "+",
+            "loop_id": "stick_slip_cycle"
+          },
+          {
+            "from": "pv",
+            "to": "err",
+            "sign": "-",
+            "loop_id": "stick_slip_cycle"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "stick_slip_cycle",
+            "polarity": "balancing",
+            "description": "The control loop is balancing, but the friction dead band plus integral action turns it into a sustained limit cycle."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "controller",
+          "effect_role": "controller_output",
+          "direction": "oscillate",
+          "polarity": "any",
+          "lag_ms": [
+            0,
+            300000
+          ],
+          "edge_type": "control",
+          "loop_ok": true,
+          "loop_id": "valve_stiction_cycle",
+          "note": "The controller oscillates in a limit cycle with the valve"
+        },
+        {
+          "relation": "process_downstream",
+          "effect_role": "flow",
+          "direction": "oscillate",
+          "polarity": "any",
+          "lag_ms": [
+            0,
+            300000
+          ],
+          "edge_type": "cause_to_effect"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "tank.level_control_oscillation",
+          "rule": "Aggressive tuning gives sinusoidal OP and PV; stiction gives triangular OP and square PV, and the OP–PV plot is a parallelogram."
+        },
+        {
+          "vs_pattern": "valve.positioner_failure_feedback_mismatch",
+          "rule": "Positioner failure gives a steady deviation; stiction gives intermittent deviation with jumps."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "waveform",
+          "description": "Controller output triangular, PV square-wave; OP–position plot forms a parallelogram whose width is the stick band"
+        },
+        {
+          "domain": "trend",
+          "description": "Stick band estimate from a small step test",
+          "formula": "S ≈ smallest command step (%) that produces movement; ISA-75.25.01 resolution / dead band"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Put the loop in manual (operator decision) and apply small command steps (0.5–1 %); record the smallest step that moves the valve.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Review positioner diagnostics (friction, supply, deviation) if a digital positioner is fitted.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Adjust or replace packing and inspect the stem finish with the valve isolated.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "ISA-75.25.01 (control valve response measurement)",
+        "ISA-TR75.25.02",
+        "Choudhury, Shah & Thornhill, 'Diagnosis of Process Nonlinearities and Valve Stiction' (2008)"
+      ]
+    },
+    {
+      "pattern_id": "valve.actuator_air_supply_loss",
+      "version": "1.0.0",
+      "failure_mode": "actuator_air_supply_loss",
+      "title": "Actuator air-supply loss",
+      "category": "supply",
+      "severity": "critical",
+      "description": "Instrument air to the positioner or actuator fails (header loss, closed isolating valve, blocked filter-regulator, broken tubing). A spring-return valve drives to its fail-safe position regardless of command; double-acting actuators may drift.",
+      "typical_progression": "Seconds.",
+      "required_roles": [
+        "supply_air_pressure"
+      ],
+      "optional_roles": [
+        "position",
+        "command",
+        "position_deviation",
+        "flow",
+        "actuator_pressure"
+      ],
+      "trigger_role": "supply_air_pressure",
+      "symptoms": [
+        {
+          "role": "supply_air_pressure",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 0.7
+          },
+          "note": "Below the actuator's minimum supply pressure (nameplate)"
+        },
+        {
+          "role": "actuator_pressure",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "position",
+          "direction": "step",
+          "onset_lag_ms": [
+            0,
+            10000
+          ],
+          "weight": 0.8,
+          "note": "Moves to fail-open or fail-closed"
+        },
+        {
+          "role": "position_deviation",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            10000
+          ],
+          "weight": 0.7
+        },
+        {
+          "role": "flow",
+          "direction": "step",
+          "onset_lag_ms": [
+            0,
+            10000
+          ],
+          "weight": 0.6
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "process_downstream",
+          "effect_role": "flow",
+          "direction": "step",
+          "polarity": "any",
+          "lag_ms": [
+            0,
+            10000
+          ],
+          "edge_type": "cause_to_effect",
+          "note": "Direction depends on fail-safe action"
+        },
+        {
+          "relation": "parallel_unit",
+          "effect_role": "position",
+          "direction": "step",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            10000
+          ],
+          "edge_type": "cause_to_effect",
+          "note": "Other valves on the same air header respond the same way"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "valve.positioner_failure_feedback_mismatch",
+          "rule": "Positioner failure occurs with normal supply pressure; air loss starts with supply pressure falling.",
+          "first_role": "supply_air_pressure",
+          "then_role": "position"
+        },
+        {
+          "vs_pattern": "valve.stiction",
+          "rule": "Stiction does not drive the valve to its fail position."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check the instrument air header pressure and whether other valves on the same header are affected.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the local filter-regulator (drain the bowl), isolating valve and tubing for leaks or breaks.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check the air dryer and dew point if water or ice is suspected.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "ISA-7.0.01 (instrument air quality)",
+        "IEC 60534-6 (mounting of positioners)"
+      ]
+    },
+    {
+      "pattern_id": "valve.positioner_failure_feedback_mismatch",
+      "version": "1.0.0",
+      "failure_mode": "positioner_failure_feedback_mismatch",
+      "title": "Positioner failure / feedback mismatch",
+      "category": "instrumentation",
+      "severity": "warning",
+      "description": "The positioner cannot hold position (failed I/P, pilot relay, calibration drift) or the feedback linkage has slipped. Either the valve does not track the command, or the position reading is wrong so flow does not match indicated position.",
+      "typical_progression": "Sudden for component failure; gradual for calibration drift or linkage wear.",
+      "required_roles": [
+        "position_deviation"
+      ],
+      "optional_roles": [
+        "position",
+        "command",
+        "actuator_pressure",
+        "supply_air_pressure",
+        "flow"
+      ],
+      "trigger_role": "position_deviation",
+      "symptoms": [
+        {
+          "role": "position_deviation",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 5,
+            "for_ms": 30000
+          },
+          "note": "Persistent deviation > 5 % typical alarm"
+        },
+        {
+          "role": "actuator_pressure",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            10000
+          ],
+          "weight": 0.6,
+          "note": "Saturated at supply or zero"
+        },
+        {
+          "role": "supply_air_pressure",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.5,
+          "note": "Normal supply rules out air loss"
+        },
+        {
+          "role": "flow",
+          "direction": "step",
+          "onset_lag_ms": [
+            0,
+            10000
+          ],
+          "weight": 0.4,
+          "note": "Flow inconsistent with indicated position if feedback slipped"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "valve.actuator_air_supply_loss",
+          "rule": "Normal supply pressure with a large deviation points to the positioner or linkage."
+        },
+        {
+          "vs_pattern": "valve.stiction",
+          "rule": "Stiction deviation is intermittent with jumps; positioner failure is steady."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Installed characteristic check",
+          "formula": "Compare flow vs position with the valve Cv curve: Q = Cv · f(position) · √(ΔP / SG)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare command, position feedback, actuator pressure and flow at two or three operating points.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Read positioner diagnostics and alarm history.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check the feedback linkage / magnet mounting and recalibrate the positioner stroke with the valve bypassed or the process safe.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "ISA-75.25.01",
+        "IEC 60534-6"
+      ]
+    },
+    {
+      "pattern_id": "valve.seat_leakage",
+      "version": "1.0.0",
+      "failure_mode": "seat_leakage",
+      "title": "Seat leakage (passing when closed)",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "Damaged seat, trim erosion, debris or insufficient actuator thrust let fluid pass with the valve closed. Downstream flow, pressure or temperature rises while the valve reports closed.",
+      "typical_progression": "Weeks to months; erosion accelerates once a leak path forms.",
+      "required_roles": [
+        "flow",
+        "position"
+      ],
+      "optional_roles": [
+        "limit_closed",
+        "downstream_pressure",
+        "downstream_temperature",
+        "acoustic"
+      ],
+      "trigger_role": "flow",
+      "symptoms": [
+        {
+          "role": "flow",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Flow measurable while closed; compare with ANSI/FCI 70-2 class (Class IV: 0.01 % of rated capacity)"
+        },
+        {
+          "role": "position",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.7,
+          "note": "Reports closed"
+        },
+        {
+          "role": "limit_closed",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.4,
+          "note": "Closed switch made"
+        },
+        {
+          "role": "downstream_pressure",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.6,
+          "note": "Pressure builds in a blocked-in downstream section"
+        },
+        {
+          "role": "downstream_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.6,
+          "note": "Steam and hot service: tail pipe stays hot"
+        },
+        {
+          "role": "acoustic",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.4
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "dmg",
+            "label": "Seat damage / debris",
+            "kind": "cause"
+          },
+          {
+            "id": "gap",
+            "label": "Leak path",
+            "kind": "state"
+          },
+          {
+            "id": "vel",
+            "label": "High-velocity jet",
+            "kind": "state"
+          },
+          {
+            "id": "erode",
+            "label": "Wire-drawing erosion",
+            "kind": "state"
+          },
+          {
+            "id": "q",
+            "label": "Leak flow ↑",
+            "kind": "symptom",
+            "role": "flow"
+          }
+        ],
+        "edges": [
+          {
+            "from": "dmg",
+            "to": "gap",
+            "sign": "+"
+          },
+          {
+            "from": "gap",
+            "to": "q",
+            "sign": "+"
+          },
+          {
+            "from": "gap",
+            "to": "vel",
+            "sign": "+"
+          },
+          {
+            "from": "vel",
+            "to": "erode",
+            "sign": "+",
+            "lag_ms": [
+              86400000,
+              7776000000
+            ],
+            "loop_id": "wire_drawing"
+          },
+          {
+            "from": "erode",
+            "to": "gap",
+            "sign": "+",
+            "loop_id": "wire_drawing"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "wire_drawing",
+            "polarity": "reinforcing",
+            "description": "The high-velocity jet through a small gap erodes the seat and enlarges the gap."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "valve.positioner_failure_feedback_mismatch",
+          "rule": "A slipped feedback can show closed while the valve is slightly open; check actuator pressure and stroke calibration."
+        },
+        {
+          "vs_pattern": "valve.cavitation_flashing",
+          "rule": "Cavitation damage occurs in throttling service and may later cause seat leakage."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "With the valve commanded closed, compare downstream flow, pressure build-up or temperature against a known-tight baseline.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check actuator thrust / bench set and that the positioner drives fully to the seat (tight shut-off function).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Use an acoustic leak detector on the valve body.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Lap or replace seat and plug with the valve isolated and depressurised.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "ANSI/FCI 70-2 (seat leakage classes)",
+        "IEC 60534-4 (inspection and routine testing)"
+      ]
+    },
+    {
+      "pattern_id": "valve.cavitation_flashing",
+      "version": "1.0.0",
+      "failure_mode": "cavitation_flashing",
+      "title": "Cavitation / flashing in the valve trim",
+      "category": "process",
+      "severity": "warning",
+      "description": "The pressure at the vena contracta falls below the vapour pressure. If downstream pressure recovers above vapour pressure the bubbles collapse (cavitation: noise, vibration, trim erosion); if it stays below, the flow leaves as a two-phase mixture (flashing: erosion downstream). Flow chokes and stops rising with opening.",
+      "typical_progression": "Noise immediate; trim and body erosion over weeks to months.",
+      "required_roles": [
+        "acoustic"
+      ],
+      "optional_roles": [
+        "downstream_pressure",
+        "upstream_pressure",
+        "vibration",
+        "flow",
+        "position"
+      ],
+      "trigger_role": "acoustic",
+      "symptoms": [
+        {
+          "role": "acoustic",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Crackling / gravel noise; predicted per IEC 60534-8-4"
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            5000
+          ],
+          "weight": 0.7
+        },
+        {
+          "role": "downstream_pressure",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.6,
+          "note": "Low P2 raises the cavitation index risk"
+        },
+        {
+          "role": "flow",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            60000
+          ],
+          "weight": 0.5,
+          "note": "Choked: flow no longer rises with opening"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "pump.cavitation_npsh",
+          "rule": "Valve cavitation noise is loudest at the valve and depends on valve ΔP; pump cavitation is at the pump and depends on suction pressure."
+        },
+        {
+          "vs_pattern": "valve.stiction",
+          "rule": "Cavitation gives broadband noise and vibration without stick-slip position steps."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Cavitation index (ISA-RP75.23)",
+          "formula": "σ = (P1 − Pv) / (P1 − P2); cavitation risk increases as σ approaches the valve's σ_i / σ_c"
+        },
+        {
+          "domain": "trend",
+          "description": "Choked-flow pressure drop (IEC 60534-2-1, liquids)",
+          "formula": "ΔP_choked = FL² · (P1 − FF·Pv), FF = 0.96 − 0.28·√(Pv/Pc)"
+        },
+        {
+          "domain": "vibration_spectrum",
+          "description": "Broadband high-frequency energy, strongest downstream of the valve"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Calculate σ and ΔP_choked from P1, P2 and fluid temperature; compare with the valve's FL and σ ratings.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check whether operation moved to a new ΔP (lower downstream pressure, lower flow, higher temperature).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Inspect trim and downstream pipe for pitting (cavitation) or smooth glossy erosion (flashing) at the next outage.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "ISA-RP75.23 (cavitation in control valves)",
+        "IEC 60534-2-1 (flow capacity sizing)",
+        "IEC 60534-8-4 (liquid noise)"
+      ]
+    },
+    {
+      "pattern_id": "valve.solenoid_coil_failure",
+      "version": "1.0.0",
+      "failure_mode": "solenoid_coil_failure",
+      "title": "Solenoid coil failure",
+      "category": "electrical",
+      "severity": "warning",
+      "description": "The coil opens (burnt winding, broken lead) or develops shorted turns from overheating, over-voltage, moisture, or an AC plunger that never seats and keeps drawing inrush current. The valve does not change state when commanded.",
+      "typical_progression": "Sudden open circuit; shorted-turn degradation over days to weeks.",
+      "required_roles": [
+        "solenoid_current"
+      ],
+      "optional_roles": [
+        "solenoid_voltage",
+        "coil_temperature",
+        "position",
+        "limit_open",
+        "limit_closed",
+        "travel_time",
+        "command"
+      ],
+      "trigger_role": "solenoid_current",
+      "symptoms": [
+        {
+          "role": "solenoid_current",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Near zero with voltage present = open coil; above nominal = shorted turns or unseated AC plunger"
+        },
+        {
+          "role": "solenoid_voltage",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.5,
+          "note": "Voltage present at the coil rules out the output card / wiring"
+        },
+        {
+          "role": "coil_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.5,
+          "note": "Precedes failure for shorted turns or high ambient"
+        },
+        {
+          "role": "limit_open",
+          "direction": "missing",
+          "onset_lag_ms": [
+            0,
+            5000
+          ],
+          "weight": 0.7,
+          "note": "Expected limit switch does not make after the command"
+        },
+        {
+          "role": "travel_time",
+          "direction": "missing",
+          "onset_lag_ms": [
+            0,
+            5000
+          ],
+          "weight": 0.4
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "heat",
+            "label": "Coil overheating",
+            "kind": "cause",
+            "role": "coil_temperature"
+          },
+          {
+            "id": "ins",
+            "label": "Winding insulation ages",
+            "kind": "state"
+          },
+          {
+            "id": "short",
+            "label": "Shorted turns",
+            "kind": "state"
+          },
+          {
+            "id": "i",
+            "label": "Current changes",
+            "kind": "symptom",
+            "role": "solenoid_current"
+          },
+          {
+            "id": "loss",
+            "label": "Coil loss ↑",
+            "kind": "state"
+          },
+          {
+            "id": "open",
+            "label": "Coil opens",
+            "kind": "consequence"
+          }
+        ],
+        "edges": [
+          {
+            "from": "heat",
+            "to": "ins",
+            "sign": "+"
+          },
+          {
+            "from": "ins",
+            "to": "short",
+            "sign": "+",
+            "lag_ms": [
+              86400000,
+              2592000000
+            ],
+            "loop_id": "coil_burnout"
+          },
+          {
+            "from": "short",
+            "to": "loss",
+            "sign": "+",
+            "loop_id": "coil_burnout"
+          },
+          {
+            "from": "loss",
+            "to": "heat",
+            "sign": "+",
+            "loop_id": "coil_burnout"
+          },
+          {
+            "from": "short",
+            "to": "i",
+            "sign": "+"
+          },
+          {
+            "from": "heat",
+            "to": "open",
+            "sign": "+"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "coil_burnout",
+            "polarity": "reinforcing",
+            "description": "Shorted turns concentrate loss in the coil, which ages the remaining insulation faster."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "valve.actuator_air_supply_loss",
+          "rule": "Pilot-operated valves also fail to move on air loss; check supply pressure. Coil failure shows abnormal coil current with normal air."
+        },
+        {
+          "vs_pattern": "valve.stiction",
+          "rule": "A stuck spool with a healthy coil draws normal current (DC) or high current (AC plunger not seated)."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Confirm command and voltage at the coil terminals are within the coil tolerance (typically +10 % / −15 % of rated).",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Measure coil resistance and compare with the nameplate; open or low resistance confirms the coil.",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Check coil duty and ambient against the coil class rating.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 60730-2-8 (electrically operated water valves)",
+        "ISO 4400 / DIN EN 175301-803 (coil connectors)"
+      ]
+    }
+  ]
+}

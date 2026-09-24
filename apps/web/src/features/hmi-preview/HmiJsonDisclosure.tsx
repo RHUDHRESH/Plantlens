@@ -10,7 +10,12 @@ export function HmiJsonDisclosure({ state }: HmiJsonDisclosureProps) {
 
   return (
     <section className="hmi-json-disclosure">
-      <button type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
+      <button
+        type="button"
+        className="pl-btn pl-btn--ghost pl-btn--sm"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+      >
         {open ? "Hide" : "View"} raw PlantHMIState JSON
       </button>
       {open && (

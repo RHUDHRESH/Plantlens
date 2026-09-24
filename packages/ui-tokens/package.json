@@ -2,6 +2,6 @@
   "name": "@plantlens/ui-tokens",
   "version": "0.1.0",
   "private": true,
-  "description": "Design tokens — the source for apps/web/src/styles/tokens.css. Keep tokens.json and tokens.css in sync.",
+  "description": "Design tokens \u2014 SINGLE SOURCE. `pnpm tokens:build` generates apps/web/src/styles/tokens.css and tailwind-theme.css.",
   "main": "tokens.json"
 }

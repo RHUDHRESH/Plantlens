@@ -64,3 +64,24 @@ async def require_human_approver(
             detail="Human approver role required",
         )
     return principal
+
+
+async def require_change_approver(
+    principal: Principal = Depends(get_current_principal),
+) -> Principal:
+    """Human engineer/admin gate for plant-model changes (graph, rules, bundle deploys).
+
+    Narrower than ``require_human_approver``: operators may ack alarms, but only
+    engineers may approve changes to what the runtime believes (R5).
+    """
+    if principal.is_agent:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Agents cannot approve human-gated actions",
+        )
+    if principal.role not in ENGINEER_WRITE_ROLES:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Engineer approval required",
+        )
+    return principal

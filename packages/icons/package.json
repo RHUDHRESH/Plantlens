@@ -1,6 +1,12 @@
 {
   "name": "@plantlens/icons",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "PlantLens domain SVG symbol library (motors, buses, inverters, sensors). Referenced by the 2D map and 3D model keys."
+  "type": "module",
+  "description": "PlantLens equipment symbol library (ISA-101 / ISA-5.1 / IEC 60617 inspired). Static SVGs generated from apps/web/src/components/symbols/geometry.ts.",
+  "scripts": {
+    "build": "node build-svg.mjs",
+    "check": "node build-svg.mjs --check",
+    "gallery": "node gallery.mjs gallery --shot"
+  }
 }

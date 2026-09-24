@@ -27,6 +27,20 @@ class RejectedCandidateItem(BaseModel):
     contradicted_by: list[str] | None = None
 
 
+class ScoreBreakdown(BaseModel):
+    """Root-score components (docs/ALGORITHMS.md §3)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    timing: float
+    coverage: float
+    fingerprint: float
+    quality_penalty: float
+    contradictions: int
+    margin: float
+    competitor: str | None = None
+
+
 class Situation(BaseModel):
     """Derived root-cause situation grouping raw alarms."""
 
@@ -49,3 +63,6 @@ class Situation(BaseModel):
     affected_asset_ids: list[str] | None = None
     causal_path: list[str] | None = None
     traversed_edges: list[str] | None = None
+    score_breakdown: ScoreBreakdown | None = None
+    loop_note: str | None = None
+    unexplained_alarm_ids: list[str] | None = None

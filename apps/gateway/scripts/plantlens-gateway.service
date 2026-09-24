@@ -1,0 +1,30 @@
+# systemd unit TEMPLATE for the PlantLens gateway (Linux). Do not copy by hand: run
+#   apps/gateway/scripts/install-service.sh [--profile NAME]
+# which fills in the @PLACEHOLDERS@ and installs /etc/systemd/system/plantlens-gateway[-NAME].service.
+#
+# Run the setup wizard first as the same user (apps/gateway/scripts/start-gateway.sh --setup): the
+# service reads that user's ~/.config/plantlens/gateway[.NAME].env and never prompts.
+[Unit]
+Description=PlantLens gateway @PROFILE_LABEL@(read-only serial/Modbus acquisition)
+After=network-online.target
+Wants=network-online.target
+# Never give up restarting (a server that is down for an hour must not leave the gateway dead);
+# RestartSec below spaces the attempts out.
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=@USER@
+SupplementaryGroups=@SERIAL_GROUP@
+WorkingDirectory=@GW_DIR@
+Environment=PYTHONUNBUFFERED=1
+Environment="HOME=@HOME@"
+Environment="PLANTLENS_GATEWAY_PROFILE=@PROFILE@"
+ExecStart="@GW_DIR@/.venv/bin/python" -m gateway.main
+Restart=always
+RestartSec=10
+KillSignal=SIGTERM
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target

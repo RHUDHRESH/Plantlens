@@ -1,0 +1,1086 @@
+{
+  "library_id": "plantlens.patterns.heat_exchanger",
+  "version": "1.0.0",
+  "component_type": "heat_exchanger",
+  "display_name": "Heat exchanger (shell-and-tube, plate, condenser)",
+  "description": "Failure patterns for heat exchangers and condensers: fouling, tube leaks, cooling flow loss, non-condensables and bypass control faults.",
+  "asset_type_aliases": [],
+  "library_type_aliases": [],
+  "roles": [
+    {
+      "role": "hot_inlet_temperature",
+      "quantity": "hot-side inlet temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "process.temperature.hot_in"
+      ],
+      "name_hints": [
+        "hot_in",
+        "thi",
+        "shell_in_t"
+      ]
+    },
+    {
+      "role": "hot_outlet_temperature",
+      "quantity": "hot-side outlet temperature (usually the controlled temperature)",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "process.temperature.hot_out"
+      ],
+      "name_hints": [
+        "hot_out",
+        "tho",
+        "shell_out_t"
+      ]
+    },
+    {
+      "role": "cold_inlet_temperature",
+      "quantity": "cold-side / cooling medium inlet temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "process.temperature.cold_in"
+      ],
+      "name_hints": [
+        "cold_in",
+        "tci",
+        "cws_t"
+      ]
+    },
+    {
+      "role": "cold_outlet_temperature",
+      "quantity": "cold-side / cooling medium outlet temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "process.temperature.cold_out"
+      ],
+      "name_hints": [
+        "cold_out",
+        "tco",
+        "cwr_t"
+      ]
+    },
+    {
+      "role": "approach_temperature",
+      "quantity": "temperature approach (hot out − cold in), derived",
+      "units": [
+        "K",
+        "°C"
+      ],
+      "signal_type_prefixes": [
+        "derived.approach"
+      ],
+      "name_hints": [
+        "approach"
+      ]
+    },
+    {
+      "role": "hot_flow",
+      "quantity": "hot-side flow",
+      "units": [
+        "m3/h",
+        "kg/h",
+        "t/h"
+      ],
+      "signal_type_prefixes": [
+        "process.flow.hot"
+      ],
+      "name_hints": [
+        "hot_flow",
+        "shell_flow"
+      ]
+    },
+    {
+      "role": "cold_flow",
+      "quantity": "cold-side / cooling medium flow",
+      "units": [
+        "m3/h",
+        "kg/h",
+        "t/h"
+      ],
+      "signal_type_prefixes": [
+        "process.flow.cold"
+      ],
+      "name_hints": [
+        "cold_flow",
+        "cw_flow",
+        "tube_flow"
+      ]
+    },
+    {
+      "role": "ua",
+      "quantity": "overall heat-transfer conductance U·A, derived from duty and LMTD",
+      "units": [
+        "kW/K",
+        "W/K"
+      ],
+      "signal_type_prefixes": [
+        "derived.ua"
+      ],
+      "name_hints": [
+        "ua",
+        "u_value"
+      ]
+    },
+    {
+      "role": "hot_side_dp",
+      "quantity": "hot-side pressure drop",
+      "units": [
+        "kPa",
+        "bar"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.differential.hot"
+      ],
+      "name_hints": [
+        "hot_dp",
+        "shell_dp"
+      ]
+    },
+    {
+      "role": "cold_side_dp",
+      "quantity": "cold-side pressure drop",
+      "units": [
+        "kPa",
+        "bar"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.differential.cold"
+      ],
+      "name_hints": [
+        "cold_dp",
+        "tube_dp",
+        "cw_dp"
+      ]
+    },
+    {
+      "role": "low_side_pressure",
+      "quantity": "pressure on the lower-pressure side",
+      "units": [
+        "bar",
+        "kPa"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure"
+      ],
+      "name_hints": [
+        "low_p",
+        "shell_p",
+        "cw_p"
+      ]
+    },
+    {
+      "role": "contamination",
+      "quantity": "contamination analyser on the receiving side (conductivity, hydrocarbon, pH)",
+      "units": [
+        "µS/cm",
+        "ppm",
+        "pH"
+      ],
+      "signal_type_prefixes": [
+        "process.analyzer"
+      ],
+      "name_hints": [
+        "cond",
+        "conductivity",
+        "hc_",
+        "analy"
+      ]
+    },
+    {
+      "role": "shell_pressure",
+      "quantity": "condensing-side (shell) pressure or vacuum",
+      "units": [
+        "kPa",
+        "mbar",
+        "bar"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.shell"
+      ],
+      "name_hints": [
+        "shell_p",
+        "vacuum",
+        "cond_p"
+      ]
+    },
+    {
+      "role": "subcooling",
+      "quantity": "condensate subcooling (saturation temperature − condensate temperature), derived",
+      "units": [
+        "K",
+        "°C"
+      ],
+      "signal_type_prefixes": [
+        "derived.subcooling"
+      ],
+      "name_hints": [
+        "subcool"
+      ]
+    },
+    {
+      "role": "vent_temperature",
+      "quantity": "non-condensable vent line temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "process.temperature.vent"
+      ],
+      "name_hints": [
+        "vent_t"
+      ]
+    },
+    {
+      "role": "bypass_valve_command",
+      "quantity": "exchanger bypass valve command",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "control.command",
+        "control.output"
+      ],
+      "name_hints": [
+        "byp_cmd",
+        "bypass_op"
+      ]
+    },
+    {
+      "role": "bypass_valve_position",
+      "quantity": "exchanger bypass valve position",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "control.position"
+      ],
+      "name_hints": [
+        "byp_pos",
+        "bypass_fb"
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "pattern_id": "heat_exchanger.fouling",
+      "version": "1.0.0",
+      "failure_mode": "fouling",
+      "title": "Fouling (loss of heat-transfer coefficient)",
+      "category": "process",
+      "severity": "warning",
+      "description": "Scale, biofilm, corrosion products or process deposits add thermal resistance. U·A falls and the approach temperature widens at the same flows and inlet temperatures; deposits also raise pressure drop.",
+      "typical_progression": "Weeks to months; seasonal with cooling-water temperature and treatment.",
+      "required_roles": [
+        "ua"
+      ],
+      "optional_roles": [
+        "approach_temperature",
+        "hot_outlet_temperature",
+        "cold_outlet_temperature",
+        "hot_side_dp",
+        "cold_side_dp"
+      ],
+      "trigger_role": "ua",
+      "symptoms": [
+        {
+          "role": "ua",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 0.85
+          },
+          "note": "U·A below ~85 % of clean value at comparable conditions"
+        },
+        {
+          "role": "approach_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.9
+        },
+        {
+          "role": "hot_outlet_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2592000000
+          ],
+          "weight": 0.7,
+          "note": "If the controller cannot compensate"
+        },
+        {
+          "role": "cold_outlet_temperature",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            2592000000
+          ],
+          "weight": 0.5,
+          "note": "Less heat picked up"
+        },
+        {
+          "role": "cold_side_dp",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            5184000000
+          ],
+          "weight": 0.5,
+          "note": "Deposit reduces flow area"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "dep",
+            "label": "Deposit thickness ↑",
+            "kind": "cause"
+          },
+          {
+            "id": "rf",
+            "label": "Fouling resistance ↑",
+            "kind": "state"
+          },
+          {
+            "id": "ua",
+            "label": "U·A ↓",
+            "kind": "symptom",
+            "role": "ua"
+          },
+          {
+            "id": "tw",
+            "label": "Cold-side wall temperature ↑",
+            "kind": "state"
+          },
+          {
+            "id": "dp",
+            "label": "Pressure drop ↑",
+            "kind": "symptom",
+            "role": "cold_side_dp"
+          },
+          {
+            "id": "v",
+            "label": "Velocity ↓",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "dep",
+            "to": "rf",
+            "sign": "+"
+          },
+          {
+            "from": "rf",
+            "to": "ua",
+            "sign": "-"
+          },
+          {
+            "from": "ua",
+            "to": "tw",
+            "sign": "-",
+            "loop_id": "scale_temp"
+          },
+          {
+            "from": "tw",
+            "to": "dep",
+            "sign": "+",
+            "lag_ms": [
+              604800000,
+              15552000000
+            ],
+            "loop_id": "scale_temp"
+          },
+          {
+            "from": "dep",
+            "to": "dp",
+            "sign": "+"
+          },
+          {
+            "from": "dp",
+            "to": "v",
+            "sign": "-",
+            "loop_id": "velocity_fouling"
+          },
+          {
+            "from": "v",
+            "to": "dep",
+            "sign": "-",
+            "lag_ms": [
+              604800000,
+              15552000000
+            ],
+            "loop_id": "velocity_fouling"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "scale_temp",
+            "polarity": "reinforcing",
+            "description": "Inverse-solubility salts deposit faster on a hotter wall."
+          },
+          {
+            "loop_id": "velocity_fouling",
+            "polarity": "reinforcing",
+            "description": "Higher ΔP lowers flow and velocity, and low velocity lets more deposit settle."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "heat_exchanger.loss_of_cooling_flow",
+          "rule": "Fouling is gradual with normal cooling flow; loss of flow is abrupt with cooling flow falling first.",
+          "first_role": "cold_flow",
+          "then_role": "hot_outlet_temperature"
+        },
+        {
+          "vs_pattern": "heat_exchanger.bypass_valve_stuck",
+          "rule": "A passing bypass lowers apparent duty without a U·A change when the bypass flow is accounted for."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Overall conductance and fouling resistance",
+          "formula": "Q = U·A·LMTD ; Rf = 1/U_fouled − 1/U_clean"
+        },
+        {
+          "domain": "trend",
+          "description": "Log-mean temperature difference (counter-current)",
+          "formula": "LMTD = (ΔT1 − ΔT2) / ln(ΔT1/ΔT2)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compute U·A from both sides' duty and LMTD; confirm heat balance within ~5 % before trusting the trend.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Review cooling-water treatment (hardness, biocide, cycles of concentration).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Compare pressure drop against clean values at the same flow.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Plan cleaning with the exchanger isolated, drained and depressurised.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "TEMA Standards (fouling resistances)",
+        "ASME PTC 12.5 (single-phase heat exchangers)",
+        "HEI Standards for Steam Surface Condensers"
+      ]
+    },
+    {
+      "pattern_id": "heat_exchanger.tube_leak",
+      "version": "1.0.0",
+      "failure_mode": "tube_leak",
+      "title": "Tube leak (cross-contamination)",
+      "category": "mechanical",
+      "severity": "critical",
+      "description": "A tube or tube-to-tubesheet joint leaks from corrosion, erosion, vibration or thermal stress. Fluid passes from the high-pressure side to the low-pressure side, contaminating it and raising its pressure or level.",
+      "typical_progression": "Pinhole leaks can run for weeks; a tube rupture is sudden.",
+      "required_roles": [
+        "contamination"
+      ],
+      "optional_roles": [
+        "low_side_pressure",
+        "hot_flow",
+        "cold_flow",
+        "shell_pressure"
+      ],
+      "trigger_role": "contamination",
+      "symptoms": [
+        {
+          "role": "contamination",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Conductivity, hydrocarbon or pH change on the low-pressure side"
+        },
+        {
+          "role": "low_side_pressure",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "cold_flow",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.3,
+          "note": "Flow mismatch between inlet and outlet of one side"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "corr",
+            "label": "Corrosion / erosion / vibration",
+            "kind": "cause"
+          },
+          {
+            "id": "leak",
+            "label": "Tube leak",
+            "kind": "state"
+          },
+          {
+            "id": "jet",
+            "label": "Leak jet impinges on neighbouring tubes",
+            "kind": "state"
+          },
+          {
+            "id": "cont",
+            "label": "Contamination ↑",
+            "kind": "symptom",
+            "role": "contamination"
+          }
+        ],
+        "edges": [
+          {
+            "from": "corr",
+            "to": "leak",
+            "sign": "+"
+          },
+          {
+            "from": "leak",
+            "to": "cont",
+            "sign": "+"
+          },
+          {
+            "from": "leak",
+            "to": "jet",
+            "sign": "+"
+          },
+          {
+            "from": "jet",
+            "to": "leak",
+            "sign": "+",
+            "lag_ms": [
+              86400000,
+              5184000000
+            ],
+            "loop_id": "jet_erosion"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "jet_erosion",
+            "polarity": "reinforcing",
+            "description": "The leak jet erodes adjacent tubes, so one leak becomes several."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "process_downstream",
+          "effect_role": "contamination",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            3600000
+          ],
+          "edge_type": "cause_to_effect",
+          "note": "Contaminant carried into the receiving system"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "boiler.tube_leak",
+          "rule": "Use the boiler pattern for fired-boiler water-wall and economiser tubes."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Confirm the analyser reading with a grab sample; identify which fluid is leaking into which.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Compare inlet and outlet flows of each side for a mass imbalance.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Isolate and pressure- or helium-test the tube bundle to locate the leak; plug or re-tube.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "ASME PCC-2 (repair of pressure equipment)",
+        "TEMA Standards"
+      ]
+    },
+    {
+      "pattern_id": "heat_exchanger.loss_of_cooling_flow",
+      "version": "1.0.0",
+      "failure_mode": "loss_of_cooling_flow",
+      "title": "Loss of cooling / cold-side flow",
+      "category": "process",
+      "severity": "critical",
+      "description": "Cooling flow falls (pump trip, closed valve, blocked strainer, air lock). The cooling medium heats up across the exchanger and the hot-side outlet temperature rises quickly.",
+      "typical_progression": "Seconds to minutes (exchanger hold-up time).",
+      "required_roles": [
+        "cold_flow"
+      ],
+      "optional_roles": [
+        "cold_outlet_temperature",
+        "hot_outlet_temperature",
+        "cold_side_dp",
+        "approach_temperature"
+      ],
+      "trigger_role": "cold_flow",
+      "symptoms": [
+        {
+          "role": "cold_flow",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 0.7,
+            "for_ms": 10000
+          }
+        },
+        {
+          "role": "cold_outlet_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            10000,
+            300000
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "hot_outlet_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            30000,
+            600000
+          ],
+          "weight": 0.9
+        },
+        {
+          "role": "cold_side_dp",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            5000
+          ],
+          "weight": 0.5
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "q",
+            "label": "Cooling flow ↓",
+            "kind": "cause",
+            "role": "cold_flow"
+          },
+          {
+            "id": "tco",
+            "label": "Cooling outlet temperature ↑",
+            "kind": "symptom",
+            "role": "cold_outlet_temperature"
+          },
+          {
+            "id": "tho",
+            "label": "Hot outlet temperature ↑",
+            "kind": "symptom",
+            "role": "hot_outlet_temperature"
+          },
+          {
+            "id": "tic",
+            "label": "Temperature controller opens cooling valve",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "q",
+            "to": "tco",
+            "sign": "-"
+          },
+          {
+            "from": "q",
+            "to": "tho",
+            "sign": "-",
+            "lag_ms": [
+              30000,
+              600000
+            ]
+          },
+          {
+            "from": "tho",
+            "to": "tic",
+            "sign": "+",
+            "loop_id": "temp_control"
+          },
+          {
+            "from": "tic",
+            "to": "q",
+            "sign": "+",
+            "loop_id": "temp_control"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "temp_control",
+            "polarity": "balancing",
+            "description": "The temperature controller opens the cooling valve to restore flow; saturates if the cause is upstream."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "process_downstream",
+          "effect_role": "temperature",
+          "direction": "rise",
+          "polarity": "-",
+          "lag_ms": [
+            30000,
+            600000
+          ],
+          "edge_type": "thermal",
+          "note": "Hot product leaves the exchanger"
+        },
+        {
+          "relation": "controller",
+          "effect_role": "controller_output",
+          "direction": "rise",
+          "polarity": "-",
+          "lag_ms": [
+            30000,
+            300000
+          ],
+          "edge_type": "control"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "heat_exchanger.fouling",
+          "rule": "Loss of flow is abrupt and raises cooling outlet temperature; fouling is gradual and lowers it."
+        },
+        {
+          "vs_pattern": "pump.dry_run_loss_of_prime",
+          "rule": "If the cooling pump shows near-zero flow and power, the pump is the root cause."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check the cooling pump status and discharge pressure, and the cooling supply header.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check cooling valve position against command and any cold-side strainer ΔP.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Vent high points on the cooling side if air locking is suspected.",
+          "requires_isolation": false
+        }
+      ]
+    },
+    {
+      "pattern_id": "heat_exchanger.air_binding_non_condensables",
+      "version": "1.0.0",
+      "failure_mode": "air_binding_non_condensables",
+      "title": "Air binding / non-condensable accumulation",
+      "category": "process",
+      "severity": "warning",
+      "description": "Air or other non-condensable gases accumulate on the condensing side (vent blocked or undersized, air in-leakage under vacuum, steam heater pressure below atmospheric). They blanket the surface; condensing pressure rises (vacuum is lost) and condensate is subcooled.",
+      "typical_progression": "Minutes to hours; in-leakage worsens slowly.",
+      "required_roles": [
+        "shell_pressure"
+      ],
+      "optional_roles": [
+        "subcooling",
+        "vent_temperature",
+        "hot_outlet_temperature",
+        "ua"
+      ],
+      "trigger_role": "shell_pressure",
+      "symptoms": [
+        {
+          "role": "shell_pressure",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Condenser back-pressure above expected at the same load and cooling-water temperature"
+        },
+        {
+          "role": "subcooling",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1800000
+          ],
+          "weight": 0.8,
+          "note": "Condensate well below saturation temperature (> ~3 K is abnormal for surface condensers)"
+        },
+        {
+          "role": "vent_temperature",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            1800000
+          ],
+          "weight": 0.5,
+          "note": "Air-rich vent gas is cooler"
+        },
+        {
+          "role": "ua",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            1800000
+          ],
+          "weight": 0.6
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "air",
+            "label": "Non-condensables enter / not vented",
+            "kind": "cause"
+          },
+          {
+            "id": "blanket",
+            "label": "Gas film on tubes",
+            "kind": "state"
+          },
+          {
+            "id": "cond",
+            "label": "Condensation rate ↓",
+            "kind": "state"
+          },
+          {
+            "id": "p",
+            "label": "Shell pressure ↑",
+            "kind": "symptom",
+            "role": "shell_pressure"
+          },
+          {
+            "id": "sweep",
+            "label": "Vapour flow toward vent ↓",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "air",
+            "to": "blanket",
+            "sign": "+"
+          },
+          {
+            "from": "blanket",
+            "to": "cond",
+            "sign": "-"
+          },
+          {
+            "from": "cond",
+            "to": "p",
+            "sign": "-"
+          },
+          {
+            "from": "cond",
+            "to": "sweep",
+            "sign": "+",
+            "loop_id": "ncg_accumulation"
+          },
+          {
+            "from": "sweep",
+            "to": "blanket",
+            "sign": "-",
+            "loop_id": "ncg_accumulation"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "ncg_accumulation",
+            "polarity": "reinforcing",
+            "description": "Less condensation means less vapour flow to sweep gas toward the vent, so more gas accumulates."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "heat_exchanger.fouling",
+          "rule": "Fouling lowers U·A without high subcooling or low vent temperature."
+        },
+        {
+          "vs_pattern": "heat_exchanger.loss_of_cooling_flow",
+          "rule": "Loss of cooling flow raises shell pressure with rising cooling outlet temperature and normal subcooling."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check the air-removal equipment (ejector steam pressure, vacuum pump) and vent line valves.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Measure air in-leakage at the air-removal discharge and trend it.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check steam traps and condensate drainage on steam heaters (stall when shell pressure drops below the drain back-pressure).",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "HEI Standards for Steam Surface Condensers",
+        "ASME PTC 12.2 (steam surface condensers)"
+      ]
+    },
+    {
+      "pattern_id": "heat_exchanger.bypass_valve_stuck",
+      "version": "1.0.0",
+      "failure_mode": "bypass_valve_stuck",
+      "title": "Bypass valve stuck",
+      "category": "control",
+      "severity": "warning",
+      "description": "The temperature control bypass valve sticks. The controlled outlet temperature drifts from setpoint as load changes and the controller output winds up against a limit.",
+      "typical_progression": "Immediate on the next load change.",
+      "required_roles": [
+        "bypass_valve_position"
+      ],
+      "optional_roles": [
+        "bypass_valve_command",
+        "hot_outlet_temperature"
+      ],
+      "trigger_role": "bypass_valve_position",
+      "symptoms": [
+        {
+          "role": "bypass_valve_position",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0
+        },
+        {
+          "role": "bypass_valve_command",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            600000
+          ],
+          "weight": 0.8,
+          "note": "Winds up toward a limit (rise or fall)"
+        },
+        {
+          "role": "hot_outlet_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            600000
+          ],
+          "weight": 0.7,
+          "note": "Deviates from setpoint in either direction"
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "controller",
+          "effect_role": "controller_output",
+          "direction": "rise",
+          "polarity": "any",
+          "lag_ms": [
+            0,
+            600000
+          ],
+          "edge_type": "control"
+        },
+        {
+          "relation": "process_downstream",
+          "effect_role": "temperature",
+          "direction": "rise",
+          "polarity": "any",
+          "lag_ms": [
+            0,
+            600000
+          ],
+          "edge_type": "thermal"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "valve.stiction",
+          "rule": "Stiction produces a limit cycle; a stuck valve produces steady deviation and wind-up."
+        },
+        {
+          "vs_pattern": "heat_exchanger.fouling",
+          "rule": "Fouling reduces U·A gradually with the bypass still responding."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare bypass valve command and position over recent load changes.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the valve's actuator supply and positioner diagnostics (see the valve patterns).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Verify the bypass is not manually opened or blinded.",
+          "requires_isolation": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,236 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://plantlens.dev/contracts/causal_pattern_library.schema.json",
+  "title": "CausalPatternLibrary",
+  "description": "Reusable, engineer-reviewed causal knowledge per component type. A pattern is NEVER used by the runtime directly: instantiating it against a concrete asset produces a DRAFT change set (unapproved edges, alarm rules, fingerprint rules) that a human engineer must approve (R2/R5).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["library_id", "version", "component_type", "patterns"],
+  "properties": {
+    "library_id": { "type": "string", "pattern": "^[a-z0-9_.-]+$" },
+    "version": { "type": "string" },
+    "component_type": { "$ref": "#/$defs/component_type" },
+    "display_name": { "type": "string" },
+    "description": { "type": "string" },
+    "asset_type_aliases": {
+      "type": "array",
+      "description": "plant.schema asset types this library applies to (e.g. load.motor_3phase).",
+      "items": { "type": "string" }
+    },
+    "library_type_aliases": {
+      "type": "array",
+      "description": "component_library component_type_ids this library applies to (e.g. dc_motor_12v).",
+      "items": { "type": "string" }
+    },
+    "roles": {
+      "type": "array",
+      "description": "Signal roles this component type can expose, with how to recognise a bound tag.",
+      "items": { "$ref": "#/$defs/role_def" }
+    },
+    "patterns": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/pattern" } }
+  },
+  "$defs": {
+    "component_type": {
+      "type": "string",
+      "enum": [
+        "induction_motor", "dc_motor", "pump", "fan", "compressor", "valve", "heat_exchanger",
+        "vfd", "battery", "pv_mppt", "dc_bus", "transformer", "conveyor", "tank", "boiler"
+      ]
+    },
+    "role": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "Signal role, e.g. current, speed, winding_temperature, vibration_1x."
+    },
+    "role_def": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "quantity", "units"],
+      "properties": {
+        "role": { "$ref": "#/$defs/role" },
+        "quantity": { "type": "string" },
+        "units": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "signal_type_prefixes": {
+          "type": "array",
+          "description": "tag_map signal_type prefixes that identify this role (auto-binding).",
+          "items": { "type": "string" }
+        },
+        "name_hints": {
+          "type": "array",
+          "description": "Case-insensitive substrings of the tag id that identify this role.",
+          "items": { "type": "string" }
+        },
+        "description": { "type": "string" }
+      }
+    },
+    "direction": { "type": "string", "enum": ["rise", "fall", "oscillate", "stuck", "step", "missing", "trip"] },
+    "lag": {
+      "type": "array",
+      "items": { "type": "integer", "minimum": 0 },
+      "minItems": 2,
+      "maxItems": 2,
+      "description": "[min, max] milliseconds relative to the trigger symptom onset."
+    },
+    "pattern": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pattern_id", "version", "failure_mode", "title", "category", "severity", "required_roles", "symptoms", "trigger_role", "checks"],
+      "properties": {
+        "pattern_id": { "type": "string", "pattern": "^[a-z0-9_]+\\.[a-z0-9_]+$", "description": "<component_type>.<failure_mode>" },
+        "version": { "type": "string" },
+        "failure_mode": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "title": { "type": "string" },
+        "category": { "type": "string", "enum": ["electrical", "mechanical", "thermal", "process", "control", "supply", "insulation", "lubrication", "instrumentation"] },
+        "severity": { "type": "string", "enum": ["info", "warning", "critical"] },
+        "description": { "type": "string" },
+        "typical_progression": { "type": "string", "description": "How the fault develops over time (seconds/hours/weeks)." },
+        "required_roles": { "type": "array", "items": { "$ref": "#/$defs/role" }, "minItems": 1 },
+        "optional_roles": { "type": "array", "items": { "$ref": "#/$defs/role" } },
+        "trigger_role": { "$ref": "#/$defs/role" },
+        "symptoms": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["role", "direction", "onset_lag_ms", "weight"],
+            "properties": {
+              "role": { "$ref": "#/$defs/role" },
+              "direction": { "$ref": "#/$defs/direction" },
+              "onset_lag_ms": { "$ref": "#/$defs/lag" },
+              "weight": { "type": "number", "minimum": 0, "maximum": 1 },
+              "threshold_hint": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "Suggested alarm level. relative_to_nominal multiplies the asset's rated value; absolute is in the role's first unit. The engineer confirms before approval.",
+                "properties": {
+                  "relative_to_nominal": { "type": "number", "exclusiveMinimum": 0 },
+                  "absolute": { "type": "number" },
+                  "for_ms": { "type": "integer", "minimum": 0 }
+                }
+              },
+              "note": { "type": "string" }
+            }
+          }
+        },
+        "mechanism": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Physics inside the component. Documentation and explanation only; the runtime graph stays asset-level.",
+          "properties": {
+            "nodes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["id", "label"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "label": { "type": "string" },
+                  "kind": { "type": "string", "enum": ["cause", "state", "symptom", "consequence"] },
+                  "role": { "$ref": "#/$defs/role" }
+                }
+              }
+            },
+            "edges": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["from", "to", "sign"],
+                "properties": {
+                  "from": { "type": "string" },
+                  "to": { "type": "string" },
+                  "sign": { "type": "string", "enum": ["+", "-"] },
+                  "lag_ms": { "$ref": "#/$defs/lag" },
+                  "loop_id": { "type": "string" }
+                }
+              }
+            },
+            "loops": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["loop_id", "polarity", "description"],
+                "properties": {
+                  "loop_id": { "type": "string" },
+                  "polarity": { "type": "string", "enum": ["reinforcing", "balancing"] },
+                  "description": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "propagation": {
+          "type": "array",
+          "description": "Effects on NEIGHBOUR assets; instantiation turns each into an unapproved asset-level edge.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["relation", "effect_role", "direction", "polarity", "lag_ms", "edge_type"],
+            "properties": {
+              "relation": {
+                "type": "string",
+                "enum": ["upstream_supply", "downstream_load", "driver", "driven_equipment", "process_upstream", "process_downstream", "controller", "controlled", "cooling_system", "parallel_unit"]
+              },
+              "effect_role": { "$ref": "#/$defs/role" },
+              "direction": { "$ref": "#/$defs/direction" },
+              "polarity": { "type": "string", "enum": ["+", "-", "any"] },
+              "lag_ms": { "$ref": "#/$defs/lag" },
+              "edge_type": { "type": "string", "enum": ["structural_power", "structural_load_effect", "signal", "thermal", "mechanical", "control", "cause_to_effect"] },
+              "loop_ok": { "type": "boolean", "default": false },
+              "loop_id": { "type": "string" },
+              "note": { "type": "string" }
+            }
+          }
+        },
+        "discriminators": {
+          "type": "array",
+          "description": "How to tell this pattern from look-alikes.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["vs_pattern", "rule"],
+            "properties": {
+              "vs_pattern": { "type": "string" },
+              "rule": { "type": "string" },
+              "first_role": { "$ref": "#/$defs/role" },
+              "then_role": { "$ref": "#/$defs/role" }
+            }
+          }
+        },
+        "signatures": {
+          "type": "array",
+          "description": "Signal-level signatures (spectral/waveform) for edge analytics; advisory evidence only.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["domain", "description"],
+            "properties": {
+              "domain": { "type": "string", "enum": ["current_spectrum", "vibration_spectrum", "vibration_envelope", "thermal", "waveform", "trend"] },
+              "description": { "type": "string" },
+              "formula": { "type": "string" }
+            }
+          }
+        },
+        "checks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["order", "text"],
+            "properties": {
+              "order": { "type": "integer", "minimum": 1 },
+              "text": { "type": "string" },
+              "requires_isolation": { "type": "boolean", "default": false },
+              "role": { "$ref": "#/$defs/role" }
+            }
+          }
+        },
+        "references": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

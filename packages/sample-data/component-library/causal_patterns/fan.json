@@ -1,0 +1,1386 @@
+{
+  "library_id": "plantlens.patterns.fan",
+  "version": "1.0.0",
+  "component_type": "fan",
+  "display_name": "Fan / blower",
+  "description": "Failure patterns for centrifugal and axial fans and blowers: system resistance, dampers, unbalance, belt drives, aerodynamic stall and bearings.",
+  "asset_type_aliases": [],
+  "library_type_aliases": [
+    "bldc_fan",
+    "industrial_blower"
+  ],
+  "roles": [
+    {
+      "role": "flow",
+      "quantity": "air / gas volumetric flow",
+      "units": [
+        "m3/h",
+        "m3/s",
+        "cfm",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "process.flow",
+        "mechanical.airflow"
+      ],
+      "name_hints": [
+        "flow",
+        "airflow",
+        "cfm"
+      ]
+    },
+    {
+      "role": "differential_pressure",
+      "quantity": "fan static pressure rise (outlet minus inlet)",
+      "units": [
+        "Pa",
+        "kPa",
+        "inH2O"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.differential"
+      ],
+      "name_hints": [
+        "dp",
+        "static_p",
+        "fan_p"
+      ]
+    },
+    {
+      "role": "inlet_pressure",
+      "quantity": "fan inlet static pressure (usually negative gauge)",
+      "units": [
+        "Pa",
+        "kPa"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.inlet"
+      ],
+      "name_hints": [
+        "inlet_p",
+        "suct"
+      ]
+    },
+    {
+      "role": "filter_dp",
+      "quantity": "inlet filter / screen differential pressure",
+      "units": [
+        "Pa",
+        "kPa",
+        "inH2O"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.differential.filter"
+      ],
+      "name_hints": [
+        "filter",
+        "fdp"
+      ]
+    },
+    {
+      "role": "speed",
+      "quantity": "fan shaft speed",
+      "units": [
+        "rpm"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.speed"
+      ],
+      "name_hints": [
+        "rpm",
+        "speed",
+        "tach"
+      ]
+    },
+    {
+      "role": "power",
+      "quantity": "absorbed power (driver electrical power or estimate)",
+      "units": [
+        "kW",
+        "W"
+      ],
+      "signal_type_prefixes": [
+        "electrical.power",
+        "mechanical.power"
+      ],
+      "name_hints": [
+        "power",
+        "_kw",
+        "_w"
+      ]
+    },
+    {
+      "role": "damper_command",
+      "quantity": "damper / inlet guide vane / blade pitch command",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "control.command",
+        "control.output"
+      ],
+      "name_hints": [
+        "dmp_cmd",
+        "igv_cmd",
+        "damper_sp"
+      ]
+    },
+    {
+      "role": "damper_position",
+      "quantity": "damper / inlet guide vane / blade pitch position feedback",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "control.position"
+      ],
+      "name_hints": [
+        "dmp_pos",
+        "igv_pos",
+        "damper_fb",
+        "pitch"
+      ]
+    },
+    {
+      "role": "vibration",
+      "quantity": "overall vibration velocity at fan bearings (RMS)",
+      "units": [
+        "mm/s"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration"
+      ],
+      "name_hints": [
+        "vib"
+      ]
+    },
+    {
+      "role": "vibration_1x",
+      "quantity": "vibration amplitude at 1× fan speed",
+      "units": [
+        "mm/s"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration.1x"
+      ],
+      "name_hints": [
+        "vib_1x",
+        "1x"
+      ]
+    },
+    {
+      "role": "vibration_subsync",
+      "quantity": "sub-synchronous vibration / pressure pulsation band (< 1× speed)",
+      "units": [
+        "mm/s",
+        "Pa"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration.subsync",
+        "process.pressure.pulsation"
+      ],
+      "name_hints": [
+        "subsync",
+        "pulsation",
+        "stall"
+      ]
+    },
+    {
+      "role": "bearing_envelope",
+      "quantity": "bearing demodulated / envelope acceleration",
+      "units": [
+        "gE",
+        "g"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration.envelope"
+      ],
+      "name_hints": [
+        "env",
+        "gE"
+      ]
+    },
+    {
+      "role": "bearing_temperature",
+      "quantity": "fan bearing housing temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.bearing"
+      ],
+      "name_hints": [
+        "brg_t",
+        "bearing_t"
+      ]
+    },
+    {
+      "role": "belt_temperature",
+      "quantity": "belt / sheave surface temperature (IR sensor)",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.belt"
+      ],
+      "name_hints": [
+        "belt_t",
+        "sheave_t"
+      ]
+    },
+    {
+      "role": "gas_temperature",
+      "quantity": "gas temperature at fan inlet",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "process.temperature",
+        "thermal.temperature"
+      ],
+      "name_hints": [
+        "gas_t",
+        "air_t",
+        "inlet_t"
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "pattern_id": "fan.inlet_blockage_filter_clogging",
+      "version": "1.0.0",
+      "failure_mode": "inlet_blockage_filter_clogging",
+      "title": "Blocked inlet / filter clogging",
+      "category": "process",
+      "severity": "warning",
+      "description": "Inlet filters, screens or ducts load with dust or debris. System resistance rises, the operating point moves left on the fan curve, flow falls and, for backward-curved centrifugal fans, absorbed power falls.",
+      "typical_progression": "Days to months for filter loading; minutes for a sudden obstruction (bag, ice, closed inlet box).",
+      "required_roles": [
+        "filter_dp"
+      ],
+      "optional_roles": [
+        "flow",
+        "inlet_pressure",
+        "power",
+        "differential_pressure"
+      ],
+      "trigger_role": "filter_dp",
+      "symptoms": [
+        {
+          "role": "filter_dp",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 2.0
+          },
+          "note": "Filter change is typically recommended at the manufacturer's final ΔP, often 2–3× initial ΔP"
+        },
+        {
+          "role": "flow",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "inlet_pressure",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.6,
+          "note": "More negative"
+        },
+        {
+          "role": "power",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.5,
+          "note": "Backward-curved and airfoil fans; forward-curved fans are similar but flatter"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "dust",
+            "label": "Filter loading",
+            "kind": "cause"
+          },
+          {
+            "id": "r",
+            "label": "System resistance ↑",
+            "kind": "state"
+          },
+          {
+            "id": "dp",
+            "label": "Filter ΔP ↑",
+            "kind": "symptom",
+            "role": "filter_dp"
+          },
+          {
+            "id": "q",
+            "label": "Flow ↓",
+            "kind": "symptom",
+            "role": "flow"
+          },
+          {
+            "id": "pw",
+            "label": "Absorbed power ↓",
+            "kind": "symptom",
+            "role": "power"
+          }
+        ],
+        "edges": [
+          {
+            "from": "dust",
+            "to": "r",
+            "sign": "+"
+          },
+          {
+            "from": "r",
+            "to": "dp",
+            "sign": "+"
+          },
+          {
+            "from": "r",
+            "to": "q",
+            "sign": "-"
+          },
+          {
+            "from": "q",
+            "to": "pw",
+            "sign": "+"
+          },
+          {
+            "from": "q",
+            "to": "dp",
+            "sign": "+",
+            "loop_id": "flow_relief"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "flow_relief",
+            "polarity": "balancing",
+            "description": "Lower flow lowers the ΔP across the filter (∝ Q²), so ΔP understates loading; normalise to flow."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "driver",
+          "effect_role": "current",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            604800000
+          ],
+          "edge_type": "structural_load_effect",
+          "note": "Fan unloads the motor as flow falls"
+        },
+        {
+          "relation": "process_downstream",
+          "effect_role": "flow",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            604800000
+          ],
+          "edge_type": "cause_to_effect"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "fan.damper_stuck",
+          "rule": "A stuck damper shows position not following command; clogging shows rising filter ΔP with a free damper."
+        },
+        {
+          "vs_pattern": "fan.belt_slip",
+          "rule": "Belt slip lowers fan speed; clogging lowers flow at normal speed."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Flow-normalised filter resistance",
+          "formula": "K = ΔP_filter / Q²"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare filter ΔP normalised to flow squared with the clean value.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Walk the inlet for obstructions: screens, bird guards, inlet box doors, ice.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Replace or clean the filter elements with the fan isolated.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "ISO 16890 / EN 779 (air filter classification)",
+        "AMCA 201 (fans and systems)"
+      ]
+    },
+    {
+      "pattern_id": "fan.damper_stuck",
+      "version": "1.0.0",
+      "failure_mode": "damper_stuck",
+      "title": "Damper / inlet guide vane stuck",
+      "category": "control",
+      "severity": "warning",
+      "description": "A damper or inlet guide vane actuator seizes, loses its linkage or loses air or power. Position stops following command, so flow stops responding and the flow or pressure controller winds up.",
+      "typical_progression": "Immediate on the next command change; linkage wear can make it intermittent.",
+      "required_roles": [
+        "damper_position",
+        "damper_command"
+      ],
+      "optional_roles": [
+        "flow",
+        "differential_pressure",
+        "power"
+      ],
+      "trigger_role": "damper_position",
+      "symptoms": [
+        {
+          "role": "damper_position",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Position unchanged while command moves more than ~5 %"
+        },
+        {
+          "role": "damper_command",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            120000
+          ],
+          "weight": 0.8,
+          "note": "Controller winds up toward a limit (rise or fall)"
+        },
+        {
+          "role": "flow",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            10000
+          ],
+          "weight": 0.7
+        },
+        {
+          "role": "differential_pressure",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            10000
+          ],
+          "weight": 0.3
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "seize",
+            "label": "Actuator or linkage seized",
+            "kind": "cause"
+          },
+          {
+            "id": "pos",
+            "label": "Damper position fixed",
+            "kind": "symptom",
+            "role": "damper_position"
+          },
+          {
+            "id": "err",
+            "label": "Control error persists",
+            "kind": "state"
+          },
+          {
+            "id": "cmd",
+            "label": "Controller output winds up",
+            "kind": "symptom",
+            "role": "damper_command"
+          },
+          {
+            "id": "q",
+            "label": "Flow fixed",
+            "kind": "symptom",
+            "role": "flow"
+          }
+        ],
+        "edges": [
+          {
+            "from": "seize",
+            "to": "pos",
+            "sign": "+"
+          },
+          {
+            "from": "pos",
+            "to": "q",
+            "sign": "+"
+          },
+          {
+            "from": "q",
+            "to": "err",
+            "sign": "-",
+            "loop_id": "flow_loop"
+          },
+          {
+            "from": "err",
+            "to": "cmd",
+            "sign": "+",
+            "loop_id": "flow_loop"
+          },
+          {
+            "from": "cmd",
+            "to": "pos",
+            "sign": "+",
+            "loop_id": "flow_loop"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "flow_loop",
+            "polarity": "balancing",
+            "description": "The flow control loop is balancing; with the damper stuck the path cmd → position is broken and the integral term winds up."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "controller",
+          "effect_role": "controller_output",
+          "direction": "rise",
+          "polarity": "any",
+          "lag_ms": [
+            0,
+            120000
+          ],
+          "edge_type": "control",
+          "note": "Integral wind-up toward a limit"
+        },
+        {
+          "relation": "process_downstream",
+          "effect_role": "flow",
+          "direction": "stuck",
+          "polarity": "any",
+          "lag_ms": [
+            0,
+            10000
+          ],
+          "edge_type": "cause_to_effect"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "valve.stiction",
+          "rule": "Stiction moves in jumps after the command builds up; a stuck damper does not move at all."
+        },
+        {
+          "vs_pattern": "valve.actuator_air_supply_loss",
+          "rule": "On pneumatic actuators check supply pressure; loss of air drives the damper to its fail position rather than freezing it."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare damper command with position feedback over the last command changes.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check actuator supply (air pressure or electrical power) and actuator fault indication.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Inspect the linkage, crank arm set screws and blade shafts for seizure or slipped couplings.",
+          "requires_isolation": true
+        }
+      ]
+    },
+    {
+      "pattern_id": "fan.impeller_buildup_unbalance",
+      "version": "1.0.0",
+      "failure_mode": "impeller_buildup_unbalance",
+      "title": "Impeller build-up / erosion unbalance",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "Dust or sticky product builds up unevenly on the blades (or erodes them). The mass unbalance raises 1× vibration gradually; when a patch of deposit breaks off, 1× vibration steps up or down.",
+      "typical_progression": "Days to months; step changes when deposits shed.",
+      "required_roles": [
+        "vibration_1x"
+      ],
+      "optional_roles": [
+        "vibration",
+        "bearing_temperature",
+        "flow"
+      ],
+      "trigger_role": "vibration_1x",
+      "symptoms": [
+        {
+          "role": "vibration_1x",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.8,
+          "threshold_hint": {
+            "absolute": 4.5
+          },
+          "note": "ISO 14694 fan application categories set alarm and trip levels (BV-3 rigid mount: alarm ≈ 4.5 mm/s)"
+        },
+        {
+          "role": "bearing_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            86400000,
+            5184000000
+          ],
+          "weight": 0.3
+        },
+        {
+          "role": "flow",
+          "direction": "fall",
+          "onset_lag_ms": [
+            86400000,
+            5184000000
+          ],
+          "weight": 0.2,
+          "note": "Heavy build-up changes blade profile and reduces flow"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "dep",
+            "label": "Deposit on blades",
+            "kind": "cause"
+          },
+          {
+            "id": "unb",
+            "label": "Mass unbalance ↑",
+            "kind": "state"
+          },
+          {
+            "id": "v1x",
+            "label": "1× vibration ↑",
+            "kind": "symptom",
+            "role": "vibration_1x"
+          },
+          {
+            "id": "shed",
+            "label": "Deposit sheds",
+            "kind": "consequence"
+          }
+        ],
+        "edges": [
+          {
+            "from": "dep",
+            "to": "unb",
+            "sign": "+"
+          },
+          {
+            "from": "unb",
+            "to": "v1x",
+            "sign": "+"
+          },
+          {
+            "from": "v1x",
+            "to": "shed",
+            "sign": "+"
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "driver",
+          "effect_role": "vibration",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "mechanical",
+          "note": "Transmitted via shaft and base; highest at the fan bearings"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.rotor_unbalance",
+          "rule": "Fan unbalance is highest at the fan bearings; motor unbalance is highest at the motor bearings."
+        },
+        {
+          "vs_pattern": "fan.bearing_defect",
+          "rule": "Unbalance is a clean 1× with ~90° horizontal/vertical phase; a bearing defect shows envelope peaks at bearing defect frequencies."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "vibration_spectrum",
+          "description": "Dominant radial 1× with ~90° phase between horizontal and vertical; amplitude ∝ speed²"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Trend 1× amplitude and phase; a phase change with amplitude change indicates mass redistribution.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Inspect and clean the impeller; check for erosion and cracks at blade roots.",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Field-balance after cleaning to ISO 21940-11 grade G 6.3 or the fan category requirement.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "ISO 14694 (fans: balance quality and vibration)",
+        "ISO 21940-11 (balance quality)",
+        "ISO 20816-3"
+      ]
+    },
+    {
+      "pattern_id": "fan.belt_slip",
+      "version": "1.0.0",
+      "failure_mode": "belt_slip",
+      "title": "V-belt slip (belt-driven fan)",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "Belts are under-tensioned, worn, glazed or contaminated. The fan runs slower than the ratio implies, flow falls, and slipping belts heat and squeal, especially on start.",
+      "typical_progression": "Weeks as belts stretch; seconds of slip on each start when marginal.",
+      "required_roles": [
+        "speed"
+      ],
+      "optional_roles": [
+        "flow",
+        "power",
+        "belt_temperature",
+        "vibration"
+      ],
+      "trigger_role": "speed",
+      "symptoms": [
+        {
+          "role": "speed",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 0.97
+          },
+          "note": "Fan speed below motor speed × sheave ratio by more than ~2–3 %"
+        },
+        {
+          "role": "flow",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.7,
+          "note": "Q ∝ n"
+        },
+        {
+          "role": "power",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.5,
+          "note": "P ∝ n³ at the fan"
+        },
+        {
+          "role": "belt_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            60000,
+            1800000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "vibration",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.3,
+          "note": "Belt flap at belt pass frequency"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "tens",
+            "label": "Belt tension ↓",
+            "kind": "cause"
+          },
+          {
+            "id": "slip",
+            "label": "Slip ↑",
+            "kind": "state"
+          },
+          {
+            "id": "n",
+            "label": "Fan speed ↓",
+            "kind": "symptom",
+            "role": "speed"
+          },
+          {
+            "id": "heat",
+            "label": "Belt heating",
+            "kind": "symptom",
+            "role": "belt_temperature"
+          },
+          {
+            "id": "glaze",
+            "label": "Belt glazing (μ ↓)",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "tens",
+            "to": "slip",
+            "sign": "-"
+          },
+          {
+            "from": "slip",
+            "to": "n",
+            "sign": "-"
+          },
+          {
+            "from": "slip",
+            "to": "heat",
+            "sign": "+"
+          },
+          {
+            "from": "heat",
+            "to": "glaze",
+            "sign": "+",
+            "lag_ms": [
+              3600000,
+              2592000000
+            ],
+            "loop_id": "glaze_slip"
+          },
+          {
+            "from": "glaze",
+            "to": "slip",
+            "sign": "+",
+            "loop_id": "glaze_slip"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "glaze_slip",
+            "polarity": "reinforcing",
+            "description": "Slip heats and glazes the belt, lowering friction and increasing slip."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "driver",
+          "effect_role": "current",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            2000
+          ],
+          "edge_type": "structural_load_effect",
+          "note": "Motor unloads while its speed stays near synchronous"
+        },
+        {
+          "relation": "process_downstream",
+          "effect_role": "flow",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            5000
+          ],
+          "edge_type": "cause_to_effect"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.coupling_or_belt_slip",
+          "rule": "Motor-side view of the same fault; fan speed falling while motor speed holds confirms slip at the belts."
+        },
+        {
+          "vs_pattern": "fan.inlet_blockage_filter_clogging",
+          "rule": "Clogging lowers flow at normal fan speed."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Belt slip from measured speeds",
+          "formula": "slip % = 100 · (1 − (n_fan · D_fan) / (n_motor · D_motor))"
+        },
+        {
+          "domain": "vibration_spectrum",
+          "description": "Belt pass frequency and harmonics (below 1×)",
+          "formula": "f_belt = π · D_sheave · n / (60 · L_belt)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare fan speed with motor speed times the sheave ratio.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check belt tension with a gauge and inspect for glazing, cracks and oil contamination.",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Check sheave groove wear and alignment; replace belts as a matched set.",
+          "requires_isolation": true
+        }
+      ]
+    },
+    {
+      "pattern_id": "fan.axial_stall_surge",
+      "version": "1.0.0",
+      "failure_mode": "axial_stall_surge",
+      "title": "Aerodynamic stall / surge (axial and high-pressure fans)",
+      "category": "process",
+      "severity": "critical",
+      "description": "The operating point crosses the stall line (system resistance too high, damper or blade pitch too closed, or two parallel fans unevenly loaded). Rotating stall cells form, giving sub-synchronous pulsation and blade stress; in a large system this can grow into surge with flow reversal.",
+      "typical_progression": "Seconds. Sustained stall can fatigue blades within hours.",
+      "required_roles": [
+        "differential_pressure"
+      ],
+      "optional_roles": [
+        "flow",
+        "vibration_subsync",
+        "vibration",
+        "power",
+        "damper_position"
+      ],
+      "trigger_role": "differential_pressure",
+      "symptoms": [
+        {
+          "role": "differential_pressure",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Pressure rise drops and pulsates"
+        },
+        {
+          "role": "vibration_subsync",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.9
+        },
+        {
+          "role": "flow",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.7
+        },
+        {
+          "role": "power",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.5
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            5000
+          ],
+          "weight": 0.5
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "r",
+            "label": "System resistance ↑ / pitch too closed",
+            "kind": "cause"
+          },
+          {
+            "id": "aoa",
+            "label": "Blade angle of attack ↑",
+            "kind": "state"
+          },
+          {
+            "id": "sep",
+            "label": "Flow separation / stall cells",
+            "kind": "state"
+          },
+          {
+            "id": "dp",
+            "label": "Pressure rise ↓ and pulsating",
+            "kind": "symptom",
+            "role": "differential_pressure"
+          },
+          {
+            "id": "rev",
+            "label": "Momentary flow reversal",
+            "kind": "state"
+          },
+          {
+            "id": "q",
+            "label": "Flow ↓",
+            "kind": "symptom",
+            "role": "flow"
+          }
+        ],
+        "edges": [
+          {
+            "from": "r",
+            "to": "q",
+            "sign": "-"
+          },
+          {
+            "from": "q",
+            "to": "aoa",
+            "sign": "-"
+          },
+          {
+            "from": "aoa",
+            "to": "sep",
+            "sign": "+"
+          },
+          {
+            "from": "sep",
+            "to": "dp",
+            "sign": "-"
+          },
+          {
+            "from": "dp",
+            "to": "rev",
+            "sign": "-",
+            "loop_id": "surge_cycle"
+          },
+          {
+            "from": "rev",
+            "to": "q",
+            "sign": "-",
+            "loop_id": "surge_cycle"
+          },
+          {
+            "from": "q",
+            "to": "aoa",
+            "sign": "-",
+            "loop_id": "surge_cycle"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "surge_cycle",
+            "polarity": "reinforcing",
+            "description": "Lower flow raises blade incidence, deepening stall and lowering pressure rise, which lets the system push flow back through the fan."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "parallel_unit",
+          "effect_role": "flow",
+          "direction": "oscillate",
+          "polarity": "any",
+          "lag_ms": [
+            0,
+            2000
+          ],
+          "edge_type": "cause_to_effect",
+          "note": "Parallel fans swap load; the stronger fan takes the flow"
+        },
+        {
+          "relation": "driver",
+          "effect_role": "current",
+          "direction": "oscillate",
+          "polarity": "any",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "structural_load_effect"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "fan.impeller_buildup_unbalance",
+          "rule": "Unbalance is a steady 1× component; stall is sub-synchronous and tied to the operating point."
+        },
+        {
+          "vs_pattern": "compressor.surge",
+          "rule": "Same physics in compressors; this pattern applies to fans with pressure rise below ~30 kPa."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "vibration_spectrum",
+          "description": "Rotating stall: sub-synchronous component, typically 0.2–0.8 × running speed (per cell count)",
+          "formula": "f_stall ≈ k · (0.2…0.8) · n / 60"
+        },
+        {
+          "domain": "waveform",
+          "description": "Surge: large low-frequency pressure and flow oscillation (seconds per cycle)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Plot the operating point (flow, pressure rise, blade pitch or damper) against the stall line on the fan curve.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "For parallel fans compare pitch or damper positions and loads; unequal loading drives one fan into stall.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check for closed or blocked downstream dampers raising system resistance.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "After sustained stall, inspect blades and hub for cracks.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "AMCA 201 (fans and systems)",
+        "ISO 5801 (fan performance testing)"
+      ]
+    },
+    {
+      "pattern_id": "fan.bearing_defect",
+      "version": "1.0.0",
+      "failure_mode": "bearing_defect",
+      "title": "Fan bearing defect",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "Rolling-element bearing damage from fatigue, contamination, unbalance loading, belt over-tension or hot gas. Envelope energy rises first; overall vibration and temperature later.",
+      "typical_progression": "Weeks to months (P-F interval).",
+      "required_roles": [
+        "bearing_envelope"
+      ],
+      "optional_roles": [
+        "vibration",
+        "bearing_temperature"
+      ],
+      "trigger_role": "bearing_envelope",
+      "symptoms": [
+        {
+          "role": "bearing_envelope",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 2.0
+          },
+          "note": "gE alarm; set per speed and bearing size"
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            604800000,
+            5184000000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "bearing_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            1209600000,
+            7776000000
+          ],
+          "weight": 0.5,
+          "note": "~20 °C above baseline is significant; hot-gas fans run warmer"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "spall",
+            "label": "Race spall",
+            "kind": "cause"
+          },
+          {
+            "id": "impact",
+            "label": "Defect impacts",
+            "kind": "symptom",
+            "role": "bearing_envelope"
+          },
+          {
+            "id": "fric",
+            "label": "Friction ↑",
+            "kind": "state"
+          },
+          {
+            "id": "heat",
+            "label": "Bearing temperature ↑",
+            "kind": "symptom",
+            "role": "bearing_temperature"
+          },
+          {
+            "id": "visc",
+            "label": "Lubricant viscosity ↓",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "spall",
+            "to": "impact",
+            "sign": "+"
+          },
+          {
+            "from": "spall",
+            "to": "fric",
+            "sign": "+"
+          },
+          {
+            "from": "fric",
+            "to": "heat",
+            "sign": "+"
+          },
+          {
+            "from": "heat",
+            "to": "visc",
+            "sign": "-",
+            "loop_id": "lube_breakdown"
+          },
+          {
+            "from": "visc",
+            "to": "fric",
+            "sign": "-",
+            "loop_id": "lube_breakdown"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "lube_breakdown",
+            "polarity": "reinforcing",
+            "description": "Heat thins the lubricant, which raises friction and heat further."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.bearing_defect",
+          "rule": "Compare envelope at motor and fan bearings; the defect is at the higher reading with matching defect frequencies."
+        },
+        {
+          "vs_pattern": "fan.impeller_buildup_unbalance",
+          "rule": "If 1× rose for weeks before the envelope, unbalance loading is a likely root cause.",
+          "first_role": "vibration_1x",
+          "then_role": "bearing_envelope"
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "vibration_envelope",
+          "description": "Outer race defect",
+          "formula": "BPFO = (n/2)·fr·(1 − d/D·cosθ)"
+        },
+        {
+          "domain": "vibration_envelope",
+          "description": "Inner race defect with 1× sidebands",
+          "formula": "BPFI = (n/2)·fr·(1 + d/D·cosθ)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Take an envelope spectrum and match peaks to the installed bearing numbers.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check lubrication interval and grease compatibility, especially on hot-gas fans.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check belt tension; over-tensioned belts overload the fan-side bearing.",
+          "requires_isolation": true
+        },
+        {
+          "order": 4,
+          "text": "Plan replacement within the P-F interval.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "ISO 14694",
+        "ISO 13373-1"
+      ]
+    }
+  ]
+}

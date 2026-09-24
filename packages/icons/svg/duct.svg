@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" role="img">
+  <title>Duct</title>
+  <rect x="4" y="15" width="40" height="18"/>
+  <path d="M12 11.5V36.5M36 11.5V36.5"/>
+  <path d="M16.5 24H27"/>
+  <path d="M32 24L26.5 27L26.5 21Z" fill="currentColor" stroke="none"/>
+</svg>

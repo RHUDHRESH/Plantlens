@@ -1,0 +1,2752 @@
+{
+  "library_id": "plantlens.patterns.induction_motor",
+  "version": "1.0.0",
+  "component_type": "induction_motor",
+  "display_name": "AC induction motor (squirrel cage, 3-phase)",
+  "description": "Failure patterns for three-phase squirrel-cage induction motors, direct-on-line or inverter-fed, covering electrical, supply, insulation, rotor, bearing, alignment, thermal and inverter-specific modes.",
+  "asset_type_aliases": [
+    "load.motor_3phase"
+  ],
+  "library_type_aliases": [],
+  "roles": [
+    {
+      "role": "current",
+      "quantity": "phase current (RMS, average of phases)",
+      "units": [
+        "A"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current"
+      ],
+      "name_hints": [
+        "current",
+        "_i",
+        "amps"
+      ]
+    },
+    {
+      "role": "current_unbalance",
+      "quantity": "phase current unbalance (max deviation from mean)",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current.unbalance"
+      ],
+      "name_hints": [
+        "i_unbal",
+        "current_unbal"
+      ]
+    },
+    {
+      "role": "phase_current_min",
+      "quantity": "lowest single-phase current",
+      "units": [
+        "A"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current.phase_min"
+      ],
+      "name_hints": [
+        "i_min",
+        "phase_min"
+      ]
+    },
+    {
+      "role": "voltage",
+      "quantity": "line voltage (RMS)",
+      "units": [
+        "V"
+      ],
+      "signal_type_prefixes": [
+        "electrical.voltage"
+      ],
+      "name_hints": [
+        "voltage",
+        "_v"
+      ]
+    },
+    {
+      "role": "voltage_unbalance",
+      "quantity": "line voltage unbalance (NEMA MG-1 definition)",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "electrical.voltage.unbalance"
+      ],
+      "name_hints": [
+        "v_unbal",
+        "voltage_unbal"
+      ]
+    },
+    {
+      "role": "frequency",
+      "quantity": "supply / drive output frequency",
+      "units": [
+        "Hz"
+      ],
+      "signal_type_prefixes": [
+        "electrical.frequency"
+      ],
+      "name_hints": [
+        "freq",
+        "_hz"
+      ]
+    },
+    {
+      "role": "speed",
+      "quantity": "shaft speed",
+      "units": [
+        "rpm"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.speed"
+      ],
+      "name_hints": [
+        "rpm",
+        "speed"
+      ]
+    },
+    {
+      "role": "power",
+      "quantity": "active electrical input power",
+      "units": [
+        "kW",
+        "W"
+      ],
+      "signal_type_prefixes": [
+        "electrical.power"
+      ],
+      "name_hints": [
+        "power",
+        "_kw"
+      ]
+    },
+    {
+      "role": "power_factor",
+      "quantity": "displacement power factor",
+      "units": [
+        "pf",
+        "ratio"
+      ],
+      "signal_type_prefixes": [
+        "electrical.power_factor"
+      ],
+      "name_hints": [
+        "pf",
+        "cosphi"
+      ]
+    },
+    {
+      "role": "torque",
+      "quantity": "shaft torque (measured or drive-estimated)",
+      "units": [
+        "Nm",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.torque"
+      ],
+      "name_hints": [
+        "torque"
+      ]
+    },
+    {
+      "role": "winding_temperature",
+      "quantity": "stator winding temperature (RTD/PT100/PTC)",
+      "units": [
+        "C",
+        "°C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.winding"
+      ],
+      "name_hints": [
+        "wind",
+        "stator_t",
+        "temp"
+      ]
+    },
+    {
+      "role": "bearing_temperature",
+      "quantity": "bearing housing temperature (DE or NDE)",
+      "units": [
+        "C",
+        "°C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.bearing"
+      ],
+      "name_hints": [
+        "brg_t",
+        "bearing_t"
+      ]
+    },
+    {
+      "role": "frame_temperature",
+      "quantity": "motor frame / surface temperature",
+      "units": [
+        "C",
+        "°C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.frame"
+      ],
+      "name_hints": [
+        "frame_t",
+        "surface_t"
+      ]
+    },
+    {
+      "role": "ambient_temperature",
+      "quantity": "cooling air inlet / ambient temperature",
+      "units": [
+        "C",
+        "°C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.ambient"
+      ],
+      "name_hints": [
+        "ambient",
+        "amb_t"
+      ]
+    },
+    {
+      "role": "vibration",
+      "quantity": "overall vibration velocity (RMS, 10–1000 Hz, ISO 10816/20816)",
+      "units": [
+        "mm/s"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration"
+      ],
+      "name_hints": [
+        "vib"
+      ]
+    },
+    {
+      "role": "vibration_1x",
+      "quantity": "vibration amplitude at 1× running speed",
+      "units": [
+        "mm/s"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration.1x"
+      ],
+      "name_hints": [
+        "vib_1x",
+        "1x"
+      ]
+    },
+    {
+      "role": "vibration_2x",
+      "quantity": "vibration amplitude at 2× running speed",
+      "units": [
+        "mm/s"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration.2x"
+      ],
+      "name_hints": [
+        "vib_2x",
+        "2x"
+      ]
+    },
+    {
+      "role": "vibration_axial",
+      "quantity": "axial vibration velocity",
+      "units": [
+        "mm/s"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration.axial"
+      ],
+      "name_hints": [
+        "axial"
+      ]
+    },
+    {
+      "role": "vibration_2lf",
+      "quantity": "vibration at twice line frequency (electromagnetic)",
+      "units": [
+        "mm/s"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration.2lf"
+      ],
+      "name_hints": [
+        "2lf",
+        "2xlf"
+      ]
+    },
+    {
+      "role": "bearing_envelope",
+      "quantity": "bearing demodulated / envelope acceleration",
+      "units": [
+        "gE",
+        "g"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration.envelope"
+      ],
+      "name_hints": [
+        "env",
+        "gE"
+      ]
+    },
+    {
+      "role": "insulation_resistance",
+      "quantity": "stator insulation resistance to ground (online monitor or last test)",
+      "units": [
+        "MOhm",
+        "MΩ"
+      ],
+      "signal_type_prefixes": [
+        "electrical.insulation"
+      ],
+      "name_hints": [
+        "ir_",
+        "insul",
+        "megger"
+      ]
+    },
+    {
+      "role": "ground_current",
+      "quantity": "ground-fault / residual current",
+      "units": [
+        "mA",
+        "A"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current.residual"
+      ],
+      "name_hints": [
+        "ground",
+        "residual",
+        "earth"
+      ]
+    },
+    {
+      "role": "starts_per_hour",
+      "quantity": "number of starts in the last hour",
+      "units": [
+        "count"
+      ],
+      "signal_type_prefixes": [
+        "duty.starts"
+      ],
+      "name_hints": [
+        "starts"
+      ]
+    },
+    {
+      "role": "thermal_trip",
+      "quantity": "motor protection relay thermal trip / PTC trip state",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "protection.trip"
+      ],
+      "name_hints": [
+        "trip",
+        "ptc"
+      ]
+    },
+    {
+      "role": "shaft_voltage",
+      "quantity": "shaft-to-frame voltage (bearing-current monitor)",
+      "units": [
+        "V"
+      ],
+      "signal_type_prefixes": [
+        "electrical.shaft_voltage"
+      ],
+      "name_hints": [
+        "shaft_v"
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "pattern_id": "induction_motor.mechanical_overload",
+      "version": "1.0.0",
+      "failure_mode": "mechanical_overload",
+      "title": "Mechanical overload (driven load too high)",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "The driven load demands more torque than rated. Slip and current rise; speed sags; winding heats over minutes.",
+      "typical_progression": "Seconds for current/speed; minutes for winding temperature; protection trips if sustained.",
+      "required_roles": [
+        "current",
+        "speed"
+      ],
+      "optional_roles": [
+        "winding_temperature",
+        "power",
+        "torque",
+        "voltage"
+      ],
+      "trigger_role": "current",
+      "symptoms": [
+        {
+          "role": "current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 1.15,
+            "for_ms": 2000
+          },
+          "note": "Above nameplate FLA × service factor"
+        },
+        {
+          "role": "speed",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            4000
+          ],
+          "weight": 0.8,
+          "threshold_hint": {
+            "relative_to_nominal": 0.97
+          },
+          "note": "Slip increases; small absolute drop on stiff supplies"
+        },
+        {
+          "role": "power",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.6,
+          "threshold_hint": {
+            "relative_to_nominal": 1.15
+          }
+        },
+        {
+          "role": "torque",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.7,
+          "threshold_hint": {
+            "relative_to_nominal": 1.1
+          }
+        },
+        {
+          "role": "winding_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            60000,
+            1800000
+          ],
+          "weight": 0.6,
+          "threshold_hint": {
+            "absolute": 130
+          },
+          "note": "Class F alarm typically 130–140 °C"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "load",
+            "label": "Driven load torque ↑",
+            "kind": "cause"
+          },
+          {
+            "id": "slip",
+            "label": "Slip ↑",
+            "kind": "state"
+          },
+          {
+            "id": "i2",
+            "label": "Rotor & stator current ↑",
+            "kind": "state",
+            "role": "current"
+          },
+          {
+            "id": "tq",
+            "label": "Electromagnetic torque ↑",
+            "kind": "state",
+            "role": "torque"
+          },
+          {
+            "id": "n",
+            "label": "Speed ↓",
+            "kind": "symptom",
+            "role": "speed"
+          },
+          {
+            "id": "cu",
+            "label": "I²R copper loss ↑",
+            "kind": "state"
+          },
+          {
+            "id": "tw",
+            "label": "Winding temperature ↑",
+            "kind": "symptom",
+            "role": "winding_temperature"
+          },
+          {
+            "id": "r",
+            "label": "Winding resistance ↑",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "load",
+            "to": "n",
+            "sign": "-",
+            "lag_ms": [
+              0,
+              2000
+            ]
+          },
+          {
+            "from": "n",
+            "to": "slip",
+            "sign": "-"
+          },
+          {
+            "from": "slip",
+            "to": "i2",
+            "sign": "+",
+            "lag_ms": [
+              0,
+              200
+            ]
+          },
+          {
+            "from": "i2",
+            "to": "tq",
+            "sign": "+",
+            "loop_id": "torque_balance"
+          },
+          {
+            "from": "tq",
+            "to": "n",
+            "sign": "+",
+            "loop_id": "torque_balance"
+          },
+          {
+            "from": "i2",
+            "to": "cu",
+            "sign": "+"
+          },
+          {
+            "from": "cu",
+            "to": "tw",
+            "sign": "+",
+            "lag_ms": [
+              60000,
+              1800000
+            ],
+            "loop_id": "thermal_runaway"
+          },
+          {
+            "from": "tw",
+            "to": "r",
+            "sign": "+",
+            "loop_id": "thermal_runaway"
+          },
+          {
+            "from": "r",
+            "to": "cu",
+            "sign": "+",
+            "loop_id": "thermal_runaway"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "torque_balance",
+            "polarity": "balancing",
+            "description": "Higher slip raises torque until it matches the load: the motor settles at a lower speed and higher current."
+          },
+          {
+            "loop_id": "thermal_runaway",
+            "polarity": "reinforcing",
+            "description": "Hotter copper has higher resistance, which raises I²R loss and heats it further (≈0.4 %/°C for copper)."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "upstream_supply",
+          "effect_role": "voltage",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            4000
+          ],
+          "edge_type": "structural_load_effect",
+          "note": "Higher current causes more supply/bus voltage drop"
+        },
+        {
+          "relation": "driver",
+          "effect_role": "current",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            500
+          ],
+          "edge_type": "structural_load_effect",
+          "loop_ok": true,
+          "loop_id": "drive_current_limit",
+          "note": "Drive output current follows motor current; the drive's current limit feeds back as a speed reduction"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.undervoltage_supply",
+          "rule": "Overload: current rises BEFORE supply voltage falls. Undervoltage: voltage falls first and current rises in response.",
+          "first_role": "current",
+          "then_role": "voltage"
+        },
+        {
+          "vs_pattern": "induction_motor.single_phasing",
+          "rule": "Overload keeps phase currents balanced; single phasing shows current unbalance > 10 % and one phase near zero."
+        },
+        {
+          "vs_pattern": "induction_motor.bearing_defect",
+          "rule": "Overload has no rise in bearing envelope or bearing temperature ahead of current."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare motor current with nameplate FLA × service factor; check it tracks process demand (flow, pressure, conveyor load).",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the driven equipment for binding, blockage, over-pressure or product build-up.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Inspect the coupling and belts for tightness or damage.",
+          "requires_isolation": true
+        },
+        {
+          "order": 4,
+          "text": "Verify the protection relay thermal model / overload setting matches the nameplate.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 60034-1 (duty types, service factor)",
+        "NEMA MG-1 Part 12 & 20"
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.locked_rotor_stall",
+      "version": "1.0.0",
+      "failure_mode": "locked_rotor_stall",
+      "title": "Locked rotor / stall",
+      "category": "mechanical",
+      "severity": "critical",
+      "description": "The rotor cannot turn (seized load, jammed driven machine, or failed bearing). Current sits at locked-rotor level (5–8× FLA) and winding temperature climbs within seconds.",
+      "typical_progression": "Seconds. Protection must trip within the locked-rotor safe time (typically 10–20 s hot).",
+      "required_roles": [
+        "current",
+        "speed"
+      ],
+      "optional_roles": [
+        "winding_temperature",
+        "thermal_trip"
+      ],
+      "trigger_role": "current",
+      "symptoms": [
+        {
+          "role": "current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 4.0,
+            "for_ms": 500
+          },
+          "note": "Locked-rotor current, 5–8× FLA across the line; drive-limited on a VFD"
+        },
+        {
+          "role": "speed",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 50
+          },
+          "note": "Near-zero speed while energised"
+        },
+        {
+          "role": "winding_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            2000,
+            60000
+          ],
+          "weight": 0.7
+        },
+        {
+          "role": "thermal_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            5000,
+            30000
+          ],
+          "weight": 0.6
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "upstream_supply",
+          "effect_role": "voltage",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "structural_load_effect",
+          "note": "Deep voltage dip from locked-rotor current"
+        },
+        {
+          "relation": "driver",
+          "effect_role": "current",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            200
+          ],
+          "edge_type": "structural_load_effect",
+          "loop_ok": true,
+          "loop_id": "drive_current_limit"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.mechanical_overload",
+          "rule": "Stall: speed near zero within 2 s and current at LRA. Overload: speed only a few % lower and current 1.1–1.5× FLA."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Confirm the protection tripped. If it did not, trip the motor locally at once; locked-rotor damage accrues in seconds.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Lock out, then try to rotate the shaft by hand to separate a seized motor from a jammed load.",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Inspect the driven machine for a jam or foreign object.",
+          "requires_isolation": true
+        },
+        {
+          "order": 4,
+          "text": "Check the bearings for seizure before restarting.",
+          "requires_isolation": false
+        }
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.single_phasing",
+      "version": "1.0.0",
+      "failure_mode": "single_phasing",
+      "title": "Single phasing (loss of one phase)",
+      "category": "supply",
+      "severity": "critical",
+      "description": "One supply phase is open: a blown fuse, failed contactor pole or loose terminal. The motor keeps running on two phases with sharply unbalanced current and fast heating; it may not restart.",
+      "typical_progression": "Seconds to minutes. Negative-sequence current heats the rotor quickly.",
+      "required_roles": [
+        "current_unbalance"
+      ],
+      "optional_roles": [
+        "current",
+        "phase_current_min",
+        "speed",
+        "winding_temperature",
+        "vibration_2lf",
+        "voltage_unbalance"
+      ],
+      "trigger_role": "current_unbalance",
+      "symptoms": [
+        {
+          "role": "current_unbalance",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 30,
+            "for_ms": 1000
+          },
+          "note": "Typically > 50 %; one phase near zero"
+        },
+        {
+          "role": "phase_current_min",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            500
+          ],
+          "weight": 0.9,
+          "threshold_hint": {
+            "absolute": 0.5
+          }
+        },
+        {
+          "role": "current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.6,
+          "threshold_hint": {
+            "relative_to_nominal": 1.3
+          },
+          "note": "Remaining phases carry ~1.7× current at the same load"
+        },
+        {
+          "role": "speed",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            3000
+          ],
+          "weight": 0.4
+        },
+        {
+          "role": "vibration_2lf",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.5,
+          "note": "Pulsating torque at 2× line frequency"
+        },
+        {
+          "role": "winding_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            30000,
+            600000
+          ],
+          "weight": 0.6
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "upstream_supply",
+          "effect_role": "voltage_unbalance",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            500
+          ],
+          "edge_type": "structural_power",
+          "note": "Open phase appears as voltage unbalance at the motor terminals"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.voltage_unbalance",
+          "rule": "Single phasing: one phase current near zero and unbalance > 30 %. Supply unbalance: all phases carry current; current unbalance is 6–10× the voltage unbalance."
+        },
+        {
+          "vs_pattern": "induction_motor.stator_interturn_short",
+          "rule": "Inter-turn short: unbalance grows gradually with a hot spot; single phasing is a step change."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check each phase current at the starter. One phase near zero confirms an open phase.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Inspect fuses, contactor poles and terminal lugs for an open circuit or burn marks.",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Check upstream protection for a single-pole trip.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Do not restart until the open phase is found; a restart on two phases will stall.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "NEMA MG-1 14.36",
+        "IEEE 3004.8 (motor protection)"
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.voltage_unbalance",
+      "version": "1.0.0",
+      "failure_mode": "voltage_unbalance",
+      "title": "Supply voltage unbalance",
+      "category": "supply",
+      "severity": "warning",
+      "description": "Unequal line voltages drive negative-sequence currents. Current unbalance is roughly 6–10× the voltage unbalance, causing extra rotor and stator heating.",
+      "typical_progression": "Continuous. NEMA derates motors above 1 % unbalance; 5 % is a limit.",
+      "required_roles": [
+        "voltage_unbalance"
+      ],
+      "optional_roles": [
+        "current_unbalance",
+        "winding_temperature",
+        "vibration_2lf"
+      ],
+      "trigger_role": "voltage_unbalance",
+      "symptoms": [
+        {
+          "role": "voltage_unbalance",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 2.0,
+            "for_ms": 10000
+          }
+        },
+        {
+          "role": "current_unbalance",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.9,
+          "threshold_hint": {
+            "absolute": 10
+          }
+        },
+        {
+          "role": "winding_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            300000,
+            3600000
+          ],
+          "weight": 0.5
+        },
+        {
+          "role": "vibration_2lf",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            5000
+          ],
+          "weight": 0.3
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.stator_interturn_short",
+          "rule": "Supply unbalance: voltage unbalance comes first and follows the supply (other motors on the same bus see it). Inter-turn short: current unbalance without voltage unbalance.",
+          "first_role": "voltage_unbalance",
+          "then_role": "current_unbalance"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Measure all three line voltages at the motor terminals and at the bus. If other motors on the same bus show the same unbalance, the cause is upstream.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check for large single-phase loads on the same transformer and for a failed PF-correction capacitor stage.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Derate the motor per the NEMA MG-1 derating curve until corrected.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "NEMA MG-1 14.35 (voltage unbalance derating)"
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.undervoltage_supply",
+      "version": "1.0.0",
+      "failure_mode": "undervoltage_supply",
+      "title": "Supply undervoltage",
+      "category": "supply",
+      "severity": "warning",
+      "description": "Low supply voltage cuts torque (∝ V²). To carry the same load the motor slips more and draws more current, so it heats even though the load is unchanged.",
+      "required_roles": [
+        "voltage",
+        "current"
+      ],
+      "optional_roles": [
+        "speed",
+        "winding_temperature"
+      ],
+      "trigger_role": "voltage",
+      "symptoms": [
+        {
+          "role": "voltage",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 0.9,
+            "for_ms": 2000
+          }
+        },
+        {
+          "role": "current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.8,
+          "threshold_hint": {
+            "relative_to_nominal": 1.1
+          }
+        },
+        {
+          "role": "speed",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            3000
+          ],
+          "weight": 0.4
+        },
+        {
+          "role": "winding_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            120000,
+            1800000
+          ],
+          "weight": 0.5
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.mechanical_overload",
+          "rule": "Undervoltage: voltage falls before current rises. Overload: current rises first.",
+          "first_role": "voltage",
+          "then_role": "current"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check the bus / transformer voltage and tap setting; check for other large loads starting.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check for voltage drop across long cable runs or undersized cables.",
+          "requires_isolation": false
+        }
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.overvoltage_supply",
+      "version": "1.0.0",
+      "failure_mode": "overvoltage_supply",
+      "title": "Supply overvoltage",
+      "category": "supply",
+      "severity": "info",
+      "description": "High voltage drives magnetising current up (core saturation). Iron loss and no-load current rise and power factor drops.",
+      "required_roles": [
+        "voltage"
+      ],
+      "optional_roles": [
+        "current",
+        "power_factor",
+        "winding_temperature"
+      ],
+      "trigger_role": "voltage",
+      "symptoms": [
+        {
+          "role": "voltage",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 1.1,
+            "for_ms": 5000
+          }
+        },
+        {
+          "role": "power_factor",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.4,
+          "note": "Magnetising component; most visible at light load"
+        },
+        {
+          "role": "winding_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            300000,
+            3600000
+          ],
+          "weight": 0.3
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check transformer taps and PF-correction capacitors at light load.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the voltage regulator / generator AVR.",
+          "requires_isolation": false
+        }
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.stator_interturn_short",
+      "version": "1.0.0",
+      "failure_mode": "stator_interturn_short",
+      "title": "Stator inter-turn short circuit",
+      "category": "insulation",
+      "severity": "critical",
+      "description": "Insulation between turns of one coil has failed. A circulating current in the shorted turns creates a local hot spot that quickly spreads into a phase-to-phase or phase-to-ground fault.",
+      "typical_progression": "Minutes to hours from first detectable unbalance to a ground fault.",
+      "required_roles": [
+        "current_unbalance"
+      ],
+      "optional_roles": [
+        "winding_temperature",
+        "vibration_2lf",
+        "insulation_resistance",
+        "ground_current",
+        "voltage_unbalance"
+      ],
+      "trigger_role": "current_unbalance",
+      "symptoms": [
+        {
+          "role": "current_unbalance",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 5,
+            "for_ms": 30000
+          },
+          "note": "Rising unbalance WITHOUT matching voltage unbalance"
+        },
+        {
+          "role": "winding_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            60000,
+            3600000
+          ],
+          "weight": 0.7,
+          "note": "Local hot spot; an RTD in the affected slot reads high"
+        },
+        {
+          "role": "vibration_2lf",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            600000
+          ],
+          "weight": 0.4
+        },
+        {
+          "role": "insulation_resistance",
+          "direction": "fall",
+          "onset_lag_ms": [
+            600000,
+            86400000
+          ],
+          "weight": 0.5
+        },
+        {
+          "role": "ground_current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            600000,
+            86400000
+          ],
+          "weight": 0.6,
+          "note": "The fault has escalated to ground"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "ins",
+            "label": "Turn insulation weakens",
+            "kind": "cause"
+          },
+          {
+            "id": "short",
+            "label": "Shorted turns",
+            "kind": "state"
+          },
+          {
+            "id": "circ",
+            "label": "Circulating current",
+            "kind": "state"
+          },
+          {
+            "id": "hot",
+            "label": "Local hot spot",
+            "kind": "state",
+            "role": "winding_temperature"
+          },
+          {
+            "id": "unb",
+            "label": "Current unbalance ↑",
+            "kind": "symptom",
+            "role": "current_unbalance"
+          }
+        ],
+        "edges": [
+          {
+            "from": "ins",
+            "to": "short",
+            "sign": "+"
+          },
+          {
+            "from": "short",
+            "to": "circ",
+            "sign": "+"
+          },
+          {
+            "from": "circ",
+            "to": "hot",
+            "sign": "+",
+            "lag_ms": [
+              0,
+              60000
+            ],
+            "loop_id": "insulation_burn"
+          },
+          {
+            "from": "hot",
+            "to": "ins",
+            "sign": "+",
+            "loop_id": "insulation_burn"
+          },
+          {
+            "from": "short",
+            "to": "unb",
+            "sign": "+"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "insulation_burn",
+            "polarity": "reinforcing",
+            "description": "The hot spot degrades neighbouring insulation, which shorts more turns and makes more heat."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.voltage_unbalance",
+          "rule": "The short shows current unbalance with balanced voltages; supply unbalance shows both."
+        },
+        {
+          "vs_pattern": "induction_motor.broken_rotor_bars",
+          "rule": "Broken bars give (1±2s)·f sidebands and speed-dependent current pulsation, not a steady phase unbalance."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "current_spectrum",
+          "description": "Negative-sequence current and 3rd-harmonic components rise; Park's vector pattern turns elliptical."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare line-voltage unbalance with current unbalance. Balanced voltages with unbalanced currents point inside the motor.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Plan a controlled stop; run surge (turn-to-turn) and insulation resistance / polarization index tests.",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Check the winding RTDs for a single hot phase.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEEE 43 (insulation resistance)",
+        "IEEE 522 (surge testing)"
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.insulation_ground_fault",
+      "version": "1.0.0",
+      "failure_mode": "insulation_ground_fault",
+      "title": "Insulation degradation / ground fault",
+      "category": "insulation",
+      "severity": "critical",
+      "description": "Stator insulation to ground has degraded from moisture, contamination, thermal ageing or voltage stress, leading to leakage and then a ground fault.",
+      "typical_progression": "Weeks of IR decline (often seasonal or moisture-linked), then a sudden ground fault.",
+      "required_roles": [
+        "insulation_resistance"
+      ],
+      "optional_roles": [
+        "ground_current",
+        "winding_temperature",
+        "thermal_trip"
+      ],
+      "trigger_role": "insulation_resistance",
+      "symptoms": [
+        {
+          "role": "insulation_resistance",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 100
+          },
+          "note": "IEEE 43 minimum ≈ (kV + 1) MΩ; a trend drop > 50 % is significant"
+        },
+        {
+          "role": "ground_current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.9,
+          "threshold_hint": {
+            "absolute": 30
+          }
+        },
+        {
+          "role": "thermal_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.3
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Megger test and polarization index (PI < 2 suggests moisture or contamination).",
+          "requires_isolation": true
+        },
+        {
+          "order": 2,
+          "text": "Check anti-condensation heaters, enclosure IP rating, and cable gland / terminal box seals.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Trend IR against ambient humidity; dry out the winding before a restart if it is wet.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEEE 43-2013"
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.broken_rotor_bars",
+      "version": "1.0.0",
+      "failure_mode": "broken_rotor_bars",
+      "title": "Broken rotor bars / cracked end ring",
+      "category": "electrical",
+      "severity": "warning",
+      "description": "A cracked or broken cage bar breaks rotor symmetry. Torque and current pulsate at twice slip frequency; the cage near the break overheats and more bars crack.",
+      "typical_progression": "Weeks to months; accelerated by frequent heavy starts.",
+      "required_roles": [
+        "current"
+      ],
+      "optional_roles": [
+        "speed",
+        "vibration",
+        "vibration_1x",
+        "power"
+      ],
+      "trigger_role": "current",
+      "symptoms": [
+        {
+          "role": "current",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Current and power beat at 2·s·f (visible as needle swing on an ammeter)"
+        },
+        {
+          "role": "power",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "speed",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.4
+        },
+        {
+          "role": "vibration_1x",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2592000000
+          ],
+          "weight": 0.4,
+          "note": "With 2·s·f / pole-pass sidebands"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "crack",
+            "label": "Bar crack",
+            "kind": "cause"
+          },
+          {
+            "id": "asym",
+            "label": "Rotor asymmetry",
+            "kind": "state"
+          },
+          {
+            "id": "pulse",
+            "label": "Torque/current pulsation at 2sf",
+            "kind": "symptom",
+            "role": "current"
+          },
+          {
+            "id": "heat",
+            "label": "Adjacent bars carry more current and heat",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "crack",
+            "to": "asym",
+            "sign": "+"
+          },
+          {
+            "from": "asym",
+            "to": "pulse",
+            "sign": "+"
+          },
+          {
+            "from": "asym",
+            "to": "heat",
+            "sign": "+"
+          },
+          {
+            "from": "heat",
+            "to": "crack",
+            "sign": "+",
+            "loop_id": "bar_cascade"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "bar_cascade",
+            "polarity": "reinforcing",
+            "description": "Neighbouring bars take over the broken bar's current, overheat and crack in turn."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.air_gap_eccentricity",
+          "rule": "Broken bars give sidebands at (1±2s)·f around the supply line. Eccentricity gives components at f ± fr (rotation-frequency sidebands)."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "current_spectrum",
+          "description": "Motor current signature analysis: lower sideband amplitude relative to the fundamental. > −45 dB watch; > −35 dB several broken bars.",
+          "formula": "f_brb = f·(1 ± 2·k·s), k = 1,2,…"
+        },
+        {
+          "domain": "vibration_spectrum",
+          "description": "1× running speed with pole-pass sidebands",
+          "formula": "f_pp = 2·s·f"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Run motor current signature analysis at > 50 % load, where slip-dependent sidebands resolve best.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Trend the sideband amplitude over time; one reading is not conclusive.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "At the next outage, run a single-phase rotation test or a growler test on the rotor.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "Thomson & Fenger, 'Current signature analysis to detect induction motor faults', IEEE IAS Magazine 2001"
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.air_gap_eccentricity",
+      "version": "1.0.0",
+      "failure_mode": "air_gap_eccentricity",
+      "title": "Air-gap eccentricity (static / dynamic)",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "The rotor is not centred in the stator bore, from worn bearings, a bent shaft or a misaligned end shield. This gives unbalanced magnetic pull, 2×LF vibration and, in the extreme, rotor-to-stator rub.",
+      "required_roles": [
+        "vibration"
+      ],
+      "optional_roles": [
+        "vibration_2lf",
+        "vibration_1x",
+        "current",
+        "bearing_temperature"
+      ],
+      "trigger_role": "vibration_2lf",
+      "symptoms": [
+        {
+          "role": "vibration_2lf",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.7,
+          "threshold_hint": {
+            "absolute": 4.5
+          }
+        },
+        {
+          "role": "vibration_1x",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.4,
+          "note": "Dynamic eccentricity modulates at 1×"
+        },
+        {
+          "role": "current",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.3
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.rotor_unbalance",
+          "rule": "Eccentricity vibration is at 2×LF and disappears the instant power is cut. Unbalance vibration is at 1× and coasts down with speed."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "vibration_spectrum",
+          "description": "A 2×line-frequency peak that disappears immediately on de-energising (electrical origin)",
+          "formula": "2·f"
+        },
+        {
+          "domain": "current_spectrum",
+          "description": "Eccentricity components",
+          "formula": "f_ecc = f·[1 ± (1−s)/p]"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Take a power-off coast-down vibration reading. An instant drop of the 2×LF peak confirms an electromagnetic cause.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Measure the air gap at four points per end (outage).",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Check the bearings and end-shield fits.",
+          "requires_isolation": false
+        }
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.bearing_defect",
+      "version": "1.0.0",
+      "failure_mode": "bearing_defect",
+      "title": "Rolling-element bearing defect",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "Race or rolling-element damage from fatigue, contamination or electrical fluting. The first sign is high-frequency envelope energy; overall vibration and bearing temperature rise late.",
+      "typical_progression": "Weeks to months (P-F interval). Envelope rises first, then 1× harmonics, then temperature, then failure.",
+      "required_roles": [
+        "bearing_envelope"
+      ],
+      "optional_roles": [
+        "vibration",
+        "bearing_temperature",
+        "current"
+      ],
+      "trigger_role": "bearing_envelope",
+      "symptoms": [
+        {
+          "role": "bearing_envelope",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 2.0
+          },
+          "note": "gE alarm; set per speed and bearing size"
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            604800000,
+            5184000000
+          ],
+          "weight": 0.6,
+          "threshold_hint": {
+            "absolute": 4.5
+          }
+        },
+        {
+          "role": "bearing_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            1209600000,
+            7776000000
+          ],
+          "weight": 0.6,
+          "threshold_hint": {
+            "absolute": 90
+          },
+          "note": "Late indicator; ~20 °C above baseline is significant"
+        },
+        {
+          "role": "current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            2592000000,
+            10368000000
+          ],
+          "weight": 0.2,
+          "note": "Only at advanced friction"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "spall",
+            "label": "Race spall",
+            "kind": "cause"
+          },
+          {
+            "id": "impact",
+            "label": "Impacts at defect frequency",
+            "kind": "symptom",
+            "role": "bearing_envelope"
+          },
+          {
+            "id": "fric",
+            "label": "Friction ↑",
+            "kind": "state"
+          },
+          {
+            "id": "heat",
+            "label": "Bearing temperature ↑",
+            "kind": "symptom",
+            "role": "bearing_temperature"
+          },
+          {
+            "id": "visc",
+            "label": "Lubricant viscosity ↓",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "spall",
+            "to": "impact",
+            "sign": "+"
+          },
+          {
+            "from": "spall",
+            "to": "fric",
+            "sign": "+"
+          },
+          {
+            "from": "fric",
+            "to": "heat",
+            "sign": "+"
+          },
+          {
+            "from": "heat",
+            "to": "visc",
+            "sign": "-",
+            "loop_id": "lube_breakdown"
+          },
+          {
+            "from": "visc",
+            "to": "fric",
+            "sign": "-",
+            "loop_id": "lube_breakdown"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "lube_breakdown",
+            "polarity": "reinforcing",
+            "description": "Heat thins the lubricant, which raises friction and heat further."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.lubrication_failure",
+          "rule": "Lubrication failure raises temperature and broadband noise with no discrete defect frequencies; a defect shows BPFO/BPFI peaks in the envelope spectrum."
+        },
+        {
+          "vs_pattern": "induction_motor.vfd_bearing_current_fluting",
+          "rule": "Fluting shows washboard marks and BPFO-like peaks, plus high shaft voltage on VFD-fed motors."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "vibration_envelope",
+          "description": "Outer race defect",
+          "formula": "BPFO = (n/2)·fr·(1 − d/D·cosθ)"
+        },
+        {
+          "domain": "vibration_envelope",
+          "description": "Inner race defect (with 1× sidebands)",
+          "formula": "BPFI = (n/2)·fr·(1 + d/D·cosθ)"
+        },
+        {
+          "domain": "vibration_envelope",
+          "description": "Rolling element defect",
+          "formula": "BSF = (D/2d)·fr·(1 − (d/D·cosθ)²)"
+        },
+        {
+          "domain": "vibration_envelope",
+          "description": "Cage defect",
+          "formula": "FTF = (fr/2)·(1 − d/D·cosθ)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Take an envelope spectrum; match peaks to the bearing's BPFO/BPFI/BSF/FTF for the installed bearing number.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the lubrication schedule and grease type/quantity (over-greasing also causes heat).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Plan a replacement inside the P-F interval; trend weekly.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "ISO 13373 (vibration condition monitoring)",
+        "ISO 20816-3"
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.lubrication_failure",
+      "version": "1.0.0",
+      "failure_mode": "lubrication_failure",
+      "title": "Bearing lubrication failure",
+      "category": "lubrication",
+      "severity": "warning",
+      "description": "Too little, too much, degraded or wrong grease. The oil film breaks down: friction, temperature and broadband high-frequency noise rise.",
+      "required_roles": [
+        "bearing_temperature"
+      ],
+      "optional_roles": [
+        "bearing_envelope",
+        "vibration"
+      ],
+      "trigger_role": "bearing_temperature",
+      "symptoms": [
+        {
+          "role": "bearing_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 85
+          }
+        },
+        {
+          "role": "bearing_envelope",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            7200000
+          ],
+          "weight": 0.6,
+          "note": "Broadband 'carpet' rather than discrete peaks"
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            86400000
+          ],
+          "weight": 0.3
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check the last re-greasing date and quantity against the manufacturer interval.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check for grease purging, discoloured grease or mixed incompatible greases.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "After re-greasing, confirm temperature and envelope fall within an hour. If they do not, suspect bearing damage.",
+          "requires_isolation": false
+        }
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.shaft_misalignment",
+      "version": "1.0.0",
+      "failure_mode": "shaft_misalignment",
+      "title": "Shaft misalignment (motor ↔ driven machine)",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "Angular or parallel offset between the motor and driven shafts loads the bearings and coupling. It shows as axial vibration and 2× components.",
+      "required_roles": [
+        "vibration"
+      ],
+      "optional_roles": [
+        "vibration_axial",
+        "vibration_2x",
+        "vibration_1x",
+        "bearing_temperature"
+      ],
+      "trigger_role": "vibration_2x",
+      "symptoms": [
+        {
+          "role": "vibration_2x",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0
+        },
+        {
+          "role": "vibration_axial",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.9,
+          "note": "Axial > 50 % of radial suggests angular misalignment"
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.6,
+          "threshold_hint": {
+            "absolute": 4.5
+          }
+        },
+        {
+          "role": "bearing_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            3600000,
+            604800000
+          ],
+          "weight": 0.4
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "driven_equipment",
+          "effect_role": "vibration",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "mechanical",
+          "note": "The misaligned coupling loads both machines' bearings"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.rotor_unbalance",
+          "rule": "Unbalance is dominated by radial 1× with a 90° phase shift between horizontal and vertical. Misalignment shows high axial vibration and 2×, with a 180° phase shift across the coupling."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "vibration_spectrum",
+          "description": "High 1× and 2× (sometimes 3×) with strong axial components; 180° phase across the coupling"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Laser-align within the coupling manufacturer's tolerance at operating temperature (thermal growth).",
+          "requires_isolation": true
+        },
+        {
+          "order": 2,
+          "text": "Check for soft foot before aligning.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check for pipe strain on the driven machine.",
+          "requires_isolation": false
+        }
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.rotor_unbalance",
+      "version": "1.0.0",
+      "failure_mode": "rotor_unbalance",
+      "title": "Rotor / coupling unbalance",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "Mass unbalance on the rotor, fan or coupling from build-up, erosion, a lost balance weight or a keyway mismatch. The force is at 1× running speed and grows with speed squared.",
+      "required_roles": [
+        "vibration"
+      ],
+      "optional_roles": [
+        "vibration_1x",
+        "bearing_temperature"
+      ],
+      "trigger_role": "vibration_1x",
+      "symptoms": [
+        {
+          "role": "vibration_1x",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.8,
+          "threshold_hint": {
+            "absolute": 4.5
+          },
+          "note": "ISO 20816-3 zone B/C boundary for many machine groups"
+        },
+        {
+          "role": "bearing_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            3600000,
+            2592000000
+          ],
+          "weight": 0.3
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "vibration_spectrum",
+          "description": "Dominant radial 1×; horizontal and vertical ~90° apart; amplitude ∝ speed²"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check the phase reading at 1× in horizontal and vertical (≈90° apart confirms unbalance).",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Inspect the fan and coupling for build-up or damage; confirm key length matches (half-key convention).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Field-balance in one or two planes.",
+          "requires_isolation": true
+        }
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.mechanical_looseness_soft_foot",
+      "version": "1.0.0",
+      "failure_mode": "mechanical_looseness_soft_foot",
+      "title": "Mechanical looseness / soft foot",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "Loose hold-down bolts, a cracked base or soft foot distorts the frame. Vibration shows many harmonics of running speed and changes when bolts are loosened.",
+      "required_roles": [
+        "vibration"
+      ],
+      "optional_roles": [
+        "vibration_1x",
+        "vibration_2x",
+        "vibration_2lf"
+      ],
+      "trigger_role": "vibration",
+      "symptoms": [
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 4.5
+          }
+        },
+        {
+          "role": "vibration_2x",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.6,
+          "note": "Multiple harmonics, possibly ½× sub-harmonics"
+        },
+        {
+          "role": "vibration_2lf",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.3,
+          "note": "Soft foot distorts the stator and raises 2×LF"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check each foot for soft foot with a dial indicator (> 0.05 mm is a soft foot).",
+          "requires_isolation": true
+        },
+        {
+          "order": 2,
+          "text": "Torque the hold-down bolts; inspect the base and grout for cracks.",
+          "requires_isolation": false
+        }
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.coupling_or_belt_slip",
+      "version": "1.0.0",
+      "failure_mode": "coupling_or_belt_slip",
+      "title": "Coupling wear / belt slip",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "A worn flexible element or slipping belt transmits less of the motor's speed. Motor speed stays up while driven speed and process output fall; belts heat and squeal.",
+      "required_roles": [
+        "speed"
+      ],
+      "optional_roles": [
+        "current",
+        "vibration",
+        "power"
+      ],
+      "trigger_role": "current",
+      "symptoms": [
+        {
+          "role": "current",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.8,
+          "note": "Less load transmitted"
+        },
+        {
+          "role": "power",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "speed",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.4,
+          "note": "Motor speeds up slightly as load drops"
+        },
+        {
+          "role": "vibration",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.3
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "driven_equipment",
+          "effect_role": "speed",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            2000
+          ],
+          "edge_type": "mechanical",
+          "note": "Driven machine slows while the motor does not"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.mechanical_overload",
+          "rule": "Belt slip lowers motor current while driven output falls. Overload raises motor current."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare motor speed with driven-machine speed (the slip ratio).",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check belt tension and wear, and the coupling element.",
+          "requires_isolation": true
+        }
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.cooling_failure",
+      "version": "1.0.0",
+      "failure_mode": "cooling_failure",
+      "title": "Cooling failure (blocked fan / fins / high ambient)",
+      "category": "thermal",
+      "severity": "warning",
+      "description": "The TEFC fan is damaged, the fan cowl or fins are clogged, or the cooling air is too hot. Temperatures rise at normal current.",
+      "typical_progression": "Tens of minutes (thermal time constant).",
+      "required_roles": [
+        "winding_temperature"
+      ],
+      "optional_roles": [
+        "frame_temperature",
+        "ambient_temperature",
+        "current"
+      ],
+      "trigger_role": "winding_temperature",
+      "symptoms": [
+        {
+          "role": "winding_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 130
+          }
+        },
+        {
+          "role": "frame_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            600000
+          ],
+          "weight": 0.7
+        },
+        {
+          "role": "ambient_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1800000
+          ],
+          "weight": 0.3,
+          "note": "Only when the cause is ambient"
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "cooling_system",
+          "effect_role": "temperature",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            600000
+          ],
+          "edge_type": "thermal"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.mechanical_overload",
+          "rule": "Cooling failure: temperature rises with NORMAL current. Overload: current rises first.",
+          "first_role": "current",
+          "then_role": "winding_temperature"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare winding temperature rise (winding minus ambient) with current. A high rise at normal current points to cooling.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Inspect the fan and cowl, and clean the fins and air path.",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "On a VFD at low speed, the shaft-mounted fan loses airflow. Check the minimum-speed derating or a forced-vent blower.",
+          "requires_isolation": false
+        }
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.thermal_runaway",
+      "version": "1.0.0",
+      "failure_mode": "thermal_runaway",
+      "title": "Winding thermal runaway (sustained overtemperature)",
+      "category": "thermal",
+      "severity": "critical",
+      "description": "The winding is above its insulation class limit and the reinforcing loop (temperature → resistance → loss) outpaces cooling. Insulation life halves for every ~10 °C above rating (Arrhenius).",
+      "required_roles": [
+        "winding_temperature"
+      ],
+      "optional_roles": [
+        "current",
+        "thermal_trip",
+        "insulation_resistance"
+      ],
+      "trigger_role": "winding_temperature",
+      "symptoms": [
+        {
+          "role": "winding_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 150
+          },
+          "note": "Class F limit 155 °C; class H 180 °C"
+        },
+        {
+          "role": "current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            600000
+          ],
+          "weight": 0.4,
+          "note": "Small rise as resistance and slip increase"
+        },
+        {
+          "role": "thermal_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            60000,
+            1800000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "insulation_resistance",
+          "direction": "fall",
+          "onset_lag_ms": [
+            3600000,
+            604800000
+          ],
+          "weight": 0.3
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "tw",
+            "label": "Winding temperature",
+            "kind": "state",
+            "role": "winding_temperature"
+          },
+          {
+            "id": "r",
+            "label": "Copper resistance",
+            "kind": "state"
+          },
+          {
+            "id": "loss",
+            "label": "I²R loss",
+            "kind": "state"
+          },
+          {
+            "id": "cool",
+            "label": "Heat removed by cooling",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "tw",
+            "to": "r",
+            "sign": "+",
+            "loop_id": "cu_thermal"
+          },
+          {
+            "from": "r",
+            "to": "loss",
+            "sign": "+",
+            "loop_id": "cu_thermal"
+          },
+          {
+            "from": "loss",
+            "to": "tw",
+            "sign": "+",
+            "lag_ms": [
+              60000,
+              900000
+            ],
+            "loop_id": "cu_thermal"
+          },
+          {
+            "from": "tw",
+            "to": "cool",
+            "sign": "+",
+            "loop_id": "cooling_balance"
+          },
+          {
+            "from": "cool",
+            "to": "tw",
+            "sign": "-",
+            "loop_id": "cooling_balance"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "cu_thermal",
+            "polarity": "reinforcing",
+            "description": "Copper resistance rises ≈0.39 %/°C, raising loss at the same current."
+          },
+          {
+            "loop_id": "cooling_balance",
+            "polarity": "balancing",
+            "description": "Heat removal rises with temperature difference; runaway happens when the reinforcing gain exceeds it."
+          }
+        ]
+      },
+      "checks": [
+        {
+          "order": 1,
+          "text": "Reduce load immediately. Confirm the protection thermal model and PTC/RTD trips are active.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Identify the driver: overload, cooling, supply unbalance or duty cycle (see the linked patterns).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Record time above the class limit for insulation-life accounting.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 60085 (thermal classes)",
+        "IEEE 1776"
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.excessive_starts",
+      "version": "1.0.0",
+      "failure_mode": "excessive_starts",
+      "title": "Excessive starts / thermal cycling",
+      "category": "thermal",
+      "severity": "warning",
+      "description": "Starting more often than the motor's permitted starts per hour. Each start dissipates roughly the rotor's stored kinetic energy as heat.",
+      "required_roles": [
+        "starts_per_hour"
+      ],
+      "optional_roles": [
+        "winding_temperature",
+        "current"
+      ],
+      "trigger_role": "starts_per_hour",
+      "symptoms": [
+        {
+          "role": "starts_per_hour",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 6
+          },
+          "note": "Typical limit is 2 cold / 1 hot consecutive starts; check NEMA MG-1 12.54"
+        },
+        {
+          "role": "winding_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.7
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check the control logic for short-cycling (level or pressure switch deadband too small).",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Consider a soft starter or VFD, or widen the control deadband.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "NEMA MG-1 12.54 (number of starts)"
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.vfd_harmonic_heating",
+      "version": "1.0.0",
+      "failure_mode": "vfd_harmonic_heating",
+      "title": "Inverter-fed harmonic heating",
+      "category": "electrical",
+      "severity": "info",
+      "description": "PWM voltage harmonics add rotor and stator losses (typically 5–15 %), and cooling falls at low speed. Temperature runs higher than on a sine supply at the same load.",
+      "required_roles": [
+        "winding_temperature",
+        "frequency"
+      ],
+      "optional_roles": [
+        "current",
+        "speed"
+      ],
+      "trigger_role": "winding_temperature",
+      "symptoms": [
+        {
+          "role": "winding_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0
+        },
+        {
+          "role": "frequency",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.5,
+          "note": "Worse at low output frequency (reduced self-cooling)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check the drive's switching frequency and output filter (dv/dt or sine filter).",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Confirm the motor is inverter-duty rated (IEC 60034-17/-25, NEMA MG-1 Part 31) and apply the low-speed torque derating.",
+          "requires_isolation": false
+        }
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.vfd_bearing_current_fluting",
+      "version": "1.0.0",
+      "failure_mode": "vfd_bearing_current_fluting",
+      "title": "Inverter-induced bearing currents (EDM fluting)",
+      "category": "electrical",
+      "severity": "warning",
+      "description": "Common-mode voltage from the PWM drive couples onto the shaft and discharges through the bearing oil film. This etches a washboard (fluting) pattern and bearing noise follows.",
+      "typical_progression": "Months. Often shows 3–12 months after a VFD retrofit.",
+      "required_roles": [
+        "bearing_envelope"
+      ],
+      "optional_roles": [
+        "shaft_voltage",
+        "vibration",
+        "bearing_temperature"
+      ],
+      "trigger_role": "shaft_voltage",
+      "symptoms": [
+        {
+          "role": "shaft_voltage",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 10
+          },
+          "note": "Peak discharge voltage; > 10–15 V peak is a concern"
+        },
+        {
+          "role": "bearing_envelope",
+          "direction": "rise",
+          "onset_lag_ms": [
+            2592000000,
+            15552000000
+          ],
+          "weight": 0.9
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            5184000000,
+            20736000000
+          ],
+          "weight": 0.4
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "vibration_envelope",
+          "description": "Envelope peaks near BPFO with a 'washboard' broadband hump; the grease turns black and burnt"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Measure shaft-to-frame voltage with a brush probe while running on the VFD.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Inspect the removed bearing for frosting or fluting.",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Mitigate with a shaft grounding ring, an insulated NDE bearing, symmetrical shielded VFD cable and correct high-frequency bonding.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "NEMA MG-1 Part 31.4.4.3",
+        "IEC TS 60034-25"
+      ]
+    },
+    {
+      "pattern_id": "induction_motor.structural_resonance",
+      "version": "1.0.0",
+      "failure_mode": "structural_resonance",
+      "title": "Structural resonance",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "Running speed, or one of its harmonics, sits on a natural frequency of the base or structure. Vibration is very sensitive to speed, which is common on VFD-driven machines.",
+      "required_roles": [
+        "vibration",
+        "speed"
+      ],
+      "optional_roles": [
+        "vibration_1x"
+      ],
+      "trigger_role": "vibration",
+      "symptoms": [
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 7.1
+          }
+        },
+        {
+          "role": "speed",
+          "direction": "step",
+          "onset_lag_ms": [
+            0,
+            5000
+          ],
+          "weight": 0.5,
+          "note": "A narrow speed band triggers it"
+        },
+        {
+          "role": "vibration_1x",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.6
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Run a speed sweep or bump test to find the natural frequency.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Program the drive's skip-frequency band around the resonance; stiffen the base if needed.",
+          "requires_isolation": false
+        }
+      ]
+    }
+  ]
+}

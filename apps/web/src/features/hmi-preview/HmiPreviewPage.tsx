@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { getRuntimeHmiState, isRuntimeEndpointUnavailable, postHmiPreview } from "../../api/hmi";
-import { issueDevToken } from "../../api/client";
-import { setAuthToken } from "../../api/config";
+import { useSession } from "../../app/session";
 import { ApiError } from "../../api/types";
 import type { PlantHMIState } from "../../app/schemas/plantHmi";
 import { AlarmGroups } from "./AlarmGroups";
@@ -17,6 +16,9 @@ import { RuntimeUnavailableNotice } from "./RuntimeUnavailableNotice";
 import { SignalTable } from "./SignalTable";
 import { SourceBadge } from "./SourceBadge";
 import { HMI_SCENARIOS } from "./scenarios";
+import { MonitorPlay } from "lucide-react";
+import { EmptyState, PageHeader } from "../../components/ui/primitives";
+import { StudioFrame } from "../studio-nav/StudioFrame";
 import "./hmi-preview.css";
 
 function resolvePreviewSourceLabel(scenarioId: string, state: PlantHMIState | null): string {
@@ -44,27 +46,8 @@ export function HmiPreviewPage() {
   const [lastLoadedAt, setLastLoadedAt] = useState<string | null>(null);
   const [runtimeUnavailable, setRuntimeUnavailable] = useState(false);
   const [runtimeNetworkError, setRuntimeNetworkError] = useState(false);
-  const [authReady, setAuthReady] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    issueDevToken("viewer")
-      .then((token) => {
-        if (!cancelled) {
-          setAuthToken(token);
-          setAuthReady(true);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setError("Could not obtain dev auth token. API calls may fail.");
-          setAuthReady(true);
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // Use the shell's signed-in session; never mint a separate (lower-role) token here.
+  const authReady = useSession((s) => s.status === "ready");
 
   const selectedScenario = useMemo(
     () => HMI_SCENARIOS.find((scenario) => scenario.id === selectedScenarioId) ?? HMI_SCENARIOS[0],
@@ -128,19 +111,16 @@ export function HmiPreviewPage() {
   const evidence = hmiState?.active_incident?.evidence ?? [];
 
   return (
-    <div className="hmi-runtime-shell operator-shell">
-      <header className="hmi-runtime-shell__header">
-        <div>
-          <h1>HMI Runtime Shell</h1>
-          <p className="hmi-runtime-shell__subtitle">
-            Renders backend PlantHMIState only — no browser-side diagnosis.
-          </p>
-        </div>
-        <SourceBadge sourceLabel={sourceLabel} lastLoadedAt={lastLoadedAt} />
-      </header>
+    <StudioFrame>
+    <div className="hmi-runtime-shell pl-page">
+      <PageHeader
+        title="HMI preview"
+        description="Renders the backend PlantHMIState only — no browser-side diagnosis."
+        meta={<SourceBadge sourceLabel={sourceLabel} lastLoadedAt={lastLoadedAt} />}
+      />
 
       {!authReady ? (
-        <p className="hmi-runtime-shell__loading">Preparing API auth…</p>
+        <p className="hmi-muted">Preparing API auth…</p>
       ) : (
         <>
           <HmiModeSwitcher
@@ -160,9 +140,17 @@ export function HmiPreviewPage() {
           )}
 
           {error && (
-            <div className="hmi-runtime-shell__error" role="alert">
-              {error}
+            <div className="pl-error" role="alert">
+              <strong>{error}</strong>
             </div>
+          )}
+
+          {!hmiState && !error && !loading && !(mode === "runtime" && runtimeUnavailable) && (
+            <EmptyState icon={<MonitorPlay />} title="No HMI state loaded">
+              {mode === "preview"
+                ? "Pick a scenario and run the HMI projection to render the operator view."
+                : "Load the runtime snapshot to render the live operator view."}
+            </EmptyState>
           )}
 
           {hmiState && (
@@ -183,5 +171,6 @@ export function HmiPreviewPage() {
         </>
       )}
     </div>
+    </StudioFrame>
   );
 }

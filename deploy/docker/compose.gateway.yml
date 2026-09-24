@@ -1,0 +1,24 @@
+# Gateway ONLY — run on the PC that has the RS-485 adapter or Arduino plugged in (Linux).
+# It sends readings to the PlantLens server over the network. Run from the repo root:
+#   docker compose -f deploy/docker/compose.gateway.yml --env-file deploy/docker/.env up -d --build
+# Required in .env: PLANTLENS_SERVER_URL (e.g. http://192.168.1.50:8000), GATEWAY_INGEST_TOKEN
+# (same value as the server), GATEWAY_DEVICE (e.g. /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0).
+# Windows/macOS: Docker cannot pass USB serial ports through reliably; run the gateway natively
+# (docs/MULTI_PC_SETUP.md, "Quick start": apps/gateway/scripts/start-gateway.bat / start-gateway.sh).
+name: plantlens-gateway
+services:
+  gateway:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/gateway.Dockerfile
+    environment:
+      API_BASE_URL: ${PLANTLENS_SERVER_URL:?set PLANTLENS_SERVER_URL in .env}
+      GATEWAY_INGEST_TOKEN: ${GATEWAY_INGEST_TOKEN:?set GATEWAY_INGEST_TOKEN in .env}
+      GATEWAY_ID: ${GATEWAY_ID:-gw-1}
+      HEALTH_PORT: "9101"
+      GATEWAY_SERIAL_MODE: ${GATEWAY_SERIAL_MODE:-modbus}
+      GATEWAY_SERIAL_PORT: /dev/ttyPLANTLENS0
+    devices:
+      - ${GATEWAY_DEVICE:?set GATEWAY_DEVICE in .env}:/dev/ttyPLANTLENS0
+    ports: ["9101:9101"]
+    restart: unless-stopped

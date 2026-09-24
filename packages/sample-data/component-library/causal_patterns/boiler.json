@@ -1,0 +1,1364 @@
+{
+  "library_id": "plantlens.patterns.boiler",
+  "version": "1.0.0",
+  "component_type": "boiler",
+  "display_name": "Steam boiler (fire-tube / water-tube)",
+  "description": "Failure patterns for steam boilers: water level, pressure, flame safeguard, tube leaks, scaling and feedwater supply.",
+  "asset_type_aliases": [],
+  "library_type_aliases": [],
+  "roles": [
+    {
+      "role": "drum_level",
+      "quantity": "drum / shell water level",
+      "units": [
+        "%",
+        "mm"
+      ],
+      "signal_type_prefixes": [
+        "process.level.drum",
+        "process.level"
+      ],
+      "name_hints": [
+        "drum_l",
+        "lt",
+        "water_level"
+      ]
+    },
+    {
+      "role": "low_water_cutoff",
+      "quantity": "low / low-low water cut-off trip",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "protection.low_water",
+        "status.bool"
+      ],
+      "name_hints": [
+        "lwco",
+        "lsll",
+        "low_water"
+      ]
+    },
+    {
+      "role": "steam_pressure",
+      "quantity": "steam drum / header pressure",
+      "units": [
+        "bar",
+        "kPa",
+        "psi"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.steam"
+      ],
+      "name_hints": [
+        "steam_p",
+        "pt",
+        "drum_p"
+      ]
+    },
+    {
+      "role": "steam_flow",
+      "quantity": "steam flow",
+      "units": [
+        "t/h",
+        "kg/h"
+      ],
+      "signal_type_prefixes": [
+        "process.flow.steam"
+      ],
+      "name_hints": [
+        "steam_f",
+        "ft_steam"
+      ]
+    },
+    {
+      "role": "feedwater_flow",
+      "quantity": "feedwater flow",
+      "units": [
+        "t/h",
+        "kg/h",
+        "m3/h"
+      ],
+      "signal_type_prefixes": [
+        "process.flow.feedwater"
+      ],
+      "name_hints": [
+        "fw_f",
+        "feed_flow"
+      ]
+    },
+    {
+      "role": "feedwater_pressure",
+      "quantity": "feedwater pump discharge / header pressure",
+      "units": [
+        "bar",
+        "kPa",
+        "psi"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.feedwater"
+      ],
+      "name_hints": [
+        "fw_p",
+        "feed_p"
+      ]
+    },
+    {
+      "role": "feedwater_temperature",
+      "quantity": "feedwater / deaerator outlet temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "process.temperature.feedwater"
+      ],
+      "name_hints": [
+        "fw_t",
+        "dea_t"
+      ]
+    },
+    {
+      "role": "makeup_flow",
+      "quantity": "make-up water flow",
+      "units": [
+        "m3/h",
+        "L/min"
+      ],
+      "signal_type_prefixes": [
+        "process.flow.makeup"
+      ],
+      "name_hints": [
+        "makeup",
+        "mu_f"
+      ]
+    },
+    {
+      "role": "fuel_flow",
+      "quantity": "fuel flow (gas, oil) or firing rate",
+      "units": [
+        "Nm3/h",
+        "kg/h",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "process.flow.fuel"
+      ],
+      "name_hints": [
+        "fuel",
+        "firing"
+      ]
+    },
+    {
+      "role": "fuel_pressure",
+      "quantity": "fuel pressure at the burner",
+      "units": [
+        "bar",
+        "kPa",
+        "mbar"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.fuel"
+      ],
+      "name_hints": [
+        "fuel_p",
+        "gas_p"
+      ]
+    },
+    {
+      "role": "flame_signal",
+      "quantity": "flame scanner signal",
+      "units": [
+        "%",
+        "µA",
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "status.flame",
+        "combustion.flame"
+      ],
+      "name_hints": [
+        "flame",
+        "scanner",
+        "uv_"
+      ]
+    },
+    {
+      "role": "burner_trip",
+      "quantity": "burner management system trip / lockout",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "protection.trip",
+        "status.bool"
+      ],
+      "name_hints": [
+        "bms_trip",
+        "lockout",
+        "trip"
+      ]
+    },
+    {
+      "role": "o2",
+      "quantity": "flue gas oxygen",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "analyzer.o2"
+      ],
+      "name_hints": [
+        "o2",
+        "oxygen"
+      ]
+    },
+    {
+      "role": "co",
+      "quantity": "flue gas carbon monoxide",
+      "units": [
+        "ppm"
+      ],
+      "signal_type_prefixes": [
+        "analyzer.co"
+      ],
+      "name_hints": [
+        "co_ppm",
+        "flue_co"
+      ]
+    },
+    {
+      "role": "flue_gas_temperature",
+      "quantity": "flue gas / stack temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "process.temperature.flue"
+      ],
+      "name_hints": [
+        "flue_t",
+        "stack_t",
+        "fgt"
+      ]
+    },
+    {
+      "role": "furnace_pressure",
+      "quantity": "furnace draft pressure",
+      "units": [
+        "Pa",
+        "mbar",
+        "inH2O"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.furnace"
+      ],
+      "name_hints": [
+        "furnace_p",
+        "draft"
+      ]
+    },
+    {
+      "role": "tube_metal_temperature",
+      "quantity": "tube metal (skin) temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.tube_metal"
+      ],
+      "name_hints": [
+        "tmt",
+        "skin_t",
+        "tube_t"
+      ]
+    },
+    {
+      "role": "blowdown_conductivity",
+      "quantity": "boiler water conductivity / TDS",
+      "units": [
+        "µS/cm",
+        "ppm"
+      ],
+      "signal_type_prefixes": [
+        "analyzer.conductivity"
+      ],
+      "name_hints": [
+        "cond",
+        "tds"
+      ]
+    },
+    {
+      "role": "safety_valve_lift",
+      "quantity": "safety valve lift indication",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "status.safety_valve",
+        "status.bool"
+      ],
+      "name_hints": [
+        "psv",
+        "safety_valve",
+        "sv_"
+      ]
+    },
+    {
+      "role": "acoustic",
+      "quantity": "acoustic leak detection level",
+      "units": [
+        "dB"
+      ],
+      "signal_type_prefixes": [
+        "acoustic"
+      ],
+      "name_hints": [
+        "acoustic",
+        "ald"
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "pattern_id": "boiler.low_water_level",
+      "version": "1.0.0",
+      "failure_mode": "low_water_level",
+      "title": "Low drum / shell water level",
+      "category": "process",
+      "severity": "critical",
+      "description": "Water level falls because feedwater supply is short of steam demand (feed pump, feed valve or control fault), from a tube leak, or from shrink after a sudden load drop. Uncovered heating surfaces overheat within minutes; the low-water cut-off must trip the burner.",
+      "typical_progression": "Seconds to minutes. Shrink and swell cause transient level moves opposite to the mass balance.",
+      "required_roles": [
+        "drum_level"
+      ],
+      "optional_roles": [
+        "feedwater_flow",
+        "steam_flow",
+        "low_water_cutoff",
+        "burner_trip",
+        "steam_pressure"
+      ],
+      "trigger_role": "drum_level",
+      "symptoms": [
+        {
+          "role": "drum_level",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Below the low alarm set by the manufacturer relative to the lowest permissible water level"
+        },
+        {
+          "role": "feedwater_flow",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.7,
+          "note": "Feedwater below steam flow"
+        },
+        {
+          "role": "low_water_cutoff",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            300000
+          ],
+          "weight": 0.9
+        },
+        {
+          "role": "burner_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            300000
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "steam_pressure",
+          "direction": "fall",
+          "onset_lag_ms": [
+            60000,
+            600000
+          ],
+          "weight": 0.4,
+          "note": "After the burner trips"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "imb",
+            "label": "Feedwater < steam flow",
+            "kind": "cause"
+          },
+          {
+            "id": "l",
+            "label": "Drum level ↓",
+            "kind": "symptom",
+            "role": "drum_level"
+          },
+          {
+            "id": "lic",
+            "label": "Level controller opens feed valve",
+            "kind": "state"
+          },
+          {
+            "id": "fw",
+            "label": "Feedwater flow ↑",
+            "kind": "state",
+            "role": "feedwater_flow"
+          },
+          {
+            "id": "cold",
+            "label": "Cold feedwater collapses bubbles (shrink)",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "imb",
+            "to": "l",
+            "sign": "-"
+          },
+          {
+            "from": "l",
+            "to": "lic",
+            "sign": "-",
+            "loop_id": "level_control"
+          },
+          {
+            "from": "lic",
+            "to": "fw",
+            "sign": "+",
+            "loop_id": "level_control"
+          },
+          {
+            "from": "fw",
+            "to": "l",
+            "sign": "+",
+            "loop_id": "level_control"
+          },
+          {
+            "from": "fw",
+            "to": "cold",
+            "sign": "+",
+            "loop_id": "shrink"
+          },
+          {
+            "from": "cold",
+            "to": "l",
+            "sign": "-",
+            "lag_ms": [
+              0,
+              60000
+            ],
+            "loop_id": "shrink"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "level_control",
+            "polarity": "balancing",
+            "description": "The drum level controller raises feedwater to restore level."
+          },
+          {
+            "loop_id": "shrink",
+            "polarity": "reinforcing",
+            "description": "Short term, more cold feedwater collapses steam bubbles and the level falls further before it rises (non-minimum-phase); single-element control can over-react. Three-element control uses steam flow feed-forward."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "process_downstream",
+          "effect_role": "pressure",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            60000,
+            600000
+          ],
+          "edge_type": "cause_to_effect",
+          "note": "Steam header pressure falls after the burner trips"
+        },
+        {
+          "relation": "process_upstream",
+          "effect_role": "flow",
+          "direction": "rise",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            60000
+          ],
+          "edge_type": "cause_to_effect",
+          "note": "Feed pump flow rises as the feed valve opens"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "boiler.feedwater_pump_failure",
+          "rule": "If feedwater pressure fell first, the feed pump is the origin.",
+          "first_role": "feedwater_pressure",
+          "then_role": "drum_level"
+        },
+        {
+          "vs_pattern": "boiler.tube_leak",
+          "rule": "A tube leak shows feedwater flow exceeding steam flow with level still hard to hold."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Confirm the level on the direct-reading gauge glass and compare with the remote indicators.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Confirm the low-water cut-off and burner trip operated. Do not add feedwater to a boiler whose level has dropped out of sight; follow the site emergency procedure.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check feed pump status, feed valve position and deaerator level.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Test the low-water cut-off per the site schedule (blowdown test of float chambers).",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "ASME BPVC Section I (PG-60 water level indicators)",
+        "ASME CSD-1 (controls and safety devices)",
+        "NFPA 85 (boiler and combustion systems hazards)"
+      ]
+    },
+    {
+      "pattern_id": "boiler.high_steam_pressure",
+      "version": "1.0.0",
+      "failure_mode": "high_steam_pressure",
+      "title": "High steam pressure",
+      "category": "process",
+      "severity": "critical",
+      "description": "Steam pressure rises because demand dropped faster than firing (load rejection) or because the pressure/firing control failed high. The pressure control and high-pressure limit should cut firing before the safety valves lift.",
+      "typical_progression": "Seconds to minutes.",
+      "required_roles": [
+        "steam_pressure"
+      ],
+      "optional_roles": [
+        "steam_flow",
+        "fuel_flow",
+        "safety_valve_lift",
+        "burner_trip"
+      ],
+      "trigger_role": "steam_pressure",
+      "symptoms": [
+        {
+          "role": "steam_pressure",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Above the operating limit; safety valves set at or below MAWP (ASME Section I PG-67)"
+        },
+        {
+          "role": "steam_flow",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.7,
+          "note": "Load rejection: steam flow falls first"
+        },
+        {
+          "role": "fuel_flow",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.5,
+          "note": "Control failure: firing rises first"
+        },
+        {
+          "role": "burner_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            120000
+          ],
+          "weight": 0.5,
+          "note": "High-pressure limit"
+        },
+        {
+          "role": "safety_valve_lift",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            300000
+          ],
+          "weight": 0.6
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "dem",
+            "label": "Steam demand ↓ or firing ↑",
+            "kind": "cause"
+          },
+          {
+            "id": "p",
+            "label": "Steam pressure ↑",
+            "kind": "symptom",
+            "role": "steam_pressure"
+          },
+          {
+            "id": "pic",
+            "label": "Pressure controller cuts firing",
+            "kind": "state"
+          },
+          {
+            "id": "fire",
+            "label": "Firing rate ↓",
+            "kind": "state",
+            "role": "fuel_flow"
+          }
+        ],
+        "edges": [
+          {
+            "from": "dem",
+            "to": "p",
+            "sign": "+"
+          },
+          {
+            "from": "p",
+            "to": "pic",
+            "sign": "+",
+            "loop_id": "pressure_control"
+          },
+          {
+            "from": "pic",
+            "to": "fire",
+            "sign": "-",
+            "loop_id": "pressure_control"
+          },
+          {
+            "from": "fire",
+            "to": "p",
+            "sign": "+",
+            "lag_ms": [
+              10000,
+              300000
+            ],
+            "loop_id": "pressure_control"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "pressure_control",
+            "polarity": "balancing",
+            "description": "The master pressure controller reduces firing as pressure rises."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "process_downstream",
+          "effect_role": "pressure",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            60000
+          ],
+          "edge_type": "cause_to_effect"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "boiler.low_water_level",
+          "rule": "Level swell accompanies a pressure drop, not a rise; a sudden pressure rise causes shrink."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Determine whether steam flow fell or fuel flow rose first.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the pressure controller mode and output, and the fuel valve position.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Confirm high-pressure limit and safety valve test records are current.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "ASME BPVC Section I (PG-67 safety valves)",
+        "ASME CSD-1",
+        "NFPA 85"
+      ]
+    },
+    {
+      "pattern_id": "boiler.flame_failure",
+      "version": "1.0.0",
+      "failure_mode": "flame_failure",
+      "title": "Flame failure",
+      "category": "process",
+      "severity": "critical",
+      "description": "The flame is lost (fuel supply pressure low, air/fuel ratio off, water in oil, igniter or burner fault) or the scanner loses sight of it (dirty lens, cooling air loss, failing scanner). The burner management system must shut off fuel within the flame failure response time.",
+      "typical_progression": "Seconds. NFPA 85 limits flame failure response time to 4 s maximum.",
+      "required_roles": [
+        "flame_signal"
+      ],
+      "optional_roles": [
+        "burner_trip",
+        "fuel_pressure",
+        "fuel_flow",
+        "o2",
+        "co",
+        "furnace_pressure",
+        "steam_pressure"
+      ],
+      "trigger_role": "flame_signal",
+      "symptoms": [
+        {
+          "role": "flame_signal",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Below the scanner's flame-on threshold"
+        },
+        {
+          "role": "burner_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            4000
+          ],
+          "weight": 0.9
+        },
+        {
+          "role": "fuel_pressure",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.5,
+          "note": "If the fuel supply is the cause"
+        },
+        {
+          "role": "o2",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            10000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "co",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            10000
+          ],
+          "weight": 0.4,
+          "note": "Unstable combustion before the loss"
+        },
+        {
+          "role": "furnace_pressure",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            5000
+          ],
+          "weight": 0.4
+        },
+        {
+          "role": "steam_pressure",
+          "direction": "fall",
+          "onset_lag_ms": [
+            30000,
+            600000
+          ],
+          "weight": 0.5
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "process_downstream",
+          "effect_role": "pressure",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            30000,
+            600000
+          ],
+          "edge_type": "cause_to_effect",
+          "note": "Steam supply lost"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "boiler.high_steam_pressure",
+          "rule": "A high-pressure limit trip also shuts the burner, but pressure rises before the flame signal falls.",
+          "first_role": "steam_pressure",
+          "then_role": "flame_signal"
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Real flame loss shows O2 rising and furnace temperature falling; a scanner fault shows a falling flame signal with normal O2 and CO before the trip"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Review the BMS first-out indication.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check fuel supply pressure and filters, and oil temperature / atomising medium for oil burners.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Clean or check the scanner lens, sighting tube and cooling air with the burner shut down.",
+          "requires_isolation": true
+        },
+        {
+          "order": 4,
+          "text": "Complete the pre-purge per the BMS before any relight; do not bypass the flame safeguard.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "NFPA 85 (boiler and combustion systems hazards)",
+        "EN 298 (automatic burner control systems)",
+        "ASME CSD-1"
+      ]
+    },
+    {
+      "pattern_id": "boiler.tube_leak",
+      "version": "1.0.0",
+      "failure_mode": "tube_leak",
+      "title": "Boiler tube leak",
+      "category": "mechanical",
+      "severity": "critical",
+      "description": "A water-wall, economiser or superheater tube leaks from corrosion, erosion, overheating or fatigue. Water is lost to the furnace or flue: feedwater exceeds steam flow, make-up rises, and the leak jet erodes adjacent tubes.",
+      "typical_progression": "Days to weeks for a pinhole; a leak can escalate to a rupture within hours.",
+      "required_roles": [
+        "feedwater_flow",
+        "steam_flow"
+      ],
+      "optional_roles": [
+        "makeup_flow",
+        "acoustic",
+        "furnace_pressure",
+        "drum_level",
+        "flue_gas_temperature",
+        "o2"
+      ],
+      "trigger_role": "feedwater_flow",
+      "symptoms": [
+        {
+          "role": "feedwater_flow",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Feedwater minus steam flow (net of blowdown) above its normal offset"
+        },
+        {
+          "role": "steam_flow",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.4,
+          "note": "Steam flow unchanged while feedwater rises"
+        },
+        {
+          "role": "makeup_flow",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "acoustic",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.8,
+          "note": "Acoustic leak detection often detects before the flow imbalance"
+        },
+        {
+          "role": "furnace_pressure",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.4
+        },
+        {
+          "role": "drum_level",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.3
+        },
+        {
+          "role": "flue_gas_temperature",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.3,
+          "note": "Economiser leaks cool the flue gas"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "thin",
+            "label": "Tube wall thinning / overheating",
+            "kind": "cause"
+          },
+          {
+            "id": "leak",
+            "label": "Tube leak",
+            "kind": "state"
+          },
+          {
+            "id": "jet",
+            "label": "Steam/water jet",
+            "kind": "state"
+          },
+          {
+            "id": "adj",
+            "label": "Adjacent tube erosion",
+            "kind": "state"
+          },
+          {
+            "id": "fw",
+            "label": "Feedwater − steam mismatch",
+            "kind": "symptom",
+            "role": "feedwater_flow"
+          }
+        ],
+        "edges": [
+          {
+            "from": "thin",
+            "to": "leak",
+            "sign": "+"
+          },
+          {
+            "from": "leak",
+            "to": "fw",
+            "sign": "+"
+          },
+          {
+            "from": "leak",
+            "to": "jet",
+            "sign": "+"
+          },
+          {
+            "from": "jet",
+            "to": "adj",
+            "sign": "+",
+            "lag_ms": [
+              3600000,
+              604800000
+            ],
+            "loop_id": "steam_cutting"
+          },
+          {
+            "from": "adj",
+            "to": "leak",
+            "sign": "+",
+            "loop_id": "steam_cutting"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "steam_cutting",
+            "polarity": "reinforcing",
+            "description": "The leak jet cuts neighbouring tubes, which then leak as well."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "heat_exchanger.tube_leak",
+          "rule": "Use the heat-exchanger pattern for unfired exchangers."
+        },
+        {
+          "vs_pattern": "boiler.low_water_level",
+          "rule": "Low level with feedwater below steam flow is a supply problem; with feedwater above steam flow it indicates a leak."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Water balance",
+          "formula": "leak ≈ Q_feedwater − Q_steam − Q_blowdown − Q_sootblowing (trend, not absolute)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Trend feedwater minus steam flow and make-up against the normal offset.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Listen at inspection ports or check the acoustic leak detection zones (from a safe position).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Inform operations to plan a controlled shutdown; a leaking tube can escalate.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Inspect and repair with the boiler cooled, drained, isolated and ventilated.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "EPRI Boiler Tube Failure Reduction guidelines",
+        "ASME BPVC Section I"
+      ]
+    },
+    {
+      "pattern_id": "boiler.scaling_high_flue_gas_temperature",
+      "version": "1.0.0",
+      "failure_mode": "scaling_high_flue_gas_temperature",
+      "title": "Scaling / fouling with high flue gas temperature",
+      "category": "thermal",
+      "severity": "warning",
+      "description": "Waterside scale (hardness, silica) or fireside soot insulates the heat-transfer surfaces. Less heat reaches the water, so flue gas leaves hotter and efficiency falls; waterside scale also raises tube metal temperature and can cause overheating failures.",
+      "typical_progression": "Weeks to months.",
+      "required_roles": [
+        "flue_gas_temperature"
+      ],
+      "optional_roles": [
+        "fuel_flow",
+        "steam_flow",
+        "o2",
+        "tube_metal_temperature",
+        "blowdown_conductivity"
+      ],
+      "trigger_role": "flue_gas_temperature",
+      "symptoms": [
+        {
+          "role": "flue_gas_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Rise at the same load and excess air; roughly 1 % efficiency loss per 20–22 °C"
+        },
+        {
+          "role": "fuel_flow",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2592000000
+          ],
+          "weight": 0.6,
+          "note": "More fuel per unit steam"
+        },
+        {
+          "role": "tube_metal_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2592000000
+          ],
+          "weight": 0.6,
+          "note": "Waterside scale"
+        },
+        {
+          "role": "blowdown_conductivity",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.3,
+          "note": "Poor water chemistry is a cause"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "scale",
+            "label": "Waterside scale",
+            "kind": "cause"
+          },
+          {
+            "id": "r",
+            "label": "Thermal resistance ↑",
+            "kind": "state"
+          },
+          {
+            "id": "tfg",
+            "label": "Flue gas temperature ↑",
+            "kind": "symptom",
+            "role": "flue_gas_temperature"
+          },
+          {
+            "id": "tm",
+            "label": "Tube metal temperature ↑",
+            "kind": "symptom",
+            "role": "tube_metal_temperature"
+          },
+          {
+            "id": "dep",
+            "label": "Deposition rate ↑",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "scale",
+            "to": "r",
+            "sign": "+"
+          },
+          {
+            "from": "r",
+            "to": "tfg",
+            "sign": "+"
+          },
+          {
+            "from": "r",
+            "to": "tm",
+            "sign": "+"
+          },
+          {
+            "from": "tm",
+            "to": "dep",
+            "sign": "+",
+            "loop_id": "scale_growth"
+          },
+          {
+            "from": "dep",
+            "to": "scale",
+            "sign": "+",
+            "lag_ms": [
+              604800000,
+              15552000000
+            ],
+            "loop_id": "scale_growth"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "scale_growth",
+            "polarity": "reinforcing",
+            "description": "Hotter tube walls precipitate inverse-solubility salts faster, thickening the scale."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "boiler.tube_leak",
+          "rule": "Economiser leaks lower flue gas temperature; fouling raises it."
+        },
+        {
+          "vs_pattern": "heat_exchanger.fouling",
+          "rule": "Same physics in unfired exchangers."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Stack loss (simplified Siegert)",
+          "formula": "q_A ≈ (T_flue − T_air) · (A2/(21 − O2) + B)"
+        },
+        {
+          "domain": "trend",
+          "description": "Efficiency by indirect method per ASME PTC 4"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare flue gas temperature at the same load and O2 with the clean baseline.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Review water treatment: hardness, silica, conductivity and blowdown rate.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check soot-blowing records for fireside fouling.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Inspect tubes for scale thickness and clean at the next outage.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "ASME PTC 4 (fired steam generators)",
+        "ASME 'Consensus on Operating Practices for the Control of Feedwater and Boiler Water Chemistry'"
+      ]
+    },
+    {
+      "pattern_id": "boiler.feedwater_pump_failure",
+      "version": "1.0.0",
+      "failure_mode": "feedwater_pump_failure",
+      "title": "Feedwater pump failure",
+      "category": "supply",
+      "severity": "critical",
+      "description": "The feed pump trips, loses suction (low deaerator level, cavitation with feedwater near saturation), or wears so it cannot deliver against drum pressure. Feedwater pressure and flow fall and drum level falls unless the standby pump starts.",
+      "typical_progression": "Seconds for a trip; weeks for wear.",
+      "required_roles": [
+        "feedwater_flow",
+        "feedwater_pressure"
+      ],
+      "optional_roles": [
+        "drum_level",
+        "steam_flow",
+        "feedwater_temperature",
+        "low_water_cutoff"
+      ],
+      "trigger_role": "feedwater_pressure",
+      "symptoms": [
+        {
+          "role": "feedwater_pressure",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Below drum pressure plus control valve margin"
+        },
+        {
+          "role": "feedwater_flow",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.9
+        },
+        {
+          "role": "drum_level",
+          "direction": "fall",
+          "onset_lag_ms": [
+            10000,
+            300000
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "low_water_cutoff",
+          "direction": "trip",
+          "onset_lag_ms": [
+            60000,
+            600000
+          ],
+          "weight": 0.5
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "process_downstream",
+          "effect_role": "pressure",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            60000,
+            600000
+          ],
+          "edge_type": "cause_to_effect",
+          "note": "Steam output falls if the burner trips on low water"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "pump.cavitation_npsh",
+          "rule": "With feedwater near saturation, check deaerator level and pressure; the pump pattern identifies cavitation."
+        },
+        {
+          "vs_pattern": "pump.dry_run_loss_of_prime",
+          "rule": "Near-zero pump power and flow point to loss of suction."
+        },
+        {
+          "vs_pattern": "boiler.low_water_level",
+          "rule": "Low level with normal feedwater pressure points to control or a leak rather than the pump.",
+          "first_role": "feedwater_pressure",
+          "then_role": "drum_level"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check feed pump run status, trip indication and standby pump auto-start.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check deaerator level and pressure (NPSH available for the feed pump).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check the recirculation (minimum flow) line and feed control valve.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "ASME BPVC Section I (PG-61 feedwater supply)",
+        "API 610"
+      ]
+    }
+  ]
+}

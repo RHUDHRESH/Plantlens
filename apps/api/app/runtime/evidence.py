@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import uuid
+import hashlib
 from datetime import datetime, timezone
 from typing import Any
 
@@ -180,7 +180,8 @@ def build_runtime_evidence_packet(
     grouped = situation.get("grouped_alarm_ids", []) if situation else []
 
     return RuntimeEvidencePacket(
-        evidence_id=f"EV_{uuid.uuid4().hex[:12].upper()}",
+        evidence_id="EV_"
+        + hashlib.sha256(f"{trace.trace_id}|{ts.isoformat()}".encode()).hexdigest()[:12].upper(),
         plant_id=plant_id,
         ts=ts,
         runtime_bundle_version=runtime_bundle_version,

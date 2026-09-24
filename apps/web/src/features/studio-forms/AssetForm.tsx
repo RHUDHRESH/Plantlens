@@ -43,12 +43,12 @@ export function AssetForm({ asset, assetTypes = [], issues, onPatch }: AssetForm
   }
 
   return (
-    <form className="studio-form-shell__form" onSubmit={(e) => e.preventDefault()}>
+    <form className="sf-form" onSubmit={(e) => e.preventDefault()}>
       <FormField
         label="ID"
         hint="ID rename requires cross-reference migration."
       >
-        <input value={id} readOnly disabled aria-readonly />
+        <input className="pl-input" value={id} readOnly disabled aria-readonly />
       </FormField>
       <FormField
         label="Display name"
@@ -56,13 +56,13 @@ export function AssetForm({ asset, assetTypes = [], issues, onPatch }: AssetForm
           ? { error: fieldIssues.find((i) => i.code === "MISSING_DISPLAY_NAME")!.message }
           : {})}
       >
-        <input
+        <input className="pl-input"
           value={readString(asset, "display_name")}
           onChange={(e) => patchField("display_name", e.target.value, "Update display name")}
         />
       </FormField>
       <FormField label="Type">
-        <select
+        <select className="pl-select"
           value={readString(asset, "type")}
           onChange={(e) => patchField("type", e.target.value, "Update asset type")}
         >
@@ -75,7 +75,7 @@ export function AssetForm({ asset, assetTypes = [], issues, onPatch }: AssetForm
       </FormField>
       {"area_id" in asset ? (
         <FormField label="Area / zone">
-          <input
+          <input className="pl-input"
             value={readString(asset, "area_id")}
             onChange={(e) => patchField("area_id", e.target.value, "Update area")}
           />
@@ -83,7 +83,7 @@ export function AssetForm({ asset, assetTypes = [], issues, onPatch }: AssetForm
       ) : null}
       {"notes" in asset || "description" in asset ? (
         <FormField label="Notes">
-          <textarea
+          <textarea className="pl-textarea"
             value={readString(asset, "notes") || readString(asset, "description")}
             onChange={(e) => patchField("notes" in asset ? "notes" : "description", e.target.value, "Update notes")}
             rows={3}

@@ -17,6 +17,8 @@ def use_in_memory_database(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
     monkeypatch.setenv("PLANTLENS_ENV", "test")
     monkeypatch.setenv("PLANTLENS_DEV_JWT_SECRET", "test-secret-for-pytest")
+    # Deterministic tests drive evaluation explicitly; ticker tests construct RuntimeTicker.
+    monkeypatch.setenv("RUNTIME_TICK_MS", "0")
     get_settings.cache_clear()
 
 

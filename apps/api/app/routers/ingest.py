@@ -35,13 +35,11 @@ async def _ingest_frames(frames: list[TagFrame]) -> dict[str, int | str]:
     gateway = get_simulator_gateway()
     accepted = 0
     for frame in frames:
-        try:
-            with ingest_span(frame.tag_id):
-                await gateway.on_frame(frame)
+        with ingest_span(frame.tag_id):
+            ok = await gateway.on_frame(frame)
+        if ok:
             record_ingest_frame()
             accepted += 1
-        except Exception:
-            continue
     return {"status": "ok", "accepted": accepted, "total": len(frames)}
 
 
