@@ -18,6 +18,7 @@ from app.changes.ops import (
     AddSituationType,
     ChangeOp,
     ChangeSet,
+    UpdateEdge,
     UpsertNode,
 )
 
@@ -238,6 +239,35 @@ def _existing_rule(rules: list[dict[str, Any]], tag: str, direction: str) -> dic
     return None
 
 
+def _approved_path(edges: list[dict[str, Any]], start: str, goal: str) -> list[dict[str, Any]] | None:
+    """Shortest approved-edge path start → goal (deterministic), or None."""
+    forward: dict[str, list[dict[str, Any]]] = {}
+    for edge in sorted(edges, key=lambda e: e["id"]):
+        if edge.get("approved"):
+            forward.setdefault(edge["from"], []).append(edge)
+    previous: dict[str, dict[str, Any]] = {}
+    frontier = [start]
+    seen = {start}
+    while frontier:
+        nxt: list[str] = []
+        for node in frontier:
+            for edge in forward.get(node, []):
+                if edge["to"] in seen:
+                    continue
+                seen.add(edge["to"])
+                previous[edge["to"]] = edge
+                if edge["to"] == goal:
+                    path = []
+                    cursor = goal
+                    while cursor != start:
+                        path.append(previous[cursor])
+                        cursor = previous[cursor]["from"]
+                    return list(reversed(path))
+                nxt.append(edge["to"])
+        frontier = nxt
+    return None
+
+
 def instantiate_pattern(
     pattern: dict[str, Any],
     library: dict[str, Any],
@@ -408,6 +438,14 @@ def instantiate_pattern(
             edge_id = f"PL-{asset_id}-{target}"
             if edge_id in edge_ids:
                 continue
+            # Would asset → target close a cycle with approved edges (target ⇝ asset)?
+            return_path = _approved_path(causal_graph.get("edges", []), target, asset_id)
+            if return_path is not None and not rule.get("loop_ok"):
+                notes.append(
+                    f"Skipped {asset_id} → {target}: it would close an unflagged cycle with "
+                    f"{', '.join(e['id'] for e in return_path)}. Model it as a feedback loop if intended."
+                )
+                continue
             edge = {
                 "id": edge_id,
                 "from": asset_id,
@@ -426,6 +464,23 @@ def instantiate_pattern(
             ops.append(AddEdge(edge=edge, rationale=f"{pattern_ref}: {rule.get('note', rule['effect_role'])}"))
             existing_pairs[(asset_id, target)] = edge_id
             edge_ids.add(edge_id)
+            if return_path is not None:
+                # A flagged loop needs every edge of the cycle flagged; propose that explicitly so
+                # the reviewer sees exactly which existing relations become part of the loop.
+                for back in return_path:
+                    if back.get("loop_ok"):
+                        continue
+                    ops.append(
+                        UpdateEdge(
+                            edge_id=back["id"],
+                            fields={"loop_ok": True, "loop_id": rule.get("loop_id", "")},
+                            rationale=f"{pattern_ref}: closes feedback loop {rule.get('loop_id', '')} with {edge_id}",
+                        )
+                    )
+                notes.append(
+                    f"{asset_id} → {target} forms feedback loop '{rule.get('loop_id', '')}' with "
+                    f"{', '.join(e['id'] for e in return_path)}; those edges are proposed as loop_ok."
+                )
 
     # 4) A situation type so the runtime can name this failure mode (fail-closed matching).
     situation_id = f"{_slug(asset_id)}_{_slug(pattern['failure_mode'])}"

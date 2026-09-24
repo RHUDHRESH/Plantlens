@@ -164,3 +164,40 @@ def test_pattern_listing_and_detail(client: TestClient):
     ).json()
     assert detail["pattern"]["signatures"]
     assert any(r["role"] == "current" for r in detail["roles"])
+
+
+def _loop_pattern(loop_ok: bool) -> tuple[dict, dict]:
+    library = {"roles": [{"role": "voltage", "quantity": "v", "units": ["V"], "signal_type_prefixes": ["electrical.voltage"]}]}
+    rule = {"relation": "upstream_supply", "effect_role": "current", "direction": "rise", "polarity": "+",
+            "lag_ms": [0, 500], "edge_type": "structural_load_effect"}
+    if loop_ok:
+        rule.update(loop_ok=True, loop_id="source_impedance")
+    pattern = {"pattern_id": "dc_bus.test_loop", "version": "1.0.0", "failure_mode": "test_loop", "title": "Test",
+               "severity": "warning", "required_roles": ["voltage"], "trigger_role": "voltage",
+               "symptoms": [{"role": "voltage", "direction": "fall", "onset_lag_ms": [0, 0], "weight": 1.0}],
+               "propagation": [rule]}
+    return pattern, library
+
+
+def test_unflagged_back_edge_is_skipped_with_explanation(bundle):
+    pattern, library = _loop_pattern(loop_ok=False)
+    result = instantiate_pattern(
+        pattern, library, asset_id="BUS-101", bindings={"voltage": "BUS_101_V"}, **_parts(bundle)
+    )
+    assert not [op for op in result.change_set.ops if op.op == "add_edge"]
+    assert any("unflagged cycle with E3" in n for n in result.notes)
+
+
+def test_flagged_loop_proposes_whole_cycle_as_loop_ok(bundle):
+    pattern, library = _loop_pattern(loop_ok=True)
+    result = instantiate_pattern(
+        pattern, library, asset_id="BUS-101", bindings={"voltage": "BUS_101_V"}, **_parts(bundle)
+    )
+    ops = result.change_set.ops
+    added = [op.edge for op in ops if op.op == "add_edge"]
+    assert added and added[0]["loop_ok"] is True and added[0]["to"] == "BAT-101"
+    updates = {op.edge_id: op.fields for op in ops if op.op == "update_edge"}
+    assert updates == {"E3": {"loop_ok": True, "loop_id": "source_impedance"}}
+    validation = validate_bundle(apply_change_set(bundle, result.change_set, approve_edges=True))
+    assert validation["ok"], validation
+    assert validation["feedback_loops"][0]["members"] == ["BAT-101", "BUS-101"]

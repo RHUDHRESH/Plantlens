@@ -1,0 +1,1461 @@
+{
+  "library_id": "plantlens.patterns.dc_motor",
+  "version": "1.0.0",
+  "component_type": "dc_motor",
+  "display_name": "DC motor (brushed: PM, shunt, series, separately excited)",
+  "description": "Failure patterns for brushed DC motors from small 12 V PM motors to industrial wound-field machines: commutation, overload, field loss, bearings, supply voltage and cooling.",
+  "asset_type_aliases": [],
+  "library_type_aliases": [
+    "dc_motor_12v"
+  ],
+  "roles": [
+    {
+      "role": "current",
+      "quantity": "armature current (DC mean)",
+      "units": [
+        "A"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current"
+      ],
+      "name_hints": [
+        "current",
+        "i_arm",
+        "ia",
+        "amps"
+      ]
+    },
+    {
+      "role": "current_ripple",
+      "quantity": "armature current ripple / commutation noise (peak-to-peak as % of mean)",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current.ripple"
+      ],
+      "name_hints": [
+        "ripple",
+        "i_ripple"
+      ]
+    },
+    {
+      "role": "voltage",
+      "quantity": "armature / terminal voltage (DC)",
+      "units": [
+        "V"
+      ],
+      "signal_type_prefixes": [
+        "electrical.voltage"
+      ],
+      "name_hints": [
+        "voltage",
+        "v_arm",
+        "_v",
+        "vbat"
+      ]
+    },
+    {
+      "role": "field_current",
+      "quantity": "shunt / separately excited field current (wound-field machines only)",
+      "units": [
+        "A"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current.field"
+      ],
+      "name_hints": [
+        "field",
+        "i_f",
+        "if_"
+      ]
+    },
+    {
+      "role": "speed",
+      "quantity": "shaft speed (tacho, encoder or back-EMF estimate)",
+      "units": [
+        "rpm"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.speed"
+      ],
+      "name_hints": [
+        "rpm",
+        "speed",
+        "tach"
+      ]
+    },
+    {
+      "role": "power",
+      "quantity": "electrical input power (V × I)",
+      "units": [
+        "W",
+        "kW"
+      ],
+      "signal_type_prefixes": [
+        "electrical.power"
+      ],
+      "name_hints": [
+        "power",
+        "_w",
+        "_kw"
+      ]
+    },
+    {
+      "role": "winding_temperature",
+      "quantity": "armature or field winding temperature (RTD / thermistor / thermal model)",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.winding"
+      ],
+      "name_hints": [
+        "wind",
+        "arm_t",
+        "temp"
+      ]
+    },
+    {
+      "role": "commutator_temperature",
+      "quantity": "commutator / brush-gear temperature (IR sensor or thermography)",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.commutator"
+      ],
+      "name_hints": [
+        "comm_t",
+        "brush_t"
+      ]
+    },
+    {
+      "role": "frame_temperature",
+      "quantity": "motor frame / surface temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.frame"
+      ],
+      "name_hints": [
+        "frame_t",
+        "surface_t",
+        "case_t"
+      ]
+    },
+    {
+      "role": "ambient_temperature",
+      "quantity": "cooling air inlet / ambient temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.ambient"
+      ],
+      "name_hints": [
+        "ambient",
+        "amb_t"
+      ]
+    },
+    {
+      "role": "cooling_airflow",
+      "quantity": "forced-ventilation blower airflow or blower run status",
+      "units": [
+        "%",
+        "m/s",
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "thermal.cooling",
+        "mechanical.airflow"
+      ],
+      "name_hints": [
+        "blower",
+        "cool_fan",
+        "airflow"
+      ]
+    },
+    {
+      "role": "brush_wear",
+      "quantity": "remaining brush length (wear sensor) or wear-indicator state",
+      "units": [
+        "mm",
+        "%",
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.brush_wear"
+      ],
+      "name_hints": [
+        "brush"
+      ]
+    },
+    {
+      "role": "bearing_temperature",
+      "quantity": "bearing housing temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.bearing"
+      ],
+      "name_hints": [
+        "brg_t",
+        "bearing_t"
+      ]
+    },
+    {
+      "role": "vibration",
+      "quantity": "overall vibration velocity (RMS, 10–1000 Hz)",
+      "units": [
+        "mm/s"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration"
+      ],
+      "name_hints": [
+        "vib"
+      ]
+    },
+    {
+      "role": "bearing_envelope",
+      "quantity": "bearing demodulated / envelope acceleration",
+      "units": [
+        "gE",
+        "g"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration.envelope"
+      ],
+      "name_hints": [
+        "env",
+        "gE"
+      ]
+    },
+    {
+      "role": "thermal_trip",
+      "quantity": "overload / thermal protection trip state",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "protection.trip"
+      ],
+      "name_hints": [
+        "trip",
+        "ptc",
+        "olr"
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "pattern_id": "dc_motor.brush_commutator_wear",
+      "version": "1.0.0",
+      "failure_mode": "brush_commutator_wear",
+      "title": "Brush / commutator wear and poor commutation",
+      "category": "electrical",
+      "severity": "warning",
+      "description": "Worn or sticking brushes, a glazed or out-of-round commutator, or high mica raise brush contact resistance and cause sparking at commutation. Current ripple and brush-gear temperature rise; carbon dust tracks toward ground.",
+      "typical_progression": "Weeks to months for wear; hours to days once sparking has started to pit the commutator.",
+      "required_roles": [
+        "current_ripple"
+      ],
+      "optional_roles": [
+        "brush_wear",
+        "commutator_temperature",
+        "speed",
+        "current",
+        "voltage"
+      ],
+      "trigger_role": "current_ripple",
+      "symptoms": [
+        {
+          "role": "current_ripple",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Broadband ripple above the normal slot/segment frequency component; compare with a healthy baseline"
+        },
+        {
+          "role": "brush_wear",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            2592000000
+          ],
+          "weight": 0.8,
+          "note": "Replace when the wear sensor or indicator reaches the manufacturer minimum length"
+        },
+        {
+          "role": "commutator_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            3600000,
+            604800000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "speed",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.4,
+          "note": "Intermittent contact modulates torque"
+        },
+        {
+          "role": "voltage",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.3,
+          "note": "Brush-drop variation seen at the terminals"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "wear",
+            "label": "Brush wear / low spring force",
+            "kind": "cause"
+          },
+          {
+            "id": "rc",
+            "label": "Contact resistance ↑",
+            "kind": "state"
+          },
+          {
+            "id": "spark",
+            "label": "Commutation sparking",
+            "kind": "state",
+            "role": "current_ripple"
+          },
+          {
+            "id": "pit",
+            "label": "Commutator pitting / film damage",
+            "kind": "state"
+          },
+          {
+            "id": "heat",
+            "label": "Brush-gear temperature ↑",
+            "kind": "symptom",
+            "role": "commutator_temperature"
+          },
+          {
+            "id": "dust",
+            "label": "Carbon dust / tracking",
+            "kind": "consequence"
+          }
+        ],
+        "edges": [
+          {
+            "from": "wear",
+            "to": "rc",
+            "sign": "+"
+          },
+          {
+            "from": "rc",
+            "to": "spark",
+            "sign": "+",
+            "lag_ms": [
+              0,
+              60000
+            ]
+          },
+          {
+            "from": "spark",
+            "to": "pit",
+            "sign": "+",
+            "lag_ms": [
+              3600000,
+              604800000
+            ],
+            "loop_id": "commutation_arcing"
+          },
+          {
+            "from": "pit",
+            "to": "rc",
+            "sign": "+",
+            "loop_id": "commutation_arcing"
+          },
+          {
+            "from": "spark",
+            "to": "heat",
+            "sign": "+"
+          },
+          {
+            "from": "wear",
+            "to": "dust",
+            "sign": "+"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "commutation_arcing",
+            "polarity": "reinforcing",
+            "description": "Sparking erodes the commutator surface, which worsens contact and increases sparking."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "dc_motor.bearing_defect",
+          "rule": "Brush faults show in electrical ripple and brush-gear temperature; a bearing defect shows in the envelope spectrum at bearing defect frequencies with a clean current waveform."
+        },
+        {
+          "vs_pattern": "dc_motor.armature_overload",
+          "rule": "Poor commutation raises ripple at normal mean current; overload raises the mean current first.",
+          "first_role": "current_ripple",
+          "then_role": "current"
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "current_spectrum",
+          "description": "Commutation ripple at segment passing frequency; sparking adds broadband content and irregular spikes.",
+          "formula": "f_seg = N_segments × n / 60"
+        },
+        {
+          "domain": "waveform",
+          "description": "Irregular spikes on the armature current and terminal voltage at each commutation event."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Trend current ripple against a healthy baseline at the same speed and load.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Inspect brush length, spring pressure and freedom of movement in the holders.",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Inspect the commutator film colour, bar marking, high mica and runout.",
+          "requires_isolation": true
+        },
+        {
+          "order": 4,
+          "text": "Blow out carbon dust and check brush-holder-to-ground insulation.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "IEEE Std 113 (test procedures for DC machines)",
+        "NEMA MG-1 Part 12 (DC machine performance)"
+      ]
+    },
+    {
+      "pattern_id": "dc_motor.armature_overload",
+      "version": "1.0.0",
+      "failure_mode": "armature_overload",
+      "title": "Armature overload (driven load too high)",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "Load torque exceeds rating. Armature current (∝ torque) rises and speed falls with the IR drop; the armature heats over minutes and commutation worsens above rated current.",
+      "typical_progression": "Seconds for current and speed; minutes for winding temperature; protection trips if sustained.",
+      "required_roles": [
+        "current",
+        "speed"
+      ],
+      "optional_roles": [
+        "winding_temperature",
+        "power",
+        "voltage",
+        "thermal_trip",
+        "current_ripple"
+      ],
+      "trigger_role": "current",
+      "symptoms": [
+        {
+          "role": "current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 1.15,
+            "for_ms": 2000
+          },
+          "note": "Above rated armature current"
+        },
+        {
+          "role": "speed",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            3000
+          ],
+          "weight": 0.7,
+          "threshold_hint": {
+            "relative_to_nominal": 0.95
+          },
+          "note": "Speed droop from armature IR drop; larger on PM and series machines"
+        },
+        {
+          "role": "power",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.6,
+          "threshold_hint": {
+            "relative_to_nominal": 1.15
+          }
+        },
+        {
+          "role": "winding_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            60000,
+            1800000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "current_ripple",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            60000
+          ],
+          "weight": 0.3,
+          "note": "Commutation margin shrinks above rated current"
+        },
+        {
+          "role": "thermal_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            60000,
+            1800000
+          ],
+          "weight": 0.4
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "load",
+            "label": "Load torque ↑",
+            "kind": "cause"
+          },
+          {
+            "id": "n",
+            "label": "Speed ↓",
+            "kind": "symptom",
+            "role": "speed"
+          },
+          {
+            "id": "emf",
+            "label": "Back-EMF ↓",
+            "kind": "state"
+          },
+          {
+            "id": "ia",
+            "label": "Armature current ↑",
+            "kind": "symptom",
+            "role": "current"
+          },
+          {
+            "id": "tq",
+            "label": "Motor torque ↑",
+            "kind": "state"
+          },
+          {
+            "id": "cu",
+            "label": "I²R loss ↑",
+            "kind": "state"
+          },
+          {
+            "id": "tw",
+            "label": "Winding temperature ↑",
+            "kind": "symptom",
+            "role": "winding_temperature"
+          },
+          {
+            "id": "r",
+            "label": "Winding resistance ↑",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "load",
+            "to": "n",
+            "sign": "-"
+          },
+          {
+            "from": "n",
+            "to": "emf",
+            "sign": "+"
+          },
+          {
+            "from": "emf",
+            "to": "ia",
+            "sign": "-",
+            "loop_id": "torque_balance"
+          },
+          {
+            "from": "ia",
+            "to": "tq",
+            "sign": "+",
+            "loop_id": "torque_balance"
+          },
+          {
+            "from": "tq",
+            "to": "n",
+            "sign": "+",
+            "loop_id": "torque_balance"
+          },
+          {
+            "from": "ia",
+            "to": "cu",
+            "sign": "+"
+          },
+          {
+            "from": "cu",
+            "to": "tw",
+            "sign": "+",
+            "lag_ms": [
+              60000,
+              1800000
+            ],
+            "loop_id": "cu_thermal"
+          },
+          {
+            "from": "tw",
+            "to": "r",
+            "sign": "+",
+            "loop_id": "cu_thermal"
+          },
+          {
+            "from": "r",
+            "to": "cu",
+            "sign": "+",
+            "loop_id": "cu_thermal"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "torque_balance",
+            "polarity": "balancing",
+            "description": "Lower speed reduces back-EMF, raising current and torque until torque matches the load."
+          },
+          {
+            "loop_id": "cu_thermal",
+            "polarity": "reinforcing",
+            "description": "Copper resistance rises ≈0.39 %/°C, increasing loss at the same current."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "upstream_supply",
+          "effect_role": "voltage",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            2000
+          ],
+          "edge_type": "structural_load_effect",
+          "note": "Higher current causes more supply or battery voltage drop"
+        },
+        {
+          "relation": "driver",
+          "effect_role": "current",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            500
+          ],
+          "edge_type": "structural_load_effect",
+          "note": "DC drive or chopper output current follows the armature current"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "dc_motor.supply_undervoltage",
+          "rule": "Overload: current rises before any supply voltage fall. Undervoltage: voltage falls first.",
+          "first_role": "current",
+          "then_role": "voltage"
+        },
+        {
+          "vs_pattern": "dc_motor.field_loss_overspeed",
+          "rule": "Overload: speed falls with rising current. Field loss: field current falls first and speed rises (light load).",
+          "first_role": "field_current",
+          "then_role": "speed"
+        },
+        {
+          "vs_pattern": "dc_motor.bearing_defect",
+          "rule": "Overload has no preceding rise in bearing envelope or bearing temperature."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare armature current with the nameplate rating and with process demand at the same time.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the driven machine for binding, blockage, product build-up or a dragging brake.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Rotate the shaft by hand with the motor isolated to feel for mechanical drag.",
+          "requires_isolation": true
+        },
+        {
+          "order": 4,
+          "text": "Verify the overload or current-limit setting matches the nameplate.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 60034-1 (ratings and duty)",
+        "NEMA MG-1 Part 12"
+      ]
+    },
+    {
+      "pattern_id": "dc_motor.field_loss_overspeed",
+      "version": "1.0.0",
+      "failure_mode": "field_loss_overspeed",
+      "title": "Loss of field / field weakening → overspeed",
+      "category": "electrical",
+      "severity": "critical",
+      "description": "Shunt or separately excited field current falls (open field circuit, failed field supply, loose terminal). With speed n ≈ (V − Ia·Ra)/(k·Φ), a lightly loaded motor accelerates toward destructive overspeed; a heavily loaded motor instead draws very high armature current and may stall. A series motor running unloaded behaves the same way.",
+      "typical_progression": "Seconds. Field-loss and overspeed protection must act within seconds.",
+      "required_roles": [
+        "field_current",
+        "speed"
+      ],
+      "optional_roles": [
+        "current",
+        "voltage",
+        "current_ripple"
+      ],
+      "trigger_role": "field_current",
+      "symptoms": [
+        {
+          "role": "field_current",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 0.7,
+            "for_ms": 200
+          },
+          "note": "Field-loss relays typically pick up below 50–80 % of rated field current"
+        },
+        {
+          "role": "speed",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            5000
+          ],
+          "weight": 0.9,
+          "threshold_hint": {
+            "relative_to_nominal": 1.1
+          },
+          "note": "Overspeed at light load; stall with high current at heavy load"
+        },
+        {
+          "role": "current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.8,
+          "threshold_hint": {
+            "relative_to_nominal": 1.5
+          },
+          "note": "Back-EMF collapses with flux"
+        },
+        {
+          "role": "current_ripple",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.4,
+          "note": "Commutation deteriorates in the weak-field region"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "open",
+            "label": "Field circuit open / supply lost",
+            "kind": "cause"
+          },
+          {
+            "id": "phi",
+            "label": "Flux Φ ↓",
+            "kind": "state",
+            "role": "field_current"
+          },
+          {
+            "id": "emf",
+            "label": "Back-EMF ↓",
+            "kind": "state"
+          },
+          {
+            "id": "ia",
+            "label": "Armature current ↑",
+            "kind": "symptom",
+            "role": "current"
+          },
+          {
+            "id": "n",
+            "label": "Speed ↑ (light load)",
+            "kind": "symptom",
+            "role": "speed"
+          },
+          {
+            "id": "mech",
+            "label": "Centrifugal stress / flashover",
+            "kind": "consequence"
+          }
+        ],
+        "edges": [
+          {
+            "from": "open",
+            "to": "phi",
+            "sign": "-"
+          },
+          {
+            "from": "phi",
+            "to": "emf",
+            "sign": "+"
+          },
+          {
+            "from": "emf",
+            "to": "ia",
+            "sign": "-"
+          },
+          {
+            "from": "ia",
+            "to": "n",
+            "sign": "+",
+            "lag_ms": [
+              0,
+              5000
+            ]
+          },
+          {
+            "from": "n",
+            "to": "emf",
+            "sign": "+",
+            "loop_id": "emf_recovery"
+          },
+          {
+            "from": "emf",
+            "to": "ia",
+            "sign": "-",
+            "loop_id": "emf_recovery"
+          },
+          {
+            "from": "n",
+            "to": "mech",
+            "sign": "+"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "emf_recovery",
+            "polarity": "balancing",
+            "description": "Rising speed rebuilds back-EMF. With weak flux the equilibrium speed is far above rating, so the balancing loop settles too late to protect the machine."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "driven_equipment",
+          "effect_role": "speed",
+          "direction": "rise",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            5000
+          ],
+          "edge_type": "mechanical",
+          "note": "Driven machine overspeeds with the motor"
+        },
+        {
+          "relation": "driver",
+          "effect_role": "current",
+          "direction": "rise",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "structural_load_effect",
+          "note": "Drive goes into current limit"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "dc_motor.armature_overload",
+          "rule": "Field loss: field current falls first and speed rises. Overload: speed falls as current rises.",
+          "first_role": "field_current",
+          "then_role": "current"
+        },
+        {
+          "vs_pattern": "dc_motor.supply_undervoltage",
+          "rule": "Undervoltage lowers armature voltage and speed; field loss raises speed at unchanged armature voltage."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Confirm the field-loss and overspeed protection operated. If the motor is still running above rated speed, stop it by the normal local means.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check field supply output, field fuses and field terminal connections.",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Measure field winding resistance and insulation to ground.",
+          "requires_isolation": true
+        },
+        {
+          "order": 4,
+          "text": "Inspect the armature and commutator for overspeed damage (thrown bands, lifted bars) before any restart.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "NEMA MG-1 Part 12 (overspeed capability)",
+        "IEEE C37.96 (motor protection)"
+      ]
+    },
+    {
+      "pattern_id": "dc_motor.bearing_defect",
+      "version": "1.0.0",
+      "failure_mode": "bearing_defect",
+      "title": "Rolling-element bearing defect",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "Race or rolling-element damage from fatigue, contamination, misalignment or lubricant loss. Envelope energy rises first; overall vibration and temperature rise late. Small sealed-bearing motors often show noise and current rise before failure.",
+      "typical_progression": "Weeks to months (P-F interval): envelope, then overall vibration, then temperature and friction current.",
+      "required_roles": [
+        "bearing_envelope"
+      ],
+      "optional_roles": [
+        "vibration",
+        "bearing_temperature",
+        "current"
+      ],
+      "trigger_role": "bearing_envelope",
+      "symptoms": [
+        {
+          "role": "bearing_envelope",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 2.0
+          },
+          "note": "gE alarm; set per speed and bearing size"
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            604800000,
+            5184000000
+          ],
+          "weight": 0.6,
+          "threshold_hint": {
+            "absolute": 4.5
+          },
+          "note": "ISO 20816-1 / -3 zone boundaries by machine size"
+        },
+        {
+          "role": "bearing_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            1209600000,
+            7776000000
+          ],
+          "weight": 0.5,
+          "note": "~20 °C above baseline is significant"
+        },
+        {
+          "role": "current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            2592000000,
+            10368000000
+          ],
+          "weight": 0.3,
+          "note": "Friction torque adds to armature current; most visible on small motors"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "spall",
+            "label": "Race spall",
+            "kind": "cause"
+          },
+          {
+            "id": "impact",
+            "label": "Impacts at defect frequency",
+            "kind": "symptom",
+            "role": "bearing_envelope"
+          },
+          {
+            "id": "fric",
+            "label": "Friction ↑",
+            "kind": "state"
+          },
+          {
+            "id": "heat",
+            "label": "Bearing temperature ↑",
+            "kind": "symptom",
+            "role": "bearing_temperature"
+          },
+          {
+            "id": "visc",
+            "label": "Lubricant viscosity ↓",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "spall",
+            "to": "impact",
+            "sign": "+"
+          },
+          {
+            "from": "spall",
+            "to": "fric",
+            "sign": "+"
+          },
+          {
+            "from": "fric",
+            "to": "heat",
+            "sign": "+"
+          },
+          {
+            "from": "heat",
+            "to": "visc",
+            "sign": "-",
+            "loop_id": "lube_breakdown"
+          },
+          {
+            "from": "visc",
+            "to": "fric",
+            "sign": "-",
+            "loop_id": "lube_breakdown"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "lube_breakdown",
+            "polarity": "reinforcing",
+            "description": "Heat thins the lubricant, which raises friction and heat further."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "dc_motor.brush_commutator_wear",
+          "rule": "Brush noise is electrical and tied to commutation; bearing defects produce envelope peaks at BPFO/BPFI/BSF/FTF."
+        },
+        {
+          "vs_pattern": "dc_motor.armature_overload",
+          "rule": "Bearing-related current rise is small and follows months of envelope growth."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "vibration_envelope",
+          "description": "Outer race defect",
+          "formula": "BPFO = (n/2)·fr·(1 − d/D·cosθ)"
+        },
+        {
+          "domain": "vibration_envelope",
+          "description": "Inner race defect with 1× sidebands",
+          "formula": "BPFI = (n/2)·fr·(1 + d/D·cosθ)"
+        },
+        {
+          "domain": "vibration_envelope",
+          "description": "Rolling element defect",
+          "formula": "BSF = (D/2d)·fr·(1 − (d/D·cosθ)²)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Take an envelope spectrum and match peaks to the installed bearing's defect frequencies.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check lubrication interval and grease type; sealed bearings cannot be re-greased.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check coupling or belt alignment and tension that load the bearing.",
+          "requires_isolation": true
+        },
+        {
+          "order": 4,
+          "text": "Plan replacement inside the P-F interval; trend weekly.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "ISO 13373-1 (vibration condition monitoring)",
+        "ISO 20816-1"
+      ]
+    },
+    {
+      "pattern_id": "dc_motor.supply_undervoltage",
+      "version": "1.0.0",
+      "failure_mode": "supply_undervoltage",
+      "title": "Supply undervoltage (battery / DC supply sag)",
+      "category": "supply",
+      "severity": "warning",
+      "description": "Armature supply voltage falls: a discharged or weak battery, a sagging DC supply, or voltage drop in long cables. For PM and separately excited motors speed falls roughly in proportion to voltage at the same torque. If a shunt field is fed from the same supply, the flux falls too and armature current rises instead.",
+      "required_roles": [
+        "voltage"
+      ],
+      "optional_roles": [
+        "speed",
+        "current",
+        "power",
+        "winding_temperature"
+      ],
+      "trigger_role": "voltage",
+      "symptoms": [
+        {
+          "role": "voltage",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 0.9,
+            "for_ms": 2000
+          },
+          "note": "12 V systems: below ~11 V under load indicates a weak supply"
+        },
+        {
+          "role": "speed",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            3000
+          ],
+          "weight": 0.8,
+          "threshold_hint": {
+            "relative_to_nominal": 0.9
+          },
+          "note": "n ≈ (V − Ia·Ra)/(k·Φ)"
+        },
+        {
+          "role": "current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3000
+          ],
+          "weight": 0.3,
+          "note": "Shunt motors on a common supply; PM motors driving fans or pumps draw less current as speed falls"
+        },
+        {
+          "role": "winding_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            300000,
+            3600000
+          ],
+          "weight": 0.2,
+          "note": "Only when current rises"
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "driven_equipment",
+          "effect_role": "speed",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            3000
+          ],
+          "edge_type": "mechanical",
+          "note": "Driven fan or pump output falls with speed"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "dc_motor.armature_overload",
+          "rule": "Undervoltage: voltage falls before current changes. Overload: current rises first.",
+          "first_role": "voltage",
+          "then_role": "current"
+        },
+        {
+          "vs_pattern": "dc_bus.overload_voltage_sag",
+          "rule": "If other loads on the same bus see the same sag, the cause is the bus or source, not the motor."
+        },
+        {
+          "vs_pattern": "battery.high_internal_resistance",
+          "rule": "A sag that appears only under load and recovers at rest points to high battery or connection resistance."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Measure voltage at the motor terminals and at the source under load; the difference is cable and connection drop.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check battery state of charge or DC supply output and its current limit.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check terminals and connectors for looseness or corrosion.",
+          "requires_isolation": true
+        }
+      ]
+    },
+    {
+      "pattern_id": "dc_motor.overheating_cooling_failure",
+      "version": "1.0.0",
+      "failure_mode": "overheating_cooling_failure",
+      "title": "Overheating from cooling failure",
+      "category": "thermal",
+      "severity": "warning",
+      "description": "The forced-ventilation blower has stopped, filters or air paths are clogged, ambient is high, or the motor runs at low speed with a shaft-mounted fan. Temperature rises at normal armature current.",
+      "typical_progression": "Tens of minutes (thermal time constant).",
+      "required_roles": [
+        "winding_temperature"
+      ],
+      "optional_roles": [
+        "cooling_airflow",
+        "frame_temperature",
+        "ambient_temperature",
+        "current",
+        "thermal_trip"
+      ],
+      "trigger_role": "winding_temperature",
+      "symptoms": [
+        {
+          "role": "winding_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 130
+          },
+          "note": "Class F alarm is typically 130–140 °C; check nameplate insulation class"
+        },
+        {
+          "role": "cooling_airflow",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.8,
+          "note": "Usually precedes the temperature rise when instrumented"
+        },
+        {
+          "role": "frame_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            600000
+          ],
+          "weight": 0.7
+        },
+        {
+          "role": "ambient_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1800000
+          ],
+          "weight": 0.3,
+          "note": "Only when the cause is ambient"
+        },
+        {
+          "role": "thermal_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            600000,
+            7200000
+          ],
+          "weight": 0.5
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "cool",
+            "label": "Airflow ↓",
+            "kind": "cause",
+            "role": "cooling_airflow"
+          },
+          {
+            "id": "rth",
+            "label": "Thermal resistance to air ↑",
+            "kind": "state"
+          },
+          {
+            "id": "tw",
+            "label": "Winding temperature ↑",
+            "kind": "symptom",
+            "role": "winding_temperature"
+          },
+          {
+            "id": "r",
+            "label": "Copper resistance ↑",
+            "kind": "state"
+          },
+          {
+            "id": "loss",
+            "label": "I²R loss ↑",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "cool",
+            "to": "rth",
+            "sign": "-"
+          },
+          {
+            "from": "rth",
+            "to": "tw",
+            "sign": "+",
+            "lag_ms": [
+              60000,
+              1800000
+            ]
+          },
+          {
+            "from": "tw",
+            "to": "r",
+            "sign": "+",
+            "loop_id": "cu_thermal"
+          },
+          {
+            "from": "r",
+            "to": "loss",
+            "sign": "+",
+            "loop_id": "cu_thermal"
+          },
+          {
+            "from": "loss",
+            "to": "tw",
+            "sign": "+",
+            "loop_id": "cu_thermal"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "cu_thermal",
+            "polarity": "reinforcing",
+            "description": "Hotter copper has higher resistance and more loss at the same current."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "cooling_system",
+          "effect_role": "temperature",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            600000
+          ],
+          "edge_type": "thermal"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "dc_motor.armature_overload",
+          "rule": "Cooling failure: temperature rises at normal current, often after airflow falls. Overload: current rises first.",
+          "first_role": "cooling_airflow",
+          "then_role": "winding_temperature"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare winding temperature rise (winding minus ambient) against armature current; a high rise at normal current points to cooling.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the blower motor is running and its rotation direction.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Clean or replace blower filters; clear the air path and frame fins.",
+          "requires_isolation": true
+        },
+        {
+          "order": 4,
+          "text": "At low speed with a shaft-mounted fan, check the low-speed torque derating.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 60085 (thermal classes)",
+        "IEC 60034-6 (methods of cooling)"
+      ]
+    }
+  ]
+}

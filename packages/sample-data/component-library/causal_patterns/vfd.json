@@ -1,0 +1,1452 @@
+{
+  "library_id": "plantlens.patterns.vfd",
+  "version": "1.0.0",
+  "component_type": "vfd",
+  "display_name": "Variable frequency drive (low-voltage PWM inverter)",
+  "description": "Failure patterns for voltage-source PWM drives: DC-link voltage, supply sags, overcurrent, cooling, capacitor ageing, output stage failures and current-limit interaction with the motor.",
+  "asset_type_aliases": [
+    "drive.inverter"
+  ],
+  "library_type_aliases": [],
+  "roles": [
+    {
+      "role": "dc_link_voltage",
+      "quantity": "DC-link (intermediate circuit) voltage",
+      "units": [
+        "V"
+      ],
+      "signal_type_prefixes": [
+        "electrical.voltage.dc_link",
+        "electrical.voltage.dc"
+      ],
+      "name_hints": [
+        "dc_link",
+        "vdc",
+        "udc",
+        "bus_v"
+      ]
+    },
+    {
+      "role": "ripple_voltage",
+      "quantity": "DC-link voltage ripple (peak-to-peak)",
+      "units": [
+        "V",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "electrical.voltage.ripple"
+      ],
+      "name_hints": [
+        "ripple",
+        "vdc_pp"
+      ]
+    },
+    {
+      "role": "input_voltage",
+      "quantity": "mains input line voltage (RMS)",
+      "units": [
+        "V"
+      ],
+      "signal_type_prefixes": [
+        "electrical.voltage.ac",
+        "electrical.voltage.input"
+      ],
+      "name_hints": [
+        "vin",
+        "line_v",
+        "mains_v"
+      ]
+    },
+    {
+      "role": "current",
+      "quantity": "drive output current (RMS)",
+      "units": [
+        "A",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current"
+      ],
+      "name_hints": [
+        "current",
+        "iout",
+        "i_out",
+        "amps"
+      ]
+    },
+    {
+      "role": "current_unbalance",
+      "quantity": "output phase current unbalance",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current.unbalance"
+      ],
+      "name_hints": [
+        "i_unbal",
+        "phase_unbal"
+      ]
+    },
+    {
+      "role": "frequency",
+      "quantity": "drive output frequency",
+      "units": [
+        "Hz"
+      ],
+      "signal_type_prefixes": [
+        "electrical.frequency"
+      ],
+      "name_hints": [
+        "freq",
+        "fout",
+        "_hz"
+      ]
+    },
+    {
+      "role": "speed",
+      "quantity": "motor speed (feedback or drive estimate)",
+      "units": [
+        "rpm",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.speed"
+      ],
+      "name_hints": [
+        "rpm",
+        "speed"
+      ]
+    },
+    {
+      "role": "speed_reference",
+      "quantity": "speed / frequency reference",
+      "units": [
+        "rpm",
+        "Hz",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "control.setpoint",
+        "control.command"
+      ],
+      "name_hints": [
+        "ref",
+        "sp",
+        "setpoint"
+      ]
+    },
+    {
+      "role": "torque",
+      "quantity": "estimated motor torque",
+      "units": [
+        "%",
+        "Nm"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.torque"
+      ],
+      "name_hints": [
+        "torque",
+        "trq"
+      ]
+    },
+    {
+      "role": "heatsink_temperature",
+      "quantity": "power module heatsink temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.heatsink",
+        "thermal.temperature"
+      ],
+      "name_hints": [
+        "heatsink",
+        "hs_t",
+        "igbt_t"
+      ]
+    },
+    {
+      "role": "cabinet_temperature",
+      "quantity": "drive cabinet / enclosure air temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.ambient"
+      ],
+      "name_hints": [
+        "cabinet",
+        "enclosure_t",
+        "amb"
+      ]
+    },
+    {
+      "role": "cooling_fan_speed",
+      "quantity": "drive heatsink fan speed or run status",
+      "units": [
+        "rpm",
+        "%",
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.speed.fan",
+        "status.fan"
+      ],
+      "name_hints": [
+        "fan_rpm",
+        "fan_speed",
+        "fan"
+      ]
+    },
+    {
+      "role": "brake_chopper_duty",
+      "quantity": "brake chopper duty / braking resistor load",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "electrical.brake"
+      ],
+      "name_hints": [
+        "brake",
+        "chopper",
+        "dbr"
+      ]
+    },
+    {
+      "role": "current_limit_active",
+      "quantity": "current / torque limit active flag",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "status.limit",
+        "status.bool"
+      ],
+      "name_hints": [
+        "ilim",
+        "cur_lim",
+        "torque_lim"
+      ]
+    },
+    {
+      "role": "drive_trip",
+      "quantity": "drive fault / trip state",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "protection.trip",
+        "status.bool"
+      ],
+      "name_hints": [
+        "trip",
+        "fault"
+      ]
+    },
+    {
+      "role": "dc_link_capacitance",
+      "quantity": "DC-link capacitance estimate (drive diagnostic)",
+      "units": [
+        "µF",
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "electrical.capacitance"
+      ],
+      "name_hints": [
+        "capacitance",
+        "cap_"
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "pattern_id": "vfd.dc_link_overvoltage_regen",
+      "version": "1.0.0",
+      "failure_mode": "dc_link_overvoltage_regen",
+      "title": "DC-link overvoltage from regeneration",
+      "category": "electrical",
+      "severity": "warning",
+      "description": "An overhauling load or a fast deceleration returns energy to the DC link. With no braking chopper, a failed chopper or an undersized resistor, DC-link voltage climbs to the overvoltage trip level.",
+      "typical_progression": "Hundreds of milliseconds to seconds during a deceleration or an overhauling event.",
+      "required_roles": [
+        "dc_link_voltage"
+      ],
+      "optional_roles": [
+        "frequency",
+        "brake_chopper_duty",
+        "drive_trip",
+        "input_voltage",
+        "current"
+      ],
+      "trigger_role": "dc_link_voltage",
+      "symptoms": [
+        {
+          "role": "dc_link_voltage",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 1.2
+          },
+          "note": "Nominal ≈ 1.35 × line voltage; 400 V drives typically trip near 800–820 V DC"
+        },
+        {
+          "role": "frequency",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.6,
+          "note": "Occurs during deceleration or with an overhauling load"
+        },
+        {
+          "role": "brake_chopper_duty",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            500
+          ],
+          "weight": 0.6,
+          "note": "Absent if no chopper is fitted or it has failed"
+        },
+        {
+          "role": "drive_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            100,
+            5000
+          ],
+          "weight": 0.7
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "regen",
+            "label": "Regenerated power (decel / overhauling)",
+            "kind": "cause"
+          },
+          {
+            "id": "vdc",
+            "label": "DC-link voltage ↑",
+            "kind": "symptom",
+            "role": "dc_link_voltage"
+          },
+          {
+            "id": "ctrl",
+            "label": "Overvoltage controller extends ramp",
+            "kind": "state"
+          },
+          {
+            "id": "chop",
+            "label": "Brake chopper dissipates",
+            "kind": "state",
+            "role": "brake_chopper_duty"
+          }
+        ],
+        "edges": [
+          {
+            "from": "regen",
+            "to": "vdc",
+            "sign": "+",
+            "lag_ms": [
+              0,
+              1000
+            ]
+          },
+          {
+            "from": "vdc",
+            "to": "ctrl",
+            "sign": "+",
+            "loop_id": "ov_control"
+          },
+          {
+            "from": "ctrl",
+            "to": "regen",
+            "sign": "-",
+            "loop_id": "ov_control"
+          },
+          {
+            "from": "vdc",
+            "to": "chop",
+            "sign": "+",
+            "loop_id": "chopper"
+          },
+          {
+            "from": "chop",
+            "to": "vdc",
+            "sign": "-",
+            "loop_id": "chopper"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "ov_control",
+            "polarity": "balancing",
+            "description": "The drive's overvoltage controller slows the deceleration to limit regenerated power."
+          },
+          {
+            "loop_id": "chopper",
+            "polarity": "balancing",
+            "description": "The brake chopper switches the resistor in above its threshold to hold DC-link voltage."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "controlled",
+          "effect_role": "speed",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            5000
+          ],
+          "edge_type": "control",
+          "note": "After a trip the motor coasts"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "vfd.dc_link_undervoltage_supply_sag",
+          "rule": "Supply overvoltage raises input voltage before the DC link; regeneration raises DC-link voltage with normal input voltage during deceleration.",
+          "first_role": "input_voltage",
+          "then_role": "dc_link_voltage"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Correlate trips with deceleration commands or overhauling load conditions.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check brake chopper enable setting, resistor resistance and thermal capacity.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Review deceleration ramp time against the load inertia.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Check input voltage for high steady-state or switching overvoltages (capacitor bank switching).",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 61800-2 (adjustable speed electrical power drive systems: ratings)",
+        "IEC 61800-5-1 (safety)"
+      ]
+    },
+    {
+      "pattern_id": "vfd.dc_link_undervoltage_supply_sag",
+      "version": "1.0.0",
+      "failure_mode": "dc_link_undervoltage_supply_sag",
+      "title": "DC-link undervoltage / supply sag",
+      "category": "supply",
+      "severity": "warning",
+      "description": "A mains voltage sag, lost phase or weak supply lowers the DC-link voltage. The drive may ride through using load inertia (kinetic buffering) at reduced output frequency, or trip on undervoltage.",
+      "typical_progression": "Milliseconds to seconds.",
+      "required_roles": [
+        "dc_link_voltage"
+      ],
+      "optional_roles": [
+        "input_voltage",
+        "frequency",
+        "drive_trip",
+        "ripple_voltage"
+      ],
+      "trigger_role": "dc_link_voltage",
+      "symptoms": [
+        {
+          "role": "dc_link_voltage",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 0.75
+          },
+          "note": "Undervoltage trip typically 65–75 % of nominal DC-link"
+        },
+        {
+          "role": "input_voltage",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.9,
+          "note": "Precedes the DC-link fall"
+        },
+        {
+          "role": "frequency",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.5,
+          "note": "Kinetic buffering lowers frequency to regenerate from inertia"
+        },
+        {
+          "role": "drive_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            10,
+            2000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "ripple_voltage",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.4,
+          "note": "A lost input phase raises ripple at 2× line frequency"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "sag",
+            "label": "Supply sag",
+            "kind": "cause",
+            "role": "input_voltage"
+          },
+          {
+            "id": "vdc",
+            "label": "DC-link voltage ↓",
+            "kind": "symptom",
+            "role": "dc_link_voltage"
+          },
+          {
+            "id": "kb",
+            "label": "Kinetic buffering lowers frequency",
+            "kind": "state"
+          },
+          {
+            "id": "regen",
+            "label": "Energy from load inertia",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "sag",
+            "to": "vdc",
+            "sign": "+"
+          },
+          {
+            "from": "vdc",
+            "to": "kb",
+            "sign": "-",
+            "loop_id": "kinetic_buffer"
+          },
+          {
+            "from": "kb",
+            "to": "regen",
+            "sign": "+",
+            "loop_id": "kinetic_buffer"
+          },
+          {
+            "from": "regen",
+            "to": "vdc",
+            "sign": "+",
+            "loop_id": "kinetic_buffer"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "kinetic_buffer",
+            "polarity": "balancing",
+            "description": "The drive draws energy from the rotating load to hold the DC link, at the cost of speed."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "controlled",
+          "effect_role": "speed",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            2000
+          ],
+          "edge_type": "control",
+          "note": "Motor slows during ride-through or coasts after a trip"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "vfd.dc_link_capacitor_ageing",
+          "rule": "Capacitor ageing raises ripple at normal mean DC voltage over months; a sag lowers the mean DC voltage for seconds."
+        },
+        {
+          "vs_pattern": "dc_bus.overload_voltage_sag",
+          "rule": "Common-DC-bus systems: a bus sag affects all drives on the bus at once."
+        },
+        {
+          "vs_pattern": "induction_motor.undervoltage_supply",
+          "rule": "Motor-side view; if the drive's own input voltage falls first, the supply is the origin."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "waveform",
+          "description": "Input voltage RMS dip depth and duration, compared with the drive ride-through curve (e.g. SEMI F47 / IEC 61000-4-34 profiles)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Correlate with power-quality records on the incoming supply (sag depth and duration).",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check all three input phases and input fuses; a single lost phase gives low DC-link at load.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Review kinetic buffering / auto-restart parameters against process needs.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 61000-4-34 (voltage dip immunity)",
+        "SEMI F47",
+        "IEC 61800-3"
+      ]
+    },
+    {
+      "pattern_id": "vfd.overcurrent_trip",
+      "version": "1.0.0",
+      "failure_mode": "overcurrent_trip",
+      "title": "Output overcurrent trip",
+      "category": "electrical",
+      "severity": "critical",
+      "description": "Output current exceeds the instantaneous trip level (typically 2–3× rated peak) faster than the current limit can act: output short or ground fault, motor insulation failure, too-fast acceleration, catching a spinning load without flying start, or a sudden mechanical jam.",
+      "typical_progression": "Microseconds to milliseconds.",
+      "required_roles": [
+        "current",
+        "drive_trip"
+      ],
+      "optional_roles": [
+        "frequency",
+        "torque",
+        "speed"
+      ],
+      "trigger_role": "current",
+      "symptoms": [
+        {
+          "role": "current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 2.0
+          },
+          "note": "Captured as fault value; the logged RMS may understate the peak"
+        },
+        {
+          "role": "drive_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            100
+          ],
+          "weight": 1.0
+        },
+        {
+          "role": "torque",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            100
+          ],
+          "weight": 0.4
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "controlled",
+          "effect_role": "speed",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            5000
+          ],
+          "edge_type": "control",
+          "note": "Motor coasts after the trip"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "vfd.current_limit_foldback",
+          "rule": "Current limit holds current near 1.5× rated for seconds with falling speed; overcurrent trips within milliseconds."
+        },
+        {
+          "vs_pattern": "induction_motor.insulation_ground_fault",
+          "rule": "A ground fault shows as an earth-fault trip or overcurrent with low insulation resistance on the motor or cable."
+        },
+        {
+          "vs_pattern": "induction_motor.locked_rotor_stall",
+          "rule": "A jam gives a current rise over tens of milliseconds with speed collapsing; a short gives an instantaneous peak at any speed."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Read the fault log: trip current, frequency and whether it occurred during acceleration, running or start.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Megger the motor and cable from the drive output terminals with the drive disconnected.",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Check acceleration ramp time and flying-start setting against the application.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Check the driven machine for a jam before restarting.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "IEC 61800-5-1"
+      ]
+    },
+    {
+      "pattern_id": "vfd.heatsink_overtemperature_fan_failure",
+      "version": "1.0.0",
+      "failure_mode": "heatsink_overtemperature_fan_failure",
+      "title": "Heatsink overtemperature / cooling fan failure",
+      "category": "thermal",
+      "severity": "warning",
+      "description": "The heatsink fan fails, the heatsink fins or filters clog, or the cabinet is too hot. Heatsink temperature rises at normal output current; the drive derates (switching frequency, current limit) and then trips.",
+      "typical_progression": "Minutes (heatsink thermal time constant).",
+      "required_roles": [
+        "heatsink_temperature"
+      ],
+      "optional_roles": [
+        "cooling_fan_speed",
+        "cabinet_temperature",
+        "current",
+        "current_limit_active",
+        "drive_trip"
+      ],
+      "trigger_role": "heatsink_temperature",
+      "symptoms": [
+        {
+          "role": "heatsink_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Alarm typically 5–10 °C below the drive's trip level"
+        },
+        {
+          "role": "cooling_fan_speed",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.8,
+          "note": "Usually before the temperature rise when instrumented"
+        },
+        {
+          "role": "cabinet_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1800000
+          ],
+          "weight": 0.4,
+          "note": "When the cause is cabinet ventilation"
+        },
+        {
+          "role": "current_limit_active",
+          "direction": "trip",
+          "onset_lag_ms": [
+            60000,
+            1800000
+          ],
+          "weight": 0.4,
+          "note": "Thermal derating reduces the available current"
+        },
+        {
+          "role": "drive_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            120000,
+            3600000
+          ],
+          "weight": 0.5
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "fan",
+            "label": "Fan failure / fins clogged",
+            "kind": "cause",
+            "role": "cooling_fan_speed"
+          },
+          {
+            "id": "rth",
+            "label": "Heatsink thermal resistance ↑",
+            "kind": "state"
+          },
+          {
+            "id": "ths",
+            "label": "Heatsink temperature ↑",
+            "kind": "symptom",
+            "role": "heatsink_temperature"
+          },
+          {
+            "id": "derate",
+            "label": "Drive derates current / switching frequency",
+            "kind": "state"
+          },
+          {
+            "id": "loss",
+            "label": "IGBT losses",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "fan",
+            "to": "rth",
+            "sign": "-"
+          },
+          {
+            "from": "rth",
+            "to": "ths",
+            "sign": "+",
+            "lag_ms": [
+              60000,
+              1800000
+            ]
+          },
+          {
+            "from": "ths",
+            "to": "derate",
+            "sign": "+",
+            "loop_id": "thermal_derate"
+          },
+          {
+            "from": "derate",
+            "to": "loss",
+            "sign": "-",
+            "loop_id": "thermal_derate"
+          },
+          {
+            "from": "loss",
+            "to": "ths",
+            "sign": "+",
+            "loop_id": "thermal_derate"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "thermal_derate",
+            "polarity": "balancing",
+            "description": "Derating cuts IGBT losses to hold temperature, at the cost of available current and speed."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "controlled",
+          "effect_role": "speed",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            60000,
+            1800000
+          ],
+          "edge_type": "control",
+          "note": "Derating can reduce speed under load"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "vfd.current_limit_foldback",
+          "rule": "Cooling failure: heatsink temperature rises at normal current. Overload: current rises first.",
+          "first_role": "cooling_fan_speed",
+          "then_role": "heatsink_temperature"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check the fan run status and fan hours against the manufacturer replacement interval.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Clean heatsink fins and cabinet filters with the drive isolated and the DC link discharged.",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Check cabinet ventilation, air conditioning and ambient against the drive derating curve.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 61800-2 (ambient and derating)"
+      ]
+    },
+    {
+      "pattern_id": "vfd.dc_link_capacitor_ageing",
+      "version": "1.0.0",
+      "failure_mode": "dc_link_capacitor_ageing",
+      "title": "DC-link capacitor ageing (ESR rise / capacitance loss)",
+      "category": "electrical",
+      "severity": "warning",
+      "description": "Electrolytic DC-link capacitors dry out with time and temperature. Capacitance falls and ESR rises, so ripple voltage and capacitor heating increase, which speeds further ageing.",
+      "typical_progression": "Years; accelerates sharply above rated capacitor temperature.",
+      "required_roles": [
+        "ripple_voltage"
+      ],
+      "optional_roles": [
+        "dc_link_capacitance",
+        "dc_link_voltage",
+        "cabinet_temperature",
+        "drive_trip"
+      ],
+      "trigger_role": "ripple_voltage",
+      "symptoms": [
+        {
+          "role": "ripple_voltage",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 1.5
+          },
+          "note": "Compare with the commissioning baseline at similar load"
+        },
+        {
+          "role": "dc_link_capacitance",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.8,
+          "threshold_hint": {
+            "relative_to_nominal": 0.8
+          },
+          "note": "End of life commonly taken at −20 % capacitance or 2× ESR"
+        },
+        {
+          "role": "dc_link_voltage",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            2592000000
+          ],
+          "weight": 0.3
+        },
+        {
+          "role": "drive_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            2592000000,
+            31536000000
+          ],
+          "weight": 0.3,
+          "note": "Spurious DC-link over/undervoltage trips late in life"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "dry",
+            "label": "Electrolyte loss",
+            "kind": "cause"
+          },
+          {
+            "id": "esr",
+            "label": "ESR ↑",
+            "kind": "state"
+          },
+          {
+            "id": "c",
+            "label": "Capacitance ↓",
+            "kind": "state",
+            "role": "dc_link_capacitance"
+          },
+          {
+            "id": "ripple",
+            "label": "Ripple voltage ↑",
+            "kind": "symptom",
+            "role": "ripple_voltage"
+          },
+          {
+            "id": "heat",
+            "label": "Capacitor core temperature ↑",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "dry",
+            "to": "esr",
+            "sign": "+"
+          },
+          {
+            "from": "dry",
+            "to": "c",
+            "sign": "-"
+          },
+          {
+            "from": "c",
+            "to": "ripple",
+            "sign": "-"
+          },
+          {
+            "from": "esr",
+            "to": "heat",
+            "sign": "+",
+            "loop_id": "cap_ageing"
+          },
+          {
+            "from": "heat",
+            "to": "dry",
+            "sign": "+",
+            "lag_ms": [
+              2592000000,
+              31536000000
+            ],
+            "loop_id": "cap_ageing"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "cap_ageing",
+            "polarity": "reinforcing",
+            "description": "Higher ESR heats the capacitor; life roughly halves for every 10 °C rise (Arrhenius), so ageing accelerates."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "vfd.dc_link_undervoltage_supply_sag",
+          "rule": "A lost input phase also raises ripple, but at 2× line frequency; ageing raises ripple at 6× line frequency with all phases present."
+        },
+        {
+          "vs_pattern": "dc_bus.ripple_capacitor_failure",
+          "rule": "Common DC bus: compare ripple across drives to locate the failing capacitor bank."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "waveform",
+          "description": "DC-link voltage spectrum: six-pulse rectifier ripple at 6 × f_line (300 / 360 Hz) grows with capacitor ageing; 2 × f_line indicates a missing input phase",
+          "formula": "f_ripple = 6 · f_line"
+        },
+        {
+          "domain": "trend",
+          "description": "Capacitor life estimate",
+          "formula": "L = L0 · 2^((T0 − T)/10)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Trend DC-link ripple and any capacitance diagnostic at comparable load.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check drive age and capacitor reforming requirements for spares stored more than a year.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Measure capacitance and ESR with the drive isolated and the DC link verified discharged.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "IEC 61071 (capacitors for power electronics)",
+        "IEC 60384-4 (aluminium electrolytic capacitors)"
+      ]
+    },
+    {
+      "pattern_id": "vfd.igbt_output_phase_loss",
+      "version": "1.0.0",
+      "failure_mode": "igbt_output_phase_loss",
+      "title": "IGBT / output phase loss",
+      "category": "electrical",
+      "severity": "critical",
+      "description": "An IGBT, gate driver or output connection fails open, or an output cable or motor terminal comes loose. One output phase carries little or no current; the motor runs with torque pulsation or cannot start, and the drive trips on output phase loss or desaturation.",
+      "typical_progression": "Sudden.",
+      "required_roles": [
+        "current_unbalance"
+      ],
+      "optional_roles": [
+        "current",
+        "torque",
+        "speed",
+        "drive_trip"
+      ],
+      "trigger_role": "current_unbalance",
+      "symptoms": [
+        {
+          "role": "current_unbalance",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 30,
+            "for_ms": 500
+          },
+          "note": "One phase near zero"
+        },
+        {
+          "role": "torque",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            500
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.5,
+          "note": "Remaining phases carry more current"
+        },
+        {
+          "role": "drive_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            5000
+          ],
+          "weight": 0.7
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "controlled",
+          "effect_role": "current_unbalance",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            200
+          ],
+          "edge_type": "structural_power",
+          "note": "The motor sees single-phase supply"
+        },
+        {
+          "relation": "controlled",
+          "effect_role": "vibration_2lf",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            2000
+          ],
+          "edge_type": "structural_power",
+          "note": "Torque pulsation at 2× output frequency"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.single_phasing",
+          "rule": "Check drive output phase currents and fault log: an IGBT or desaturation fault places the cause in the drive; balanced drive output with an open motor terminal places it in the cable or motor."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Read the fault log for desaturation, gate driver or output phase loss codes.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check output terminals, cable lugs and motor terminal box connections.",
+          "requires_isolation": true
+        },
+        {
+          "order": 3,
+          "text": "Test IGBT modules (diode test) with the drive isolated and the DC link discharged.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "IEC 61800-5-1"
+      ]
+    },
+    {
+      "pattern_id": "vfd.current_limit_foldback",
+      "version": "1.0.0",
+      "failure_mode": "current_limit_foldback",
+      "title": "Current-limit foldback (speed reduction under load)",
+      "category": "control",
+      "severity": "warning",
+      "description": "The load demands more current than the drive's current or torque limit. The drive holds current at the limit by lowering output frequency, so the motor runs below its reference speed. Pairs with induction_motor.mechanical_overload, whose driver propagation closes the same loop.",
+      "typical_progression": "Seconds; persists while the overload persists.",
+      "required_roles": [
+        "current",
+        "frequency"
+      ],
+      "optional_roles": [
+        "current_limit_active",
+        "speed",
+        "speed_reference",
+        "torque"
+      ],
+      "trigger_role": "current",
+      "symptoms": [
+        {
+          "role": "current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 1.1
+          },
+          "note": "Current flat at the limit setting (commonly 110–150 % of rated)"
+        },
+        {
+          "role": "current_limit_active",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            500
+          ],
+          "weight": 0.9
+        },
+        {
+          "role": "frequency",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.9,
+          "note": "Output frequency below the reference"
+        },
+        {
+          "role": "speed",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            3000
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "torque",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.5,
+          "note": "Clamped at the torque limit"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "load",
+            "label": "Load torque ↑",
+            "kind": "cause"
+          },
+          {
+            "id": "i",
+            "label": "Output current ↑",
+            "kind": "symptom",
+            "role": "current"
+          },
+          {
+            "id": "lim",
+            "label": "Current limit active",
+            "kind": "state",
+            "role": "current_limit_active"
+          },
+          {
+            "id": "f",
+            "label": "Output frequency ↓",
+            "kind": "symptom",
+            "role": "frequency"
+          },
+          {
+            "id": "n",
+            "label": "Motor speed ↓",
+            "kind": "symptom",
+            "role": "speed"
+          },
+          {
+            "id": "tl",
+            "label": "Load torque (speed-dependent) ↓",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "load",
+            "to": "i",
+            "sign": "+"
+          },
+          {
+            "from": "i",
+            "to": "lim",
+            "sign": "+",
+            "loop_id": "drive_current_limit"
+          },
+          {
+            "from": "lim",
+            "to": "f",
+            "sign": "-",
+            "loop_id": "drive_current_limit"
+          },
+          {
+            "from": "f",
+            "to": "n",
+            "sign": "+",
+            "loop_id": "drive_current_limit"
+          },
+          {
+            "from": "n",
+            "to": "tl",
+            "sign": "+",
+            "loop_id": "drive_current_limit"
+          },
+          {
+            "from": "tl",
+            "to": "i",
+            "sign": "+",
+            "loop_id": "drive_current_limit"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "drive_current_limit",
+            "polarity": "balancing",
+            "description": "Lower speed reduces the torque of speed-dependent loads (fans, pumps), bringing current back under the limit at a lower speed. Constant-torque loads may stall instead."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "controlled",
+          "effect_role": "speed",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            3000
+          ],
+          "edge_type": "control",
+          "loop_ok": true,
+          "loop_id": "drive_current_limit",
+          "note": "Closes the loop with induction_motor.mechanical_overload (driver → current rise)"
+        },
+        {
+          "relation": "process_downstream",
+          "effect_role": "flow",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            10000
+          ],
+          "edge_type": "cause_to_effect",
+          "note": "Reduced speed lowers pump or fan output"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.mechanical_overload",
+          "rule": "Motor-side origin: motor current rises first and the drive responds; both patterns fire together for one overload event.",
+          "first_role": "current",
+          "then_role": "frequency"
+        },
+        {
+          "vs_pattern": "vfd.overcurrent_trip",
+          "rule": "Foldback holds current for seconds with falling speed; overcurrent trips in milliseconds."
+        },
+        {
+          "vs_pattern": "vfd.heatsink_overtemperature_fan_failure",
+          "rule": "Thermal derating lowers the limit itself; check heatsink temperature before assuming an overload."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare output frequency with the reference and confirm the current-limit flag.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the driven load for the cause of the overload (see the driven-equipment patterns).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Verify current and torque limit parameters match the motor nameplate and application.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 61800-2"
+      ]
+    }
+  ]
+}

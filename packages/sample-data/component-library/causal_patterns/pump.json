@@ -1,0 +1,1788 @@
+{
+  "library_id": "plantlens.patterns.pump",
+  "version": "1.0.0",
+  "component_type": "pump",
+  "display_name": "Pump (centrifugal focus)",
+  "description": "Failure patterns for rotodynamic pumps: suction conditions, operating region, hydraulic wear, seals, bearings and driven-load overload, with propagation to the driver motor and downstream process.",
+  "asset_type_aliases": [],
+  "library_type_aliases": [
+    "pump"
+  ],
+  "roles": [
+    {
+      "role": "flow",
+      "quantity": "discharge volumetric flow",
+      "units": [
+        "m3/h",
+        "L/min",
+        "gpm"
+      ],
+      "signal_type_prefixes": [
+        "process.flow"
+      ],
+      "name_hints": [
+        "flow",
+        "fit",
+        "_q"
+      ]
+    },
+    {
+      "role": "suction_pressure",
+      "quantity": "pump suction pressure",
+      "units": [
+        "bar",
+        "kPa",
+        "psi"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.suction"
+      ],
+      "name_hints": [
+        "suct",
+        "p_in",
+        "inlet_p"
+      ]
+    },
+    {
+      "role": "discharge_pressure",
+      "quantity": "pump discharge pressure",
+      "units": [
+        "bar",
+        "kPa",
+        "psi"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.discharge"
+      ],
+      "name_hints": [
+        "disch",
+        "p_out",
+        "outlet_p"
+      ]
+    },
+    {
+      "role": "differential_pressure",
+      "quantity": "pump differential pressure / developed head",
+      "units": [
+        "bar",
+        "kPa",
+        "m"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.differential"
+      ],
+      "name_hints": [
+        "dp",
+        "head",
+        "diff_p"
+      ]
+    },
+    {
+      "role": "strainer_dp",
+      "quantity": "suction strainer / filter differential pressure",
+      "units": [
+        "bar",
+        "kPa"
+      ],
+      "signal_type_prefixes": [
+        "process.pressure.differential.strainer"
+      ],
+      "name_hints": [
+        "strainer",
+        "filter_dp",
+        "sdp"
+      ]
+    },
+    {
+      "role": "fluid_temperature",
+      "quantity": "pumped fluid temperature at suction",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "process.temperature",
+        "thermal.temperature"
+      ],
+      "name_hints": [
+        "fluid_t",
+        "suct_t",
+        "liquid_t"
+      ]
+    },
+    {
+      "role": "casing_temperature",
+      "quantity": "pump casing / discharge fluid temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.casing"
+      ],
+      "name_hints": [
+        "casing_t",
+        "disch_t",
+        "pump_t"
+      ]
+    },
+    {
+      "role": "speed",
+      "quantity": "pump shaft speed",
+      "units": [
+        "rpm"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.speed"
+      ],
+      "name_hints": [
+        "rpm",
+        "speed"
+      ]
+    },
+    {
+      "role": "power",
+      "quantity": "absorbed power (driver electrical power or shaft power estimate)",
+      "units": [
+        "kW",
+        "W"
+      ],
+      "signal_type_prefixes": [
+        "electrical.power",
+        "mechanical.power"
+      ],
+      "name_hints": [
+        "power",
+        "_kw"
+      ]
+    },
+    {
+      "role": "vibration",
+      "quantity": "overall vibration velocity at pump bearings (RMS, 10–1000 Hz)",
+      "units": [
+        "mm/s"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration"
+      ],
+      "name_hints": [
+        "vib"
+      ]
+    },
+    {
+      "role": "vibration_hf",
+      "quantity": "high-frequency acceleration band (e.g. 2–20 kHz RMS) or acoustic emission",
+      "units": [
+        "g",
+        "dB"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration.hf",
+        "acoustic"
+      ],
+      "name_hints": [
+        "hf",
+        "acoustic",
+        "ae_"
+      ]
+    },
+    {
+      "role": "vibration_vpf",
+      "quantity": "vibration amplitude at vane pass frequency",
+      "units": [
+        "mm/s"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration.vpf"
+      ],
+      "name_hints": [
+        "vpf",
+        "vane"
+      ]
+    },
+    {
+      "role": "bearing_envelope",
+      "quantity": "bearing demodulated / envelope acceleration",
+      "units": [
+        "gE",
+        "g"
+      ],
+      "signal_type_prefixes": [
+        "mechanical.vibration.envelope"
+      ],
+      "name_hints": [
+        "env",
+        "gE"
+      ]
+    },
+    {
+      "role": "bearing_temperature",
+      "quantity": "pump bearing housing temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.bearing"
+      ],
+      "name_hints": [
+        "brg_t",
+        "bearing_t"
+      ]
+    },
+    {
+      "role": "seal_leak",
+      "quantity": "mechanical seal leakage detection (leak switch, seal pot level or drain flow)",
+      "units": [
+        "bool",
+        "%",
+        "L/h"
+      ],
+      "signal_type_prefixes": [
+        "process.leak",
+        "status.leak"
+      ],
+      "name_hints": [
+        "seal_leak",
+        "leak",
+        "seal_pot"
+      ]
+    },
+    {
+      "role": "seal_temperature",
+      "quantity": "seal chamber / seal flush temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.seal"
+      ],
+      "name_hints": [
+        "seal_t",
+        "flush_t"
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "pattern_id": "pump.cavitation_npsh",
+      "version": "1.0.0",
+      "failure_mode": "cavitation_npsh",
+      "title": "Cavitation (insufficient NPSH available)",
+      "category": "process",
+      "severity": "warning",
+      "description": "Suction pressure falls toward the fluid vapour pressure (low suction level, high fluid temperature, restricted suction or operation far right of BEP). Vapour bubbles form in the impeller eye and collapse on the vanes, causing noise, broadband high-frequency vibration, unstable head and erosion damage.",
+      "typical_progression": "Seconds for noise and head instability; weeks to months for impeller erosion, which raises NPSHr and makes cavitation worse.",
+      "required_roles": [
+        "suction_pressure"
+      ],
+      "optional_roles": [
+        "vibration_hf",
+        "discharge_pressure",
+        "flow",
+        "fluid_temperature",
+        "vibration",
+        "power"
+      ],
+      "trigger_role": "suction_pressure",
+      "symptoms": [
+        {
+          "role": "suction_pressure",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Alarm on NPSHa/NPSHr margin rather than raw pressure; HI 9.6.1 recommends a margin ratio of 1.1–2.5 by application"
+        },
+        {
+          "role": "vibration_hf",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.9,
+          "note": "Broadband 'gravel' noise"
+        },
+        {
+          "role": "discharge_pressure",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.7,
+          "note": "Head drop of 3 % defines NPSH3"
+        },
+        {
+          "role": "flow",
+          "direction": "oscillate",
+          "onset_lag_ms": [
+            0,
+            5000
+          ],
+          "weight": 0.5
+        },
+        {
+          "role": "fluid_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.3,
+          "note": "A hotter liquid raises vapour pressure; may be the cause rather than an effect"
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            10000
+          ],
+          "weight": 0.4
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "ps",
+            "label": "Suction pressure ↓",
+            "kind": "cause",
+            "role": "suction_pressure"
+          },
+          {
+            "id": "npsha",
+            "label": "NPSHa ↓",
+            "kind": "state"
+          },
+          {
+            "id": "vap",
+            "label": "Vapour cavities at impeller eye",
+            "kind": "state"
+          },
+          {
+            "id": "collapse",
+            "label": "Bubble collapse on vanes",
+            "kind": "symptom",
+            "role": "vibration_hf"
+          },
+          {
+            "id": "head",
+            "label": "Head unstable / falls",
+            "kind": "symptom",
+            "role": "discharge_pressure"
+          },
+          {
+            "id": "erode",
+            "label": "Vane erosion (pitting)",
+            "kind": "consequence"
+          },
+          {
+            "id": "npshr",
+            "label": "NPSHr ↑",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "ps",
+            "to": "npsha",
+            "sign": "+"
+          },
+          {
+            "from": "npsha",
+            "to": "vap",
+            "sign": "-",
+            "lag_ms": [
+              0,
+              1000
+            ]
+          },
+          {
+            "from": "vap",
+            "to": "collapse",
+            "sign": "+"
+          },
+          {
+            "from": "vap",
+            "to": "head",
+            "sign": "-"
+          },
+          {
+            "from": "collapse",
+            "to": "erode",
+            "sign": "+",
+            "lag_ms": [
+              604800000,
+              15552000000
+            ],
+            "loop_id": "cavitation_damage"
+          },
+          {
+            "from": "erode",
+            "to": "npshr",
+            "sign": "+",
+            "loop_id": "cavitation_damage"
+          },
+          {
+            "from": "npshr",
+            "to": "vap",
+            "sign": "+",
+            "loop_id": "cavitation_damage"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "cavitation_damage",
+            "polarity": "reinforcing",
+            "description": "Erosion roughens and thins the vane inlet, raising NPSHr, so the pump cavitates at conditions it used to tolerate."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "driver",
+          "effect_role": "current",
+          "direction": "oscillate",
+          "polarity": "any",
+          "lag_ms": [
+            0,
+            2000
+          ],
+          "edge_type": "structural_load_effect",
+          "note": "Unstable hydraulic torque modulates motor current"
+        },
+        {
+          "relation": "process_downstream",
+          "effect_role": "flow",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            5000
+          ],
+          "edge_type": "cause_to_effect",
+          "note": "Delivered flow falls and fluctuates"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "pump.suction_strainer_blockage",
+          "rule": "Strainer blockage: strainer ΔP rises first over hours to days, then suction pressure falls. Cavitation from low tank level or hot liquid has no strainer ΔP rise.",
+          "first_role": "strainer_dp",
+          "then_role": "suction_pressure"
+        },
+        {
+          "vs_pattern": "pump.dry_run_loss_of_prime",
+          "rule": "Cavitation keeps some flow and power with noisy head; dry running drops flow and power to near zero with no HF crackle once gas-locked."
+        },
+        {
+          "vs_pattern": "pump.impeller_wear_recirculation",
+          "rule": "Wear reduces head gradually at unchanged suction pressure and without HF broadband energy."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "vibration_spectrum",
+          "description": "Broadband high-frequency energy (typically 2–20 kHz) with random amplitude; vane pass component modulated.",
+          "formula": "f_vp = Z_vanes × n / 60"
+        },
+        {
+          "domain": "trend",
+          "description": "Available NPSH from measured suction conditions",
+          "formula": "NPSHa = (p_s,abs − p_v)/(ρ·g) + v_s²/(2·g) + z_s"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compute NPSHa from suction pressure, liquid temperature (vapour pressure) and elevation; compare with NPSHr at the operating flow.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check suction vessel level, suction valve fully open and strainer ΔP.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check the operating point against BEP; operation well right of BEP raises NPSHr.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "At the next opportunity inspect the impeller eye for pitting on the low-pressure side of the vanes.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "ANSI/HI 9.6.1 (NPSH margin)",
+        "API 610 (centrifugal pumps)",
+        "ISO 20816-7 (rotodynamic pump vibration)"
+      ]
+    },
+    {
+      "pattern_id": "pump.dry_run_loss_of_prime",
+      "version": "1.0.0",
+      "failure_mode": "dry_run_loss_of_prime",
+      "title": "Dry running / loss of prime",
+      "category": "process",
+      "severity": "critical",
+      "description": "The suction source is empty, a suction valve is shut, or gas has accumulated in the casing (vortexing, air leak into suction). The pump stops moving liquid: flow and head collapse, absorbed power drops sharply, and the mechanical seal and wear rings run without lubrication.",
+      "typical_progression": "Seconds for flow and power; seal faces can be damaged within 30–60 s of true dry running.",
+      "required_roles": [
+        "flow"
+      ],
+      "optional_roles": [
+        "discharge_pressure",
+        "power",
+        "suction_pressure",
+        "seal_temperature",
+        "casing_temperature",
+        "vibration"
+      ],
+      "trigger_role": "flow",
+      "symptoms": [
+        {
+          "role": "flow",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 0.1,
+            "for_ms": 3000
+          },
+          "note": "Near-zero flow"
+        },
+        {
+          "role": "discharge_pressure",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.9,
+          "note": "Head collapses (unlike dead-head, where it rises to shut-off)"
+        },
+        {
+          "role": "power",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.9,
+          "threshold_hint": {
+            "relative_to_nominal": 0.5
+          },
+          "note": "Typically 30–50 % of rated; basis of power-monitor dry-run protection"
+        },
+        {
+          "role": "suction_pressure",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.4
+        },
+        {
+          "role": "seal_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            10000,
+            120000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "casing_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            30000,
+            300000
+          ],
+          "weight": 0.4
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "driver",
+          "effect_role": "current",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            2000
+          ],
+          "edge_type": "structural_load_effect",
+          "note": "Motor unloads to near no-load current"
+        },
+        {
+          "relation": "process_downstream",
+          "effect_role": "flow",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            5000
+          ],
+          "edge_type": "cause_to_effect"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "pump.dead_head_blocked_discharge",
+          "rule": "Dry run: discharge pressure collapses and power falls steeply. Dead-head: discharge pressure rises to shut-off head."
+        },
+        {
+          "vs_pattern": "pump.cavitation_npsh",
+          "rule": "Cavitation keeps partial flow with noisy head; dry running drops flow and power to near zero."
+        },
+        {
+          "vs_pattern": "induction_motor.coupling_or_belt_slip",
+          "rule": "A failed coupling also unloads the motor, but pump speed falls to zero while suction pressure stays normal."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check suction vessel level and suction valve position.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check for air ingress on the suction side (flanges, packing, vortexing at low submergence).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Vent and re-prime the casing per the site procedure before any restart.",
+          "requires_isolation": true
+        },
+        {
+          "order": 4,
+          "text": "After a confirmed dry run, check the seal for leakage on restart.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "API 682 (seal operation limits)",
+        "API 610"
+      ]
+    },
+    {
+      "pattern_id": "pump.dead_head_blocked_discharge",
+      "version": "1.0.0",
+      "failure_mode": "dead_head_blocked_discharge",
+      "title": "Dead-head / blocked discharge",
+      "category": "process",
+      "severity": "critical",
+      "description": "The discharge path is closed (closed valve, stuck check valve, blocked line) while the pump runs. Head rises to shut-off, flow falls to zero, absorbed power falls to the shut-off value, and nearly all of it heats the trapped liquid until it flashes.",
+      "typical_progression": "Seconds for pressure and flow; minutes for the liquid to heat to vaporisation (faster on high-energy pumps).",
+      "required_roles": [
+        "flow",
+        "discharge_pressure"
+      ],
+      "optional_roles": [
+        "power",
+        "casing_temperature",
+        "vibration",
+        "seal_temperature"
+      ],
+      "trigger_role": "flow",
+      "symptoms": [
+        {
+          "role": "flow",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 0.1,
+            "for_ms": 3000
+          }
+        },
+        {
+          "role": "discharge_pressure",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.9,
+          "note": "Approaches the shut-off head on the pump curve"
+        },
+        {
+          "role": "power",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.6,
+          "note": "Radial pumps: shut-off power typically 30–60 % of BEP power"
+        },
+        {
+          "role": "casing_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            30000,
+            600000
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            30000
+          ],
+          "weight": 0.4,
+          "note": "Recirculation and radial thrust at zero flow"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "block",
+            "label": "Discharge blocked",
+            "kind": "cause"
+          },
+          {
+            "id": "q",
+            "label": "Flow → 0",
+            "kind": "symptom",
+            "role": "flow"
+          },
+          {
+            "id": "pd",
+            "label": "Discharge pressure → shut-off",
+            "kind": "symptom",
+            "role": "discharge_pressure"
+          },
+          {
+            "id": "heat",
+            "label": "Power dissipated into trapped liquid",
+            "kind": "state"
+          },
+          {
+            "id": "t",
+            "label": "Liquid temperature ↑",
+            "kind": "symptom",
+            "role": "casing_temperature"
+          },
+          {
+            "id": "pv",
+            "label": "Vapour pressure ↑",
+            "kind": "state"
+          },
+          {
+            "id": "flash",
+            "label": "Flashing / vapour lock",
+            "kind": "consequence"
+          }
+        ],
+        "edges": [
+          {
+            "from": "block",
+            "to": "q",
+            "sign": "-"
+          },
+          {
+            "from": "block",
+            "to": "pd",
+            "sign": "+"
+          },
+          {
+            "from": "q",
+            "to": "heat",
+            "sign": "-"
+          },
+          {
+            "from": "heat",
+            "to": "t",
+            "sign": "+",
+            "lag_ms": [
+              30000,
+              600000
+            ],
+            "loop_id": "thermal_flash"
+          },
+          {
+            "from": "t",
+            "to": "pv",
+            "sign": "+",
+            "loop_id": "thermal_flash"
+          },
+          {
+            "from": "pv",
+            "to": "flash",
+            "sign": "+",
+            "loop_id": "thermal_flash"
+          },
+          {
+            "from": "flash",
+            "to": "heat",
+            "sign": "+",
+            "loop_id": "thermal_flash"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "thermal_flash",
+            "polarity": "reinforcing",
+            "description": "Vapour reduces the liquid mass that absorbs the heat, so the remaining liquid heats faster."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "driver",
+          "effect_role": "current",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            2000
+          ],
+          "edge_type": "structural_load_effect",
+          "note": "Radial-flow pumps unload at shut-off; mixed/axial-flow pumps may draw more power instead"
+        },
+        {
+          "relation": "process_downstream",
+          "effect_role": "flow",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            2000
+          ],
+          "edge_type": "cause_to_effect"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "pump.dry_run_loss_of_prime",
+          "rule": "Dead-head: discharge pressure rises. Dry run: discharge pressure collapses."
+        },
+        {
+          "vs_pattern": "pump.driven_load_jam_overload",
+          "rule": "A jam raises power; dead-head lowers power on radial pumps."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Temperature rise rate of trapped liquid",
+          "formula": "dT/dt ≈ P_shutoff / (m_liquid · c_p)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check discharge valve line-up and the check valve; confirm the downstream consumer is open.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the minimum-flow bypass (recirculation) line is open and not blocked.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Compare discharge pressure with the published shut-off head.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Allow the casing to cool and vent before opening; the liquid may be hot and pressurised.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "API 610 (minimum continuous stable flow)",
+        "ANSI/HI 9.6.3 (allowable operating region)"
+      ]
+    },
+    {
+      "pattern_id": "pump.impeller_wear_recirculation",
+      "version": "1.0.0",
+      "failure_mode": "impeller_wear_recirculation",
+      "title": "Impeller / wear-ring wear and internal recirculation",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "Erosion, corrosion or wear-ring clearance growth lets liquid recirculate from discharge to suction inside the pump. Head and flow fall at the same speed while absorbed power stays about the same, so efficiency falls. Running well below BEP adds suction/discharge recirculation with low-frequency pulsation.",
+      "typical_progression": "Months. Worn clearances of about twice design typically cost several points of efficiency.",
+      "required_roles": [
+        "differential_pressure"
+      ],
+      "optional_roles": [
+        "flow",
+        "power",
+        "vibration",
+        "vibration_vpf",
+        "discharge_pressure"
+      ],
+      "trigger_role": "differential_pressure",
+      "symptoms": [
+        {
+          "role": "differential_pressure",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 0.95
+          },
+          "note": "Measured head below the pump curve at the same flow and speed"
+        },
+        {
+          "role": "flow",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            2592000000
+          ],
+          "weight": 0.7
+        },
+        {
+          "role": "power",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            2592000000
+          ],
+          "weight": 0.4,
+          "note": "Power unchanged while hydraulic output falls, so efficiency falls"
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            7776000000
+          ],
+          "weight": 0.3,
+          "note": "Low-frequency random vibration from recirculation below BEP"
+        },
+        {
+          "role": "vibration_vpf",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            7776000000
+          ],
+          "weight": 0.3,
+          "note": "Vane pass rises when vane tips or the cutwater erode (gap B changes)"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "clr",
+            "label": "Wear-ring clearance ↑",
+            "kind": "cause"
+          },
+          {
+            "id": "leak",
+            "label": "Internal recirculation ↑",
+            "kind": "state"
+          },
+          {
+            "id": "h",
+            "label": "Head ↓",
+            "kind": "symptom",
+            "role": "differential_pressure"
+          },
+          {
+            "id": "eta",
+            "label": "Efficiency ↓",
+            "kind": "state"
+          },
+          {
+            "id": "vel",
+            "label": "Local velocity in gap ↑",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "clr",
+            "to": "leak",
+            "sign": "+"
+          },
+          {
+            "from": "leak",
+            "to": "h",
+            "sign": "-"
+          },
+          {
+            "from": "leak",
+            "to": "eta",
+            "sign": "-"
+          },
+          {
+            "from": "leak",
+            "to": "vel",
+            "sign": "+"
+          },
+          {
+            "from": "vel",
+            "to": "clr",
+            "sign": "+",
+            "lag_ms": [
+              2592000000,
+              31536000000
+            ],
+            "loop_id": "wear_growth"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "wear_growth",
+            "polarity": "reinforcing",
+            "description": "Higher leakage velocity through the gap erodes the rings faster, especially with abrasive solids."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "pump.cavitation_npsh",
+          "rule": "Wear lowers head gradually at unchanged suction pressure and without HF broadband energy."
+        },
+        {
+          "vs_pattern": "pump.suction_strainer_blockage",
+          "rule": "Strainer blockage reduces flow with rising strainer ΔP; wear reduces head at the same flow with clean strainer ΔP."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Hydraulic efficiency trend at constant speed",
+          "formula": "η = ρ·g·Q·H / P_shaft"
+        },
+        {
+          "domain": "trend",
+          "description": "Affinity laws to correct test points to rated speed",
+          "formula": "Q ∝ n, H ∝ n², P ∝ n³"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Take a head-flow-power test point, correct to rated speed with the affinity laws, and compare with the factory curve.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the operating flow against the preferred operating region (70–120 % BEP per API 610).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "At the next overhaul measure wear-ring clearances against the manufacturer limits.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "API 610 (preferred operating region)",
+        "ANSI/HI 9.6.3",
+        "ISO 9906 (pump acceptance tests)"
+      ]
+    },
+    {
+      "pattern_id": "pump.seal_leak",
+      "version": "1.0.0",
+      "failure_mode": "seal_leak",
+      "title": "Mechanical seal leakage",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "Seal faces are worn, cracked, heat-checked or opened by vibration, dry running or loss of flush. Leakage appears at the seal drain or seal pot; face temperature often rises before visible leakage.",
+      "typical_progression": "Hours to weeks; sudden after a dry run or pressure transient.",
+      "required_roles": [
+        "seal_leak"
+      ],
+      "optional_roles": [
+        "seal_temperature",
+        "vibration",
+        "suction_pressure"
+      ],
+      "trigger_role": "seal_leak",
+      "symptoms": [
+        {
+          "role": "seal_leak",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "note": "Leak switch, seal-pot level or drain flow above the seal vendor's allowable leakage"
+        },
+        {
+          "role": "seal_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.6,
+          "note": "Often rises BEFORE leakage when flush is lost"
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.3,
+          "note": "Vibration opens faces; may be a cause"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "flush",
+            "label": "Flush / cooling loss or dry run",
+            "kind": "cause"
+          },
+          {
+            "id": "face",
+            "label": "Face temperature ↑",
+            "kind": "state",
+            "role": "seal_temperature"
+          },
+          {
+            "id": "film",
+            "label": "Fluid film flashes",
+            "kind": "state"
+          },
+          {
+            "id": "wear",
+            "label": "Face wear / heat checking",
+            "kind": "state"
+          },
+          {
+            "id": "leak",
+            "label": "Leakage ↑",
+            "kind": "symptom",
+            "role": "seal_leak"
+          }
+        ],
+        "edges": [
+          {
+            "from": "flush",
+            "to": "face",
+            "sign": "+"
+          },
+          {
+            "from": "face",
+            "to": "film",
+            "sign": "+",
+            "loop_id": "face_distress"
+          },
+          {
+            "from": "film",
+            "to": "wear",
+            "sign": "+",
+            "loop_id": "face_distress"
+          },
+          {
+            "from": "wear",
+            "to": "face",
+            "sign": "+",
+            "loop_id": "face_distress"
+          },
+          {
+            "from": "wear",
+            "to": "leak",
+            "sign": "+"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "face_distress",
+            "polarity": "reinforcing",
+            "description": "A flashing film loses lubrication, which raises friction heat and flashes more of the film."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "pump.dry_run_loss_of_prime",
+          "rule": "A seal leak following near-zero flow and power points to dry-run damage as the root cause."
+        },
+        {
+          "vs_pattern": "pump.bearing_defect",
+          "rule": "If bearing envelope and vibration rose first, shaft movement is the likely cause of the seal failure.",
+          "first_role": "bearing_envelope",
+          "then_role": "seal_leak"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Confirm leakage visually and identify the fluid (process vs barrier/buffer fluid).",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check seal flush plan flow, pressure and temperature (API 682 plan in use).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check pump vibration and bearing condition, which load the seal.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Replace or refurbish the seal with the pump isolated, drained and depressurised.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "API 682 (shaft sealing systems)"
+      ]
+    },
+    {
+      "pattern_id": "pump.suction_strainer_blockage",
+      "version": "1.0.0",
+      "failure_mode": "suction_strainer_blockage",
+      "title": "Suction strainer / filter blockage",
+      "category": "process",
+      "severity": "warning",
+      "description": "Debris accumulates in the suction strainer. Strainer ΔP rises, suction pressure and NPSHa fall, flow falls and eventually the pump cavitates.",
+      "typical_progression": "Hours to weeks depending on debris load; commissioning strainers can plug within hours.",
+      "required_roles": [
+        "strainer_dp"
+      ],
+      "optional_roles": [
+        "suction_pressure",
+        "flow",
+        "vibration_hf",
+        "power"
+      ],
+      "trigger_role": "strainer_dp",
+      "symptoms": [
+        {
+          "role": "strainer_dp",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 2.0
+          },
+          "note": "Typically alarm at about 2× clean ΔP at the same flow"
+        },
+        {
+          "role": "suction_pressure",
+          "direction": "fall",
+          "onset_lag_ms": [
+            3600000,
+            604800000
+          ],
+          "weight": 0.8
+        },
+        {
+          "role": "flow",
+          "direction": "fall",
+          "onset_lag_ms": [
+            3600000,
+            604800000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "vibration_hf",
+          "direction": "rise",
+          "onset_lag_ms": [
+            86400000,
+            1209600000
+          ],
+          "weight": 0.4,
+          "note": "Cavitation onset once NPSHa falls below NPSHr"
+        },
+        {
+          "role": "power",
+          "direction": "fall",
+          "onset_lag_ms": [
+            3600000,
+            604800000
+          ],
+          "weight": 0.3
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "debris",
+            "label": "Debris accumulates",
+            "kind": "cause"
+          },
+          {
+            "id": "dp",
+            "label": "Strainer ΔP ↑",
+            "kind": "symptom",
+            "role": "strainer_dp"
+          },
+          {
+            "id": "ps",
+            "label": "Suction pressure ↓",
+            "kind": "symptom",
+            "role": "suction_pressure"
+          },
+          {
+            "id": "q",
+            "label": "Flow ↓",
+            "kind": "symptom",
+            "role": "flow"
+          },
+          {
+            "id": "cav",
+            "label": "Cavitation",
+            "kind": "consequence"
+          }
+        ],
+        "edges": [
+          {
+            "from": "debris",
+            "to": "dp",
+            "sign": "+"
+          },
+          {
+            "from": "dp",
+            "to": "ps",
+            "sign": "-"
+          },
+          {
+            "from": "ps",
+            "to": "q",
+            "sign": "+"
+          },
+          {
+            "from": "q",
+            "to": "dp",
+            "sign": "+",
+            "loop_id": "flow_relief"
+          },
+          {
+            "from": "ps",
+            "to": "cav",
+            "sign": "-"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "flow_relief",
+            "polarity": "balancing",
+            "description": "Lower flow reduces strainer ΔP (∝ Q²), partly masking the blockage in the ΔP trend."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "driver",
+          "effect_role": "current",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            3600000,
+            604800000
+          ],
+          "edge_type": "structural_load_effect",
+          "note": "Lower flow unloads a radial pump"
+        },
+        {
+          "relation": "process_downstream",
+          "effect_role": "flow",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            3600000,
+            604800000
+          ],
+          "edge_type": "cause_to_effect"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "pump.cavitation_npsh",
+          "rule": "Blockage: strainer ΔP rises first, then suction pressure falls.",
+          "first_role": "strainer_dp",
+          "then_role": "suction_pressure"
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Flow-normalised strainer ΔP removes the flow dependency",
+          "formula": "K = ΔP / Q²"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare strainer ΔP normalised to flow squared against the clean value.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Switch to the standby strainer basket if duplex, following the operating procedure.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Isolate, drain and clean the strainer basket; record the debris type.",
+          "requires_isolation": true
+        }
+      ]
+    },
+    {
+      "pattern_id": "pump.bearing_defect",
+      "version": "1.0.0",
+      "failure_mode": "bearing_defect",
+      "title": "Pump bearing defect",
+      "category": "mechanical",
+      "severity": "warning",
+      "description": "Rolling-element bearing damage from fatigue, contamination (water in oil), misalignment or excessive hydraulic load at off-BEP operation. Envelope energy rises first; overall vibration and temperature later.",
+      "typical_progression": "Weeks to months (P-F interval).",
+      "required_roles": [
+        "bearing_envelope"
+      ],
+      "optional_roles": [
+        "vibration",
+        "bearing_temperature"
+      ],
+      "trigger_role": "bearing_envelope",
+      "symptoms": [
+        {
+          "role": "bearing_envelope",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 2.0
+          },
+          "note": "gE alarm; set per speed and bearing size"
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            604800000,
+            5184000000
+          ],
+          "weight": 0.6,
+          "note": "ISO 20816-7 zone limits by pump category"
+        },
+        {
+          "role": "bearing_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            1209600000,
+            7776000000
+          ],
+          "weight": 0.5,
+          "threshold_hint": {
+            "absolute": 82
+          },
+          "note": "API 610 limits oil sump temperature to 82 °C for ring-oiled / splash systems"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "spall",
+            "label": "Race spall",
+            "kind": "cause"
+          },
+          {
+            "id": "impact",
+            "label": "Defect impacts",
+            "kind": "symptom",
+            "role": "bearing_envelope"
+          },
+          {
+            "id": "fric",
+            "label": "Friction ↑",
+            "kind": "state"
+          },
+          {
+            "id": "heat",
+            "label": "Bearing temperature ↑",
+            "kind": "symptom",
+            "role": "bearing_temperature"
+          },
+          {
+            "id": "visc",
+            "label": "Oil viscosity ↓",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "spall",
+            "to": "impact",
+            "sign": "+"
+          },
+          {
+            "from": "spall",
+            "to": "fric",
+            "sign": "+"
+          },
+          {
+            "from": "fric",
+            "to": "heat",
+            "sign": "+"
+          },
+          {
+            "from": "heat",
+            "to": "visc",
+            "sign": "-",
+            "loop_id": "lube_breakdown"
+          },
+          {
+            "from": "visc",
+            "to": "fric",
+            "sign": "-",
+            "loop_id": "lube_breakdown"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "lube_breakdown",
+            "polarity": "reinforcing",
+            "description": "Heat thins the oil, which raises friction and heat further."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "driver",
+          "effect_role": "vibration",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "mechanical",
+          "note": "Transmitted through the coupling and baseplate"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.bearing_defect",
+          "rule": "Compare envelope levels at motor and pump bearings; the defect is at the bearing with the higher envelope and matching defect frequencies."
+        },
+        {
+          "vs_pattern": "pump.cavitation_npsh",
+          "rule": "Cavitation energy is broadband and changes with suction pressure; bearing defects show discrete BPFO/BPFI peaks independent of suction pressure."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "vibration_envelope",
+          "description": "Outer race defect",
+          "formula": "BPFO = (n/2)·fr·(1 − d/D·cosθ)"
+        },
+        {
+          "domain": "vibration_envelope",
+          "description": "Inner race defect with 1× sidebands",
+          "formula": "BPFI = (n/2)·fr·(1 + d/D·cosθ)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Take an envelope spectrum at each pump bearing and match peaks to the installed bearing numbers.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check oil level, oil condition (water, particles) and constant-level oiler setting.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check operating flow; sustained operation far from BEP raises radial and axial bearing loads.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Plan replacement within the P-F interval with the pump isolated.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "ISO 20816-7",
+        "API 610 (bearing and lubrication requirements)",
+        "ISO 13373-1"
+      ]
+    },
+    {
+      "pattern_id": "pump.driven_load_jam_overload",
+      "version": "1.0.0",
+      "failure_mode": "driven_load_jam_overload",
+      "title": "Pump jam / rub → driver overload",
+      "category": "mechanical",
+      "severity": "critical",
+      "description": "A foreign object lodged in the impeller, an impeller-to-casing rub, a seized bearing, or liquid far denser or more viscous than design raises the torque the pump demands. Absorbed power rises and speed falls; the motor overloads.",
+      "typical_progression": "Seconds for a jam or rub; minutes for a density or viscosity change.",
+      "required_roles": [
+        "power"
+      ],
+      "optional_roles": [
+        "speed",
+        "flow",
+        "vibration",
+        "differential_pressure",
+        "casing_temperature"
+      ],
+      "trigger_role": "power",
+      "symptoms": [
+        {
+          "role": "power",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 1.15,
+            "for_ms": 2000
+          }
+        },
+        {
+          "role": "speed",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            3000
+          ],
+          "weight": 0.6,
+          "note": "Small on DOL motors; large on drives in current limit"
+        },
+        {
+          "role": "flow",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            5000
+          ],
+          "weight": 0.6,
+          "note": "Jam or rub; flow may be normal for a viscosity or density rise"
+        },
+        {
+          "role": "vibration",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            2000
+          ],
+          "weight": 0.6,
+          "note": "Rub produces 1× and harmonics with truncated waveform"
+        },
+        {
+          "role": "casing_temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            60000,
+            1800000
+          ],
+          "weight": 0.3
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "driver",
+          "effect_role": "current",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            500
+          ],
+          "edge_type": "structural_load_effect",
+          "loop_ok": true,
+          "loop_id": "drive_current_limit",
+          "note": "Motor current follows pump torque; on a VFD the current limit feeds back as a speed reduction"
+        },
+        {
+          "relation": "process_downstream",
+          "effect_role": "flow",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            5000
+          ],
+          "edge_type": "cause_to_effect"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "induction_motor.mechanical_overload",
+          "rule": "Motor-side view of the same event. The pump is the origin when pump vibration or flow changes before motor current rises.",
+          "first_role": "vibration",
+          "then_role": "power"
+        },
+        {
+          "vs_pattern": "induction_motor.locked_rotor_stall",
+          "rule": "A full jam gives near-zero speed and locked-rotor current; a rub or dense liquid gives a partial speed drop."
+        },
+        {
+          "vs_pattern": "pump.dead_head_blocked_discharge",
+          "rule": "Dead-head lowers power on radial pumps; a jam raises it."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare absorbed power with the pump curve at the measured flow, corrected for fluid density.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check fluid density and viscosity against design (temperature, concentration, solids content).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "With the pump isolated and locked out, rotate the shaft by hand to detect a jam, rub or seized bearing.",
+          "requires_isolation": true
+        },
+        {
+          "order": 4,
+          "text": "Inspect the impeller and suction for foreign objects.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "API 610"
+      ]
+    }
+  ]
+}

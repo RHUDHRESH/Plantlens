@@ -1,0 +1,1227 @@
+{
+  "library_id": "plantlens.patterns.battery",
+  "version": "1.0.0",
+  "component_type": "battery",
+  "display_name": "Battery (Li-ion / LiFePO4 / lead-acid)",
+  "description": "Failure patterns for stationary and embedded battery packs: imbalance, capacity fade, resistance, thermal runaway precursors, deep discharge and charging faults. Thresholds note chemistry-specific values.",
+  "asset_type_aliases": [
+    "storage.battery"
+  ],
+  "library_type_aliases": [
+    "battery_module"
+  ],
+  "roles": [
+    {
+      "role": "voltage",
+      "quantity": "pack / string terminal voltage",
+      "units": [
+        "V"
+      ],
+      "signal_type_prefixes": [
+        "electrical.voltage.dc",
+        "electrical.voltage"
+      ],
+      "name_hints": [
+        "voltage",
+        "vbat",
+        "v_pack",
+        "_v"
+      ]
+    },
+    {
+      "role": "current",
+      "quantity": "pack current (positive = discharge)",
+      "units": [
+        "A"
+      ],
+      "signal_type_prefixes": [
+        "electrical.current"
+      ],
+      "name_hints": [
+        "current",
+        "ibat",
+        "i_pack",
+        "amps"
+      ]
+    },
+    {
+      "role": "soc",
+      "quantity": "state of charge (BMS estimate)",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "battery.soc"
+      ],
+      "name_hints": [
+        "soc"
+      ]
+    },
+    {
+      "role": "soh",
+      "quantity": "state of health / measured capacity as % of rated",
+      "units": [
+        "%"
+      ],
+      "signal_type_prefixes": [
+        "battery.soh"
+      ],
+      "name_hints": [
+        "soh",
+        "capacity"
+      ]
+    },
+    {
+      "role": "cell_voltage_max",
+      "quantity": "highest cell (or block) voltage",
+      "units": [
+        "V"
+      ],
+      "signal_type_prefixes": [
+        "battery.cell_voltage.max"
+      ],
+      "name_hints": [
+        "vcell_max",
+        "cell_max",
+        "max_cell"
+      ]
+    },
+    {
+      "role": "cell_voltage_min",
+      "quantity": "lowest cell (or block) voltage",
+      "units": [
+        "V"
+      ],
+      "signal_type_prefixes": [
+        "battery.cell_voltage.min"
+      ],
+      "name_hints": [
+        "vcell_min",
+        "cell_min",
+        "min_cell"
+      ]
+    },
+    {
+      "role": "cell_voltage_spread",
+      "quantity": "cell voltage spread (max − min)",
+      "units": [
+        "mV",
+        "V"
+      ],
+      "signal_type_prefixes": [
+        "battery.cell_voltage.spread"
+      ],
+      "name_hints": [
+        "spread",
+        "delta_v",
+        "imbalance"
+      ]
+    },
+    {
+      "role": "temperature",
+      "quantity": "cell / module temperature (maximum of sensors)",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.temperature",
+        "battery.temperature"
+      ],
+      "name_hints": [
+        "temp",
+        "t_cell",
+        "t_mod",
+        "bat_t"
+      ]
+    },
+    {
+      "role": "temperature_rate",
+      "quantity": "rate of rise of cell temperature",
+      "units": [
+        "K/min",
+        "°C/min"
+      ],
+      "signal_type_prefixes": [
+        "battery.temperature.rate"
+      ],
+      "name_hints": [
+        "dtdt",
+        "t_rate"
+      ]
+    },
+    {
+      "role": "ambient_temperature",
+      "quantity": "battery room / enclosure temperature",
+      "units": [
+        "°C",
+        "C"
+      ],
+      "signal_type_prefixes": [
+        "thermal.ambient"
+      ],
+      "name_hints": [
+        "ambient",
+        "room_t",
+        "amb"
+      ]
+    },
+    {
+      "role": "internal_resistance",
+      "quantity": "DC internal resistance (pack or worst cell)",
+      "units": [
+        "mΩ",
+        "mOhm"
+      ],
+      "signal_type_prefixes": [
+        "battery.internal_resistance"
+      ],
+      "name_hints": [
+        "ir_",
+        "rint",
+        "resistance",
+        "dcir"
+      ]
+    },
+    {
+      "role": "float_current",
+      "quantity": "float / trickle charge current (lead-acid standby)",
+      "units": [
+        "A",
+        "mA"
+      ],
+      "signal_type_prefixes": [
+        "battery.float_current"
+      ],
+      "name_hints": [
+        "float",
+        "i_float"
+      ]
+    },
+    {
+      "role": "off_gas",
+      "quantity": "off-gas detector (H2, CO, VOC)",
+      "units": [
+        "ppm",
+        "%LEL"
+      ],
+      "signal_type_prefixes": [
+        "gas.detector"
+      ],
+      "name_hints": [
+        "gas",
+        "h2",
+        "co_",
+        "voc",
+        "offgas"
+      ]
+    },
+    {
+      "role": "bms_trip",
+      "quantity": "BMS protection trip / contactor open",
+      "units": [
+        "bool"
+      ],
+      "signal_type_prefixes": [
+        "protection.trip",
+        "status.bool"
+      ],
+      "name_hints": [
+        "trip",
+        "bms_fault",
+        "contactor"
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "pattern_id": "battery.cell_imbalance",
+      "version": "1.0.0",
+      "failure_mode": "cell_imbalance",
+      "title": "Cell imbalance",
+      "category": "electrical",
+      "severity": "warning",
+      "description": "Cells in series drift apart in state of charge from unequal self-discharge, capacity or temperature. The highest cell hits the charge limit and the lowest hits the discharge limit early, so usable capacity shrinks; balancing cannot keep up.",
+      "typical_progression": "Weeks to months. LiFePO4's flat curve hides imbalance until the ends of charge or discharge.",
+      "required_roles": [
+        "cell_voltage_spread"
+      ],
+      "optional_roles": [
+        "cell_voltage_max",
+        "cell_voltage_min",
+        "soc",
+        "temperature",
+        "bms_trip"
+      ],
+      "trigger_role": "cell_voltage_spread",
+      "symptoms": [
+        {
+          "role": "cell_voltage_spread",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 50
+          },
+          "note": "Li-ion at rest mid-SOC: > 30–50 mV is significant; evaluate near end of charge for LiFePO4"
+        },
+        {
+          "role": "cell_voltage_max",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.6,
+          "note": "One cell reaches the charge cut-off first (LiFePO4 3.65 V, NMC 4.2 V)"
+        },
+        {
+          "role": "cell_voltage_min",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "soc",
+          "direction": "step",
+          "onset_lag_ms": [
+            0,
+            604800000
+          ],
+          "weight": 0.4,
+          "note": "SOC jumps when the BMS recalibrates at a cell limit"
+        },
+        {
+          "role": "bms_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            2592000000
+          ],
+          "weight": 0.3
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "drift",
+            "label": "Unequal self-discharge / capacity / temperature",
+            "kind": "cause"
+          },
+          {
+            "id": "spread",
+            "label": "Cell SOC spread ↑",
+            "kind": "symptom",
+            "role": "cell_voltage_spread"
+          },
+          {
+            "id": "weak",
+            "label": "Weakest cell cycles deeper",
+            "kind": "state"
+          },
+          {
+            "id": "age",
+            "label": "Weak cell ages faster",
+            "kind": "state"
+          },
+          {
+            "id": "usable",
+            "label": "Usable pack capacity ↓",
+            "kind": "consequence"
+          }
+        ],
+        "edges": [
+          {
+            "from": "drift",
+            "to": "spread",
+            "sign": "+"
+          },
+          {
+            "from": "spread",
+            "to": "weak",
+            "sign": "+"
+          },
+          {
+            "from": "weak",
+            "to": "age",
+            "sign": "+",
+            "lag_ms": [
+              2592000000,
+              31536000000
+            ],
+            "loop_id": "weak_cell"
+          },
+          {
+            "from": "age",
+            "to": "spread",
+            "sign": "+",
+            "loop_id": "weak_cell"
+          },
+          {
+            "from": "spread",
+            "to": "usable",
+            "sign": "-"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "weak_cell",
+            "polarity": "reinforcing",
+            "description": "The weakest cell is pushed to the voltage limits on every cycle, ages faster and diverges further."
+          }
+        ]
+      },
+      "discriminators": [
+        {
+          "vs_pattern": "battery.charging_fault_overcharge",
+          "rule": "Imbalance: one cell high while pack voltage is normal. Overcharge: pack voltage is high and all cells rise."
+        },
+        {
+          "vs_pattern": "battery.capacity_fade",
+          "rule": "Imbalance limits capacity with a large spread; uniform fade has a small spread."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Spread measured at end of charge and at rest (≥ 1 h) to separate SOC imbalance from resistance imbalance",
+          "formula": "ΔV_rest = max(V_cell) − min(V_cell) at I = 0"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Record all cell voltages at rest and at end of charge; identify persistently high or low cells.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check balancing is enabled and working (balancing current, balancing duty).",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check temperature spread across modules; a hot module self-discharges faster.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 62619 (safety of industrial Li-ion cells)",
+        "IEC 61427-2 (on-grid storage batteries)"
+      ]
+    },
+    {
+      "pattern_id": "battery.capacity_fade",
+      "version": "1.0.0",
+      "failure_mode": "capacity_fade",
+      "title": "Capacity fade (ageing)",
+      "category": "electrical",
+      "severity": "warning",
+      "description": "Capacity falls with cycling and calendar ageing (Li-ion: SEI growth and lithium loss; lead-acid: sulfation, grid corrosion, active material shedding). Run-time falls and the pack reaches cut-off earlier; internal resistance usually rises alongside.",
+      "typical_progression": "Months to years; faster at high temperature, high SOC storage and deep cycling.",
+      "required_roles": [
+        "soh"
+      ],
+      "optional_roles": [
+        "internal_resistance",
+        "soc",
+        "voltage",
+        "temperature"
+      ],
+      "trigger_role": "soh",
+      "symptoms": [
+        {
+          "role": "soh",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 80
+          },
+          "note": "End of life is commonly 80 % of rated capacity (IEEE 1188 / IEEE 450 replacement criterion)"
+        },
+        {
+          "role": "internal_resistance",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            7776000000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "soc",
+          "direction": "step",
+          "onset_lag_ms": [
+            0,
+            2592000000
+          ],
+          "weight": 0.3,
+          "note": "SOC estimate jumps as the BMS recalibrates to the smaller capacity"
+        },
+        {
+          "role": "voltage",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            7776000000
+          ],
+          "weight": 0.3,
+          "note": "Earlier voltage knee during discharge"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "battery.cell_imbalance",
+          "rule": "Uniform fade has a small cell spread; imbalance shows a large spread with healthy cells limited by one."
+        },
+        {
+          "vs_pattern": "battery.high_internal_resistance",
+          "rule": "Resistance problems cause sag under load that recovers at rest; capacity fade reduces Ah delivered even at low current."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Temperature-corrected capacity test (lead-acid, IEEE 450)",
+          "formula": "Capacity % = (t_actual / t_rated) × 100 at the rated discharge rate"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Run a capacity test at the rated rate and compare with rated Ah.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Review temperature and SOC history; long periods above 30 °C or at 100 % SOC accelerate Li-ion ageing.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "For lead-acid, check float voltage settings and specific gravity (flooded) for sulfation.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEEE 1188 (VRLA maintenance)",
+        "IEEE 450 (vented lead-acid maintenance)",
+        "IEC 62620 (industrial Li-ion performance)",
+        "IEC 61427-1 (off-grid storage)"
+      ]
+    },
+    {
+      "pattern_id": "battery.high_internal_resistance",
+      "version": "1.0.0",
+      "failure_mode": "high_internal_resistance",
+      "title": "High internal resistance (voltage sag under load)",
+      "category": "electrical",
+      "severity": "warning",
+      "description": "Cell or inter-cell connection resistance rises (ageing, corrosion, loose links, cold temperature). Under load the terminal voltage sags by I·R and the pack heats; high-current loads trip on undervoltage although the pack still holds charge.",
+      "typical_progression": "Months for ageing; hours to days for a loosening connection.",
+      "required_roles": [
+        "internal_resistance"
+      ],
+      "optional_roles": [
+        "voltage",
+        "current",
+        "temperature",
+        "cell_voltage_spread"
+      ],
+      "trigger_role": "internal_resistance",
+      "symptoms": [
+        {
+          "role": "internal_resistance",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 1.5
+          },
+          "note": "Lead-acid: +30–50 % over baseline warrants investigation (IEEE 1188); Li-ion: 2× beginning-of-life often taken as end of life"
+        },
+        {
+          "role": "voltage",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.8,
+          "note": "Sag under load that recovers at rest"
+        },
+        {
+          "role": "temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            60000,
+            3600000
+          ],
+          "weight": 0.4,
+          "note": "I²R heating under load"
+        },
+        {
+          "role": "cell_voltage_spread",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1000
+          ],
+          "weight": 0.4,
+          "note": "Spread under load but not at rest points to one high-resistance cell or link"
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "r",
+            "label": "Internal / link resistance ↑",
+            "kind": "cause",
+            "role": "internal_resistance"
+          },
+          {
+            "id": "sag",
+            "label": "Voltage sag I·R",
+            "kind": "symptom",
+            "role": "voltage"
+          },
+          {
+            "id": "heat",
+            "label": "I²R heating",
+            "kind": "state",
+            "role": "temperature"
+          },
+          {
+            "id": "ox",
+            "label": "Oxidation / degradation at hot spot",
+            "kind": "state"
+          }
+        ],
+        "edges": [
+          {
+            "from": "r",
+            "to": "sag",
+            "sign": "+"
+          },
+          {
+            "from": "r",
+            "to": "heat",
+            "sign": "+"
+          },
+          {
+            "from": "heat",
+            "to": "ox",
+            "sign": "+",
+            "lag_ms": [
+              86400000,
+              7776000000
+            ],
+            "loop_id": "joint_heating"
+          },
+          {
+            "from": "ox",
+            "to": "r",
+            "sign": "+",
+            "loop_id": "joint_heating"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "joint_heating",
+            "polarity": "reinforcing",
+            "description": "A hot connection oxidises and its resistance rises, heating it further."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "downstream_load",
+          "effect_role": "voltage",
+          "direction": "fall",
+          "polarity": "-",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "structural_power",
+          "note": "Loads see the sag under high current"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "battery.deep_discharge",
+          "rule": "Deep discharge keeps voltage low at rest; resistance sag recovers within seconds of removing load."
+        },
+        {
+          "vs_pattern": "dc_bus.loose_connection_high_resistance",
+          "rule": "A single hot termination on the bus side points to the connection rather than the cells."
+        },
+        {
+          "vs_pattern": "dc_motor.supply_undervoltage",
+          "rule": "Motor-side view of the sag."
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "trend",
+          "description": "Resistance from a load step",
+          "formula": "R = ΔV / ΔI (measured within ~1 s of the step)"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Measure resistance from a load step (ΔV/ΔI) or with an internal-ohmic tester; compare cells and links.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Thermally scan terminals and inter-cell links under load.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Check and re-torque inter-cell and terminal connections with the string isolated.",
+          "requires_isolation": true
+        }
+      ],
+      "references": [
+        "IEEE 1188",
+        "IEEE 1491 (battery monitoring)"
+      ]
+    },
+    {
+      "pattern_id": "battery.thermal_runaway_precursor",
+      "version": "1.0.0",
+      "failure_mode": "thermal_runaway_precursor",
+      "title": "Over-temperature / thermal runaway precursor",
+      "category": "thermal",
+      "severity": "critical",
+      "description": "Cell temperature rises abnormally from an internal short, external heating, overcharge or failed cooling. In Li-ion cells exothermic reactions start near 80–120 °C (SEI decomposition) and can self-accelerate to venting and fire; off-gas usually precedes the fire. VRLA batteries on float can also run away: temperature raises float current, which raises heat.",
+      "typical_progression": "Minutes to hours from first detectable rate of rise to venting; seconds once runaway starts.",
+      "required_roles": [
+        "temperature"
+      ],
+      "optional_roles": [
+        "temperature_rate",
+        "off_gas",
+        "voltage",
+        "cell_voltage_spread",
+        "float_current",
+        "ambient_temperature",
+        "bms_trip"
+      ],
+      "trigger_role": "temperature",
+      "symptoms": [
+        {
+          "role": "temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "absolute": 60
+          },
+          "note": "Li-ion operating limit is typically 55–60 °C; any cell well above its neighbours is abnormal"
+        },
+        {
+          "role": "temperature_rate",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.9,
+          "threshold_hint": {
+            "absolute": 1.0
+          },
+          "note": "Sustained > 1 K/min without a matching load step"
+        },
+        {
+          "role": "off_gas",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            1800000
+          ],
+          "weight": 0.9,
+          "note": "H2 / CO / VOC detected before flame"
+        },
+        {
+          "role": "cell_voltage_spread",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            600000
+          ],
+          "weight": 0.6,
+          "note": "Internal short pulls one cell voltage down"
+        },
+        {
+          "role": "float_current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            3600000
+          ],
+          "weight": 0.6,
+          "note": "Lead-acid on float"
+        },
+        {
+          "role": "bms_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            600000
+          ],
+          "weight": 0.5
+        }
+      ],
+      "mechanism": {
+        "nodes": [
+          {
+            "id": "src",
+            "label": "Internal short / overcharge / cooling loss",
+            "kind": "cause"
+          },
+          {
+            "id": "t",
+            "label": "Cell temperature ↑",
+            "kind": "symptom",
+            "role": "temperature"
+          },
+          {
+            "id": "exo",
+            "label": "Exothermic side reactions ↑",
+            "kind": "state"
+          },
+          {
+            "id": "gas",
+            "label": "Electrolyte decomposition, off-gas",
+            "kind": "symptom",
+            "role": "off_gas"
+          },
+          {
+            "id": "if",
+            "label": "Float current ↑ (lead-acid)",
+            "kind": "state",
+            "role": "float_current"
+          },
+          {
+            "id": "vent",
+            "label": "Venting / fire / propagation",
+            "kind": "consequence"
+          }
+        ],
+        "edges": [
+          {
+            "from": "src",
+            "to": "t",
+            "sign": "+"
+          },
+          {
+            "from": "t",
+            "to": "exo",
+            "sign": "+",
+            "loop_id": "thermal_runaway"
+          },
+          {
+            "from": "exo",
+            "to": "t",
+            "sign": "+",
+            "lag_ms": [
+              1000,
+              3600000
+            ],
+            "loop_id": "thermal_runaway"
+          },
+          {
+            "from": "exo",
+            "to": "gas",
+            "sign": "+"
+          },
+          {
+            "from": "t",
+            "to": "if",
+            "sign": "+",
+            "loop_id": "float_runaway"
+          },
+          {
+            "from": "if",
+            "to": "t",
+            "sign": "+",
+            "loop_id": "float_runaway"
+          },
+          {
+            "from": "t",
+            "to": "vent",
+            "sign": "+"
+          }
+        ],
+        "loops": [
+          {
+            "loop_id": "thermal_runaway",
+            "polarity": "reinforcing",
+            "description": "Reaction rate rises exponentially with temperature and releases heat, raising temperature further."
+          },
+          {
+            "loop_id": "float_runaway",
+            "polarity": "reinforcing",
+            "description": "VRLA on constant-voltage float: higher temperature raises float current, which adds heat."
+          }
+        ]
+      },
+      "propagation": [
+        {
+          "relation": "parallel_unit",
+          "effect_role": "temperature",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            60000,
+            3600000
+          ],
+          "edge_type": "thermal",
+          "note": "Heat transfers to adjacent cells and modules"
+        },
+        {
+          "relation": "cooling_system",
+          "effect_role": "temperature",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            60000,
+            1800000
+          ],
+          "edge_type": "thermal"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "battery.high_internal_resistance",
+          "rule": "Resistive heating tracks current and stops at rest; a runaway precursor continues to heat at rest."
+        },
+        {
+          "vs_pattern": "battery.charging_fault_overcharge",
+          "rule": "If pack or cell voltage exceeded the charge limit before the temperature rise, overcharge is the root cause.",
+          "first_role": "cell_voltage_max",
+          "then_role": "temperature"
+        }
+      ],
+      "signatures": [
+        {
+          "domain": "thermal",
+          "description": "Single-cell temperature well above module mean with a positive rate of rise at zero or constant current"
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Follow the site battery emergency response plan; do not approach a venting battery and keep personnel clear.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Confirm the BMS has opened the contactors and the enclosure ventilation / gas detection is operating.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Notify the fire service per the site plan if off-gas or smoke is detected.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "After the event, quarantine affected modules; do not reuse them.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "UL 9540A (thermal runaway fire propagation)",
+        "IEC 62619",
+        "NFPA 855 (energy storage systems)",
+        "IEEE 1188 (VRLA thermal runaway)"
+      ]
+    },
+    {
+      "pattern_id": "battery.deep_discharge",
+      "version": "1.0.0",
+      "failure_mode": "deep_discharge",
+      "title": "Deep discharge / over-discharge",
+      "category": "electrical",
+      "severity": "warning",
+      "description": "The pack is discharged below its minimum voltage (parasitic loads, failed low-voltage disconnect, long storage). Li-ion cells can suffer copper dissolution and may be unsafe to recharge; lead-acid cells sulfate.",
+      "typical_progression": "Hours under load; weeks to months from self-discharge and parasitic loads in storage.",
+      "required_roles": [
+        "voltage"
+      ],
+      "optional_roles": [
+        "soc",
+        "cell_voltage_min",
+        "current",
+        "bms_trip"
+      ],
+      "trigger_role": "voltage",
+      "symptoms": [
+        {
+          "role": "voltage",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 0.85
+          },
+          "note": "Below the pack cut-off: cells × per-cell minimum"
+        },
+        {
+          "role": "cell_voltage_min",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.9,
+          "threshold_hint": {
+            "absolute": 2.5
+          },
+          "note": "LiFePO4 ≈ 2.5 V; NMC 2.5–3.0 V; lead-acid ≈ 1.75 V/cell at C/10, lower at high rate"
+        },
+        {
+          "role": "soc",
+          "direction": "fall",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.8,
+          "threshold_hint": {
+            "absolute": 5
+          }
+        },
+        {
+          "role": "bms_trip",
+          "direction": "trip",
+          "onset_lag_ms": [
+            0,
+            60000
+          ],
+          "weight": 0.6,
+          "note": "Low-voltage disconnect"
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "downstream_load",
+          "effect_role": "voltage",
+          "direction": "fall",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            1000
+          ],
+          "edge_type": "structural_power"
+        },
+        {
+          "relation": "downstream_load",
+          "effect_role": "voltage",
+          "direction": "missing",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            60000
+          ],
+          "edge_type": "structural_power",
+          "note": "After the low-voltage disconnect opens"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "battery.high_internal_resistance",
+          "rule": "Deep discharge keeps voltage low at rest; resistance sag recovers at rest."
+        },
+        {
+          "vs_pattern": "pv_mppt.shading_soiling",
+          "rule": "In PV-charged systems, a deep discharge after several low-yield days points to a charging energy deficit."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Check the low-voltage disconnect setting and whether it operated.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Identify parasitic loads and charging deficit (charger or PV yield) over the preceding days.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Follow the manufacturer's procedure before recharging a Li-ion pack below its minimum voltage; some require the cells to be replaced.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 62619",
+        "IEC 61427-1"
+      ]
+    },
+    {
+      "pattern_id": "battery.charging_fault_overcharge",
+      "version": "1.0.0",
+      "failure_mode": "charging_fault_overcharge",
+      "title": "Charging fault / overcharge",
+      "category": "electrical",
+      "severity": "critical",
+      "description": "The charger or charge controller regulates to the wrong voltage (wrong profile, failed temperature compensation, faulty sensing lead) or does not stop charging. Cells exceed the maximum charge voltage; Li-ion risks lithium plating and thermal runaway, lead-acid gasses (hydrogen) and dries out.",
+      "typical_progression": "Minutes to hours per charge cycle; cumulative damage over repeated cycles.",
+      "required_roles": [
+        "voltage"
+      ],
+      "optional_roles": [
+        "cell_voltage_max",
+        "current",
+        "temperature",
+        "float_current",
+        "off_gas",
+        "bms_trip"
+      ],
+      "trigger_role": "voltage",
+      "symptoms": [
+        {
+          "role": "voltage",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 1.0,
+          "threshold_hint": {
+            "relative_to_nominal": 1.05
+          },
+          "note": "Above the manufacturer's absorption / charge voltage for the pack"
+        },
+        {
+          "role": "cell_voltage_max",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            0
+          ],
+          "weight": 0.9,
+          "threshold_hint": {
+            "absolute": 3.65
+          },
+          "note": "LiFePO4 3.65 V; NMC 4.2 V; lead-acid > 2.40 V/cell at 25 °C gasses strongly"
+        },
+        {
+          "role": "current",
+          "direction": "stuck",
+          "onset_lag_ms": [
+            0,
+            1800000
+          ],
+          "weight": 0.5,
+          "note": "Charge current does not taper as it should at the voltage limit"
+        },
+        {
+          "role": "temperature",
+          "direction": "rise",
+          "onset_lag_ms": [
+            600000,
+            7200000
+          ],
+          "weight": 0.6
+        },
+        {
+          "role": "float_current",
+          "direction": "rise",
+          "onset_lag_ms": [
+            0,
+            7200000
+          ],
+          "weight": 0.5
+        },
+        {
+          "role": "off_gas",
+          "direction": "rise",
+          "onset_lag_ms": [
+            1800000,
+            14400000
+          ],
+          "weight": 0.4,
+          "note": "Hydrogen from lead-acid; VOC/CO from Li-ion"
+        }
+      ],
+      "propagation": [
+        {
+          "relation": "downstream_load",
+          "effect_role": "voltage",
+          "direction": "rise",
+          "polarity": "+",
+          "lag_ms": [
+            0,
+            60000
+          ],
+          "edge_type": "structural_power",
+          "note": "DC loads see the elevated bus voltage"
+        }
+      ],
+      "discriminators": [
+        {
+          "vs_pattern": "battery.cell_imbalance",
+          "rule": "Overcharge raises pack voltage and all cells; imbalance raises one cell while pack voltage is normal."
+        },
+        {
+          "vs_pattern": "pv_mppt.inverter_charger_clipping",
+          "rule": "A charge controller limiting at absorption is normal; exceeding the set voltage is a fault."
+        }
+      ],
+      "checks": [
+        {
+          "order": 1,
+          "text": "Compare charger voltage setpoints (absorption, float, temperature compensation) with the battery manufacturer's values.",
+          "requires_isolation": false
+        },
+        {
+          "order": 2,
+          "text": "Check the battery voltage sense leads and temperature sensor connected to the charger.",
+          "requires_isolation": false
+        },
+        {
+          "order": 3,
+          "text": "Confirm the BMS high-voltage protection and charger communication (CAN) are working.",
+          "requires_isolation": false
+        },
+        {
+          "order": 4,
+          "text": "Check battery room ventilation for hydrogen (lead-acid) per the site requirement.",
+          "requires_isolation": false
+        }
+      ],
+      "references": [
+        "IEC 62485-2 (stationary battery installations, ventilation)",
+        "IEC 62619",
+        "IEC 61427-1"
+      ]
+    }
+  ]
+}
