@@ -154,22 +154,33 @@ export const useAssemblyStudioStore = create<AssemblyStudioState>((set, get) => 
   getTemplate: (componentTypeId) => get().library.find((c) => c.component_type_id === componentTypeId),
 }));
 
+/** Next free `C###` id; based on the highest existing number so deletions never cause reuse. */
+export function nextConnectionId(existing: readonly Pick<PlantConnection, "connection_id">[]): string {
+  let max = 0;
+  for (const { connection_id } of existing) {
+    const match = /^C(\d+)$/.exec(connection_id);
+    if (match) max = Math.max(max, Number(match[1]));
+  }
+  return `C${String(max + 1).padStart(3, "0")}`;
+}
+
 export function buildConnectionFromPorts(
   fromAssetId: string,
   fromPortId: string,
   toAssetId: string,
   toPortId: string,
   medium: string,
-  existingCount: number,
+  existing: readonly Pick<PlantConnection, "connection_id">[],
 ): PlantConnection {
   return {
-    connection_id: `C${String(existingCount + 1).padStart(3, "0")}`,
+    connection_id: nextConnectionId(existing),
     from_asset_id: fromAssetId,
     from_port_id: fromPortId,
     to_asset_id: toAssetId,
     to_port_id: toPortId,
     connection_kind: inferConnectionKind(medium),
-    approved: true,
+    // New relations are drafts: only an engineer's explicit approval admits them to the runtime DAG (R2/R5).
+    approved: false,
     lag_min_ms: 0,
     lag_max_ms: 200,
     notes: "",

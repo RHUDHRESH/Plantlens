@@ -102,9 +102,16 @@ describe("studioAssemblyState", () => {
     const motorId = store.addAsset(MOTOR, { x: 0, y: 0 });
     const supplyId = store.addAsset(SUPPLY, { x: 0, y: 0 });
     store.addConnection(
-      buildConnectionFromPorts(supplyId, "dc_out", motorId, "power_in", "dc_power", 0),
+      buildConnectionFromPorts(supplyId, "dc_out", motorId, "power_in", "dc_power", []),
     );
     expect(useAssemblyStudioStore.getState().assembly.connections).toHaveLength(1);
+  });
+
+  it("new connections are unapproved drafts with non-colliding ids", () => {
+    const existing = [{ connection_id: "C001" }, { connection_id: "C003" }];
+    const conn = buildConnectionFromPorts("A", "dc_out", "B", "power_in", "dc_power", existing);
+    expect(conn.approved).toBe(false);
+    expect(conn.connection_id).toBe("C004");
   });
 
   it("approved toggle changes only assembly state", () => {
@@ -112,11 +119,12 @@ describe("studioAssemblyState", () => {
     const motorId = store.addAsset(MOTOR, { x: 0, y: 0 });
     const supplyId = store.addAsset(SUPPLY, { x: 0, y: 0 });
     store.addConnection(
-      buildConnectionFromPorts(supplyId, "dc_out", motorId, "power_in", "dc_power", 0),
+      buildConnectionFromPorts(supplyId, "dc_out", motorId, "power_in", "dc_power", []),
     );
     const connId = useAssemblyStudioStore.getState().assembly.connections[0]!.connection_id;
-    store.updateConnection(connId, { approved: false });
     expect(useAssemblyStudioStore.getState().assembly.connections[0]?.approved).toBe(false);
+    store.updateConnection(connId, { approved: true });
+    expect(useAssemblyStudioStore.getState().assembly.connections[0]?.approved).toBe(true);
   });
 });
 

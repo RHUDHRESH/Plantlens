@@ -161,7 +161,7 @@ export function AssemblyCanvas() {
           target,
           targetHandle,
           medium,
-          assembly.connections.length,
+          assembly.connections,
         ),
       );
       if (result.warnings.length) {

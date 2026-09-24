@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from app.runtime.runtime_state import RuntimeState
@@ -16,6 +16,12 @@ class AlarmEngineState:
     cleared_pending: dict[str, datetime] = field(default_factory=dict)
     acked: set[str] = field(default_factory=set)
     shelved_until: dict[str, datetime] = field(default_factory=dict)
+    # rule_id -> instant the running debounce completes; drives deadline catch-up and the ticker.
+    pending_deadlines: dict[str, datetime] = field(default_factory=dict)
+    # rule_id -> instant the alarm first latched; stable while it stays active (first-out order).
+    raised_at: dict[str, datetime] = field(default_factory=dict)
+    # rule_id -> instant the condition first became true (process onset, before debounce).
+    onset_at: dict[str, datetime] = field(default_factory=dict)
 
 
 _alarm_engine_state = AlarmEngineState()
@@ -28,6 +34,23 @@ def get_alarm_engine_state() -> AlarmEngineState:
 def reset_alarm_engine_state() -> None:
     global _alarm_engine_state
     _alarm_engine_state = AlarmEngineState()
+
+
+def next_debounce_deadline(engine_state: AlarmEngineState | None = None) -> datetime | None:
+    """Earliest instant a pending debounce would latch, or None."""
+    local_state = engine_state or _alarm_engine_state
+    if not local_state.pending_deadlines:
+        return None
+    return min(local_state.pending_deadlines.values())
+
+
+def _iso(ts: datetime) -> str:
+    return ts.isoformat().replace("+00:00", "Z")
+
+
+def _forget(local_state: AlarmEngineState, rule_id: str) -> None:
+    local_state.condition_true_since.pop(rule_id, None)
+    local_state.pending_deadlines.pop(rule_id, None)
 
 
 def _compare(op: str, value: Any, threshold: float) -> bool:
@@ -106,7 +129,7 @@ def evaluate_alarms(
         was_active = rule.id in state.active_alarms
 
         if tag is None or tag.quality != "GOOD":
-            local_state.condition_true_since.pop(rule.id, None)
+            _forget(local_state, rule.id)
             if was_active and rule.latching and rule.id not in local_state.acked:
                 active_records.append(state.active_alarms[rule.id])
             continue
@@ -121,9 +144,16 @@ def evaluate_alarms(
                 first_true = now
             elapsed_ms = (now - first_true).total_seconds() * 1000
             if elapsed_ms < delay_ms:
+                local_state.pending_deadlines[rule.id] = first_true + timedelta(
+                    milliseconds=delay_ms
+                )
                 if was_active and (rule.latching or rule.requires_ack):
                     active_records.append(state.active_alarms[rule.id])
                 continue
+            local_state.pending_deadlines.pop(rule.id, None)
+            if not was_active or rule.id not in local_state.raised_at:
+                local_state.raised_at[rule.id] = now
+                local_state.onset_at[rule.id] = first_true
 
             record = {
                 "alarm_id": rule.id,
@@ -131,7 +161,8 @@ def evaluate_alarms(
                 "tag_id": rule.tag,
                 "severity": severity,
                 "message": rule.message,
-                "raised_at": tag.timestamp.isoformat().replace("+00:00", "Z"),
+                "raised_at": _iso(local_state.raised_at[rule.id]),
+                "onset_at": _iso(local_state.onset_at.get(rule.id, first_true)),
                 "value": tag.value,
                 "acked": rule.id in local_state.acked,
                 "priority": rule.priority,
@@ -146,11 +177,17 @@ def evaluate_alarms(
             }
             active_records.append(record)
         else:
-            local_state.condition_true_since.pop(rule.id, None)
+            _forget(local_state, rule.id)
             if was_active and rule.latching and rule.id not in local_state.acked:
                 active_records.append(state.active_alarms[rule.id])
             elif was_active and rule.requires_ack and rule.id not in local_state.acked:
                 active_records.append(state.active_alarms[rule.id])
+
+    still_active = {record["alarm_id"] for record in active_records}
+    for rule_id in list(local_state.raised_at):
+        if rule_id not in still_active:
+            local_state.raised_at.pop(rule_id, None)
+            local_state.onset_at.pop(rule_id, None)
 
     return active_records
 

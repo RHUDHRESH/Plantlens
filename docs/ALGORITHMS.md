@@ -13,6 +13,27 @@ TagFrame → quality gate → alarm evaluation → DAG root-cause trace
 
 Agents read `RuntimeEvidencePacket` only. They never recompute root cause.
 
+## 0. Runtime clock and evaluation cadence
+
+`apps/api/app/runtime/runtime_tick.py`, `ticker.py`
+
+- **Evaluation instant.** A simulator frame is evaluated at its scenario timestamp. A gateway
+  frame is evaluated at its server `ingest_ts`, so a skewed device clock can neither mark tags
+  STALE nor delay alarms. `frame.timestamp` stays the device's observation time.
+- **Debounce deadline catch-up.** The alarm engine records when each running `delay_ms + for_ms`
+  debounce will complete. Before applying a frame, the runtime evaluates at every deadline that
+  passed since the last one. An alarm therefore latches exactly at its deadline, not when the
+  next unrelated frame arrives. This is deterministic under instant replay.
+- **Periodic ticker.** Runs every `RUNTIME_TICK_MS` (default 100 ms; 0 disables it) on the runtime
+  clock, which is the last evaluation instant plus the monotonic time elapsed since. It completes
+  debounces and staleness when no frame follows. It pushes a snapshot only when operator-visible
+  state changes.
+- **Alarm timestamps.** `onset_at` is when the condition first became true, before any debounce.
+  `raised_at` is when the alarm latched, and it stays stable while the alarm is active. Both
+  feed first-out ordering.
+- **Errors are never swallowed.** An evaluation failure is logged, and the frame is not counted
+  as `accepted`.
+
 ## 1. Tag quality
 
 `apps/api/app/runtime/quality.py`

@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from app.runtime.alarm_engine import evaluate_alarms
+from app.runtime.alarm_engine import evaluate_alarms, next_debounce_deadline
 from app.runtime.asset_status import derive_asset_status
 from app.runtime.quality import (
     DEFAULT_MISSING_AFTER_MS,
@@ -229,14 +229,55 @@ def _sanitize_unusable_values(frame: TagFrame) -> TagFrame:
     return frame
 
 
+def frame_evaluation_time(frame: TagFrame) -> datetime:
+    """Instant at which a frame is evaluated.
+
+    Simulator frames carry scenario time. Gateway frames are evaluated on the server clock
+    (``ingest_ts``) so a skewed device clock can neither mark live tags STALE nor delay alarms;
+    ``frame.timestamp`` stays the device's observation time for display and audit.
+    """
+    if frame.source == "simulator":
+        now = frame.timestamp
+    else:
+        now = frame.ingest_ts or datetime.now(timezone.utc)
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=timezone.utc)
+    return now
+
+
+# Upper bound on deadline catch-up ticks per frame; keeps a pathological rule set bounded.
+MAX_CATCH_UP_TICKS = 64
+
+
+def catch_up_debounce_deadlines(
+    state: RuntimeState,
+    config: RuntimeConfig,
+    *,
+    until: datetime,
+) -> int:
+    """Evaluate at every debounce deadline that elapsed before ``until``.
+
+    Without this, a ``for_ms`` debounce only completes when the next unrelated frame arrives,
+    which delays alarms by a full frame interval (or forever if no frame follows).
+    """
+    ticks = 0
+    while ticks < MAX_CATCH_UP_TICKS:
+        deadline = next_debounce_deadline()
+        if deadline is None or deadline > until:
+            break
+        evaluate_runtime_tick(state, config, now=deadline)
+        ticks += 1
+    return ticks
+
+
 def on_tag_frame(
     state: RuntimeState,
     frame: TagFrame,
     config: RuntimeConfig,
 ) -> dict[str, Any]:
-    now = frame.timestamp
-    if now.tzinfo is None:
-        now = now.replace(tzinfo=timezone.utc)
+    now = frame_evaluation_time(frame)
+    catch_up_debounce_deadlines(state, config, until=now)
+    state.anchor_clock(now)
     sanitized = _sanitize_unusable_values(frame)
     normalized = normalize_tag_quality(sanitized, config, state, now=now)
     if normalized.ingest_ts is None and frame.source != "simulator":

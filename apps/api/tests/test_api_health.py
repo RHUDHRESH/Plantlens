@@ -300,6 +300,7 @@ def test_lifespan_shutdown_completes_without_error():
 
 
 def test_lifespan_registers_settings_only_on_app_state(client: TestClient):
-    """Lifespan binds settings; DB engine stays in session module, not app.state."""
+    """Lifespan binds settings (+ runtime ticker handle); DB engine stays in session module."""
     state_keys = set(client.app.state._state.keys())
-    assert state_keys == {"settings"}
+    assert state_keys == {"settings", "runtime_ticker"}
+    assert "engine" not in state_keys

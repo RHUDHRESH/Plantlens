@@ -10,7 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import require_human_approver, require_viewer
+from app.auth.dependencies import require_change_approver, require_viewer
 from app.auth.principal import Principal
 from app.dependencies import get_db
 from app.services.agent_queue import agent_draft_queue
@@ -59,7 +59,7 @@ async def list_pending_drafts(
 @router.post("/drafts/approve")
 async def approve_draft(
     body: DraftAction,
-    principal: Principal = Depends(require_human_approver),
+    principal: Principal = Depends(require_change_approver),
     session: AsyncSession = Depends(get_db),
 ) -> dict:
     try:
@@ -93,7 +93,7 @@ async def approve_draft(
 @router.post("/drafts/reject")
 async def reject_draft(
     body: DraftAction,
-    principal: Principal = Depends(require_human_approver),
+    principal: Principal = Depends(require_change_approver),
     session: AsyncSession = Depends(get_db),
 ) -> dict:
     try:
