@@ -12,6 +12,7 @@ const TrendsPage = page(() => import("../features/trends/TrendsPage"), "TrendsPa
 const CausalGraphPage = page(() => import("../features/causal-graph/CausalGraphPage"), "CausalGraphPage");
 const Plant3DPage = page(() => import("../features/plant3d/Plant3DPage"), "Plant3DPage");
 const IncidentsPage = page(() => import("../features/incidents/IncidentsPage"), "IncidentsPage");
+const ConnectionsPage = page(() => import("../features/gateways/ConnectionsPage"), "ConnectionsPage");
 const AssemblyStudioPage = page(() => import("../features/studio-graph/AssemblyStudioPage"), "AssemblyStudioPage");
 const ComponentLibraryPage = page(
   () => import("../features/studio-graph/ComponentLibraryPage"),
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
       { path: "/ops/causal", element: <CausalGraphPage /> },
       { path: "/ops/3d", element: <Plant3DPage /> },
       { path: "/ops/incidents", element: <IncidentsPage /> },
+      { path: "/ops/connections", element: <ConnectionsPage /> },
       { path: "/eng/studio", element: <AssemblyStudioPage /> },
       { path: "/eng/studio/components", element: <ComponentLibraryPage /> },
       { path: "/eng/studio/forms", element: <StudioFormsPage /> },
