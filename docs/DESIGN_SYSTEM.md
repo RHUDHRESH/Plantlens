@@ -10,30 +10,54 @@ Linear/Notion cleanliness + high-performance control-room seriousness.
 The single hardest rule: **this is a High-Performance HMI (ISA-101).** Mostly grey. Color is
 reserved for abnormal conditions. A screen full of color is a screen where nothing stands out.
 
-## Design tokens (put these in `apps/web/src/styles/tokens.css` as CSS variables, and
-`packages/ui-tokens/tokens.json` as the source)
+## Design tokens (v2 — generated, never hand-copied)
 
-```
---bg:           #F7F5F0   /* warm paper background (Studio); runtime HMI may go darker */
---surface:      #FFFFFF
---surface-muted:#F1EEE8
---grid:         #E8E2D8
---border:       #DED8CE
---text:         #111111
---text-muted:   #6B6B6B
---accent:       #2563EB   /* selection / interactive only */
+`packages/ui-tokens/tokens.json` is the **only** source. Running `pnpm tokens:build` generates:
+- `apps/web/src/styles/tokens.css`, the runtime CSS variables for both themes;
+- `apps/web/src/styles/tailwind-theme.css`, the Tailwind utilities (`bg-surface`,
+  `text-text-muted`, `border-border`, …) mapped onto those variables.
 
-/* status — the ONLY place saturated color is allowed */
---status-normal:    #7A8471  /* quiet sage; often rendered as no-glow neutral */
---status-warning:   #C98910  /* amber */
---status-critical:  #B3261E  /* red */
---status-sensor-bad:#6B5DD3  /* purple — instrument fault, distinct from process fault */
---status-offline:   #8A8A8A  /* grey */
+CI runs `pnpm tokens:check` and fails if the generated files are stale. How to use them is in
+`docs/FRONTEND_V2.md`.
 
---radius:    16px   /* cards */ ;  --radius-dialog: 14px
---font-ui:   "Inter Variable", Inter, system-ui, sans-serif
---font-data: "Inter Variable"   /* tabular-nums + slashed zero for IDs/timestamps/values */
-```
+**Themes** (`data-theme` on `<html>`):
+- **light:** for engineering and Studio work.
+- **dark (control room):** low-luminance neutrals for 24/7 operation. Status colours are re-tuned
+  so they keep their contrast.
+
+**Neutrals.** A warm-neutral grey ramp (`--neutral-0…900`) carries about 90 % of the UI:
+`--canvas`, `--surface`, `--surface-sunken`, `--border`, `--text`, `--text-muted`.
+
+**Accent.** `--accent` is for interaction only: selection, focus and primary buttons. It never
+signals status.
+
+**Status.** This is the only place saturated colour is allowed, and it is always paired with a
+shape and text:
+
+| Priority / state | Token | Shape | Label |
+|------------------|-------|-------|-------|
+| P1 critical | `--status-critical` | ▲ triangle | CRITICAL |
+| P2 high | `--status-high` | ◆ diamond | HIGH |
+| P3 medium | `--status-medium` | ■ square | MEDIUM |
+| P4 low | `--status-low` | ● circle | LOW |
+| Sensor bad (instrument fault) | `--status-sensor-bad` (purple) | hatched square | SENSOR BAD |
+| Offline | `--status-offline` | dashed ring | OFFLINE |
+| Shelved | `--status-shelved` | three bars | SHELVED |
+
+Each status also has a `-tint` fill. The `PriorityGlyph` and `StatusBadge` components are the
+reference implementation.
+
+**Media (Studio only).** Muted colours paired with dash patterns so no medium relies on colour
+alone: `--medium-dc-power`, `-ac-power`, `-mechanical`, `-fluid`, `-air`, `-signal`, `-data`,
+`-thermal`, each with a matching `--medium-*-dash`.
+
+**Equipment.** `--equipment-stroke`, `--equipment-fill`, `--equipment-fill-running`. Running
+equipment is filled and stopped equipment is outlined; state is never shown by colour.
+
+**Type.** Inter Variable for UI and JetBrains Mono for tabular values, bundled locally with no
+runtime font CDN. The scale runs display, h1, h2, h3, body (13/20), caption, micro.
+
+**Radius, space, motion, z-index and layout** are all tokens as well.
 
 ## Status rules (never rely on color alone — WCAG + control-room safety)
 Every status is conveyed by **color + text + icon + shape**, never color alone:
