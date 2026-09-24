@@ -1,0 +1,101 @@
+/* Alarms (ISA-18.2 list). Grey by default; colour only on the priority glyph/label. */
+
+.alm-page { gap: 14px; }
+
+.alm-tabs { display: flex; flex-direction: column; gap: 0; min-width: 0; }
+.alm-tablist { display: flex; gap: 2px; border-bottom: 1px solid var(--border); }
+.alm-tab { position: relative; display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border: 0; background: transparent; color: var(--text-muted); font: 500 13px var(--font-sans); cursor: pointer; }
+.alm-tab:hover { color: var(--text); }
+.alm-tab[data-state="active"] { color: var(--text); font-weight: 600; }
+.alm-tab[data-state="active"]::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 2px; background: var(--text); border-radius: 2px; }
+.alm-tab__count { min-width: 20px; height: 18px; padding: 0 6px; border-radius: var(--radius-pill); background: var(--surface-sunken); color: var(--text-muted); font: 600 11px var(--font-mono); display: inline-flex; align-items: center; justify-content: center; }
+
+.alm-panel { padding-top: 12px; display: flex; flex-direction: column; gap: 10px; outline: none; }
+
+.alm-toolbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.alm-toolbar__spacer { flex: 1; }
+.alm-search { position: relative; display: flex; align-items: center; width: 260px; }
+.alm-search svg { position: absolute; left: 9px; width: 14px; height: 14px; color: var(--text-subtle); pointer-events: none; }
+.alm-search .pl-input { padding-left: 28px; }
+.alm-select { width: auto; min-width: 136px; }
+.alm-prio-filter { display: inline-flex; gap: 2px; padding: 2px; background: var(--surface-sunken); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.alm-toggle { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px; border: 0; background: transparent; border-radius: 6px; color: var(--text-muted); font: 600 12px var(--font-sans); cursor: pointer; }
+.alm-toggle[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow-e1); }
+.alm-bulk { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+.alm-readonly { font-size: 12px; }
+
+.alm-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: auto; min-height: 120px; }
+.alm-table thead th { background: var(--surface); }
+.alm-table td { padding-top: 7px; padding-bottom: 7px; }
+.alm-table tbody tr:last-child td { border-bottom: 0; }
+.alm-row { cursor: pointer; outline: none; }
+.alm-row:focus-visible td { background: var(--surface-sunken); box-shadow: inset 0 1px 0 var(--focus-ring), inset 0 -1px 0 var(--focus-ring); }
+.alm-row:focus-visible td:first-child { box-shadow: inset 2px 0 0 var(--focus-ring), inset 0 1px 0 var(--focus-ring), inset 0 -1px 0 var(--focus-ring); }
+.alm-row[data-open="true"] td { background: var(--accent-tint); }
+.alm-row[data-state="acked"] .alm-msg__text { font-weight: 400; color: var(--text-muted); }
+.alm-col-check { width: 40px; padding-right: 0 !important; }
+.alm-col-check input { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
+.alm-col-priority { width: 72px; }
+.alm-col-state { width: 128px; }
+.alm-col-asset { width: 140px; }
+.alm-col-num { text-align: right !important; white-space: nowrap; }
+.alm-col-value { width: 96px; }
+.alm-col-onset { width: 108px; }
+.alm-col-age { width: 104px; }
+.alm-col-sit { width: 170px; }
+.alm-col-action { width: 60px; text-align: right; overflow: visible !important; }
+.alm-table { table-layout: fixed; min-width: 1040px; }
+.alm-table td { overflow: hidden; text-overflow: ellipsis; }
+.alm-table th.alm-col-num .alm-sort { margin-left: auto; }
+.alm-sort { display: inline-flex; align-items: center; gap: 4px; border: 0; padding: 0; background: none; font: inherit; color: inherit; text-transform: inherit; letter-spacing: inherit; cursor: pointer; }
+.alm-sort:hover { color: var(--text); }
+.alm-sort svg, .alm-sort__spacer { width: 12px; height: 12px; display: inline-block; }
+
+
+.alm-msg { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.alm-msg__text { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alm-sit { display: inline-block; max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--text-muted); }
+.alm-reason { max-width: 320px; }
+.alm-table-empty { border-top: 1px solid var(--border); }
+.alm-keys { margin: 0; font-size: 11.5px; }
+
+/* Grouped view */
+.alm-groups { display: flex; flex-direction: column; gap: 12px; }
+.alm-group { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.alm-group__head { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+.alm-group__title { margin: 0 0 2px; font-size: var(--type-h3-size); font-weight: 600; }
+.alm-group__list { list-style: none; margin: 0; padding: 4px; }
+.alm-group__row { width: 100%; display: grid; grid-template-columns: 14px minmax(0, 1fr) 84px 150px 100px 100px; align-items: center; gap: 10px; padding: 7px 10px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text); text-align: left; font: 13px var(--font-sans); cursor: pointer; }
+.alm-group__row:hover { background: var(--surface-sunken); }
+.alm-group__msg { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.alm-group__time, .alm-group__age { text-align: right; color: var(--text-muted); }
+
+/* Dialogs */
+.alm-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+.alm-confirm-list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: var(--radius-md); max-height: 220px; overflow: auto; }
+.alm-confirm-list li { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--border); font-size: 13px; }
+.alm-confirm-list li:last-child { border-bottom: 0; }
+.alm-confirm-list__msg { flex: 1; font-weight: 500; }
+.alm-shelve-target { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; margin-bottom: 14px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface-sunken); }
+.alm-shelve-target .pl-glyph { margin-top: 4px; }
+.alm-shelve-target__msg { font-weight: 600; }
+.alm-shelve-form { display: flex; flex-direction: column; gap: 14px; }
+.alm-fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 6px; }
+.alm-fieldset legend { font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; }
+.alm-presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.alm-preset { display: flex; align-items: center; justify-content: center; height: 36px; border: 1px solid var(--border-strong); border-radius: var(--radius-md); background: var(--surface); font: 500 13px var(--font-sans); cursor: pointer; position: relative; }
+.alm-preset input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.alm-preset:has(input:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.alm-preset.is-active { border-color: var(--text); background: var(--surface-sunken); font-weight: 600; box-shadow: inset 0 0 0 1px var(--text); }
+.alm-preset.is-disabled { color: var(--text-subtle); border-style: dashed; cursor: not-allowed; }
+.alm-preset.is-disabled input { cursor: not-allowed; }
+.alm-hint { margin: 0; font-size: 12px; color: var(--text-muted); }
+.alm-field-error { font-size: 12px; color: var(--status-critical); font-weight: 500; }
+.alm-until { font-size: 13px; padding: 8px 10px; border-radius: var(--radius-md); background: var(--surface-sunken); }
+
+/* Detail sheet */
+.alm-evidence { display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface-sunken); font-size: 12.5px; }
+.alm-evidence__expr { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 13px; }
+.alm-evidence__obs { font-weight: 700; }
+.alm-evidence__op { font: 700 14px var(--font-mono); color: var(--text-muted); }
+.alm-inline { display: inline-flex; align-items: center; gap: 6px; }
