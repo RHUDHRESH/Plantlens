@@ -27,6 +27,7 @@ from app.routers import (
     plc_status,
     runtime_api,
     simulator,
+    studio,
     ws,
 )
 from app.settings import get_settings
@@ -76,6 +77,7 @@ def create_app() -> FastAPI:
     app.include_router(incidents.router)
     app.include_router(agents.router)
     app.include_router(changes.router)
+    app.include_router(studio.router)
     app.include_router(plc_status.router)
     return app
 

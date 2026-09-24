@@ -43,6 +43,7 @@ ALLOWED_API_PREFIXES = (
     "/api/agents/",
     "/api/changes",
     "/api/changes/",
+    "/api/studio/",
     "/api/plc/",
     "/api/library/",
 )

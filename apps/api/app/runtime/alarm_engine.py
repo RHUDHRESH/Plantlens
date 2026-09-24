@@ -22,6 +22,8 @@ class AlarmEngineState:
     raised_at: dict[str, datetime] = field(default_factory=dict)
     # rule_id -> instant the condition first became true (process onset, before debounce).
     onset_at: dict[str, datetime] = field(default_factory=dict)
+    # rule_id -> {"reason", "by", "at"} for operator-visible shelving records (ISA-18.2).
+    shelved_meta: dict[str, dict[str, str]] = field(default_factory=dict)
 
 
 _alarm_engine_state = AlarmEngineState()
@@ -43,6 +45,7 @@ def reconcile_alarm_engine_state(rule_ids: set[str]) -> None:
         local_state.condition_true_since,
         local_state.cleared_pending,
         local_state.shelved_until,
+        local_state.shelved_meta,
         local_state.pending_deadlines,
         local_state.raised_at,
         local_state.onset_at,
@@ -206,6 +209,33 @@ def evaluate_alarms(
             local_state.onset_at.pop(rule_id, None)
 
     return active_records
+
+
+def shelve_alarm(rule_id: str, *, until: datetime, reason: str, by: str, now: datetime) -> None:
+    local_state = _alarm_engine_state
+    local_state.shelved_until[rule_id] = until
+    local_state.shelved_meta[rule_id] = {
+        "reason": reason,
+        "by": by,
+        "at": now.isoformat().replace("+00:00", "Z"),
+        "until": until.isoformat().replace("+00:00", "Z"),
+    }
+
+
+def unshelve_alarm(rule_id: str) -> bool:
+    local_state = _alarm_engine_state
+    local_state.shelved_meta.pop(rule_id, None)
+    return local_state.shelved_until.pop(rule_id, None) is not None
+
+
+def list_shelved(now: datetime) -> list[dict[str, str]]:
+    """Shelved alarms that are still within their shelve window (expired ones auto-return)."""
+    local_state = _alarm_engine_state
+    out = []
+    for rule_id, until in sorted(local_state.shelved_until.items()):
+        if now < until:
+            out.append({"alarm_id": rule_id, **local_state.shelved_meta.get(rule_id, {})})
+    return out
 
 
 def acknowledge_alarm(

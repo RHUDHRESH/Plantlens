@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from collections import OrderedDict
+from collections import OrderedDict, deque
 from datetime import datetime, timedelta
 
 from app.schemas.tag_frame import TagFrame
@@ -11,6 +11,8 @@ from app.schemas.tag_frame import TagFrame
 
 # Bounded replay-dedupe window; a long-running gateway must not grow memory without limit.
 MAX_DEDUPE_KEYS = 50_000
+# Per-tag trend ring buffer (e.g. 1 h at 2 Hz). Long-term history belongs in a historian.
+TREND_POINTS_PER_TAG = 7_200
 
 
 class RuntimeState:
@@ -29,6 +31,7 @@ class RuntimeState:
         # Runtime clock: the evaluation instant of the latest frame plus monotonic time since.
         # Simulator frames anchor scenario time; gateway frames anchor server wall time.
         self._clock_anchor: tuple[datetime, float] | None = None
+        self.history: dict[str, deque[tuple[str, float | None, str]]] = {}
 
     def anchor_clock(self, now: datetime) -> None:
         self._clock_anchor = (now, time.monotonic())
@@ -49,7 +52,27 @@ class RuntimeState:
         if len(self._seen_identity_keys) > MAX_DEDUPE_KEYS:
             self._seen_identity_keys.popitem(last=False)
         self.tags[frame.tag_id] = frame
+        self._record_history(frame)
         return True
+
+    def _record_history(self, frame: TagFrame) -> None:
+        value = frame.value
+        numeric = float(value) if isinstance(value, (int, float)) and not isinstance(value, bool) else (
+            1.0 if value is True else 0.0 if value is False else None
+        )
+        ring = self.history.get(frame.tag_id)
+        if ring is None:
+            ring = self.history[frame.tag_id] = deque(maxlen=TREND_POINTS_PER_TAG)
+        ring.append((frame.timestamp.isoformat().replace("+00:00", "Z"), numeric, frame.quality))
+
+    def tag_history(self, tag_id: str, *, since: datetime | None = None) -> list[tuple[str, float | None, str]]:
+        ring = self.history.get(tag_id)
+        if not ring:
+            return []
+        if since is None:
+            return list(ring)
+        cutoff = since.isoformat().replace("+00:00", "Z")
+        return [point for point in ring if point[0] >= cutoff]
 
     def get_tag_value(self, tag_id: str):
         frame = self.tags.get(tag_id)
@@ -93,6 +116,7 @@ class RuntimeState:
         self.asset_status.clear()
         self._seen_identity_keys.clear()
         self._clock_anchor = None
+        self.history.clear()
 
 
 runtime_state = RuntimeState()
