@@ -56,8 +56,8 @@ describe("HmiPreviewPage", () => {
 
   it("renders mode switcher", async () => {
     renderPage();
-    expect(await screen.findByRole("tab", { name: /Scenario Preview/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /Runtime Snapshot/i })).toBeInTheDocument();
+    expect(await screen.findByRole("radio", { name: /Scenario Preview/i })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: /Runtime Snapshot/i })).toBeInTheDocument();
   });
 
   it("renders scenario preview source badge", async () => {
@@ -72,8 +72,8 @@ describe("HmiPreviewPage", () => {
       new ApiError(404, { message: "Not found" }),
     );
     renderPage();
-    await screen.findByRole("tab", { name: /Runtime Snapshot/i });
-    fireEvent.click(screen.getByRole("tab", { name: /Runtime Snapshot/i }));
+    await screen.findByRole("radio", { name: /Runtime Snapshot/i });
+    fireEvent.click(screen.getByRole("radio", { name: /Runtime Snapshot/i }));
     fireEvent.click(screen.getByRole("button", { name: /Load runtime HMI/i }));
     expect(
       await screen.findByText(/Runtime HMI endpoint is not available yet/i),

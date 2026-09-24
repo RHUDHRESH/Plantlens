@@ -1,0 +1,79 @@
+/* 2D plant map — migrated from the retired styles/runtime.css. Token-driven; light + dark. */
+.plant-map-2d-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+.plant-map-2d {
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  touch-action: none;
+}
+
+.plant-map-2d--panning {
+  cursor: grabbing;
+}
+
+.plant-map-2d-wrap--compact .plant-map-2d {
+  min-height: 0;
+}
+
+.map-empty {
+  padding: var(--space-xl);
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+}
+
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-md);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.map-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.map-legend__swatch {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+}
+
+.plant-node__micro-badges {
+  pointer-events: none;
+}
+
+.plant-node__micro-badge {
+  opacity: 0.9;
+}
+
+/* Only allowed looping animation (DESIGN_SYSTEM §11): abnormal asset pulse. */
+@keyframes abnormal-asset-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.abnormal-asset-pulse {
+  animation: abnormal-asset-pulse var(--motion-abnormal-pulse) ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .abnormal-asset-pulse { animation: none; opacity: 1; }
+}

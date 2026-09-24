@@ -5,11 +5,11 @@ interface SourceBadgeProps {
 
 export function SourceBadge({ sourceLabel, lastLoadedAt }: SourceBadgeProps) {
   return (
-    <div className="hmi-source-badge" aria-label="HMI data source">
-      <span className="hmi-source-badge__label">Source: {sourceLabel}</span>
+    <div className="pl-chip hmi-source-badge" aria-label="HMI data source">
+      <strong>Source: {sourceLabel}</strong>
       {lastLoadedAt && (
         <span className="hmi-source-badge__time" data-tabular>
-          Last loaded {lastLoadedAt}
+          · {lastLoadedAt}
         </span>
       )}
     </div>

@@ -1,4 +1,6 @@
 import type { IncidentHMIState } from "../../app/schemas/plantHmi";
+import { Panel, StatusBadge } from "../../components/ui/primitives";
+import { severityKind, statusLabel } from "./statusStyles";
 
 interface IncidentPanelProps {
   incident: IncidentHMIState | null;
@@ -7,22 +9,21 @@ interface IncidentPanelProps {
 export function IncidentPanel({ incident }: IncidentPanelProps) {
   if (!incident) {
     return (
-      <section className="hmi-incident hmi-incident--empty" aria-label="Active incident">
-        <h2>Active incident</h2>
-        <p>No active incident. Backend reported no grouped situation.</p>
-      </section>
+      <Panel title="Active incident" aria-label="Active incident" className="hmi-card">
+        <p className="hmi-muted">No active incident. Backend reported no grouped situation.</p>
+      </Panel>
     );
   }
 
   return (
-    <section className="hmi-incident" aria-label="Active incident">
-      <h2>{incident.title}</h2>
-      <p className="hmi-incident__summary">{incident.summary}</p>
-      <dl className="hmi-incident__facts">
-        <div>
-          <dt>Severity</dt>
-          <dd>{incident.severity}</dd>
-        </div>
+    <Panel
+      title={incident.title}
+      aria-label="Active incident"
+      className="hmi-card"
+      actions={<StatusBadge compact status={severityKind(incident.severity)} label={statusLabel(incident.severity)} />}
+    >
+      <p className="hmi-item__body">{incident.summary}</p>
+      <dl className="hmi-facts">
         <div>
           <dt>Suspected root cause</dt>
           <dd>{incident.suspected_root_cause}</dd>
@@ -40,6 +41,6 @@ export function IncidentPanel({ incident }: IncidentPanelProps) {
           <dd>{incident.affected_assets.join(", ") || "—"}</dd>
         </div>
       </dl>
-    </section>
+    </Panel>
   );
 }

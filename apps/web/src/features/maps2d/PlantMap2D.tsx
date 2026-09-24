@@ -15,6 +15,7 @@ import { PlantEdge } from "./PlantEdge";
 import { PlantNode } from "./PlantNode";
 import { statusForAsset } from "./statusStyles";
 import { useSvgViewport } from "./useSvgViewport";
+import "./maps2d.css";
 
 export interface PlantMap2DViewportControls {
   fitPlant: () => void;

@@ -10,7 +10,6 @@ import "@fontsource/jetbrains-mono/500.css";
 import "./styles/tokens.css";
 import "./styles/tailwind.css";
 import "./styles/globals.css";
-import "./styles/runtime.css";
 import "./styles/ui.css";
 
 function Providers({ children }: { children: React.ReactNode }) {

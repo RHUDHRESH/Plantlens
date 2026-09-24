@@ -1,207 +1,137 @@
-.hmi-runtime-shell {
+/* HMI preview (/eng/studio/hmi-preview) + compile-preview workbench.
+   Token-driven; works in light and dark. Panels/badges/tables come from styles/ui.css. */
 
-  padding: var(--space-lg);
+/* ---------- Page ---------- */
+.hmi-runtime-shell__body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg);
-}
-
-.hmi-runtime-shell__header {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
   gap: var(--space-md);
-  align-items: flex-start;
-}
-
-.hmi-runtime-shell__header h1 {
-  margin: 0;
-  font-size: 1.5rem;
-}
-
-.hmi-runtime-shell__subtitle {
-  margin: var(--space-xs) 0 0;
-  color: var(--text-muted);
-  font-size: 0.875rem;
 }
 
 .hmi-runtime-shell__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--space-lg);
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-md);
+  align-items: start;
 }
 
-.hmi-runtime-shell__error {
-  padding: var(--space-md);
-  border: 1px solid var(--status-critical);
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--status-critical) 12%, transparent);
+.hmi-card--wide {
+  grid-column: 1 / -1;
 }
 
-.hmi-source-badge {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 0.8125rem;
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface-muted);
+.hmi-muted {
+  margin: 0;
+  color: var(--text-muted);
 }
 
-.hmi-source-badge__label {
-  font-weight: 600;
+.hmi-meta {
+  margin: 0;
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-lh);
+  color: var(--text-muted);
 }
 
+.hmi-num {
+  text-align: right;
+}
+
+/* ---------- Source chip ---------- */
 .hmi-source-badge__time {
   color: var(--text-muted);
 }
 
-.hmi-mode-switcher {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  padding: var(--space-md);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-}
-
-.hmi-mode-switcher__tabs {
-  display: flex;
-  gap: var(--space-sm);
-}
-
-.hmi-mode-switcher__tabs button {
-  padding: var(--space-sm) var(--space-md);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface-muted);
-  color: var(--text);
-  cursor: pointer;
-}
-
-.hmi-mode-switcher__tabs button.is-active {
-  border-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
-}
-
-.hmi-mode-switcher__panel {
+/* ---------- Mode switcher ---------- */
+.hmi-mode-switcher__row {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-md);
   align-items: flex-end;
+  gap: var(--space-md);
+}
+
+.hmi-mode-switcher__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-sm);
+  flex: 1 1 360px;
 }
 
 .hmi-mode-switcher__field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  font-size: 0.8125rem;
+  min-width: 220px;
 }
 
 .hmi-mode-switcher__help {
   margin: 0;
   flex: 1 1 240px;
   color: var(--text-muted);
-  font-size: 0.8125rem;
+  font-size: var(--type-caption-size);
 }
 
 .hmi-runtime-unavailable {
-  padding: var(--space-md);
-  border: 1px dashed var(--status-warning);
-  border-radius: var(--radius-sm);
+  border-color: color-mix(in srgb, var(--status-medium) 45%, var(--border));
+  background: var(--status-medium-tint);
   color: var(--text);
 }
 
+/* ---------- State strip ---------- */
 .hmi-state-strip {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-md);
   align-items: center;
-  padding: var(--space-md);
+  padding: 10px 14px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface-elevated);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-e1);
+}
+
+.hmi-state-strip__plant {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .hmi-state-strip__title {
-  font-weight: 700;
-}
-
-.hmi-state-strip__run {
-  display: block;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.hmi-state-strip__overall {
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
-  font-weight: 700;
-  text-transform: uppercase;
-  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text);
 }
 
 .hmi-state-strip__meta {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 0.8125rem;
+  flex-wrap: wrap;
+  gap: 4px var(--space-md);
+  margin-left: auto;
+  font-size: var(--type-caption-size);
   color: var(--text-muted);
 }
 
+/* ---------- Data quality ---------- */
 .hmi-data-quality {
-  padding: var(--space-md);
-  border-left: 4px solid var(--status-warning);
-  background: color-mix(in srgb, var(--status-warning) 10%, var(--surface));
-  border-radius: var(--radius-sm);
+  display: grid;
+  gap: 4px;
+  padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, var(--status-sensor-bad) 40%, var(--border));
+  border-left-width: 3px;
+  border-radius: var(--radius-md);
+  background: var(--status-sensor-bad-tint);
 }
 
-.hmi-data-quality h2,
-.hmi-incident h2,
-.hmi-evidence h2,
-.hmi-causal-chain h2,
-.hmi-signals h2,
-.hmi-operator-actions h2,
-.hmi-alarm-groups h2 {
-  margin: 0 0 var(--space-sm);
-  font-size: 1rem;
+.hmi-data-quality__title {
+  margin: 0;
+  font-size: var(--type-h3-size);
+  line-height: var(--type-h3-lh);
+  font-weight: 600;
 }
 
 .hmi-data-quality__notes {
-  margin: var(--space-sm) 0 0;
+  margin: 4px 0 0;
   padding-left: 1.25rem;
+  font-size: var(--type-caption-size);
 }
 
-.hmi-incident,
-.hmi-evidence,
-.hmi-causal-chain,
-.hmi-signals,
-.hmi-operator-actions,
-.hmi-alarm-groups {
-  padding: var(--space-md);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-}
-
-.hmi-incident__facts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: var(--space-sm);
-  margin: var(--space-md) 0 0;
-}
-
-.hmi-incident__facts dt {
-  font-size: 0.6875rem;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.hmi-evidence__list,
-.hmi-operator-actions__list,
-.hmi-alarm-groups__list,
+/* ---------- Lists / items ---------- */
+.hmi-list,
 .hmi-causal-chain__edges {
   list-style: none;
   margin: 0;
@@ -211,104 +141,326 @@
   gap: var(--space-sm);
 }
 
-.hmi-evidence__item,
-.hmi-operator-actions__card,
-.hmi-alarm-groups__item,
-.hmi-asset-card {
-  padding: var(--space-sm);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface-muted);
-}
-
-.hmi-causal-chain__assets {
+.hmi-item {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--space-sm);
-  margin-bottom: var(--space-md);
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
 }
 
-.hmi-causal-chain__edges .is-active {
-  color: var(--status-warning);
-  font-weight: 600;
-}
-
-.hmi-asset-card__head {
+.hmi-item__head {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-sm);
 }
 
-.hmi-asset-card h3 {
+.hmi-item__title {
   margin: 0;
-  font-size: 0.9375rem;
+  font-size: var(--type-body-size);
+  font-weight: 600;
+  color: var(--text);
 }
 
-.hmi-asset-card__id {
-  margin: 2px 0 0;
-  font-size: 0.75rem;
+.hmi-item__body {
+  margin: 0;
+  color: var(--text);
+}
+
+.hmi-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-sm) var(--space-md);
+  margin: var(--space-md) 0 0;
+}
+
+.hmi-facts dt {
+  font-size: var(--type-micro-size);
+  letter-spacing: var(--type-micro-tracking);
+  text-transform: uppercase;
+  font-weight: 600;
   color: var(--text-muted);
 }
 
-.hmi-operator-actions__header {
+.hmi-facts dd {
+  margin: 2px 0 0;
+  color: var(--text);
+}
+
+/* ---------- Assets & causality ---------- */
+.hmi-causal-chain__assets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.hmi-asset-card__health {
+  margin: 0;
+  font-weight: 500;
+}
+
+.hmi-causal-chain__edges {
+  gap: 4px;
+  font-size: var(--type-caption-size);
+}
+
+.hmi-causal-chain__edges li {
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+}
+
+.hmi-causal-chain__edges li.is-active {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.hmi-causal-chain__active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ---------- Operator actions ---------- */
+.hmi-operator-actions__disclaimer {
   margin-bottom: var(--space-sm);
 }
 
-.hmi-operator-actions__disclaimer {
-  margin: var(--space-xs) 0 0;
-  font-size: 0.75rem;
+.hmi-operator-actions__title {
+  display: inline-flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.hmi-operator-actions__priority {
   color: var(--text-muted);
 }
 
-.hmi-operator-actions__card-head {
+/* ---------- Signals ---------- */
+.hmi-signals__scroll {
+  max-height: 420px;
+  overflow: auto;
+}
+
+/* ---------- JSON disclosure ---------- */
+.hmi-json-disclosure__pre {
+  margin: var(--space-sm) 0 0;
+  max-height: 320px;
+  overflow: auto;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  color: var(--text);
+  font-size: 12px;
+}
+
+/* ---------- Compile-preview workbench (migrated from legacy runtime.css) ---------- */
+.compile-preview-workbench {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: var(--space-md);
+  gap: var(--space-sm);
+}
+
+.compile-preview-workbench__intro h3 {
+  margin: 0 0 var(--space-xs);
+  font-size: 14px;
+}
+
+.compile-preview-workbench__intro p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.compile-preview-workbench__actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.compile-preview-workbench__layout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: var(--space-sm);
+  overflow: hidden;
+}
+
+.preview-status-strip {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-sm);
   align-items: center;
+  gap: var(--space-xs) var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+}
+
+.preview-status-strip__chip {
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  font-weight: 500;
+}
+
+.preview-status-strip__chip--compiled { color: var(--text); }
+.preview-status-strip__chip--invalid,
+.preview-status-strip__chip--failed { color: var(--status-critical); }
+.preview-status-strip__metric { color: var(--text-muted); }
+
+.preview-readonly-badge {
+  font-size: 11px;
+  color: var(--text-muted);
+  width: 100%;
+  margin: 0;
+}
+
+.preview-warning {
+  font-size: 11px;
+  color: var(--status-medium);
+}
+
+.preview-report-panel,
+.preview-issue-list,
+.preview-diff-panel {
+  flex-shrink: 0;
+  overflow-y: auto;
+  font-size: 11px;
+}
+
+.preview-report-panel { width: 200px; border-right: 1px solid var(--border); padding-right: var(--space-sm); }
+.preview-issue-list { width: 220px; border-right: 1px solid var(--border); padding-right: var(--space-sm); }
+.preview-diff-panel { width: 220px; border-left: 1px solid var(--border); padding-left: var(--space-sm); }
+
+.preview-report-panel h3,
+.preview-issue-list h3,
+.preview-diff-panel h3 {
+  margin: 0 0 var(--space-xs);
+  font-size: 12px;
+}
+
+.preview-report-panel__note {
+  margin: 0 0 var(--space-sm);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.preview-report-panel__meta {
+  margin: 0 0 var(--space-sm);
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.preview-report-panel__meta dt {
+  font-size: 9px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.preview-report-panel__meta dd {
+  margin: 0;
+  font-size: 11px;
+  word-break: break-word;
+}
+
+.preview-report-panel__summary,
+.preview-issue-list__group ul,
+.preview-diff-panel__group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.preview-report-panel__summary { display: flex; flex-direction: column; gap: 2px; }
+.preview-issue-list__group ul { margin-bottom: var(--space-sm); }
+
+.preview-issue-list__group h4 {
+  margin: var(--space-xs) 0;
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.preview-issue-list__item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: var(--space-xs);
+  margin-bottom: 2px;
+  text-align: left;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  font-size: 10px;
+  cursor: default;
+  color: var(--text);
+}
+
+.preview-issue-list__source {
+  text-transform: uppercase;
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+.preview-diff-panel__note,
+.preview-diff-panel__empty,
+.preview-diff-panel__counts {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.preview-diff-panel__group li {
+  margin-bottom: var(--space-xs);
+  font-size: 10px;
+}
+
+.preview-diff-panel__kind {
+  display: inline-block;
+  margin-right: 4px;
+  color: var(--text-muted);
+}
+
+.preview-diff-panel__detail {
+  display: block;
+  color: var(--text-muted);
+}
+
+.preview-map-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.preview-map-panel__header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
   margin-bottom: var(--space-xs);
 }
 
-.hmi-operator-actions__safety {
-  font-size: 0.6875rem;
-  text-transform: uppercase;
-  color: var(--status-warning);
+.preview-map-panel__note {
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
-.hmi-signals__table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.8125rem;
-}
-
-.hmi-signals__table th,
-.hmi-signals__table td {
-  text-align: left;
-  padding: 6px 8px;
-  border-bottom: 1px solid var(--border);
-}
-
-.hmi-json-disclosure__pre {
+.preview-map-panel__3d-summary {
   margin-top: var(--space-sm);
-  max-height: 320px;
-  overflow: auto;
-  padding: var(--space-sm);
-  border-radius: var(--radius-sm);
-  background: var(--surface-muted);
-  font-size: 0.75rem;
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--border);
+  font-size: 11px;
 }
 
-.hmi-status--overall-healthy { background: color-mix(in srgb, var(--status-normal) 25%, transparent); }
-.hmi-status--overall-warning { background: color-mix(in srgb, var(--status-warning) 25%, transparent); }
-.hmi-status--overall-fault { background: color-mix(in srgb, var(--status-critical) 25%, transparent); }
-.hmi-status--overall-offline { background: color-mix(in srgb, var(--status-offline) 25%, transparent); }
-.hmi-status--overall-blocked { background: color-mix(in srgb, var(--status-sensor-bad) 25%, transparent); }
-
-.hmi-status--asset-healthy,
-.hmi-status--signal-normal { color: var(--status-normal); }
-.hmi-status--asset-warning,
-.hmi-status--signal-warning,
-.hmi-status--signal-stale { color: var(--status-warning); }
-.hmi-status--asset-fault,
-.hmi-status--signal-fault { color: var(--status-critical); }
-.hmi-status--asset-offline,
-.hmi-status--signal-missing { color: var(--status-offline); }
+.preview-map-panel__3d-summary ul {
+  margin: var(--space-xs) 0 0;
+  padding-left: var(--space-md);
+  color: var(--text-muted);
+}

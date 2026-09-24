@@ -16,6 +16,8 @@ import { RuntimeUnavailableNotice } from "./RuntimeUnavailableNotice";
 import { SignalTable } from "./SignalTable";
 import { SourceBadge } from "./SourceBadge";
 import { HMI_SCENARIOS } from "./scenarios";
+import { MonitorPlay } from "lucide-react";
+import { EmptyState, PageHeader } from "../../components/ui/primitives";
 import { StudioFrame } from "../studio-nav/StudioFrame";
 import "./hmi-preview.css";
 
@@ -111,18 +113,14 @@ export function HmiPreviewPage() {
   return (
     <StudioFrame>
     <div className="hmi-runtime-shell pl-page">
-      <header className="hmi-runtime-shell__header">
-        <div>
-          <h1>HMI Runtime Shell</h1>
-          <p className="hmi-runtime-shell__subtitle">
-            Renders backend PlantHMIState only — no browser-side diagnosis.
-          </p>
-        </div>
-        <SourceBadge sourceLabel={sourceLabel} lastLoadedAt={lastLoadedAt} />
-      </header>
+      <PageHeader
+        title="HMI preview"
+        description="Renders the backend PlantHMIState only — no browser-side diagnosis."
+        meta={<SourceBadge sourceLabel={sourceLabel} lastLoadedAt={lastLoadedAt} />}
+      />
 
       {!authReady ? (
-        <p className="hmi-runtime-shell__loading">Preparing API auth…</p>
+        <p className="hmi-muted">Preparing API auth…</p>
       ) : (
         <>
           <HmiModeSwitcher
@@ -142,9 +140,17 @@ export function HmiPreviewPage() {
           )}
 
           {error && (
-            <div className="hmi-runtime-shell__error" role="alert">
-              {error}
+            <div className="pl-error" role="alert">
+              <strong>{error}</strong>
             </div>
+          )}
+
+          {!hmiState && !error && !loading && !(mode === "runtime" && runtimeUnavailable) && (
+            <EmptyState icon={<MonitorPlay />} title="No HMI state loaded">
+              {mode === "preview"
+                ? "Pick a scenario and run the HMI projection to render the operator view."
+                : "Load the runtime snapshot to render the live operator view."}
+            </EmptyState>
           )}
 
           {hmiState && (
