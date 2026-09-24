@@ -304,6 +304,35 @@ export const unshelveAlarm = (alarmId: string) =>
 export const getCausalGraph = (signal?: AbortSignal) =>
   apiFetch<CausalGraphView>("/api/runtime/causal-graph", { signal });
 
+/** One advisory action for the caller's role (GET /api/runtime/actions). PlantLens never executes it. */
+export interface RuntimeAction {
+  action_id: string;
+  label: string;
+  allowed: boolean;
+  reason: string | null;
+  allowed_roles: string[];
+  blocking_alarms: string[];
+  risk_level: string | null;
+  requires_isolation: boolean;
+  requires_operator_confirm: boolean;
+  plc_permission_required?: boolean;
+  safety_note: string | null;
+  target_asset_id: string | null;
+}
+
+export interface RuntimeActions {
+  situation_id?: string | null;
+  situation_type: string | null;
+  role: string;
+  actions: RuntimeAction[];
+}
+
+export const getRuntimeActions = (situationId: string | null, signal?: AbortSignal) =>
+  apiFetch<RuntimeActions>(
+    situationId ? `/api/runtime/actions?situation_id=${encodeURIComponent(situationId)}` : "/api/runtime/actions",
+    { signal },
+  );
+
 // ---- Studio layout -----------------------------------------------------------------------
 
 export interface StudioLayout {

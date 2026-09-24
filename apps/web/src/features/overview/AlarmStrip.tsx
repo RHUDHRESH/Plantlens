@@ -1,10 +1,11 @@
+import { Time } from "../../components/ui/Time";
 import { ArrowRight } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Mono, PriorityGlyph } from "../../components/ui/primitives";
 import type { AlarmRow } from "../alarms/alarmModel";
 import { PRIORITY_LABEL, sortRows } from "../alarms/alarmModel";
 import { AlarmStateLabel } from "../alarms/AlarmStateLabel";
-import { formatAge, formatClock, formatValue } from "../operational-map/format";
+import { formatAge, formatValue } from "../operational-map/format";
 
 /** Raw alarm strip — always visible under the map, never collapsed away (DESIGN_SYSTEM layout). */
 export function AlarmStrip({ rows, now, shelvedCount }: { rows: AlarmRow[]; now: number; shelvedCount: number }) {
@@ -64,7 +65,7 @@ export function AlarmStrip({ rows, now, shelvedCount }: { rows: AlarmRow[]; now:
                     <Mono>{formatValue(r.value, r.unit)}</Mono>
                   </td>
                   <td className="ov-strip__num">
-                    <Mono>{formatClock(r.onsetMs, true)}</Mono>
+                    <Time value={r.onsetMs} tenths />
                   </td>
                   <td className="ov-strip__num ops-muted">
                     <Mono>{formatAge(now - r.onsetMs)}</Mono>

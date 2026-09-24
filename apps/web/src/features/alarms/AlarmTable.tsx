@@ -1,8 +1,9 @@
+import { Time } from "../../components/ui/Time";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { Button, Mono, PriorityGlyph } from "../../components/ui/primitives";
-import { formatAge, formatClock, formatValue } from "../operational-map/format";
+import { formatAge, formatValue } from "../operational-map/format";
 import type { AlarmRow, SortDir, SortKey } from "./alarmModel";
 import { PRIORITY_LABEL } from "./alarmModel";
 import { AlarmStateLabel } from "./AlarmStateLabel";
@@ -213,7 +214,7 @@ export function AlarmTable({
                   <Mono>{formatValue(row.value, row.unit)}</Mono>
                 </td>
                 <td className="alm-col-num">
-                  <Mono>{formatClock(row.onsetMs, true)}</Mono>
+                  <Time value={row.onsetMs} tenths />
                 </td>
                 <td className="alm-col-num">
                   <Mono>{formatAge(now - row.onsetMs)}</Mono>

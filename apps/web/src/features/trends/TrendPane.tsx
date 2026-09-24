@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import uPlot from "uplot";
 import "uplot/dist/uPlot.min.css";
 import type { AlignedTrend, TrendLimit } from "./trendModel";
+import { formatClock } from "../../lib/time";
 
 export interface PaneSeries {
   tagId: string;
@@ -22,12 +23,10 @@ export interface ChartTheme {
   font: string;
 }
 
-const pad2 = (n: number) => String(n).padStart(2, "0");
-
+/** Axis ticks follow the app time policy (local zone, 24 h — lib/time.ts). */
 function timeLabel(sec: number, spanS: number): string {
-  const d = new Date(sec * 1000);
-  const hm = `${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}`;
-  return spanS <= 1800 ? `${hm}:${pad2(d.getUTCSeconds())}` : hm;
+  const full = formatClock(sec * 1000);
+  return spanS <= 1800 ? full : full.slice(0, 5);
 }
 
 /**

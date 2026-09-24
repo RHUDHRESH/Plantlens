@@ -2,7 +2,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { useEffect, useMemo, useState } from "react";
 import { useShelveAlarm } from "../../api/queries";
 import { Button, ErrorNotice, PriorityGlyph } from "../../components/ui/primitives";
-import { formatClock, formatDateTime } from "../operational-map/format";
+import { Time } from "../../components/ui/Time";
 import { runtimeNow } from "../operational-map/runtimeClock";
 import type { AlarmRow } from "./alarmModel";
 import { PRIORITY_LABEL, SHELVE_PRESETS, allowedShelvePresets, validateShelve } from "./alarmModel";
@@ -169,8 +169,12 @@ export function ShelveDialog({
             </label>
             <div className="alm-until" aria-live="polite">
               Returns at{" "}
-              <strong className="ops-num">{untilMs ? formatClock(untilMs) : "—"}</strong>{" "}
-              <span className="ops-subtle">({untilMs ? formatDateTime(untilMs) : "—"} runtime clock)</span>
+              <strong className="ops-num">
+                <Time value={untilMs} />
+              </strong>{" "}
+              <span className="ops-subtle">
+                (<Time value={untilMs} format="datetime" />, runtime clock in your time zone)
+              </span>
             </div>
             {shelve.error ? <ErrorNotice error={shelve.error} /> : null}
             <div className="alm-dialog-actions">

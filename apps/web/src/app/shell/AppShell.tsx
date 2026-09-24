@@ -12,6 +12,7 @@ import type { Workspace } from "../nav";
 import { ROLE_LABEL, useSession } from "../session";
 import type { Role } from "../session";
 import { useRuntimeStore } from "../store/runtime";
+import { formatClock, timeTitle, zoneAbbreviation } from "../../lib/time";
 import { useTheme } from "../theme";
 import type { ThemePreference } from "../theme";
 
@@ -76,10 +77,12 @@ function Clock() {
     const id = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(id);
   }, []);
+  // Same policy as every timestamp in the app (lib/time.ts): local zone, 24 h, zone on hover.
   return (
-    <span className="pl-mono" style={{ color: "var(--text-muted)", fontSize: 12 }} aria-label="Local time">
-      {now.toLocaleTimeString([], { hour12: false })}
-    </span>
+    <time className="pl-clock" dateTime={now.toISOString()} title={timeTitle(now)} aria-label={`Local time, ${zoneAbbreviation(now)}`}>
+      <span className="pl-mono">{formatClock(now)}</span>
+      <span className="pl-clock__zone">{zoneAbbreviation(now)}</span>
+    </time>
   );
 }
 

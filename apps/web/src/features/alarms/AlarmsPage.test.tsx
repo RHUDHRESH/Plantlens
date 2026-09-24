@@ -102,6 +102,31 @@ describe("AlarmsPage", () => {
     await waitFor(() => expect(calls.some((c) => c.url.includes("/alarms/INV_UNDERVOLTAGE/shelve") && c.method === "POST")).toBe(true));
   });
 
+  it("groups alarms under every active situation, with a link to each Calm Card", async () => {
+    const second = {
+      ...SNAPSHOT.active_situations[0]!,
+      situation_id: "sit-inv-2",
+      title: "Inverter undervoltage trip risk",
+      root_asset_id: "INV-102",
+      root_asset_name: "Motor Inverter",
+      severity: "warning" as const,
+      grouped_alarm_ids: ["INV_UNDERVOLTAGE"],
+    };
+    const first = { ...SNAPSHOT.active_situations[0]!, grouped_alarm_ids: ["MOTOR_CURRENT_HIGH", "DC_BUS_LOW"] };
+    const snap: RuntimeSnapshot = { ...SNAPSHOT, active_situations: [first, second] };
+    seed(snap, "operator");
+    mockFetch(defaultRoutes(snap));
+    renderPage(<AlarmsPage />, "/ops/alarms?tab=grouped");
+    const motor = await screen.findByRole("region", { name: "Motor mechanical overload" });
+    expect(within(motor).getByText("Motor current high")).toBeInTheDocument();
+    expect(within(motor).queryByText("Inverter undervoltage")).not.toBeInTheDocument();
+    const inv = screen.getByRole("region", { name: "Inverter undervoltage trip risk" });
+    expect(within(inv).getByText("Inverter undervoltage")).toBeInTheDocument();
+    expect(within(inv).getByText(/Root: Motor Inverter/)).toBeInTheDocument();
+    expect(within(inv).getByRole("link", { name: "Open Calm Card" })).toHaveAttribute("href", "/ops?situation=sit-inv-2");
+    expect(screen.queryByRole("region", { name: "Not grouped" })).not.toBeInTheDocument();
+  });
+
   it("lists shelved alarms with who, why and until", async () => {
     seed(SNAPSHOT, "operator");
     mockFetch(

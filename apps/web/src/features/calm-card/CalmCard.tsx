@@ -1,10 +1,12 @@
-import { ArrowRight, Info, Lock, ShieldAlert, Timer } from "lucide-react";
+import { Time } from "../../components/ui/Time";
+import { ArrowRight, CircleCheck, Info, Lock, ShieldAlert, Timer } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Mono, StatusBadge } from "../../components/ui/primitives";
 import { EquipmentSymbol, symbolForAssetType } from "../../components/symbols";
-import { formatAge, formatClock, formatValue } from "../operational-map/format";
+import { formatAge, formatValue } from "../operational-map/format";
 import { SectionLabel } from "../operational-map/SideSheet";
+import type { ActionItem } from "./actionsModel";
 import type { CalmCardView } from "./calmCardModel";
 import "../operational-map/ops.css";
 import "./calm-card.css";
@@ -21,23 +23,31 @@ export function CalmCard({
   now,
   rootStatus,
   actions,
+  roleActions,
+  switcher,
   rawAlarmsHref = "/ops/alarms?tab=grouped",
 }: {
   view: CalmCardView;
   now: number;
   rootStatus?: CalmCardView["status"];
+  /** Navigation affordances in the footer (never control actions). */
   actions?: ReactNode;
+  /** Role-gated advisory actions from GET /api/runtime/actions; replaces the generic blocked list. */
+  roleActions?: RoleActionsState | undefined;
+  /** Compact situation switcher shown above the title when more than one situation is active. */
+  switcher?: ReactNode;
   rawAlarmsHref?: string;
 }) {
   const c = view.confidence;
   return (
     <article className="cc" aria-labelledby="cc-title">
+      {switcher}
       <header className="cc-head">
         <div className="cc-eyebrow">
           <span>Active situation</span>
           {view.since ? (
             <span>
-              since <Mono>{formatClock(view.since)}</Mono> · {formatAge(now - view.since)}
+              since <Time value={view.since} /> · {formatAge(now - view.since)}
             </span>
           ) : null}
         </div>
@@ -70,7 +80,7 @@ export function CalmCard({
 
       {view.firstSignal ? (
         <section className="cc-block">
-          <SectionLabel aside={view.firstSignal.ts ? <Mono>{formatClock(view.firstSignal.ts, true)}</Mono> : null}>
+          <SectionLabel aside={view.firstSignal.ts ? <Time value={view.firstSignal.ts} tenths /> : null}>
             First signal
           </SectionLabel>
           <div className="cc-first">
@@ -123,7 +133,9 @@ export function CalmCard({
         </section>
       ) : null}
 
-      {view.blocked.length ? (
+      {roleActions ? (
+        <RoleActions state={roleActions} featuredId={view.bestCheck?.actionId ?? null} />
+      ) : view.blocked.length ? (
         <section className="cc-block">
           <SectionLabel>Blocked actions</SectionLabel>
           <ul className="cc-blocked">
@@ -229,5 +241,93 @@ export function CalmCard({
         {actions ? <div className="cc-actions">{actions}</div> : null}
       </footer>
     </article>
+  );
+}
+
+export interface RoleActionsState {
+  items: ActionItem[];
+  roleLabel: string;
+  loading: boolean;
+  error: unknown;
+}
+
+/**
+ * Advisory actions for the viewer's role: permitted checks first, blocked ones greyed with the
+ * reason. Deliberately no buttons: PlantLens recommends; people act through site procedures.
+ */
+function RoleActions({ state, featuredId }: { state: RoleActionsState; featuredId: string | null }) {
+  // The first check is already featured above; a permitted duplicate would only repeat it.
+  const permitted = state.items.filter((a) => a.permitted && a.id !== featuredId);
+  const featuredPermitted = !!featuredId && state.items.some((a) => a.permitted && a.id === featuredId);
+  const blocked = state.items.filter((a) => !a.permitted);
+  return (
+    <section className="cc-block" aria-label="Recommended checks">
+      <SectionLabel aside={`for ${state.roleLabel}`}>Recommended checks</SectionLabel>
+      {state.loading && !state.items.length ? (
+        <p className="ops-empty-inline">Loading checks for your role…</p>
+      ) : state.error && !state.items.length ? (
+        <p className="ops-empty-inline">Could not load role-specific checks. The first check above still applies.</p>
+      ) : !state.items.length ? (
+        <p className="ops-empty-inline">The action envelope has no checks for this situation.</p>
+      ) : (
+        <>
+          {permitted.length ? (
+            <ul className="cc-act">
+              {permitted.map((a) => (
+                <li key={a.id} className="cc-act__item">
+                  <CircleCheck aria-hidden className="cc-act__icon" />
+                  <div className="cc-act__body">
+                    <div className="cc-act__kicker">Recommended check</div>
+                    <div className="cc-act__label">{a.label}</div>
+                    <ActionMeta item={a} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="ops-empty-inline">
+              {featuredPermitted
+                ? "Your role may carry out the first check above. No other checks apply."
+                : "No check in this situation is assigned to your role."}
+            </p>
+          )}
+          {blocked.length ? (
+            <>
+              <div className="cc-act__sub">Blocked actions</div>
+              <ul className="cc-act">
+                {blocked.map((a) => (
+                  <li key={a.id} className="cc-act__item is-blocked">
+                    <Lock aria-hidden className="cc-act__icon" />
+                    <div className="cc-act__body">
+                      <div className="cc-act__label">{a.label}</div>
+                      <div className="cc-act__reason">{a.reason}</div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+        </>
+      )}
+    </section>
+  );
+}
+
+function ActionMeta({ item }: { item: ActionItem }) {
+  if (!item.risk && !item.notes.length) return null;
+  return (
+    <div className="cc-act__meta">
+      {item.risk ? <span>Risk {item.risk}</span> : null}
+      {item.notes.map((n) =>
+        n === "Isolate before touching" ? (
+          <span key={n} className="cc-check__iso">
+            <ShieldAlert aria-hidden />
+            {n}
+          </span>
+        ) : (
+          <span key={n}>{n}</span>
+        ),
+      )}
+    </div>
   );
 }

@@ -33,12 +33,12 @@ export function CausalEdgeForm({ edge, nodeOptions, issues, onPatch }: CausalEdg
   }
 
   return (
-    <form className="studio-form-shell__form" onSubmit={(e) => e.preventDefault()}>
+    <form className="sf-form" onSubmit={(e) => e.preventDefault()}>
       <FormField label="Edge ID" hint="ID rename requires cross-reference migration.">
-        <input value={edgeId} readOnly disabled aria-readonly />
+        <input className="pl-input" value={edgeId} readOnly disabled aria-readonly />
       </FormField>
       <FormField label="From" {...(nodeRefIssue?.message ? { error: nodeRefIssue.message } : {})}>
-        <select
+        <select className="pl-select"
           value={readString(edge, "from")}
           onChange={(e) => patchField("from", e.target.value, "Update edge from node")}
         >
@@ -51,7 +51,7 @@ export function CausalEdgeForm({ edge, nodeOptions, issues, onPatch }: CausalEdg
         </select>
       </FormField>
       <FormField label="To">
-        <select
+        <select className="pl-select"
           value={readString(edge, "to")}
           onChange={(e) => patchField("to", e.target.value, "Update edge to node")}
         >
@@ -81,7 +81,7 @@ export function CausalEdgeForm({ edge, nodeOptions, issues, onPatch }: CausalEdg
       ) : null}
       {"provenance" in edge ? (
         <FormField label="Provenance">
-          <input
+          <input className="pl-input"
             value={readString(edge, "provenance")}
             onChange={(e) => patchField("provenance", e.target.value, "Update provenance")}
           />
@@ -89,7 +89,7 @@ export function CausalEdgeForm({ edge, nodeOptions, issues, onPatch }: CausalEdg
       ) : null}
       {"confidence" in edge ? (
         <FormField label="Confidence">
-          <input
+          <input className="pl-input"
             type="number"
             step="0.1"
             min="0"
@@ -101,8 +101,8 @@ export function CausalEdgeForm({ edge, nodeOptions, issues, onPatch }: CausalEdg
       ) : null}
       {"lag_ms" in edge && Array.isArray(edge.lag_ms) ? (
         <FormField label="Lag range (ms)">
-          <span className="studio-form-field__hint">
-            {(edge.lag_ms as number[])[0]} – {(edge.lag_ms as number[])[1]} ms (read-only in draft shell)
+          <span className="sf-hint">
+            {(edge.lag_ms as number[])[0]} – {(edge.lag_ms as number[])[1]} ms (read-only in this form)
           </span>
         </FormField>
       ) : null}

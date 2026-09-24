@@ -38,12 +38,12 @@ export function AlarmRuleForm({ rule, tagOptions, issues, onPatch }: AlarmRuleFo
   }
 
   return (
-    <form className="studio-form-shell__form" onSubmit={(e) => e.preventDefault()}>
+    <form className="sf-form" onSubmit={(e) => e.preventDefault()}>
       <FormField label="Rule ID" hint="ID rename requires cross-reference migration.">
-        <input value={ruleId} readOnly disabled aria-readonly />
+        <input className="pl-input" value={ruleId} readOnly disabled aria-readonly />
       </FormField>
       <FormField label="Tag" {...(tagRefIssue?.message ? { error: tagRefIssue.message } : {})}>
-        <select
+        <select className="pl-select"
           value={readString(rule, "tag")}
           onChange={(e) => patchField("tag", e.target.value, "Update alarm tag reference")}
         >
@@ -56,14 +56,14 @@ export function AlarmRuleForm({ rule, tagOptions, issues, onPatch }: AlarmRuleFo
         </select>
       </FormField>
       <FormField label="Message">
-        <input
+        <input className="pl-input"
           value={readString(rule, "message")}
           onChange={(e) => patchField("message", e.target.value, "Update alarm message")}
         />
       </FormField>
       {"severity" in rule ? (
         <FormField label="Severity">
-          <select
+          <select className="pl-select"
             value={readString(rule, "severity")}
             onChange={(e) => patchField("severity", e.target.value, "Update severity")}
           >
@@ -75,7 +75,7 @@ export function AlarmRuleForm({ rule, tagOptions, issues, onPatch }: AlarmRuleFo
       ) : null}
       {"priority" in rule ? (
         <FormField label="Priority">
-          <input
+          <input className="pl-input"
             type="number"
             value={String(rule.priority ?? "")}
             onChange={(e) => patchField("priority", Number(e.target.value), "Update priority")}
@@ -85,7 +85,7 @@ export function AlarmRuleForm({ rule, tagOptions, issues, onPatch }: AlarmRuleFo
       {"condition" in rule ? (
         <>
           <FormField label="Operator">
-            <select
+            <select className="pl-select"
               value={readString(condition, "op")}
               onChange={(e) =>
                 onPatch(
@@ -113,7 +113,7 @@ export function AlarmRuleForm({ rule, tagOptions, issues, onPatch }: AlarmRuleFo
           </FormField>
           {"threshold" in condition || condition.threshold !== undefined ? (
             <FormField label="Threshold">
-              <input
+              <input className="pl-input"
                 type="number"
                 value={String(condition.threshold ?? "")}
                 onChange={(e) =>
@@ -136,7 +136,7 @@ export function AlarmRuleForm({ rule, tagOptions, issues, onPatch }: AlarmRuleFo
       ) : null}
       {"deadband" in rule ? (
         <FormField label="Deadband">
-          <input
+          <input className="pl-input"
             type="number"
             value={String(rule.deadband ?? "")}
             onChange={(e) => patchField("deadband", Number(e.target.value), "Update deadband")}

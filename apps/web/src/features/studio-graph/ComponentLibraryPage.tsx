@@ -12,6 +12,7 @@ import { fetchComponentLibrary } from "./componentLibraryApi";
 import { CATEGORY_LABELS, type ComponentCategory, type ComponentTemplate } from "./componentLibraryTypes";
 import { portSummary } from "./model/portLayout";
 import { matchesQuery } from "./Palette";
+import { StudioFrame } from "../studio-nav/StudioFrame";
 import "./studio.css";
 
 function ComponentCard({ component }: { component: ComponentTemplate }) {
@@ -76,6 +77,7 @@ export function ComponentLibraryPage() {
   );
 
   return (
+    <StudioFrame>
     <div className="pl-page">
       <PageHeader
         title="Component library"
@@ -107,5 +109,6 @@ export function ComponentLibraryPage() {
         ))}
       </div>
     </div>
+    </StudioFrame>
   );
 }

@@ -62,7 +62,11 @@
 /* Grouped view */
 .alm-groups { display: flex; flex-direction: column; gap: 12px; }
 .alm-group { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); }
-.alm-group__head { padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+.alm-group__head { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+.alm-group__head-text { flex: 1; min-width: 0; }
+.alm-group__link { font-size: 12.5px; white-space: nowrap; }
+.alm-group__empty { margin: 0; padding: 12px 14px; }
+.alm-groups__intro { margin: 0; }
 .alm-group__title { margin: 0 0 2px; font-size: var(--type-h3-size); font-weight: 600; }
 .alm-group__list { list-style: none; margin: 0; padding: 4px; }
 .alm-group__row { width: 100%; display: grid; grid-template-columns: 14px minmax(0, 1fr) 84px 150px 100px 100px; align-items: center; gap: 10px; padding: 7px 10px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--text); text-align: left; font: 13px var(--font-sans); cursor: pointer; }

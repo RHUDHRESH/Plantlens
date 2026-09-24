@@ -19,6 +19,8 @@ export const qk = {
   shelved: ["shelved"] as const,
   causalGraph: ["causal-graph"] as const,
   layout: (plantId: string) => ["studio-layout", plantId] as const,
+  runtimeActions: (situationId: string | null, role: string, alarmKey: string) =>
+    ["runtime-actions", situationId ?? "", role, alarmKey] as const,
 };
 
 function useReady(): boolean {
@@ -134,6 +136,21 @@ export function useUnshelveAlarm() {
   return useMutation({
     mutationFn: (alarmId: string) => v2.unshelveAlarm(alarmId),
     onSettled: () => void client.invalidateQueries({ queryKey: qk.shelved }),
+  });
+}
+
+/**
+ * Role-gated advisory actions for one situation. The key carries the situation, the role and the
+ * active alarm set, so it refetches whenever the situation changes or a blocking alarm clears.
+ */
+export function useRuntimeActions(situationId: string | null, alarmKey = "") {
+  const ready = useReady();
+  const role = useSession((s) => s.role);
+  return useQuery({
+    queryKey: qk.runtimeActions(situationId, role, alarmKey),
+    queryFn: ({ signal }) => v2.getRuntimeActions(situationId, signal),
+    enabled: ready && !!situationId,
+    staleTime: 2_000,
   });
 }
 

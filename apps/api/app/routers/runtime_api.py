@@ -206,11 +206,23 @@ async def causal_graph(_principal: Principal = Depends(require_viewer)) -> dict:
 
 
 @router.get("/actions")
-async def actions_for_me(principal: Principal = Depends(require_viewer)) -> dict:
-    """Recommended actions for the active situation, gated by the caller's role (advisory only)."""
-    situation = next(iter(runtime_state.active_situations.values()), None)
+async def actions_for_me(
+    situation_id: str | None = Query(default=None, max_length=200),
+    principal: Principal = Depends(require_viewer),
+) -> dict:
+    """Recommended actions for an active situation, gated by the caller's role (advisory only).
+
+    ``situation_id`` picks one of several active situations; without it the first one is used.
+    An unknown id (e.g. a situation that just cleared) returns no actions rather than another
+    situation's actions.
+    """
+    if situation_id is None:
+        situation = next(iter(runtime_state.active_situations.values()), None)
+    else:
+        situation = runtime_state.active_situations.get(situation_id)
     situation_type = situation.get("situation_type") if situation else None
     return {
+        "situation_id": situation.get("situation_id") if situation else None,
         "situation_type": situation_type,
         "role": principal.role,
         "actions": evaluate_actions_for_role(

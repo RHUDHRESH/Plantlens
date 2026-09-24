@@ -22,6 +22,12 @@ export interface RuntimeStore {
   tags: Record<string, TagFrame>;
   assetStatus: Record<string, AssetStatus>;
   activeAlarms: ActiveAlarm[];
+  /** Every active situation, in backend order. */
+  activeSituations: Situation[];
+  /**
+   * Primary situation (backward compatible): the one the latest Calm Card describes, otherwise
+   * the first active situation.
+   */
   activeSituation: Situation | null;
   calmCard: CalmCard | null;
   connection: WsConnectionState;
@@ -50,6 +56,7 @@ const INITIAL: Omit<
   tags: {},
   assetStatus: {},
   activeAlarms: [],
+  activeSituations: [],
   activeSituation: null,
   calmCard: null,
   connection: "disconnected",
@@ -78,18 +85,29 @@ function normalizeAssetStatus(raw: Record<string, string>): Record<string, Asset
   return out;
 }
 
+/** The Calm Card's situation when it is active, otherwise the first one. */
+export function primarySituation(situations: Situation[], calmCard: CalmCard | null): Situation | null {
+  if (!situations.length) return null;
+  const cardId = calmCard?.situation_id;
+  return (cardId ? situations.find((s) => s.situation_id === cardId) : undefined) ?? situations[0] ?? null;
+}
+
 export const useRuntimeStore = create<RuntimeStore>((set) => ({
   ...INITIAL,
-  applySnapshot: (snapshot, ts) =>
+  applySnapshot: (snapshot, ts) => {
+    const situations = (snapshot.active_situations ?? []).filter(Boolean);
+    const calmCard = snapshot.latest_calm_card ?? null;
     set({
       tags: snapshot.tags ?? {},
       assetStatus: normalizeAssetStatus(snapshot.asset_status ?? {}),
       activeAlarms: snapshot.active_alarms ?? [],
-      activeSituation: snapshot.active_situations?.[0] ?? null,
-      calmCard: snapshot.latest_calm_card ?? null,
+      activeSituations: situations,
+      activeSituation: primarySituation(situations, calmCard),
+      calmCard,
       lastSnapshotTs: ts ?? null,
       hasSnapshot: true,
-    }),
+    });
+  },
   applyHmiState: (state, ts) =>
     set({
       hmiState: state,

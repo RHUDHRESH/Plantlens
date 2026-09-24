@@ -9,10 +9,11 @@ import { assetAlarms, assetTagRows, type TagIndexEntry } from "./lib/assetDetail
 import type { PlacedAsset } from "./lib/layout";
 import { modelKindInfo } from "./lib/registry";
 import { panelBadge } from "./lib/status";
+import { formatClock } from "../../lib/time";
 
 function formatTime(iso: string): string {
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const text = formatClock(iso);
+  return text === "—" ? iso : text;
 }
 
 export function AssetPanel({

@@ -1,8 +1,9 @@
+import { Time } from "../../components/ui/Time";
 import { LineChart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTrends } from "../../api/queries";
 import { Button, Mono, PriorityGlyph, StatusBadge } from "../../components/ui/primitives";
-import { formatAge, formatDateTime, formatValue, parseTs } from "../operational-map/format";
+import { formatAge, formatValue, parseTs } from "../operational-map/format";
 import { useRuntimeNow } from "../operational-map/runtimeClock";
 import { Facts, SectionLabel, SideSheet } from "../operational-map/SideSheet";
 import { Sparkline } from "../operational-map/Sparkline";
@@ -78,8 +79,8 @@ export function AlarmDetailSheet({
           items={[
             { label: "State", value: <AlarmStateLabel state={row.state} /> },
             { label: "Current value", value: <Mono>{formatValue(row.value, row.unit)}</Mono> },
-            { label: "Onset", value: <Mono>{formatDateTime(row.onsetMs)}</Mono> },
-            { label: "Latched at", value: <Mono>{formatDateTime(row.raisedMs)}</Mono> },
+            { label: "Onset", value: <Time value={row.onsetMs} format="datetime" /> },
+            { label: "Latched at", value: <Time value={row.raisedMs} format="datetime" /> },
             { label: "Age", value: <Mono>{formatAge(now - row.onsetMs)}</Mono> },
             {
               label: "Situation",
@@ -170,7 +171,7 @@ export function AlarmDetailSheet({
         </section>
       ) : null}
       <p className="ops-subtle" style={{ margin: 0, fontSize: 12 }}>
-        {ALARM_STATE_LABEL[row.state]} since <Mono>{formatDateTime(row.onsetMs)}</Mono>. Times use the runtime clock.
+        {ALARM_STATE_LABEL[row.state]} since <Time value={row.onsetMs} format="datetime" />. Times use the runtime clock.
       </p>
     </SideSheet>
   );

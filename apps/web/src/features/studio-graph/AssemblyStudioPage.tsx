@@ -52,6 +52,7 @@ import { resolveConflict, setViewport, usePersistStore, useStudioPersistence } f
 import { ShortcutHelp } from "./ShortcutHelp";
 import { selectAssembly, useStudioStore } from "./studioStore";
 import { ValidationPanel } from "./ValidationPanel";
+import { StudioFrame } from "../studio-nav/StudioFrame";
 import "../connection-rules/rules.css";
 import "./studio.css";
 
@@ -331,9 +332,11 @@ function StudioWorkspace() {
 export function AssemblyStudioPage() {
   return (
     <div className="pl-page pl-page--full">
-      <ReactFlowProvider>
-        <StudioWorkspace />
-      </ReactFlowProvider>
+      <StudioFrame full>
+        <ReactFlowProvider>
+          <StudioWorkspace />
+        </ReactFlowProvider>
+      </StudioFrame>
     </div>
   );
 }

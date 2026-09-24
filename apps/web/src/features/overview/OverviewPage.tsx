@@ -1,10 +1,12 @@
 import { Boxes, CircleCheck, Siren } from "lucide-react";
 import { useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { useShelvedAlarms } from "../../api/queries";
+import { useRuntimeActions, useShelvedAlarms } from "../../api/queries";
+import { ROLE_LABEL, useSession } from "../../app/session";
 import { useRuntimeStore } from "../../app/store/runtime";
-import { Button, EmptyState, ErrorNotice, Mono } from "../../components/ui/primitives";
+import { Button, EmptyState, ErrorNotice, Mono, PriorityGlyph } from "../../components/ui/primitives";
 import { useAlarmRows } from "../alarms/useAlarmRows";
+import { orderActions } from "../calm-card/actionsModel";
 import { CalmCard } from "../calm-card/CalmCard";
 import type { RuntimeCalmCard, RuntimeSituation } from "../calm-card/calmCardModel";
 import { composeCalmCard } from "../calm-card/calmCardModel";
@@ -33,8 +35,16 @@ export function OverviewPage() {
   const assetStatus = useRuntimeStore((s) => s.assetStatus);
   const tags = useRuntimeStore((s) => s.tags);
   const hasSnapshot = useRuntimeStore((s) => s.hasSnapshot);
-  const situation = useRuntimeStore((s) => s.activeSituation) as RuntimeSituation | null;
-  const calmCard = useRuntimeStore((s) => s.calmCard) as RuntimeCalmCard | null;
+  const situations = useRuntimeStore((s) => s.activeSituations) as RuntimeSituation[];
+  const primary = useRuntimeStore((s) => s.activeSituation) as RuntimeSituation | null;
+  const latestCard = useRuntimeStore((s) => s.calmCard) as RuntimeCalmCard | null;
+  const role = useSession((s) => s.role);
+  // Several situations can be active; the URL remembers which one the operator is reading.
+  const wantedSituation = params.get("situation");
+  const situation = (wantedSituation ? situations.find((s) => s.situation_id === wantedSituation) : undefined) ?? primary;
+  // The broadcast Calm Card describes one situation; for the others the card is composed from the
+  // situation itself (never from another situation's card).
+  const calmCard = latestCard && situation && latestCard.situation_id === situation.situation_id ? latestCard : null;
   const alarms = useRuntimeStore((s) => s.activeAlarms);
   const { rows } = useAlarmRows();
   const shelved = useShelvedAlarms();
@@ -45,18 +55,30 @@ export function OverviewPage() {
     [calmCard, situation, alarms, model],
   );
   const alarmedTagIds = useMemo(() => new Set(alarms.map((a) => a.tag_id)), [alarms]);
+  const alarmKey = useMemo(() => alarms.map((a) => a.alarm_id).sort().join(","), [alarms]);
+  const actionsQuery = useRuntimeActions(situation?.situation_id ?? null, alarmKey);
+  const roleActions = useMemo(
+    () => ({
+      items: orderActions(actionsQuery.data?.actions, role),
+      roleLabel: ROLE_LABEL[role],
+      loading: actionsQuery.isLoading,
+      error: actionsQuery.error,
+    }),
+    [actionsQuery.data, actionsQuery.isLoading, actionsQuery.error, role],
+  );
   const selected = selectedId ? (model.assetById[selectedId] ?? null) : null;
 
-  const select = (id: string | null) =>
+  const setParam = (key: string, value: string | null) =>
     setParams(
       (prev) => {
         const next = new URLSearchParams(prev);
-        if (id) next.set("asset", id);
-        else next.delete("asset");
+        if (value) next.set(key, value);
+        else next.delete(key);
         return next;
       },
       { replace: true },
     );
+  const select = (id: string | null) => setParam("asset", id);
 
   const abnormalCount = Object.values(assetStatus).filter((s) => s !== "normal" && s !== "unknown").length;
 
@@ -107,6 +129,17 @@ export function OverviewPage() {
             view={view}
             now={now}
             rootStatus={assetStatusKind(assetStatus[view.rootAssetId])}
+            roleActions={roleActions}
+            switcher={
+              situations.length > 1 ? (
+                <SituationSwitcher
+                  situations={situations}
+                  selectedId={situation?.situation_id ?? null}
+                  nameOf={(id) => model.assetById[id]?.name ?? id}
+                  onSelect={(id) => setParam("situation", id === primary?.situation_id ? null : id)}
+                />
+              ) : null
+            }
             actions={
               <>
                 <Button size="sm" onClick={() => select(view.rootAssetId)}>
@@ -157,5 +190,44 @@ export function OverviewPage() {
         />
       ) : null}
     </div>
+  );
+}
+
+function severityGlyph(sev: string | undefined) {
+  return sev === "critical" ? ("critical" as const) : sev === "warning" ? ("high" as const) : ("low" as const);
+}
+
+/** Compact list of the active situations; picking one re-targets the Calm Card and map path. */
+function SituationSwitcher({
+  situations,
+  selectedId,
+  nameOf,
+  onSelect,
+}: {
+  situations: RuntimeSituation[];
+  selectedId: string | null;
+  nameOf: (assetId: string) => string;
+  onSelect: (situationId: string) => void;
+}) {
+  return (
+    <nav className="cc-switch" aria-label="Active situations">
+      <div className="cc-switch__label">{situations.length} active situations</div>
+      <ul className="cc-switch__list">
+        {situations.map((s) => (
+          <li key={s.situation_id}>
+            <button
+              type="button"
+              className="cc-switch__item"
+              aria-pressed={s.situation_id === selectedId}
+              onClick={() => onSelect(s.situation_id)}
+            >
+              <PriorityGlyph status={severityGlyph(s.severity)} title={s.severity} />
+              <span className="cc-switch__title">{s.title}</span>
+              <span className="cc-switch__root">{s.root_asset_name ?? nameOf(s.root_asset_id)}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 }
