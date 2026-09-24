@@ -74,7 +74,7 @@ async def test_split_lines_garbage_and_partial_first_line(pty_device):
         await wait_for(lambda: len(frames) >= 2)
         good_frames = [f for f in frames if f.quality == "GOOD"]
         assert [(f.tag_id, f.value) for f in good_frames] == [("VIB_X", 1.5), ("VIB_Y", 2.5)]
-        assert all(f.source == "manual" for f in frames)
+        assert all(f.source == "serial_line" for f in frames)
         assert reader.framer.stats.invalid_utf8 + reader.framer.stats.control_bytes == 1
         # a partial line on read timeout is never emitted
         pty_device.write(b"A0=7")

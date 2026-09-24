@@ -9,7 +9,7 @@ The implementation lives in :mod:`gateway.line` (framer, protocols, reader) and
 
 Behaviour changes versus the original reader (intentional, see README):
 unknown keys are rejected and counted instead of being remapped to the default tag; NaN/Inf
-become BAD; frames are stamped with the configured line ``source`` (default ``manual``) rather
+become BAD; frames are stamped with the configured line ``source`` (default ``serial_line``) rather
 than ``modbus_rtu``.
 """
 
@@ -56,7 +56,7 @@ def parse_line_to_frames(
     gateway_id: str,
     first_seq: int,
     now: datetime | None = None,
-    source: TagSource = "manual",
+    source: TagSource = "serial_line",
     decoder: LineDecoder | None = None,
 ) -> list[TagFrame]:
     """Parse one line (stateless unless a *decoder* is passed). Never raises."""
@@ -85,7 +85,7 @@ class RawSerialLineReader:
         gateway_id: str,
         publish: PublishFn,
         reset_policy: ResetPolicy | str = ResetPolicy.WAIT_FOR_RESET,
-        source: TagSource = "manual",
+        source: TagSource = "serial_line",
     ) -> None:
         self.link = SerialLink(LinkConfig(selector=port, baudrate=baudrate, reset_policy=reset_policy, name="line"))
         self.reader = LineReader(

@@ -75,7 +75,7 @@ class LineReader:
         decoder: LineDecoder,
         gateway_id: str,
         publish: PublishFn,
-        source: TagSource = "manual",
+        source: TagSource = "serial_line",
         max_line_bytes: int = 512,
         stale_check_s: float = 0.1,
     ) -> None:

@@ -18,7 +18,7 @@ from typing import Any, Literal
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 
 TagQuality = Literal["GOOD", "UNCERTAIN", "BAD", "STALE", "MISSING"]
-TagSource = Literal["simulator", "modbus_rtu", "modbus_tcp", "manual", "backfill"]
+TagSource = Literal["simulator", "modbus_rtu", "modbus_tcp", "serial_line", "manual", "backfill"]
 TagValue = float | str | bool | None
 
 TAG_ID_PATTERN = r"^[A-Z0-9_]+$"

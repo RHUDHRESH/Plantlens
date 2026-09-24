@@ -37,7 +37,7 @@
     },
     "source": {
       "type": "string",
-      "enum": ["simulator", "modbus_rtu", "modbus_tcp", "manual", "backfill"],
+      "enum": ["simulator", "modbus_rtu", "modbus_tcp", "serial_line", "manual", "backfill"],
       "description": "Origin of the frame. Used for dedupe and for the 'data source' indicator in the HMI top strip."
     },
     "seq": {

@@ -134,8 +134,8 @@ Legacy formats still accepted in `auto` mode: `TAG=value` / `TAG:value` pairs se
 or TAB, `TAG,value`, JSON objects (`{"tag":"VIB_X","value":1.2}` or `{"VIB_X":1.2}`), and a bare
 number mapped to `LINE_DEFAULT_TAG_ID`. Force one protocol with `GATEWAY_LINE__PROTOCOL=pl1|csv|kv|json`.
 
-Line frames are stamped `source="manual"` by default (`GATEWAY_LINE__SOURCE`): they are not
-Modbus, and the contract's `source` enum has no serial-line value yet (see open issues).
+Line frames are stamped `source="serial_line"` by default (`GATEWAY_LINE__SOURCE`), a value
+of the TagFrame contract's `source` enum. They are never stamped as Modbus.
 
 ## Modbus scanning
 

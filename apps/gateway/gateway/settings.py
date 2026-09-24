@@ -45,7 +45,7 @@ class LineSettings(BaseModel):
     column_map: dict[str, str] = Field(
         default_factory=dict, description='JSON object: column/key -> tag_id, e.g. {"A0":"VIB_X"}'
     )
-    source: TagSource = "manual"
+    source: TagSource = "serial_line"
     stale_after_ms: int | None = Field(default=None, ge=50, description="Override tag-map stale_after_ms")
 
 

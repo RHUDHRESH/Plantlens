@@ -36,9 +36,8 @@ def test_parse_tag_equals_value_line():
     assert frames[0].asset_id == "MTR-301"
     assert frames[0].value == 42.5
     assert frames[0].unit == "A"
-    # Line frames are no longer stamped "modbus_rtu" (they are not Modbus); the contract has no
-    # serial-line value, so the configurable default is "manual" (see README).
-    assert frames[0].source == "manual"
+    # Line frames are stamped with the contract's serial-line source, never "modbus_rtu".
+    assert frames[0].source == "serial_line"
     assert frames[0].seq == 10
 
 
