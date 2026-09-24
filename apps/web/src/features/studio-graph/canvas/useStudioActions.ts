@@ -1,6 +1,7 @@
 /** Commands shared by the toolbar, context menus and keyboard shortcuts. */
 import { useReactFlow } from "@xyflow/react";
 import { useMemo } from "react";
+import { computeAutoLayout } from "../model/autoLayout";
 import { cachedLayout } from "../model/portLayout";
 import { alignRects, distributeRects, findFreeSpot, GRID, snapPoint, type AlignMode, type Rect } from "../model/geometry";
 import { useStudioStore } from "../studioStore";
@@ -80,6 +81,28 @@ export function useStudioActions() {
       distribute(axis: "horizontal" | "vertical") {
         const positions = distributeRects(nodeRects(store().selection.nodes), axis);
         if (Object.keys(positions).length) store().moveNodes(positions, `Distribute ${axis}`);
+      },
+      /** Auto-arrange the selection (≥2 nodes) or the whole assembly. */
+      async autoLayout() {
+        const s = store();
+        const picked = s.selection.nodes.length >= 2 ? [...s.selection.nodes] : undefined;
+        const before = s.history.present;
+        if ((picked?.length ?? before.assets.length) < 2) {
+          s.showNotice("info", "Auto-arrange needs at least two components.");
+          return;
+        }
+        let result;
+        try {
+          result = await computeAutoLayout(before, s.templates, picked);
+        } catch (err) {
+          store().showNotice("error", "Auto-arrange failed.", err instanceof Error ? err.message : undefined);
+          return;
+        }
+        // The document changed while ELK was running: do not clobber the newer edit.
+        if (!result || store().history.present !== before) return;
+        const n = Object.keys(result.positions).length;
+        store().applyAutoLayout(result.positions, result.routes, picked ? `Auto-arrange ${n} components` : "Auto-arrange");
+        if (!picked) window.setTimeout(() => void flow.fitView({ padding: 0.12, duration: 320, maxZoom: 1.1 }), 340);
       },
       nudge(dx: number, dy: number) {
         const s = store();

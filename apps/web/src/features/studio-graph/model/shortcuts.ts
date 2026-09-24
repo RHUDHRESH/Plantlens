@@ -17,7 +17,8 @@ export type ShortcutAction =
   | { type: "zoomToSelection" }
   | { type: "toggleSnap" }
   | { type: "zoomIn" }
-  | { type: "zoomOut" };
+  | { type: "zoomOut" }
+  | { type: "autoLayout" };
 
 export interface KeyLike {
   key: string;
@@ -76,6 +77,8 @@ export function resolveShortcut(e: KeyLike, mac = isMacPlatform()): ShortcutActi
       return e.shiftKey ? { type: "zoomToSelection" } : null;
     case "g":
       return { type: "toggleSnap" };
+    case "l":
+      return e.shiftKey ? { type: "autoLayout" } : null;
     default:
       return null;
   }
@@ -117,6 +120,7 @@ export const SHORTCUT_HELP: { group: string; items: { keys: string[]; label: str
       { keys: ["Drag"], label: "Marquee select on empty canvas" },
       { keys: ["←↑→↓"], label: "Nudge 1 grid step (Shift: 10)" },
       { keys: ["Alt", "Drag"], label: "Move without snapping" },
+      { keys: ["Shift", "L"], label: "Auto-arrange (selection, or everything)" },
     ],
   },
   {

@@ -24,6 +24,7 @@ import {
   Loader2,
   Lock,
   Maximize,
+  Network,
   Redo2,
   Rows3,
   ShieldCheck,
@@ -209,6 +210,12 @@ function StudioWorkspace() {
             icon={<Timer />}
             aria-pressed={showLagLabels}
             onClick={() => useStudioStore.getState().setShowLagLabels(!showLagLabels)}
+          />
+          <IconButton
+            label={multi ? `Auto-arrange ${selection.nodes.length} selected (⇧ L)` : "Auto-arrange (⇧ L)"}
+            icon={<Network />}
+            disabled={readOnly || assembly.assets.length < 2}
+            onClick={() => void actions.autoLayout()}
           />
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild disabled={!multi || readOnly}>

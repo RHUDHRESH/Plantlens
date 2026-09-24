@@ -3,10 +3,10 @@ import { isEditableTarget, resolveShortcut, type ShortcutAction } from "../model
 import { useStudioStore } from "../studioStore";
 import type { StudioActions } from "./useStudioActions";
 
-const MUTATING = new Set<ShortcutAction["type"]>(["undo", "redo", "delete", "nudge", "cut", "paste", "duplicate", "rename"]);
+const MUTATING = new Set<ShortcutAction["type"]>(["undo", "redo", "delete", "nudge", "cut", "paste", "duplicate", "rename", "autoLayout"]);
 
 /** Runs a resolved shortcut. Exported for tests. */
-export function runShortcut(action: ShortcutAction, actions: Pick<StudioActions, "nudge" | "fitView" | "zoomToSelection" | "zoomIn" | "zoomOut">, opts: { readOnly: boolean; onOpenHelp: () => void }): boolean {
+export function runShortcut(action: ShortcutAction, actions: Pick<StudioActions, "nudge" | "fitView" | "zoomToSelection" | "zoomIn" | "zoomOut"> & Partial<Pick<StudioActions, "autoLayout">>, opts: { readOnly: boolean; onOpenHelp: () => void }): boolean {
   if (opts.readOnly && MUTATING.has(action.type)) return false;
   const s = useStudioStore.getState();
   switch (action.type) {
@@ -61,6 +61,9 @@ export function runShortcut(action: ShortcutAction, actions: Pick<StudioActions,
       return true;
     case "zoomOut":
       actions.zoomOut();
+      return true;
+    case "autoLayout":
+      void actions.autoLayout?.();
       return true;
     default:
       return false;

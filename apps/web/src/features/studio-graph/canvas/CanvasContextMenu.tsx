@@ -11,6 +11,7 @@ import {
   CopyPlus,
   Focus,
   Keyboard,
+  Network,
   Maximize,
   Pencil,
   Repeat,
@@ -100,6 +101,7 @@ export function CanvasContextMenu({
         <Item icon={<Focus />} label="Zoom to selection" kbd="⇧ 2" onSelect={() => actions.zoomToSelection()} />
         {multi ? (
           <>
+            <Item icon={<Network />} label="Auto-arrange selection" kbd="⇧ L" disabled={readOnly} onSelect={() => void actions.autoLayout()} />
             <ContextMenu.Separator className="pl-menu__sep" />
             <ContextMenu.Sub>
               <ContextMenu.SubTrigger className="pl-menu__item" disabled={readOnly}>
@@ -134,6 +136,7 @@ export function CanvasContextMenu({
         <Item icon={<ClipboardPaste />} label="Paste here" kbd={`${MOD} V`} disabled={readOnly} onSelect={() => store().paste(at)} />
         <Item icon={<SquareDashedMousePointer />} label="Select all" kbd={`${MOD} A`} onSelect={() => store().selectAll()} />
         <Item icon={<Maximize />} label="Fit view" kbd="⇧ 1" onSelect={() => actions.fitView()} />
+        <Item icon={<Network />} label="Auto-arrange" kbd="⇧ L" disabled={readOnly} onSelect={() => void actions.autoLayout()} />
         <ContextMenu.Separator className="pl-menu__sep" />
         <ContextMenu.CheckboxItem className="pl-menu__item" checked={snapEnabled} onCheckedChange={(v) => store().setSnapEnabled(v === true)}>
           <span className="st-menu-check" aria-hidden>{snapEnabled ? "✓" : ""}</span>

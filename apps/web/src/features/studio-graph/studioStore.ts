@@ -21,6 +21,7 @@ import {
   type XY,
 } from "./model/assemblyOps";
 import { copySelection, pasteClipboard, PASTE_OFFSET, type ClipboardPayload } from "./model/clipboard";
+import type { EdgeRoutes } from "./model/autoLayout";
 import { createHistory, historyReducer, type History } from "./model/history";
 
 export { buildConnectionFromPorts, nextConnectionId } from "./model/assemblyOps";
@@ -42,6 +43,7 @@ const EMPTY_SELECTION: Selection = { nodes: [], edges: [] };
 let noticeSeq = 0;
 let clipboard: ClipboardPayload | null = null;
 let pasteCount = 0;
+let tweenSeq = 0;
 
 export interface StudioState {
   plantId: string;
@@ -56,6 +58,10 @@ export interface StudioState {
   paletteCollapsed: boolean;
   /** Template being dragged from the palette (dataTransfer is unreadable during dragover). */
   draggingTemplateId: string | null;
+  /** Orthogonal wire routes from the last auto-arrange (projection only; see validRoute). */
+  edgeRoutes: EdgeRoutes;
+  /** Positions before the last auto-arrange, for the canvas to tween from (token changes per run). */
+  layoutTween: { token: number; from: Record<string, XY> } | null;
 
   setLibrary: (components: ComponentTemplate[]) => void;
   loadAssembly: (assembly: PlantAssembly) => void;
@@ -65,6 +71,8 @@ export interface StudioState {
 
   addComponent: (templateId: string, position: XY) => string | null;
   moveNodes: (positions: Record<string, XY>, label?: string) => void;
+  /** Auto-arrange: one undoable command + wire routes + tween. */
+  applyAutoLayout: (positions: Record<string, XY>, routes: EdgeRoutes, label?: string) => boolean;
   deleteSelection: () => void;
   deleteElements: (nodes: string[], edges: string[]) => void;
   connect: (proposal: Proposal, medium: string) => PlantConnection | null;
@@ -105,6 +113,8 @@ const initial = () => ({
   showLagLabels: false,
   paletteCollapsed: false,
   draggingTemplateId: null,
+  edgeRoutes: {} as EdgeRoutes,
+  layoutTween: null as StudioState["layoutTween"],
 });
 
 const same = (a: readonly string[], b: readonly string[]) => a.length === b.length && a.every((x, i) => x === b[i]);
@@ -116,7 +126,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
     set({ library: components, templates: new Map(components.map((c) => [c.component_type_id, c])) }),
 
   loadAssembly: (assembly) =>
-    set({ history: createHistory(assembly), plantId: assembly.plant_id, selection: EMPTY_SELECTION, renamingId: null }),
+    set({ history: createHistory(assembly), plantId: assembly.plant_id, selection: EMPTY_SELECTION, renamingId: null, edgeRoutes: {}, layoutTween: null }),
 
   commit: (label, fn) => {
     const { history } = get();
@@ -158,6 +168,16 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   moveNodes: (positions, label) => {
     const n = Object.keys(positions).length;
     get().commit(label ?? `Move ${n === 1 ? "component" : `${n} components`}`, (a) => moveAssets(a, positions));
+  },
+
+  applyAutoLayout: (positions, routes, label) => {
+    const before = get().history.present;
+    const from: Record<string, XY> = {};
+    for (const a of before.assets) if (positions[a.asset_id]) from[a.asset_id] = a.position_2d;
+    const changed = get().commit(label ?? "Auto-arrange", (a) => moveAssets(a, positions));
+    // Routes are valid even when nothing moved (the positions already matched the layout).
+    set({ edgeRoutes: { ...get().edgeRoutes, ...routes }, layoutTween: changed ? { token: ++tweenSeq, from } : get().layoutTween });
+    return changed;
   },
 
   deleteSelection: () => {
