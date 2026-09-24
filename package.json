@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "description": "PlantLens monorepo root. Orchestrates the web app + shared JS packages. Python apps are managed separately by uv.",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "packageManager": "pnpm@10.33.0",
   "scripts": {
     "dev:web": "pnpm --filter @plantlens/web dev",
@@ -12,7 +14,9 @@
     "oracle": "pnpm --filter @plantlens/cliffords test",
     "contracts:validate": "node scripts/validate-contracts.mjs",
     "compose:config": "docker compose -f deploy/docker/compose.full.yml config",
-    "typecheck": "pnpm -r --if-present typecheck"
+    "typecheck": "pnpm -r --if-present typecheck",
+    "tokens:build": "node packages/ui-tokens/build.mjs",
+    "tokens:check": "node packages/ui-tokens/build.mjs --check"
   },
   "devDependencies": {
     "ajv": "^8.17.1",

@@ -4,9 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PlantLens</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+      // Apply the saved theme before first paint (no light/dark flash). Fonts are bundled locally
+      // so offline control-room machines render correctly.
+      (function () {
+        var pref = "system";
+        try { pref = localStorage.getItem("plantlens.theme") || "system"; } catch (e) {}
+        var dark = pref === "dark" || (pref === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+        document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

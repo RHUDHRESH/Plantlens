@@ -49,6 +49,7 @@ jobs:
           node-version: "22"
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm tokens:check
       - run: pnpm --filter @plantlens/web typecheck
       - run: pnpm --filter @plantlens/web build
       # Vitest has no test files yet (scaffold). Run with passWithNoTests until Chunk 5+.

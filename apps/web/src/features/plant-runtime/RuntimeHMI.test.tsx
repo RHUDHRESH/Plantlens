@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RuntimeHMI } from "./RuntimeHMI";
 import { useRuntimeStore } from "../../app/store/runtime";
 import { useAtlasStore } from "../../app/store/atlas";
+import { useSession } from "../../app/session";
 import { motorObstructionHmiState } from "../hmi-state/__fixtures__/plantHmiState.fixture";
 import { HERO_MOTOR_OVERLOAD } from "../../test-fixtures/heroSnapshot";
 import { getDefaultVisibleLayersForRole, useOperationalMapStore } from "../operational-map";
@@ -117,6 +118,8 @@ function wrap(ui: ReactElement) {
 
 describe("RuntimeHMI", () => {
   beforeEach(() => {
+    // The v2 app shell owns sign-in; RuntimeHMI only waits for a ready session.
+    useSession.setState({ status: "ready", role: "operator", subject: "operator-test", error: null });
     useRuntimeStore.getState().reset();
     useAtlasStore.setState({
       selectedEquipmentId: null,

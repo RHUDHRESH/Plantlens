@@ -236,3 +236,13 @@ def test_four_eyes_policy(client: TestClient, monkeypatch: pytest.MonkeyPatch):
     )
     assert own.status_code == 403
     assert _review(client, change_id).status_code == 200
+
+
+def test_audit_endpoint_lists_newest_first_and_verifies_chain(client: TestClient):
+    change_id = _instantiate(client)["change"]["change_id"]
+    assert _review(client, change_id).status_code == 200
+    assert client.get("/api/audit", headers=_auth(client, "operator")).status_code == 403
+    body = client.get("/api/audit", params={"action": "change."}, headers=_auth(client, "engineer")).json()
+    assert body["chain"]["valid"] is True
+    actions = [r["action"] for r in body["records"]]
+    assert actions[0] == "change.review.approve" and actions[-1] == "change.draft.create"

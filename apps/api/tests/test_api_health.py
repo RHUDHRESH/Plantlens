@@ -44,6 +44,7 @@ ALLOWED_API_PREFIXES = (
     "/api/changes",
     "/api/changes/",
     "/api/studio/",
+    "/api/audit",
     "/api/plc/",
     "/api/library/",
 )

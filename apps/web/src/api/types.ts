@@ -30,6 +30,8 @@ export interface ActiveAlarm {
   severity: "info" | "warning" | "critical";
   message: string;
   raised_at: string;
+  /** When the condition first became true (before debounce); used for first-out ordering. */
+  onset_at?: string;
   value?: number | boolean | string | null;
   acked: boolean;
   priority?: number;

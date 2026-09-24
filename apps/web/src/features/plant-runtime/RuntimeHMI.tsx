@@ -1,15 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   escalateIncident,
   getCompiledBundle,
   getRuntimeSnapshot,
-  issueDevToken,
 } from "../../api/client";
-import { setAuthToken } from "../../api/config";
 import { getRuntimeHmiState, isRuntimeEndpointUnavailable } from "../../api/hmi";
-import { connectRuntimeSocket } from "../../api/ws";
+import { useSession } from "../../app/session";
 import { useReducedMotion } from "../../app/hooks/useReducedMotion";
 import { useWebGLAvailable } from "../../app/hooks/useWebGL";
 import { useRuntimeStore } from "../../app/store/runtime";
@@ -65,11 +63,10 @@ function derivePlantHealth(assetStatus: Record<string, string>): string {
 export function RuntimeHMI() {
   const reducedMotion = useReducedMotion();
   const webglAvailable = useWebGLAvailable();
-  const socketRef = useRef<ReturnType<typeof connectRuntimeSocket> | null>(null);
 
   const [screen, setScreen] = useState<AppScreen>("atlas");
   const [rawExpanded, setRawExpanded] = useState(false);
-  const [authReady, setAuthReady] = useState(false);
+  const authReady = useSession((s) => s.status === "ready");
   const [incidentId, setIncidentId] = useState<string | null>(null);
   const [agentOpen, setAgentOpen] = useState(false);
   const [scenarioOpen, setScenarioOpen] = useState(false);
@@ -140,32 +137,7 @@ export function RuntimeHMI() {
     onSuccess: (data) => setIncidentId(data.incident.incident_id),
   });
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const token = await issueDevToken("operator");
-        if (!cancelled) {
-          setAuthToken(token);
-          setAuthReady(true);
-        }
-      } catch {
-        if (!cancelled) setAuthReady(true);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!authReady) return;
-    socketRef.current = connectRuntimeSocket();
-    return () => {
-      socketRef.current?.close();
-      socketRef.current = null;
-    };
-  }, [authReady]);
+  // Session + runtime socket are owned by the app shell (one token per role, one socket).
 
   useEffect(() => {
     if (hmiStateQuery.data) {
