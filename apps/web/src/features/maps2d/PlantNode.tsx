@@ -1,6 +1,8 @@
 
 import type { MapNodeDetailPolicy } from "../operational-map/detailPolicy";
 import type { MapZoomBand } from "../operational-map";
+import { assetStatusKind } from "../operational-map/format";
+import { SvgGlyph } from "../operational-map/SvgStatus";
 import { AssetIcon } from "./iconRegistry";
 import type { MapNodeOperationalMeta } from "./nodeOperationalMeta";
 import type { AssetStatus, MapNode } from "./mapTypes";
@@ -240,17 +242,21 @@ export function PlantNode({
       )}
 
       {showStatusText && visual.label && (
-        <text
-          x={NODE_W - 10}
-          y={16}
-          textAnchor="end"
-          fill={visual.text}
-          fontSize={8}
-          fontWeight={700}
-          letterSpacing="0.06em"
-        >
-          {visual.icon} {visual.label.toUpperCase()}
-        </text>
+        <g>
+          {/* Shape-coded glyph (not a unicode character) so status is colour + shape + text. */}
+          <SvgGlyph status={assetStatusKind(status)} x={NODE_W - 16 - visual.label.length * 6} y={13} />
+          <text
+            x={NODE_W - 10}
+            y={16}
+            textAnchor="end"
+            fill={visual.text}
+            fontSize={8}
+            fontWeight={700}
+            letterSpacing="0.06em"
+          >
+            {visual.label.toUpperCase()}
+          </text>
+        </g>
       )}
 
       {detailPolicy.showRootBadge && isRoot && (
@@ -263,7 +269,7 @@ export function PlantNode({
           fontWeight={700}
           letterSpacing="0.08em"
         >
-          ▲ ROOT CAUSE
+          ROOT CAUSE
         </text>
       )}
 

@@ -13,6 +13,7 @@ import { ROLE_LABEL, useSession } from "../session";
 import type { Role } from "../session";
 import { useRuntimeStore } from "../store/runtime";
 import { formatClock, timeTitle, zoneAbbreviation } from "../../lib/time";
+import { useRuntimeSeed } from "../../features/operational-map/useRuntimeSeed";
 import { useTheme } from "../theme";
 import type { ThemePreference } from "../theme";
 
@@ -238,6 +239,9 @@ function useRuntimeWiring() {
 
 export function AppShell() {
   useRuntimeWiring();
+  // Seed the store on every route so the plant-health chip is right on Engineer/Admin pages too
+  // (the socket only pushes changes, so without a seed it would read "No data").
+  useRuntimeSeed();
   const health = usePlantHealth();
   const [expanded, setExpanded] = useState<boolean>(() => {
     try {

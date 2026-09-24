@@ -15,6 +15,49 @@ export const MAP_SCALE_Y = 1.1;
 export const NODE_W = 116;
 export const NODE_H = 84;
 
+/** On-screen minimums (CSS px) the map text never drops below, whatever the zoom. */
+export const LABEL_MIN_PX = 12;
+export const SECONDARY_MIN_PX = 11;
+/** Below this on-screen scale the node cards are too small for two text lines: values/ids hide. */
+export const COMPACT_BELOW = 0.8;
+
+export interface MapTextBand {
+  /** Secondary text (live value / id) is hidden; only the name stays. */
+  compact: boolean;
+  /** Font sizes in content units, chosen so the on-screen size stays at or above the minimum. */
+  label: number;
+  secondary: number;
+  /** Scale applied to status tags / causal-order badges (never below 1). */
+  tagK: number;
+  badgeK: number;
+  /** Characters of the name that fit on the card at `label` size. */
+  maxLabelChars: number;
+}
+
+/**
+ * Zoom-aware text sizing for the overview map. `screenScale` is CSS px per content unit.
+ * Text is counter-scaled instead of shrinking with the map; when there is no room for a second
+ * line the secondary text is dropped rather than drawn illegibly small.
+ */
+export function mapTextBand(screenScale: number): MapTextBand {
+  const s = screenScale > 0 && Number.isFinite(screenScale) ? screenScale : 1;
+  const label = Math.max(13.5, LABEL_MIN_PX / s);
+  return {
+    compact: s < COMPACT_BELOW,
+    label,
+    secondary: Math.max(12.5, SECONDARY_MIN_PX / s),
+    // Status tag text is 9.5 units; capped so the widest tag stays about a card wide.
+    tagK: Math.min(1.6, Math.max(1, SECONDARY_MIN_PX / (9.5 * s))),
+    badgeK: Math.min(1.8, Math.max(1, SECONDARY_MIN_PX / (11 * s))),
+    // Names may overhang the card by a few units; neighbours are spaced wider than that.
+    maxLabelChars: Math.max(6, Math.floor((NODE_W + 16) / (0.55 * label))),
+  };
+}
+
+export function truncateLabel(text: string, max: number): string {
+  return text.length <= max ? text : `${text.slice(0, Math.max(1, max - 1)).trimEnd()}…`;
+}
+
 export interface PlacedNode {
   asset: PlantAsset;
   x: number;

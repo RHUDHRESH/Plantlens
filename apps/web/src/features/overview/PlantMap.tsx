@@ -1,5 +1,5 @@
-import { memo, useMemo } from "react";
-import type { KeyboardEvent } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
+import type { KeyboardEvent, RefObject } from "react";
 import type { TagFrame } from "../../app/schemas/tagFrame";
 import { EquipmentSymbol, symbolForAssetType } from "../../components/symbols";
 import { assetStatusKind, assetStatusLabel, formatValue, isAbnormal } from "../operational-map/format";
@@ -8,8 +8,8 @@ import type { PlantModel } from "../operational-map/plantModel";
 import { SvgStatusTag } from "../operational-map/SvgStatus";
 import { usePanZoom } from "../operational-map/usePanZoom";
 import type { AssetStatus } from "../maps2d/mapTypes";
-import type { PlacedNode } from "./mapLayout";
-import { NODE_H, NODE_W, causalEdgeIds, contentBounds, keyTagFor, placeNodes, routeConnection } from "./mapLayout";
+import type { MapTextBand, PlacedNode } from "./mapLayout";
+import { NODE_H, NODE_W, causalEdgeIds, contentBounds, keyTagFor, mapTextBand, placeNodes, routeConnection, truncateLabel } from "./mapLayout";
 
 interface NodeProps {
   node: PlacedNode;
@@ -20,9 +20,33 @@ interface NodeProps {
   isRoot: boolean;
   selected: boolean;
   onSelect: (id: string) => void;
+  band: MapTextBand;
 }
 
-const MapNodeView = memo(function MapNodeView({ node, status, keyTag, unit, causalOrder, isRoot, selected, onSelect }: NodeProps) {
+function scaleAbout(cx: number, cy: number, k: number): string | undefined {
+  return k === 1 ? undefined : `translate(${cx},${cy}) scale(${k}) translate(${-cx},${-cy})`;
+}
+
+/** CSS px per content unit for an SVG drawn with preserveAspectRatio="xMidYMid meet". */
+function useScreenScale(svgRef: RefObject<SVGSVGElement | null>, viewBox: string): number {
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => {
+      const r = svg.getBoundingClientRect();
+      setSize((prev) => (prev && prev.w === r.width && prev.h === r.height ? prev : { w: r.width, h: r.height }));
+    });
+    ro.observe(svg);
+    return () => ro.disconnect();
+  }, [svgRef]);
+  const [, , vw, vh] = viewBox.split(" ").map(Number);
+  if (!size || !size.w || !size.h || !vw || !vh) return 1;
+  // Quantise so continuous zoom re-renders the nodes in small steps only.
+  return Math.round(Math.min(size.w / vw, size.h / vh) * 50) / 50;
+}
+
+const MapNodeView = memo(function MapNodeView({ node, status, keyTag, unit, causalOrder, isRoot, selected, onSelect, band }: NodeProps) {
   const { asset, x, y } = node;
   const kind = assetStatusKind(status);
   const abnormal = isAbnormal(status);
@@ -30,6 +54,8 @@ const MapNodeView = memo(function MapNodeView({ node, status, keyTag, unit, caus
   const valueText = keyTag ? formatValue(keyTag.value, unit ?? keyTag.unit) : asset.tags.length ? "—" : "";
   const badQuality = quality && quality !== "GOOD";
   const label = `${asset.name}, ${assetStatusLabel(status)}${keyTag ? `, ${keyTag.tag_id} ${valueText}` : ""}${causalOrder ? `, causal step ${causalOrder}` : ""}`;
+  const name = truncateLabel(asset.name, band.maxLabelChars);
+  const tagY = NODE_H / 2 + 13;
   const onKey = (e: KeyboardEvent<SVGGElement>) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -57,27 +83,34 @@ const MapNodeView = memo(function MapNodeView({ node, status, keyTag, unit, caus
         status={abnormal ? kind : "normal"}
         state={keyTag ? "running" : "unknown"}
       />
-      <text className="ov-node__label" x={0} y={16} textAnchor="middle">
-        {asset.name}
+      <text className="ov-node__label" x={0} y={band.compact ? 24 : 16} textAnchor="middle" style={{ fontSize: band.label }}>
+        {name !== asset.name ? <title>{asset.name}</title> : null}
+        {name}
       </text>
-      {valueText ? (
-        <text className={`ov-node__value${badQuality ? " is-bad" : ""}`} x={0} y={33} textAnchor="middle">
+      {band.compact ? null : valueText ? (
+        <text className={`ov-node__value${badQuality ? " is-bad" : ""}`} x={0} y={33} textAnchor="middle" style={{ fontSize: band.secondary }}>
           {badQuality ? `${valueText} · ${quality}` : valueText}
         </text>
       ) : (
-        <text className="ov-node__id" x={0} y={33} textAnchor="middle">
+        <text className="ov-node__id" x={0} y={33} textAnchor="middle" style={{ fontSize: band.secondary }}>
           {asset.id}
         </text>
       )}
-      {abnormal ? <SvgStatusTag status={kind} label={assetStatusLabel(status)} x={0} y={NODE_H / 2 + 13} anchor="middle" /> : null}
+      {abnormal ? (
+        <g transform={scaleAbout(0, tagY, band.tagK)}>
+          <SvgStatusTag status={kind} label={assetStatusLabel(status)} x={0} y={tagY} anchor="middle" />
+        </g>
+      ) : null}
       {causalOrder ? (
         <g className="ov-node__order" aria-hidden>
-          <circle cx={-NODE_W / 2 + 4} cy={-NODE_H / 2 + 4} r={10} />
-          <text x={-NODE_W / 2 + 4} y={-NODE_H / 2 + 7.8} textAnchor="middle">
-            {causalOrder}
-          </text>
+          <g transform={scaleAbout(-NODE_W / 2 + 4, -NODE_H / 2 + 4, band.badgeK)}>
+            <circle cx={-NODE_W / 2 + 4} cy={-NODE_H / 2 + 4} r={10} />
+            <text x={-NODE_W / 2 + 4} y={-NODE_H / 2 + 7.8} textAnchor="middle">
+              {causalOrder}
+            </text>
+          </g>
           {isRoot ? (
-            <text className="ov-node__root" x={NODE_W / 2 - 8} y={-NODE_H / 2 + 16} textAnchor="end">
+            <text className="ov-node__root" x={NODE_W / 2 - 8} y={-NODE_H / 2 + 16} textAnchor="end" style={{ fontSize: band.secondary }}>
               ROOT
             </text>
           ) : null}
@@ -112,6 +145,8 @@ export function PlantMap({
   const pz = usePanZoom(bounds);
   const highlighted = useMemo(() => causalEdgeIds(causalPath, model.connections), [causalPath, model.connections]);
   const orderOf = useMemo(() => new Map((causalPath ?? []).map((id, i) => [id, i + 1])), [causalPath]);
+  const screenScale = useScreenScale(pz.svgRef, pz.viewBox);
+  const band = useMemo(() => mapTextBand(screenScale), [screenScale]);
 
   const pathText = causalPath?.length
     ? causalPath.map((id) => model.assetById[id]?.name ?? id).join(" → ")
@@ -157,6 +192,7 @@ export function PlantMap({
                 isRoot={n.asset.id === rootAssetId}
                 selected={selectedId === n.asset.id}
                 onSelect={onSelect}
+                band={band}
               />
             );
           })}
