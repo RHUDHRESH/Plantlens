@@ -11,6 +11,7 @@ from app.auth.dependencies import require_human_approver, require_viewer
 from app.auth.principal import Principal
 from app.dependencies import get_db
 from app.runtime.alarm_engine import acknowledge_alarm, list_shelved, shelve_alarm, unshelve_alarm
+from app.runtime.calm_card_engine import evaluate_actions_for_role
 from app.runtime.causal.structure import structure_for
 from app.runtime.config_loader import get_runtime_config
 from app.runtime.runtime_state import runtime_state
@@ -201,4 +202,21 @@ async def causal_graph(_principal: Principal = Depends(require_viewer)) -> dict:
             "traversed_edges": situation.get("traversed_edges", []) if situation else [],
             "alarmed_assets": alarmed_assets,
         },
+    }
+
+
+@router.get("/actions")
+async def actions_for_me(principal: Principal = Depends(require_viewer)) -> dict:
+    """Recommended actions for the active situation, gated by the caller's role (advisory only)."""
+    situation = next(iter(runtime_state.active_situations.values()), None)
+    situation_type = situation.get("situation_type") if situation else None
+    return {
+        "situation_type": situation_type,
+        "role": principal.role,
+        "actions": evaluate_actions_for_role(
+            situation_type,
+            principal.role,
+            set(runtime_state.active_alarms),
+            get_runtime_config().action_envelope,
+        ),
     }

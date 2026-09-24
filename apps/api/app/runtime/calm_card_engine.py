@@ -212,3 +212,48 @@ def build_calm_card(
         "raw_alarm_ids": situation.get("grouped_alarm_ids", []),
         "operator_authority": OPERATOR_AUTHORITY,
     }
+
+def evaluate_actions_for_role(
+    situation_type: str | None,
+    role: str,
+    active_alarm_ids: set[str],
+    action_envelope: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Advisory action list for one viewer role (ported from the retired backend/ prototype).
+
+    PlantLens never executes these: an action is only ever *recommended*, and ``allowed`` says
+    whether this role may carry it out under the site envelope. Role gating is evaluated per
+    request because the Calm Card itself is broadcast identically to every screen.
+    """
+    if not situation_type:
+        return []
+    results: list[dict[str, Any]] = []
+    for action in action_envelope.get("actions", []):
+        if situation_type not in action.get("situation_ids", []):
+            continue
+        allowed_roles = list(action.get("allowed_roles", []))
+        blocking = sorted(set(action.get("blocked_if", [])) & active_alarm_ids)
+        if allowed_roles and role not in allowed_roles:
+            allowed, reason = False, f"Role '{role}' is not permitted; allowed: {', '.join(allowed_roles)}."
+        elif blocking:
+            allowed = False
+            reason = action.get("blocked_message", f"Blocked while alarms active: {', '.join(blocking)}")
+        else:
+            allowed, reason = True, "Permitted for this role under the action envelope."
+        results.append(
+            {
+                "action_id": action["id"],
+                "label": action["label"],
+                "allowed": allowed,
+                "reason": reason,
+                "allowed_roles": allowed_roles,
+                "blocking_alarms": blocking,
+                "risk_level": action.get("risk_level", "unknown"),
+                "requires_isolation": bool(action.get("requires_isolation", False)),
+                "requires_operator_confirm": bool(action.get("requires_operator_confirm", False)),
+                "plc_permission_required": bool(action.get("plc_permission_required", False)),
+                "safety_note": action.get("safety_note"),
+                "target_asset_id": action.get("target_asset_id"),
+            }
+        )
+    return results

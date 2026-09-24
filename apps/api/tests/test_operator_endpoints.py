@@ -132,3 +132,25 @@ def test_layout_roundtrip_and_conflict(client: TestClient):
     assert loaded["positions"]["MTR-301"] == {"x": 10.0, "y": 20.0}
     assert client.put("/api/studio/layout/demo", json={"positions": {}},
                       headers=_auth(client, "operator")).status_code == 403
+
+
+def test_actions_are_gated_by_role_and_blocking_alarms(client: TestClient):
+    _run_hero()
+    operator = client.get("/api/runtime/actions", headers=_auth(client, "operator")).json()
+    assert operator["situation_type"] == "MOTOR_MECHANICAL_OVERLOAD"
+    by_id = {a["action_id"]: a for a in operator["actions"]}
+    assert by_id["INSPECT_SHAFT_LOAD"]["allowed"] is True
+    assert by_id["INSPECT_SHAFT_LOAD"]["requires_isolation"] is True
+    viewer = client.get("/api/runtime/actions", headers=_auth(client, "viewer")).json()
+    assert all(a["allowed"] is False and "not permitted" in a["reason"] for a in viewer["actions"])
+
+
+def test_blocked_if_active_alarm_blocks_even_permitted_roles():
+    from app.runtime.calm_card_engine import evaluate_actions_for_role
+
+    envelope = {"actions": [{"id": "RESTART", "label": "Restart", "situation_ids": ["S"],
+                             "allowed_roles": ["maintenance"], "blocked_if": ["MOTOR_TEMP_HIGH"],
+                             "blocked_message": "Blocked while motor hot."}]}
+    result = evaluate_actions_for_role("S", "maintenance", {"MOTOR_TEMP_HIGH"}, envelope)
+    assert result[0]["allowed"] is False and result[0]["reason"] == "Blocked while motor hot."
+    assert evaluate_actions_for_role("S", "maintenance", set(), envelope)[0]["allowed"] is True
