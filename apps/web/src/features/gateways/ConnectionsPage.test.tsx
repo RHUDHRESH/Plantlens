@@ -142,9 +142,10 @@ describe("gateway model", () => {
     expect(serverUrl({ protocol: "http:", hostname: "192.168.1.10" })).toBe("http://192.168.1.10:8000");
     expect(serverUrl({ protocol: "http:", hostname: "x" }, "http://api.local:9000/")).toBe("http://api.local:9000");
     const cmds = setupCommands("http://10.0.0.5:8000");
-    expect(cmds.windows).toContain('$env:API_BASE_URL="http://10.0.0.5:8000"');
+    expect(cmds.windows).toContain("-Server http://10.0.0.5:8000");
+    expect(cmds.windows).toContain("-Token '");
     expect(cmds.windows).toContain("start-gateway.ps1");
-    expect(cmds.unix).toContain("API_BASE_URL=http://10.0.0.5:8000");
+    expect(cmds.unix).toContain("-- --server http://10.0.0.5:8000");
     expect(cmds.unix).toContain("start-gateway.sh");
   });
 });

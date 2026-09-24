@@ -168,12 +168,10 @@ export function serverUrl(loc: Pick<Location, "protocol" | "hostname"> = window.
 }
 
 export function setupCommands(url: string): { windows: string; unix: string } {
+  // The launchers run the setup wizard on first use; these flags pre-fill it (see
+  // apps/gateway/scripts/start-gateway.ps1 / start-gateway.sh). The wizard detects the port.
   return {
-    windows: [
-      `$env:API_BASE_URL="${url}"`,
-      `$env:GATEWAY_INGEST_TOKEN="<same token as the server>"`,
-      `powershell -ExecutionPolicy Bypass -File apps\\gateway\\scripts\\start-gateway.ps1`,
-    ].join("\n"),
-    unix: `API_BASE_URL=${url} GATEWAY_INGEST_TOKEN=<same token as the server> ./apps/gateway/scripts/start-gateway.sh`,
+    windows: `powershell -ExecutionPolicy Bypass -File apps\\gateway\\scripts\\start-gateway.ps1 -Server ${url} -Token '<same token as the server>'`,
+    unix: `./apps/gateway/scripts/start-gateway.sh -- --server ${url} --token '<same token as the server>'`,
   };
 }
