@@ -6,11 +6,25 @@
  * running state is shown by fill (filled = running, outline = stopped), never by colour;
  * abnormal status adds a status-coloured outline + the shape-coded PriorityGlyph badge.
  *
- * NOTE: this file is the contract. The full symbol set lives in ./library.tsx.
+ * NOTE: this file is the contract. Shapes are plain data in ./geometry.ts (shared with the static
+ * SVG build in packages/icons); ./library.tsx maps them to React.
  */
 import type { ReactElement, SVGProps } from "react";
 import type { StatusKind } from "../ui/primitives";
+import { EquipmentBadge } from "./EquipmentBadge";
+import type { SensorMounting, SymbolKindName } from "./geometry";
 import { SYMBOL_RENDERERS } from "./library";
+
+export { EquipmentBadge, isAbnormalStatus, type EquipmentBadgeProps } from "./EquipmentBadge";
+export {
+  SYMBOL_KINDS,
+  SYMBOL_META,
+  symbolGeometry,
+  type SensorMounting,
+  type SymbolCategory,
+  type SymbolMetaEntry,
+  type SymbolPrim,
+} from "./geometry";
 
 export type SymbolKind =
   | "motor"
@@ -54,6 +68,11 @@ export type SymbolKind =
   | "sensor"
   | "generic";
 
+// Compile-time guard: the contract union and the geometry's SYMBOL_KINDS list must stay identical.
+type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+const KINDS_IN_SYNC: Same<SymbolKind, SymbolKindName> = true;
+void KINDS_IN_SYNC;
+
 export type RunState = "running" | "stopped" | "unknown";
 
 export interface EquipmentSymbolProps extends Omit<SVGProps<SVGSVGElement>, "children"> {
@@ -64,9 +83,18 @@ export interface EquipmentSymbolProps extends Omit<SVGProps<SVGSVGElement>, "chi
   /** Instrument letters for kind="sensor" (ISA-5.1 bubble), e.g. "TT", "PT", "IT", "ST", "VT". */
   tag?: string;
   title?: string;
+  /** kind="sensor" only: "panel" draws the ISA-5.1 horizontal line (panel-mounted instrument). */
+  mounting?: SensorMounting;
+  /** Draw the shape-coded status badge (PriorityGlyph) in the top-right corner when abnormal. */
+  badge?: boolean;
 }
 
-export type SymbolRenderer = (props: { state: RunState; tag?: string | undefined }) => ReactElement;
+export type SymbolRenderer = (props: {
+  state: RunState;
+  tag?: string | undefined;
+  mounting?: SensorMounting | undefined;
+  size?: number | undefined;
+}) => ReactElement;
 
 export function EquipmentSymbol({
   kind,
@@ -75,10 +103,14 @@ export function EquipmentSymbol({
   status = "normal",
   tag,
   title,
+  mounting,
+  badge = false,
   className,
   ...rest
 }: EquipmentSymbolProps) {
   const render = SYMBOL_RENDERERS[kind] ?? SYMBOL_RENDERERS.generic;
+  // Keep the badge ~13 px on screen whatever the symbol size (clamped to the 48-unit grid).
+  const badgeUnits = Math.min(20, Math.max(9, (13 * 48) / Math.max(size, 1)));
   return (
     <svg
       viewBox="0 0 48 48"
@@ -90,7 +122,8 @@ export function EquipmentSymbol({
       {...rest}
     >
       {title ? <title>{title}</title> : null}
-      {render({ state, tag })}
+      {render({ state, tag, mounting, size })}
+      {badge ? <EquipmentBadge status={status} mode="svg" size={badgeUnits} x={44} y={4} title="" /> : null}
     </svg>
   );
 }

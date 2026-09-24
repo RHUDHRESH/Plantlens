@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" role="img">
+  <title>Tank</title>
+  <path d="M11 12.5A13 5 0 0 1 37 12.5V35.5A13 5 0 0 1 11 35.5Z"/>
+  <path d="M11 25H37" stroke-dasharray="2.4 2.2"/>
+  <path d="M28.5 20.6H33.5L31 24.6Z" fill="currentColor" stroke="none"/>
+</svg>

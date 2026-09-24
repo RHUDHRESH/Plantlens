@@ -1,7 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" role="img">
-  <title>Inverter</title>
+  <title>Variable-frequency drive</title>
   <rect x="10" y="10" width="28" height="28" rx="3"/>
   <path d="M10 38L38 10"/>
-  <path d="M13.1 15.9H22.1M13.1 18.9H22.1"/>
+  <path d="M13.1 18.35C16.88 13.08 18.32 21.72 22.1 16.45"/>
   <path d="M25.9 31.55C29.68 26.28 31.12 34.92 34.9 29.66"/>
+  <path d="M27.5 36.2L34.4 29.3"/>
+  <path d="M36.2 27.5L34.93 31.88L31.82 28.77Z" fill="currentColor" stroke="none"/>
 </svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" role="img">
+  <title>Fan</title>
+  <circle cx="24" cy="24" r="14"/>
+  <path d="M24 21.2C20.6 19.2 19.4 14.6 21.6 11.6C23.1 11.2 25.2 11.3 26.5 12.1C27.8 15.2 27.2 19 24 21.2Z"/>
+  <g transform="rotate(120 24 24)">
+    <path d="M24 21.2C20.6 19.2 19.4 14.6 21.6 11.6C23.1 11.2 25.2 11.3 26.5 12.1C27.8 15.2 27.2 19 24 21.2Z"/>
+  </g>
+  <g transform="rotate(240 24 24)">
+    <path d="M24 21.2C20.6 19.2 19.4 14.6 21.6 11.6C23.1 11.2 25.2 11.3 26.5 12.1C27.8 15.2 27.2 19 24 21.2Z"/>
+  </g>
+  <circle cx="24" cy="24" r="2.6"/>
+</svg>
