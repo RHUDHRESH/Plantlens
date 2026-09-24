@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
@@ -14,6 +15,8 @@ from serial.tools import list_ports
 
 from gateway.raw_serial_reader import build_line_tag_index, parse_line_to_frames
 from gateway.settings import Settings, resolve_tag_map_path
+from gateway.transport.discovery import DiscoveryError, enumerate_ports, resolve
+from gateway.transport.serial_link import is_port_held
 
 
 @dataclass(frozen=True, slots=True)
@@ -23,21 +26,51 @@ class PortProbe:
     detail: str
 
 
-def list_serial_ports() -> list[dict[str, str]]:
-    return [
-        {
-            "device": port.device,
-            "description": port.description,
-            "hwid": port.hwid,
+def list_serial_ports() -> list[dict[str, Any]]:
+    """Enumerate ports with VID/PID, serial number, by-id path and known-adapter name."""
+    hwids = {p.device: p.hwid for p in list_ports.comports()}
+    rows: list[dict[str, Any]] = []
+    for ident in enumerate_ports():
+        row = ident.as_dict()
+        row["hwid"] = hwids.get(ident.device, "")
+        row["held_by_gateway"] = is_port_held(ident.device)
+        rows.append(row)
+    return rows
+
+
+def detect_port(selector: str | None) -> dict[str, Any]:
+    """Resolve *selector* exactly like the gateway link does (never guesses)."""
+    try:
+        return {"ok": True, "selector": selector or "auto", "port": resolve(selector).as_dict()}
+    except DiscoveryError as exc:
+        return {
+            "ok": False,
+            "selector": selector or "auto",
+            "error": str(exc),
+            "candidates": [c.as_dict() for c in exc.candidates],
         }
-        for port in list_ports.comports()
-    ]
 
 
 def probe_port(port: str, *, baudrate: int) -> PortProbe:
+    """Open/close test. Refuses ports held by a live gateway link; opens exclusively on POSIX.
+
+    The probe opens with DTR/RTS low so it does not auto-reset an attached Arduino.
+    """
+    owner = is_port_held(port)
+    if owner is not None:
+        return PortProbe(port=port, available=False, detail=f"held_by_gateway_link:{owner}")
     try:
-        with serial.Serial(port=port, baudrate=baudrate, timeout=0):
-            return PortProbe(port=port, available=True, detail="open_ok")
+        ser = serial.Serial()
+        ser.port = port
+        ser.baudrate = baudrate
+        ser.timeout = 0
+        ser.dtr = False
+        ser.rts = False
+        if os.name == "posix":
+            ser.exclusive = True
+        ser.open()
+        ser.close()
+        return PortProbe(port=port, available=True, detail="open_ok")
     except Exception as exc:
         return PortProbe(port=port, available=False, detail=f"{type(exc).__name__}: {exc}")
 
@@ -54,7 +87,7 @@ def parse_line(
     *,
     line: str,
     gateway_id: str,
-    default_tag_id: str,
+    default_tag_id: str | None,
     tag_map_path: Path,
 ) -> dict[str, Any]:
     tag_map = json.loads(tag_map_path.read_text(encoding="utf-8"))
@@ -68,9 +101,19 @@ def parse_line(
     return {
         "ok": bool(frames),
         "frames": len(frames),
-        "parsed": [frame.model_dump(mode="json") for frame in frames],
+        "parsed": [frame.to_contract() for frame in frames],
+        "decoder": _parse_line_details(line, default_tag_id=default_tag_id, tag_map_path=tag_map_path),
         "error": "" if frames else "line produced no TagFrames",
     }
+
+
+def _parse_line_details(line: str, *, default_tag_id: str | None, tag_map_path: Path) -> dict[str, Any]:
+    from gateway.line.protocols import LineDecoder
+
+    tag_map = json.loads(tag_map_path.read_text(encoding="utf-8"))
+    decoder = LineDecoder(build_line_tag_index(tag_map), default_tag_id=default_tag_id)
+    decoder.decode(line)
+    return decoder.stats.as_dict()
 
 
 def post_line_to_api(
@@ -79,7 +122,7 @@ def post_line_to_api(
     api_base: str,
     token: str,
     gateway_id: str,
-    default_tag_id: str,
+    default_tag_id: str | None,
     tag_map_path: Path,
 ) -> dict[str, Any]:
     parsed = parse_line(
@@ -99,7 +142,7 @@ def post_line_to_api(
                 f"{api_base.rstrip('/')}/api/ingest/frame",
                 headers={"Authorization": f"Bearer {token}"},
                 json=frame,
-            )
+            )  # explicit, test-only path (--post); the gateway itself uses publish.uplink
             responses.append({"status_code": response.status_code, "body": response.text})
             ok = ok and response.is_success
     return {"ok": ok, "frames": len(frames), "responses": responses, "posted": True}
@@ -107,7 +150,13 @@ def post_line_to_api(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Inspect PlantLens gateway COM/API status.")
-    parser.add_argument("--port", default="COM3", help="COM port to probe.")
+    parser.add_argument("--port", default=None, help="Port to probe (default: auto-detected port, if unique).")
+    parser.add_argument(
+        "--detect",
+        default=None,
+        metavar="SELECTOR",
+        help="Resolve a link selector (auto | VID:PID[:SERIAL] | sn:SERIAL | path) like the gateway does.",
+    )
     parser.add_argument("--baudrate", type=int, default=9600, help="Serial baudrate for open probe.")
     parser.add_argument("--api-base", default="http://127.0.0.1:8000", help="PlantLens API base URL.")
     parser.add_argument("--token", default="change-me", help="Gateway ingest token.")
@@ -119,9 +168,12 @@ def main() -> None:
 
     settings = Settings()
     tag_map_path = resolve_tag_map_path(settings)
+    detection = detect_port(args.detect if args.detect is not None else settings.link_selector())
+    port = args.port or (detection["port"]["device"] if detection["ok"] else None)
     result: dict[str, Any] = {
         "ports": list_serial_ports(),
-        "probe": asdict(probe_port(args.port, baudrate=args.baudrate)),
+        "detect": detection,
+        "probe": asdict(probe_port(port, baudrate=args.baudrate)) if port else None,
         "api": api_health(args.api_base),
         "tag_map_path": str(tag_map_path),
     }

@@ -65,15 +65,24 @@ the HMI is polling.
 
 `easy302_bridge/sketch/sketch.ino` provides:
 
-- `easy302/sniff`: bounded passive raw-byte capture
-- `easy302/probe`: commissioning-only FC03/FC04 reads; never Modbus writes
+- `easy302/listen` + `easy302/drain`: continuous passive capture into a 1 KiB ring buffer on the
+  MCU; `drain` returns the bytes since the last call with `|` markers at every >= t3.5 silence
+  (frame boundary) and an overflow count, so there is no blind window between RPC calls
+- `easy302/sniff`: bounded passive raw-byte capture (legacy fallback, now also gap-marked)
+- `easy302/probe`: commissioning-only FC03/FC04 reads; never Modbus writes. The response timeout
+  scales with baud (slave turnaround + frame time on the wire) and the reply ends at a t3.5 gap
+  (1.75 ms above 19200 baud, 3.5 x 11 bit-times below)
 - CRC validation and explicit timeout/error results
 
 ## Passive live gateway
 
-`plantlens_app/python/passive_gateway.py` continuously calls only `easy302/sniff`, recovers
-CRC-valid FC03/FC04 request/reply pairs, and publishes observed native words through the normal
-`TagFrame` ingest seam. The HMI remains the sole bus master. Native tags use names such as
+`plantlens_app/python/passive_gateway.py` continuously drains the MCU capture (`easy302/drain`,
+falling back to `easy302/sniff` on older firmware), recovers CRC-valid FC03/FC04 request/reply
+pairs, and publishes observed native words through the normal `TagFrame` ingest seam. Publishing
+runs on its own thread with an ordered, bounded queue: network/5xx failures are retried in order,
+4xx batches are quarantined and counted, and all of it is visible in `/api/connection/status`
+(`ingest_*` fields). When no valid reply is seen for `PLANTLENS_PASSIVE_STALE_AFTER_MS` (3000 ms)
+every known register is published as `STALE`. The HMI remains the sole bus master. Native tags use names such as
 `NATIVE_S6_HR_00000` and unit `raw_word`; they are intentionally not relabeled as engineering
 signals until scaling and word order have been commissioned.
 

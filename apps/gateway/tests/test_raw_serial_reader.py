@@ -36,7 +36,9 @@ def test_parse_tag_equals_value_line():
     assert frames[0].asset_id == "MTR-301"
     assert frames[0].value == 42.5
     assert frames[0].unit == "A"
-    assert frames[0].source == "modbus_rtu"
+    # Line frames are no longer stamped "modbus_rtu" (they are not Modbus); the contract has no
+    # serial-line value, so the configurable default is "manual" (see README).
+    assert frames[0].source == "manual"
     assert frames[0].seq == 10
 
 
@@ -79,7 +81,9 @@ def test_parse_json_tag_value_object():
     assert [frame.value for frame in frames] == [45.2, 46.8]
 
 
-def test_parse_unknown_tag_falls_back_to_default_tag():
+def test_parse_unknown_tag_is_rejected_not_remapped():
+    """Behaviour change: an unknown/garbled key used to be published as the default tag
+    (a wrong GOOD value). It is now rejected and counted."""
     frames = parse_line_to_frames(
         "CURRENT=46.0",
         tag_index=TAG_INDEX,
@@ -88,6 +92,29 @@ def test_parse_unknown_tag_falls_back_to_default_tag():
         first_seq=40,
         now=NOW,
     )
-    assert len(frames) == 1
-    assert frames[0].tag_id == "MOTOR_301_CURRENT"
-    assert frames[0].value == 46.0
+    assert frames == []
+
+
+def test_parse_full_tagframe_json_with_bad_value_does_not_raise():
+    frames = parse_line_to_frames(
+        '{"tag_id": "BUS_101_V", "asset_id": "BUS-101", "value": [1], "unit": "V", "quality": "GOOD",'
+        ' "timestamp": "2026-01-01T00:00:00Z", "source": "modbus_rtu"}',
+        tag_index=TAG_INDEX,
+        default_tag_id="MOTOR_301_CURRENT",
+        gateway_id="gw-test",
+        first_seq=50,
+        now=NOW,
+    )
+    assert frames == []
+
+
+def test_parse_nan_is_bad_not_good():
+    frames = parse_line_to_frames(
+        "MOTOR_301_CURRENT=nan",
+        tag_index=TAG_INDEX,
+        default_tag_id="MOTOR_301_CURRENT",
+        gateway_id="gw-test",
+        first_seq=60,
+        now=NOW,
+    )
+    assert [(f.quality, f.value) for f in frames] == [("BAD", None)]

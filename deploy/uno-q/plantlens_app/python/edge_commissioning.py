@@ -80,6 +80,14 @@ def commissioning_receipt(rows: list[dict[str, Any]]) -> dict[str, Any]:
             "runtime_diagnosis": False,
         }
 
+    if any(str(row.get("quality", "GOOD")) != "GOOD" for row in selected.values()):
+        return {
+            "status": "ABSTAIN",
+            "reason": "STALE_MODBUS_DATA",
+            "read_only": True,
+            "runtime_diagnosis": False,
+        }
+
     decoded = {
         start: decode_cdab_float(selected[start]["value"], selected[start + 1]["value"])
         for start in PAIR_STARTS
