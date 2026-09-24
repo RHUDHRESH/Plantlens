@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" role="img">
+  <title>PV array</title>
+  <path d="M6 42H34L41 24H13Z"/>
+  <path d="M15.33 42L22.33 24M24.67 42L31.67 24M9.5 33H37.5"/>
+  <circle cx="13" cy="11" r="3.6"/>
+  <path d="M18.8 11L21 11M15.9 16.02L17 17.93M10.1 16.02L9 17.93M7.2 11L5 11M10.1 5.98L9 4.07M15.9 5.98L17 4.07"/>
+</svg>

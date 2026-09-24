@@ -229,3 +229,19 @@ body {
 .pl-symbol--medium .pl-sym { stroke: var(--status-medium); }
 .pl-symbol--sensor_bad .pl-sym { stroke: var(--status-sensor-bad); stroke-dasharray: 3 2; }
 .pl-symbol--offline .pl-sym { stroke: var(--status-offline); opacity: 0.6; }
+/* Symbol library v2 (components/symbols). vector-effect is not inherited, so it is set per shape.
+   Solid details follow the status ink so abnormal recolouring stays consistent. */
+.pl-symbol { --pl-sym-ink: var(--equipment-stroke); }
+.pl-symbol--critical { --pl-sym-ink: var(--status-critical); }
+.pl-symbol--high { --pl-sym-ink: var(--status-high); }
+.pl-symbol--medium { --pl-sym-ink: var(--status-medium); }
+.pl-symbol--sensor_bad { --pl-sym-ink: var(--status-sensor-bad); }
+.pl-symbol--offline { --pl-sym-ink: var(--status-offline); }
+.pl-sym > *, .pl-sym g > * { vector-effect: non-scaling-stroke; }
+.pl-sym-solid { fill: var(--pl-sym-ink); stroke: none; }
+.pl-sym-dash { stroke-dasharray: 2.4 2.2; }
+.pl-sym-heavy { stroke-width: 2.6; }
+.pl-sym-text--xs { font-size: 8px; letter-spacing: 0; }
+.pl-sym-badge-host { position: relative; display: inline-flex; }
+.pl-sym-badge { position: absolute; top: -5px; right: -5px; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); pointer-events: none; }
+.pl-sym-badge-bg { fill: var(--surface); stroke: var(--border); stroke-width: 1; vector-effect: non-scaling-stroke; }

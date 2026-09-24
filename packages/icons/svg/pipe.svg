@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" role="img">
+  <title>Pipe</title>
+  <path d="M8 18.5H39A3 5.5 0 0 1 39 29.5H8"/>
+  <ellipse cx="8" cy="24" rx="3" ry="5.5"/>
+  <path d="M18 24H26"/>
+  <path d="M31 24L26 26.8L26 21.2Z" fill="currentColor" stroke="none"/>
+</svg>

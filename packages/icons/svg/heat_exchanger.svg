@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" role="img">
+  <title>Heat exchanger</title>
+  <path d="M17 15V8M31 33V40"/>
+  <rect x="6" y="15" width="36" height="18" rx="9"/>
+  <path d="M4 28.5H11L14.5 19.5L18.8 28.5L23.1 19.5L27.4 28.5L31.7 19.5L35 28.5H44"/>
+</svg>

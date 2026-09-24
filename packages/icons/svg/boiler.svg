@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" role="img">
+  <title>Boiler</title>
+  <path d="M24 4V10"/>
+  <rect x="11" y="10" width="26" height="33" rx="4"/>
+  <path d="M19 18.34C23.2 13.66 24.8 21.34 29 16.66"/>
+  <path d="M24 38C20.2 38 18.6 35 19.6 32.2C20.4 30 22.4 28.8 22.6 25.6C25.8 27.3 29 30.6 28.6 34C28.3 36.4 26.4 38 24 38Z"/>
+</svg>
