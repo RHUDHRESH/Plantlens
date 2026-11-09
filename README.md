@@ -6,13 +6,15 @@
 
 PlantLens is a read-only industrial intelligence retrofit combining passive RS485 observation, physics-informed motor fingerprinting, uncertainty-aware edge AI, and deterministic causal-DAG reasoning. It explains what changed, why the physical evidence supports that conclusion, and when the system must abstain.
 
-**Arduino Physical AI Challenge India 2026 | Industrial & Sustainability**
+**Built for:** Arduino Physical AI Challenge India 2026 · Industrial & Sustainability track
 
 **Team:** Volt Visionaries: Rhudhresh R, Dhruv D. Mehta, Shyaam S, Suraj Sharma
 
 **Institution:** Saveetha Engineering College
 
 **Primary board:** Arduino UNO Q | **Operating model:** local inference, offline-capable, strictly read-only
+
+**Stack:** Arduino UNO Q (STM32U585 MCU and Qualcomm QRB2210 Linux MPU) · Python 3.12, FastAPI, SQLAlchemy, Alembic (`apps/api`) · React 19, Vite, TypeScript (`apps/web`) · pnpm workspace
 
 ## Judges: start here
 
@@ -24,6 +26,23 @@ PlantLens is a read-only industrial intelligence retrofit combining passive RS48
 - [Bill of materials and integration status](docs/arduino-physical-ai-2026/BILL_OF_MATERIALS.md)
 - [Actual UNO Q deployment, confirmed wiring, and on-board benchmark](deploy/uno-q/README.md)
 - [Full submission package](docs/arduino-physical-ai-2026/README.md)
+
+## Quick start
+
+```bash
+# Web app (apps/web, React + Vite)
+pnpm install --frozen-lockfile
+pnpm dev:web
+
+# API (apps/api, FastAPI, Python 3.12+)
+pip install -e "./apps/api[dev]"
+python -m pytest apps/api/tests -q
+
+# Shared contract check
+pnpm contracts:validate
+```
+
+The full set of checks, including the UNO Q benchmarks, is under [Reproduce](#reproduce).
 
 ## Why this requires the Arduino UNO Q
 
@@ -94,3 +113,7 @@ Host benchmark timings will differ from the documented UNO Q measurements. Synth
 - [`docs/arduino-physical-ai-2026/`](docs/arduino-physical-ai-2026/): complete challenge submission.
 
 **Safety contract:** advisory only; approved causal edges only; simulator and gateway share `TagFrame`; research AI remains shadow-only; consequential changes require human approval; audit history is append-only.
+
+---
+
+Built by [Rhudhresh R](https://github.com/RHUDHRESH).
